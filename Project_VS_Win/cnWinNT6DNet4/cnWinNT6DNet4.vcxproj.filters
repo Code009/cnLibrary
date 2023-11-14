@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="-">
+      <UniqueIdentifier>{0572b0bb-8ff7-4c45-a990-c59bcec05888}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="-\Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="-\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="-\Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="System - WPF">
+      <UniqueIdentifier>{ad30096e-22be-4c6e-8d8a-7ad30eea34bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code">
+      <UniqueIdentifier>{0a2a8688-28f1-4873-9e8e-e4d0b3b7924c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\cnSystemIID">
+      <UniqueIdentifier>{12c96a7c-4b04-418b-87d3-b0f3491b4c83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - Windows">
+      <UniqueIdentifier>{e2ac4b57-1599-41ec-9b68-5f85ec30d966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - Windows\cnWinSystem">
+      <UniqueIdentifier>{64b71d1a-8c59-4071-a9aa-ba3955c1d246}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>-\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.h">
+      <Filter>System - WPF</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.h">
+      <Filter>Code - Windows\cnWinSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="cnWinSystemHeader.h">
+      <Filter>-\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>-\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystemNT6.cpp">
+      <Filter>System - WPF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.cpp">
+      <Filter>System - WPF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.cpp">
+      <Filter>Code - Windows\cnWinSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code\cnSystemIID\cnSystemInterfaceID.cpp">
+      <Filter>Code\cnSystemIID</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWindowsInterfaceID.cpp">
+      <Filter>Code - Windows\cnWinSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceID.cpp">
+      <Filter>System - WPF</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceIDList.inc">
+      <Filter>System - WPF</Filter>
+    </None>
+  </ItemGroup>
+</Project>

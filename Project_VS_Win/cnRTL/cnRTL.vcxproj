@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{86D4B8D5-D7AB-4BFC-AEAA-28953EFEC224}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>cnRTL</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\cnLibrary.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\cnLibrary.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\cnLibrary.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\cnLibrary.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ForcedIncludeFiles>stdafx.h</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\cnProtocol.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\AsyncTask.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\cnRTL.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\cnRTLHeader.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\CommandLineConsole.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Database.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\DataHash.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\DataModel.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\FunctionSet.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceImplementation.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceWrapper.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Logger.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Stream.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamAdapter.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamBuffer.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamProtocol.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\String.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\TextProcess.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ThreadAsync.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ThreadSynchronization.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\UIEvent.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\UIGraph.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\XMLParse.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\BasicControl.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\cnUI.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ControlBase.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\GridContainer.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ImageControl.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\MouseAction.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ScrollContainer.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\Shape.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TextControl.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TextEdit.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TouchAction.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TreeContainer.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UICommon.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UIInterface.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UILayout.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\Win32Thread.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOM.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMIO.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCommon.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMShell.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMWIC.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinConsole.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCoreAudioDevice.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinDateTime.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileIO.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileName.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinGDI.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinMemory.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinODBC.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinRTL.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSDKHeader.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketAddress.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketIO.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinThread.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWP.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPGATT.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPSDKHeader.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinWindow.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUI.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIBase.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUICommon.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIGDI.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\cnRTLCore.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreCommon.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreFundamental.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMath.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMemory.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreString.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTFeatureCheck.h" />
+    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTTemplateKit.h" />
+    <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h" />
+    <ClInclude Include="dependency.h" />
+    <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\AsyncTask.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\CommandLineConsole.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Database.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\DataHash.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\DataModel.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceImplementation.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Logger.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Stream.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamAdapter.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamBuffer.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamProtocol.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\String.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\TextProcess.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ThreadAsync.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ThreadSynchronization.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\UIEvent.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\UIGraph.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\XMLParse.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\BasicControl.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ControlBase.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\GridContainer.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ImageControl.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\MouseAction.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ScrollContainer.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\Shape.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TextControl.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TextEdit.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TouchAction.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TreeContainer.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UICommon.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UIInterface.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UILayout.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\Win32Thread.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOM.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMIO.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCommon.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMShell.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMWIC.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinConsole.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCoreAudioDevice.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinDateTime.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileIO.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileName.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinGDI.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinMemory.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinODBC.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketAddress.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketIO.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinThread.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWP.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPGATT.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinWindow.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIBase.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUICommon.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIGDI.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.cpp" />
+    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

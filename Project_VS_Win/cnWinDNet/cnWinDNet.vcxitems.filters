@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Code - Windows">
+      <UniqueIdentifier>{f6cfd444-8441-4020-be2d-70928c701c53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - Windows\cnWinCLI">
+      <UniqueIdentifier>{69de60b0-abcb-49c2-b1a1-89177e9c87b6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_Common.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUICore.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIView.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewWindow.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\cnLibrary\Code_VS_Win\cnWinCLI\cnWinCLI.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\cnLibrary\Code_VS_Win\cnWinCLI\cnWinWPF.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIFramework.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewContent.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFComponent.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_Common.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUICore.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIView.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewWindow.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIFramework.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewContent.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFComponent.cpp">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

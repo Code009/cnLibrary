@@ -1,0 +1,3 @@
+Sc009 is also a library for cross-platform c++ application, but larger and not intented to be open source project.
+I separate the core function modules from that to create a small library focus on support other application to run cross-platform.
+The rest of Sc009 has narrower usage and may never needed by most other applications.

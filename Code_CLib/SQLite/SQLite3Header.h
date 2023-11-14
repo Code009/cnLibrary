@@ -1,0 +1,1 @@
+#pragma message ("This header should be replaced to include sqlite3.h")
