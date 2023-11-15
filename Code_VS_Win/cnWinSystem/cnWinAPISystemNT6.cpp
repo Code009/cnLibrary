@@ -114,6 +114,7 @@ cnLib_GlobalVar	iTextStreamOutput*const		cnSystem::DebugLogStream	=&cnWin::Debug
 
 
 // cnWindows
+cnLib_GlobalVar	iWinThreadPool *const		cnWindows::DefaultThreadPool			=&vcDefaultThreadPool::gInstance;
 
 
 //---------------------------------------------------------------------------
