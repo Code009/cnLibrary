@@ -1,4 +1,5 @@
 #include "WinCOMWIC.h"
+#include <cnRTL\UIGraph.h>
 #include <mmintrin.h>
 
 #pragma comment(lib,"msimg32.lib")

@@ -7,6 +7,8 @@
 // For guids
 #include <svcguid.h>
 
+#include <cnRTL\InterfaceImplementation.h>
+
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace cnLibrary;

@@ -6,7 +6,9 @@
 #define __cnLibrary_cnUI_UICommon_H__
 
 #include <cnSystem/cnSystem.h>
-#include <cnRTL/cnRTL.h>
+#include <cnRTL/ObjectReference.h>
+#include <cnRTL/FunctionSet.h>
+#include <cnRTL/UIGraph.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------

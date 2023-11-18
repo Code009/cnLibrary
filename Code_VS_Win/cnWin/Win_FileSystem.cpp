@@ -1,4 +1,5 @@
 ﻿#include "Win_FileSystem.h"
+#include <cnRTL\StreamAdapter.h>
 
 using namespace cnLibrary;
 using namespace cnRTL;

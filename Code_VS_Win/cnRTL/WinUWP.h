@@ -7,6 +7,7 @@
 #include <cnRTL\WinSDKHeader.h>
 #include <cnRTL\WinUWPSDKHeader.h>
 
+#include <cnRTL\AsyncTask.h>
 #include <cnRTL\WinCommon.h>
 #include <cnRTL\WinCOM.h>
 

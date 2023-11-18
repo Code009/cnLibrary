@@ -6,7 +6,10 @@
 #define __cnLibrary_cnNet_NetCommon_H__
 /*-------------------------------------------------------------------------*/
 #include <cnSystem/cnSystem.h>
-#include <cnRTL/cnRTL.h>
+#include <cnRTL/String.h>
+#include <cnRTL/ObjectReference.h>
+#include <cnRTL/StreamProtocol.h>
+#include <cnRTL/NetConnection.h>
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------

@@ -6,6 +6,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL\WinSDKHeader.h>
 
+#include <cnRTL\Stream.h>
 #include <cnRTL\WinCommon.h>
 #include <cnRTL\WinCOM.h>
 

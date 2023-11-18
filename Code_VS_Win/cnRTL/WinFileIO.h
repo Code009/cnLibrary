@@ -6,6 +6,8 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL\WinCommon.h>
 
+#include <cnRTL\AsyncTask.h>
+#include <cnRTL\ThreadSynchronization.h>
 #include <cnRTL\WinThread.h>
 #include <cnRTL\WinFileName.h>
 

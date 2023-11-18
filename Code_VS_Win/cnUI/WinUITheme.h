@@ -7,6 +7,7 @@
 #include <cnRTL\WinSDKHeader.h>
 #include <Uxtheme.h>
 
+#include <cnUI\BasicControl.h>
 #include <cnUI\WinUIGDI.h>
 #ifdef __cplusplus
 //---------------------------------------------------------------------------

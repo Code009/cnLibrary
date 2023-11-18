@@ -4,8 +4,11 @@
 /*-------------------------------------------------------------------------*/
 #pragma once
 #include <cnSystem\cnWindows.h>
-#include <cnUI\cnUI.h>
-#include <cnRTL\WinRTL.h>
+#include <cnUI\UICommon.h>
+#include <cnUI\UILayout.h>
+#include <cnRTL\WinCommon.h>
+#include <cnRTL\WinCOM.h>
+#include <cnRTL\WinGDI.h>
 
 //---------------------------------------------------------------------------
 namespace cnLibrary{

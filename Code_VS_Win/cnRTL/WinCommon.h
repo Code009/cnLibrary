@@ -7,7 +7,9 @@
 #include <cnRTL\WinSDKHeader.h>
 
 #include <cnSystem\cnWindows.h>
-#include <cnRTL\cnRTL.h>
+#include <cnRTL\RuntimeFunction.h>
+#include <cnRTL\String.h>
+#include <cnRTL\ObjectReference.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------

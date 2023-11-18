@@ -1,4 +1,5 @@
 #include "WinConsole.h"
+#include <cnRTL\UIGraph.h>
 
 using namespace cnLibrary;
 using namespace cnRTL;

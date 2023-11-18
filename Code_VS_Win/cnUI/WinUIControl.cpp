@@ -1,5 +1,4 @@
 #include "WinUIControl.h"
-#include <cnRTL\WinRTL.h>
 
 using namespace cnLibrary;
 using namespace cnRTL;

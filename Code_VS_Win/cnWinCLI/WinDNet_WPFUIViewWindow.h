@@ -5,8 +5,6 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 
-#include <cnWin\Win_GDI.h>
-
 #include <cnWinCLI\WinDNet_Common.h>
 #include <cnWinCLI\WinDNet_WPFUIView.h>
 #include <cnWinCLI\WinDNetM_WPFUIViewWindow.h>

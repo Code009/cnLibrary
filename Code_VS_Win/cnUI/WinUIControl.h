@@ -5,6 +5,10 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 #include <cnSystem\cnWindows.h>
+#include <cnUI\BasicControl.h>
+#include <cnUI\ImageControl.h>
+#include <cnUI\TextEdit.h>
+#include <cnUI\TreeContainer.h>
 #include <cnUI\WinUIBase.h>
 #include <cnUI\WinUITheme.h>
 #ifdef __cplusplus

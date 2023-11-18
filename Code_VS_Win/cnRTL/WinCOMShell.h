@@ -6,6 +6,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL\WinSDKHeader.h>
 
+#include <cnRTL\AsyncTask.h>
 #include <cnRTL\WinCommon.h>
 #include <cnRTL\WinCOMIO.h>
 

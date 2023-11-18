@@ -1,4 +1,5 @@
 ﻿#include "WinFileIO.h"
+#include <cnRTL\InterfaceImplementation.h>
 
 using namespace cnLibrary;
 using namespace cnRTL;

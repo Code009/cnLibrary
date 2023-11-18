@@ -3,6 +3,9 @@
 //#include <svcguid.h>
 
 #include "WinSocketIO.h"
+#include <cnRTL\InterfaceImplementation.h>
+#include <cnRTL\StreamAdapter.h>
+#include <cnRTL\NetConnection.h>
 
 using namespace cnLibrary;
 using namespace cnRTL;

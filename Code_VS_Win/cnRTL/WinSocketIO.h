@@ -6,6 +6,8 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL\WinSDKHeader.h>
 
+#include <cnRTL\ThreadSynchronization.h>
+#include <cnRTL\AsyncTask.h>
 #include <cnRTL\WinCommon.h>
 #include <cnRTL\WinSocketAddress.h>
 
