@@ -165,6 +165,7 @@ public:
 	bool SetVisible(bool Visible);
 	Float32 GetZPosition(void);
 	bool SetZPosition(Float32 ZPosition);
+	Float32 GetContentScale(void);
 
 	virtual cGCRef* GetDrawingPointer(void)=0;
 
@@ -314,6 +315,7 @@ public:
 	bool RemoveViewContent(bcWPFViewContentDrawing *Content);
 	void UpdateViewContentZPosition(void);
 	void UpdateViewContent(void);
+	Float32 GetViewContentContentScale(void);
 
 protected:
 	void VirtualStarted(void);

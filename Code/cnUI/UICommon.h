@@ -162,14 +162,14 @@ iUITouchControl* ViewRemoveTouchHandlerFilter(iUIView *View,iUITouchHandler *Han
 //---------------------------------------------------------------------------
 template<uIntn Length>
 inline iPtr<iUIFont> QueryFont(const uChar16 (&Name)[Length]){
-	return cnSystem::QueryFont(Name,cnString::GetLength(Name,Length));
+	return cnSystem::QueryFont(Name,cnString::FindLength(Name,Length));
 }
 //---------------------------------------------------------------------------
 template<class TPtr>
 inline typename cnVar::TTypeConditional<iPtr<iUIFont>,
 	cnVar::TIsPointerOf<uChar16,typename cnVar::TRemoveReference<TPtr>::Type>::Value
 >::Type QueryFont(TPtr&& Name){
-	return cnSystem::QueryFont(Name,cnString::GetLength(Name));
+	return cnSystem::QueryFont(Name,cnString::FindLength(Name));
 }
 //---------------------------------------------------------------------------
 }//	namespace cnUI

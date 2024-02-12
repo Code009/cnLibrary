@@ -219,7 +219,7 @@ struct cDBVariantTypeOperator
 	struct TTypeByIndex;
 	
 	template<tTypeIndex TypeIndex> struct TTypeByIndex;
-	static rtType GetTypeInfo(tTypeIndex TypeIndex);
+	static rtTypeInfo GetTypeInfo(tTypeIndex TypeIndex);
 };
 template<> struct cDBVariantTypeOperator::TTypeByIndex<DBDataType::Null>		: cnVar::TTypeDef<void>{};
 template<> struct cDBVariantTypeOperator::TTypeByIndex<DBDataType::Binary>		: cnVar::TTypeDef<cMemoryBuffer>{};

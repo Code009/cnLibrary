@@ -6,191 +6,13 @@
 #define __cnLibrary_cnRTL_CRTTemplateKit_H__
 
 #include <cnRTL/CRTCoreCommon.h>
-#include <cnRTL/CRTCoreMemory.h>
-#include <cnRTL/CRTCoreString.h>
+#include <cnRTL/CRTCoreRuntime.h>
 
 #ifdef __cplusplus
 
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-
-struct TKRuntime::tAtomic
-{
-	static void WatchPause(void){
-	}
-};
-
-template<class T>
-struct TKRuntime::tAtomicInteger
-{
-	typedef std::atomic<T> tAtomic;
-	typedef T tVariable;
-
-	static tVariable Get(const tAtomic &a){
-		return a;
-	}
-	static void Set(tAtomic &a,const tVariable &v){
-		a=v;
-	}
-
-	static tVariable FreeLoad(const tAtomic &a){
-		return a.load(std::memory_order::memory_order_relaxed);
-	}
-	static tVariable AcquireLoad(const tAtomic &a){
-		return a.load(std::memory_order::memory_order_acquire);
-	}
-
-	static void FreeStore(tAtomic &a,const tVariable &v){
-		a.store(v,std::memory_order::memory_order_relaxed);
-	}
-	static void ReleaseStore(tAtomic &a,const tVariable &v){
-		a.store(v,std::memory_order::memory_order_release);
-	}
-
-	static tVariable FreeExchange(tAtomic &a,const tVariable &v){
-		return a.exchange(v,std::memory_order::memory_order_relaxed);
-	}
-	static tVariable AcquireExchange(tAtomic &a,const tVariable &v){
-		return a.exchange(v,std::memory_order::memory_order_acquire);
-	}
-	static tVariable ReleaseExchange(tAtomic &a,const tVariable &v){
-		return a.exchange(v,std::memory_order::memory_order_release);
-	}
-	static tVariable BarrierExchange(tAtomic &a,const tVariable &v){
-		return a.exchange(v,std::memory_order::memory_order_acq_rel);
-	}
-
-	static bool FreeCompareStore(tAtomic &a,tVariable c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_relaxed);
-	}
-	static bool AcquireCompareStore(tAtomic &a,tVariable c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acquire);
-	}
-	static bool ReleaseCompareStore(tAtomic &a,tVariable c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_release);
-	}
-	static bool BarrierCompareStore(tAtomic &a,tVariable c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acq_rel);
-	}
-
-	static bool FreeCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_relaxed);
-	}
-	static bool AcquireCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acquire);
-	}
-	static bool ReleaseCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_release);
-	}
-	static bool BarrierCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
-		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acq_rel);
-	}
-
-	static tVariable FreeAdd(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_relaxed);
-	}
-	static tVariable FreeAddN(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_relaxed)+v;
-	}
-	static tVariable AcquireAdd(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_acquire);
-	}
-	static tVariable AcquireAddN(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_acquire)+v;
-	}
-	static tVariable ReleaseAdd(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_release);
-	}
-	static tVariable ReleaseAddN(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_release)+v;
-	}
-	static tVariable BarrierAdd(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_acq_rel);
-	}
-	static tVariable BarrierAddN(tAtomic &a,const tVariable &v){
-		return a.fetch_add(v,std::memory_order::memory_order_acq_rel)+v;
-	}
-
-	static tVariable FreeSub(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_relaxed);
-	}
-	static tVariable FreeSubN(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_relaxed)-v;
-	}
-	static tVariable AcquireSub(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_acquire);
-	}
-	static tVariable AcquireSubN(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_acquire)-v;
-	}
-	static tVariable ReleaseSub(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_release);
-	}
-	static tVariable ReleaseSubN(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_release)-v;
-	}
-	static tVariable BarrierSub(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_acq_rel);
-	}
-	static tVariable BarrierSubN(tAtomic &a,const tVariable &v){
-		return a.fetch_sub(v,std::memory_order::memory_order_acq_rel)-v;
-	}
-};
-
-
-template<class TPointer>
-struct TKRuntime::tAtomicLink
-{
-		
-	typedef TPointer tPointer;
-	typedef std::atomic<TPointer> tLink;
-
-	static tPointer Get(const tLink &Link){		return Link;	}
-	static void Set(tLink &Link,tPointer p){	Link=p;	}
-
-	static tPointer AcquireLoad(const tLink &Link){	return Link.load();	}
-	static void ReleaseStore(tLink &Link,tPointer p){	Link.store(p);	}
-
-	static tPointer Exchange(tLink &Link,tPointer New){	return static_cast<tPointer>(Link.exchange(New));	}
-	
-	template<class TSingleLinkItemOperator>
-	static tPointer Append(tLink &Link,tPointer First,tPointer Last){
-
-		tPointer CurTop=Link.load();
-		do{
-			TSingleLinkItemOperator::SetNext(Last,CurTop);
-			
-		}while(!Link.compare_exchange_weak(CurTop,First));
-		return CurTop;
-	}
-
-	template<class TSingleLinkItemOperator>
-	static tPointer Extract(tLink &Link,tPointer &NextTop){
-		tPointer CurTop=Link.load();
-		do{
-			if(CurTop==nullptr)
-				return nullptr;
-
-			NextTop=TSingleLinkItemOperator::GetNext(CurTop);
-		}while(!Link.compare_exchange_weak(CurTop,NextTop));
-		return CurTop;
-	}
-};
-
-
-
-template<class TElement>
-struct TKRuntime::tVectorOperatorEnumeration
-{
-	typedef cnVar::TTypePack<
-		cnVar::cScalerFloatVectorOperator<TElement>
-	> tFloatOperatorPack;
-
-	typedef cnVar::TTypePack<
-		cnVar::cScalerIntegerVectorOperator<TElement>
-	> tIntegerOperatorPack;
-};
 //---------------------------------------------------------------------------
 namespace cnRTL{
 
@@ -203,27 +25,6 @@ using cArrayBlock=cnDataStruct::cArrayBlock<cAllocationOperator,T>;
 //---------------------------------------------------------------------------
 typedef cnDataStruct::cArrayBlock<cAllocationOperator,void> cMemoryBlock;
 typedef cnDataStruct::cArrayBuffer<cAllocationOperator,void> cMemoryBuffer;
-
-
-
-//---------------------------------------------------------------------------
-// Atomic
-//---------------------------------------------------------------------------
-
-template<class T>
-using cAtomicVar=cnAsync::cAtomicVariable<T>;
-
-//---------------------------------------------------------------------------
-template<class T>
-using iAtomicPtr = cnVar::cAtomicPtrReference<cnVar::iRefTokenOperator<T>>;
-//---------------------------------------------------------------------------
-template<class T>
-using rAtomicPtr = cnVar::cAtomicPtrReference<cnVar::rRefTokenOperator<T>>;
-
-
-//---------------------------------------------------------------------------
-
-using cnAsync::cRingIndex;
 
 //---------------------------------------------------------------------------
 // String
@@ -239,13 +40,16 @@ using cString=cnString::cString< cnString::cRefStringArrayTokenOperator<cAllocat
 template<class TFunction,uIntn StorageSize=cnVar::TFunctionStorageDefaultSize::Value>
 using cFunction=cnVar::cFunction<TFunction,cnVar::cFunctionStorageOperator<cAllocationOperator,TFunction,StorageSize> >;
 
+
+//---------------------------------------------------------------------------
+
+using cnAsync::cRingIndex;
+
+
 //---------------------------------------------------------------------------
 // Sequential Structure
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-template<class T>
-using cArrayBlock=cnDataStruct::cArrayBlock<cAllocationOperator,T>;
 //---------------------------------------------------------------------------
 template<class TElement>
 using cSeqList=cnDataStruct::cSeqList<cAllocationOperator,TElement>;
@@ -378,6 +182,21 @@ using cLinkMap=cnDataStruct::cLinkMap<
 	TKeyItemOperator
 >;
 
+
+//---------------------------------------------------------------------------
+// Atomic
+//---------------------------------------------------------------------------
+
+template<class T>
+using cAtomicVar=cnAsync::cAtomicVariable<T>;
+
+//---------------------------------------------------------------------------
+template<class T>
+using iAtomicPtr = cnVar::cAtomicPtrReference<cnVar::iRefTokenOperator<T>>;
+//---------------------------------------------------------------------------
+template<class T>
+using rAtomicPtr = cnVar::cAtomicPtrReference<cnVar::rRefTokenOperator<T>>;
+
 //---------------------------------------------------------------------------
 // Atomic Linked Structure
 //---------------------------------------------------------------------------
@@ -411,27 +230,52 @@ using cIntegerVector=cnVar::cIntegerVector<TElement,ElementCount>;
 //---------------------------------------------------------------------------
 //	Coroutine
 //---------------------------------------------------------------------------
+template<class TStdCoHandle>
+struct TStdCoroutineHandleOperator
+{
 
+	typedef TStdCoHandle tHandle;
+
+
+	static void Reset(tHandle &Handle)noexcept(true){
+		Handle=tHandle();
+	}
+	template<class TAwaitHandle>
+	static void Assign(tHandle &Handle,TAwaitHandle&& Await)noexcept(true){
+		Handle=Await;
+	}
+	static bool IsAvailable(const tHandle &Handle)noexcept(true){
+		return static_cast<bool>(Handle);
+	}
+	static void Resume(const tHandle &Handle)noexcept(true){
+		return Handle.resume();
+	}
+	static void Finish(const tHandle &Handle)noexcept(true){
+		return Handle.destroy();
+	}
+};
 
 #if		cnLibrary_CRTFEATURE_COROUTINE>=201902L
 
-typedef std::coroutine_handle<> vtCoHandle;
+typedef TStdCoroutineHandleOperator< std::coroutine_handle<> > cCoroutineHandleOperator;
 
 #elif	cnLibrary_CRTFEATURE_EXPERIMENTAL_COROUTINE>=201500L
 
-typedef std::experimental::coroutine_handle<> vtCoHandle;
+typedef TStdCoroutineHandleOperator< std::experimental::coroutine_handle<> > cCoroutineHandleOperator;
 
 #else
 
-typedef cnAsync::cCoHandleVariant vtCoHandle;
+typedef cnAsync::cVariantCoroutineHandleOperator<sizeof(void*)*2> cCoroutineHandleOperator;
 
 #endif
 
-template<class TRet>
-using cResumable=cnAsync::cResumable<TRet,vtCoHandle>;
+
 
 template<class TRet>
-using cCoroutine=cnAsync::cCoroutine<TRet,vtCoHandle>;
+using cResumable=cnAsync::cResumable<TRet,cCoroutineHandleOperator>;
+
+template<class TRet>
+using cCoroutine=cnAsync::cCoroutine<TRet,cCoroutineHandleOperator>;
 
 //---------------------------------------------------------------------------
 

@@ -326,6 +326,10 @@ class rPtr : public cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >
 public:
 	typedef cnVar::rRefToken<T> tRefToken;
 
+	template<class TSrcPtr>
+	static rPtr TakeFromManual(TSrcPtr *Pointer)noexcept(true)
+	{		return rPtr(cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::MakeConstructByToken(cnVar::rRefTokenOperator<T>::TokenFrom(Pointer)));	}
+
 #if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::cPtrReference;
 	using cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::operator =;
@@ -500,6 +504,11 @@ template<class T>
 class iPtr : public cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >
 {
 public:
+
+	template<class TSrcPtr>
+	static iPtr TakeFromManual(TSrcPtr *Pointer)noexcept(true){
+		return iPtr(cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::MakeConstructByToken(cnVar::iRefTokenOperator<T>::TokenFrom(Pointer)));
+	}
 
 #if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::cPtrReference;

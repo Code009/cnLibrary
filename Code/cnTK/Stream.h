@@ -747,7 +747,7 @@ public:
 			Size=fCache.Length;
 		uIntn Commited=0;
 		while(Size>fReservedMemory.Length){
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,fReservedMemory.Length);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,fReservedMemory.Length);
 			for(uIntn i=0;i<fReservedMemory.Length;i++){
 				fReservedMemory.Pointer[i]=cnLib_UREFCAST(tElement)(fCache.Pointer[Commited+i]);
 			}
@@ -759,7 +759,7 @@ public:
 				return;
 			}
 		}
-		TKRuntime::tMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,Size);
+		TKRuntime::TMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,Size);
 		fReservedMemory.Pointer=nullptr;
 		fReservedMemory.Length=0;
 		return fWriteBuffer->CommitWriteBuffer(Size);

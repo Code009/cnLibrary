@@ -8,7 +8,6 @@
 #include <cnTK/Common.h>
 #include <cnTK/TypeTraits.h>
 #include <cnTK/Numerical.h>
-#include <cnTK/Memory.h>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -20,7 +19,6 @@ namespace cnVar{
 //---------------------------------------------------------------------------
 struct cTypeIdentity
 {
-	uInt32 Size;
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -30,9 +28,7 @@ struct cTypeIDDefinition
 };
 //---------------------------------------------------------------------------
 template<class T>
-const cTypeIdentity cTypeIDDefinition<T>::Value={
-	TStoreSizeOf<T>::Value
-};
+const cTypeIdentity cTypeIDDefinition<T>::Value;
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------
@@ -873,11 +869,24 @@ struct SafeTypeOperator<TRet (TArgs...)noexcept>
 
 #endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
 //---------------------------------------------------------------------------
-
+}	// namespace cnVar
+//---------------------------------------------------------------------------
+cnLib_ENUM_BEGIN(ufInt8, rtTypeClass)
+{
+	Data,
+	Array,
+	Pointer,
+	Reference,
+	Function,
+	MemberPointer,
+	MemberFunctionPointer
+}cnLib_ENUM_END(rtTypeClass);
+//---------------------------------------------------------------------------
+namespace cnVar{
 //---------------------------------------------------------------------------
 struct cRuntimeTypeInfo;
 //---------------------------------------------------------------------------
-struct cRuntimeInfo
+struct cRuntimeDataInfo
 {
 	const cRuntimeTypeInfo *TypeInfo;
 	uIntn Length;
@@ -902,6 +911,7 @@ struct cRuntimeInfo
 //---------------------------------------------------------------------------
 struct cRuntimeTypeInfo_Data
 {
+	const cRuntimeDataInfo *DataInfo;
 };
 //---------------------------------------------------------------------------
 struct cRuntimeTypeInfo_Array
@@ -948,17 +958,6 @@ struct cRuntimeTypeInfo_MemberFunctionPointer
 	bool NoException;
 };
 //---------------------------------------------------------------------------
-cnLib_ENUM_BEGIN(ufInt8, rtTypeClass)
-{
-	Data,
-	Array,
-	Pointer,
-	Reference,
-	Function,
-	MemberPointer,
-	MemberFunctionPointer
-}cnLib_ENUM_END(rtTypeClass);
-//---------------------------------------------------------------------------
 struct cRuntimeTypeOperator
 {
 	void (*Construct)(void *p);
@@ -974,6 +973,7 @@ struct cRuntimeTypeOperator
 struct cRuntimeTypeInfo
 {
 	const cTypeIdentity *ID;
+	uInt32 Size;
 	ertTypeClass TypeClass;
 	bool IsConst					:1;
 	bool IsVolatile					:1;
@@ -1004,10 +1004,22 @@ struct cRuntimeTypeInfo
 
 };
 //---------------------------------------------------------------------------
+template<class T>
+struct cRuntimeTypeInfoDefinition
+{
+	static const cRuntimeTypeInfo Value;
+};
+//---------------------------------------------------------------------------
+template<class T>
+struct TRuntimeDataInfo
+{
+	static const cRuntimeDataInfo Value;
+};
+//---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------
-typedef const cnVar::cRuntimeInfo* rtInfo;
-typedef const cnVar::cRuntimeTypeInfo* rtType;
+typedef const cnVar::cRuntimeTypeInfo *rtTypeInfo;
+typedef const cnVar::cRuntimeDataInfo *rtDataInfo;
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
@@ -1048,13 +1060,14 @@ struct RuntimeTypeInfoDef;
 template<class T>
 struct RuntimeTypeInfoDistinctDef
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Data;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Data;
 	static const cnVar::cRuntimeTypeInfo_Data TypeClassInfo;
 };
 
 
 template<class T>
 const cnVar::cRuntimeTypeInfo_Data RuntimeTypeInfoDistinctDef<T>::TypeClassInfo={
+	&cnVar::TRuntimeDataInfo<T>::Value
 };
 
 // runtime info - distinct - array
@@ -1062,7 +1075,7 @@ const cnVar::cRuntimeTypeInfo_Data RuntimeTypeInfoDistinctDef<T>::TypeClassInfo=
 template<class T,uIntn ArrayLength>
 struct RuntimeTypeInfoDistinctDef<T [ArrayLength]>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Array;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Array;
 	static const cnVar::cRuntimeTypeInfo_Array TypeClassInfo;
 };
 
@@ -1075,7 +1088,7 @@ const cnVar::cRuntimeTypeInfo_Array RuntimeTypeInfoDistinctDef<T [ArrayLength]>:
 template<class T>
 struct RuntimeTypeInfoDistinctDef<T []>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Array;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Array;
 	static const cnVar::cRuntimeTypeInfo_Array TypeClassInfo;
 };
 
@@ -1090,7 +1103,7 @@ const cnVar::cRuntimeTypeInfo_Array RuntimeTypeInfoDistinctDef<T []>::TypeClassI
 template<class T>
 struct RuntimeTypeInfoDistinctDef<T*>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Pointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Pointer;
 	static const cnVar::cRuntimeTypeInfo_Pointer TypeClassInfo;
 };
 
@@ -1104,7 +1117,7 @@ const cnVar::cRuntimeTypeInfo_Pointer RuntimeTypeInfoDistinctDef<T*>::TypeClassI
 template<class T>
 struct RuntimeTypeInfoDistinctDef<T&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Reference;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Reference;
 	static const cnVar::cRuntimeTypeInfo_Reference TypeClassInfo;
 };
 
@@ -1120,7 +1133,7 @@ const cnVar::cRuntimeTypeInfo_Reference RuntimeTypeInfoDistinctDef<T&>::TypeClas
 template<class T>
 struct RuntimeTypeInfoDistinctDef<T&&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Reference;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Reference;
 	static const cnVar::cRuntimeTypeInfo_Reference TypeClassInfo;
 };
 
@@ -1138,11 +1151,11 @@ const cnVar::cRuntimeTypeInfo_Reference RuntimeTypeInfoDistinctDef<T&&>::TypeCla
 template<class...TArgs>
 struct cRuntimeTypeInfoDistinctFunctionParameterList
 {
-	static const rtType Value[cnMath::TMax<uIntn,1,sizeof...(TArgs)>::Value];
+	static const rtTypeInfo Value[cnMath::TMax<uIntn,1,sizeof...(TArgs)>::Value];
 };
 
 template<class...TArgs>
-const rtType cRuntimeTypeInfoDistinctFunctionParameterList<TArgs...>::Value[cnMath::TMax<uIntn,1,sizeof...(TArgs)>::Value]={
+const rtTypeInfo cRuntimeTypeInfoDistinctFunctionParameterList<TArgs...>::Value[cnMath::TMax<uIntn,1,sizeof...(TArgs)>::Value]={
 	&RuntimeTypeInfoDef<TArgs>::TypeInfo...
 };
 
@@ -1151,7 +1164,7 @@ const rtType cRuntimeTypeInfoDistinctFunctionParameterList<TArgs...>::Value[cnMa
 template<class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TArgs...)>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Function;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Function;
 	static const cnVar::cRuntimeTypeInfo_Function TypeClassInfo;
 };
 
@@ -1170,7 +1183,7 @@ const cnVar::cRuntimeTypeInfo_Function RuntimeTypeInfoDistinctDef<TRet (TArgs...
 template<class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TArgs...)noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::Function;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::Function;
 	static const cnVar::cRuntimeTypeInfo_Function TypeClassInfo;
 };
 
@@ -1190,7 +1203,7 @@ const cnVar::cRuntimeTypeInfo_Function RuntimeTypeInfoDistinctDef<TRet (TArgs...
 template<class TClass,class TMember>
 struct RuntimeTypeInfoDistinctDef<TMember TClass::*>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberPointer TypeClassInfo;
 };
 
@@ -1205,7 +1218,7 @@ const cnVar::cRuntimeTypeInfo_MemberPointer RuntimeTypeInfoDistinctDef<TMember T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1227,7 +1240,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1250,8 +1263,8 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
-	static const rtType MemberFunctionParameters[];
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
+	static const rtTypeInfo MemberFunctionParameters[];
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1273,7 +1286,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1298,7 +1311,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1320,7 +1333,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1343,8 +1356,8 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
-	static const rtType MemberFunctionParameters[];
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
+	static const rtTypeInfo MemberFunctionParameters[];
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1366,7 +1379,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1393,7 +1406,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1415,7 +1428,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1438,7 +1451,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1460,7 +1473,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1486,7 +1499,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)&noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1508,7 +1521,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1531,8 +1544,8 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
-	static const rtType MemberFunctionParameters[];
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
+	static const rtTypeInfo MemberFunctionParameters[];
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1554,7 +1567,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1579,7 +1592,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)&&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1601,7 +1614,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const&&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1624,7 +1637,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile&&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1646,7 +1659,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile&&>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1672,7 +1685,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)&&noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1694,7 +1707,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const&& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1717,8 +1730,8 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)volatile&& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
-	static const rtType MemberFunctionParameters[];
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
+	static const rtTypeInfo MemberFunctionParameters[];
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1740,7 +1753,7 @@ const cnVar::cRuntimeTypeInfo_MemberFunctionPointer RuntimeTypeInfoDistinctDef<T
 template<class TClass,class TRet,class...TArgs>
 struct RuntimeTypeInfoDistinctDef<TRet (TClass::*)(TArgs...)const volatile&& noexcept>
 {
-	static cnLib_CONSTVAR cnVar::ertTypeClass TypeClass=cnVar::rtTypeClass::MemberFunctionPointer;
+	static cnLib_CONSTVAR ertTypeClass TypeClass=rtTypeClass::MemberFunctionPointer;
 	static const cnVar::cRuntimeTypeInfo_MemberFunctionPointer TypeClassInfo;
 };
 
@@ -1777,16 +1790,11 @@ namespace cnVar{
 
 // runtime info
 
-template<class T>
-struct cRuntimeTypeInfoDefinition
-{
-	static const cnVar::cRuntimeTypeInfo Value;
-};
-
 
 template<class T>
 const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T>::Value={
 	&cTypeIDDefinition<T>::Value,
+	TStoreSizeOf<T>::Value,
 	cnLib_THelper::Var_TH::RuntimeInfo::RuntimeTypeInfoDistinctDef<T>::TypeClass,
 	false,	// const
 	false,	// volatile
@@ -1901,59 +1909,16 @@ const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T const volatile>::Valu
 };
 
 template<class T>
-struct TRuntimeTypeInfo :	TConstantValue<rtType, &cRuntimeTypeInfoDefinition<T>::Value>{};
+struct TRuntimeTypeInfo :	TConstantValue<rtTypeInfo, &cRuntimeTypeInfoDefinition<T>::Value>{};
 
 //---------------------------------------------------------------------------
 
 #if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L && cnLibrary_CPPFEATURE_INLINE_VARIABLES >= 201606L
 
 template<class T>
-inline cnLib_CONSTVAR rtType RuntimeType=&cRuntimeTypeInfoDefinition<T>::Value;
+inline cnLib_CONSTVAR rtTypeInfo RuntimeTypeInfo=&cRuntimeTypeInfoDefinition<T>::Value;
 
 #endif	// cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L && cnLibrary_CPPFEATURE_INLINE_VARIABLES >= 201606L
-
-
-
-template<class T,class TTypePack>
-struct cRuntimeInfoItemsDefinition;
-
-template<class T,class...VT>
-struct cRuntimeInfoItemsDefinition< T,TTypePack<VT...> >
-{
-	static cnLib_CONSTVAR uIntn ItemCount=sizeof...(VT);
-	static const cRuntimeInfo::cItem Items[sizeof...(VT)];
-};
-
-template<class T,class...VT>
-const cRuntimeInfo::cItem cRuntimeInfoItemsDefinition< T,TTypePack<VT...> >::Items[sizeof...(VT)]={
-	{TTypeID<typename TRemoveCV<decltype(VT::Value)>::Type>::Value,VT::Value}...
-};
-
-
-template<class T>
-struct cRuntimeInfoDefinition
-{
-	static const cnVar::cRuntimeInfo Info;
-};
-template<class T>
-const cnVar::cRuntimeInfo cRuntimeInfoDefinition<T>::Info={
-	cnVar::TRuntimeTypeInfo<T>::Value,
-	cRuntimeInfoItemsDefinition<T,typename T::tRuntimeInfoDecl::Type>::ItemCount,
-	cRuntimeInfoItemsDefinition<T,typename T::tRuntimeInfoDecl::Type>::Items
-};
-
-template<class T>
-struct cRuntimeInfoDefinitionEmpty
-{
-	static const cnVar::cRuntimeInfo Info;
-};
-template<class T>
-const cnVar::cRuntimeInfo cRuntimeInfoDefinitionEmpty<T>::Info={
-	cnVar::TRuntimeTypeInfo<T>::Value,
-	0,
-	nullptr
-};
-
 
 //---------------------------------------------------------------------------
 }	// namespace cnVar
@@ -1967,22 +1932,45 @@ namespace Var_TH{
 namespace RuntimeInfo{
 //---------------------------------------------------------------------------
 
+
+
 template<class T,class TTypePack>
-struct InfoDefTypesSelect
-	: cnVar::TTypeDef< cnVar::cRuntimeInfoDefinition<T> >{};
+struct cRuntimeDataInfoItemsDefinition;
+
+template<class T,class...VT>
+struct cRuntimeDataInfoItemsDefinition< T,cnVar::TTypePack<VT...> >
+{
+	static cnLib_CONSTVAR uIntn ItemCount=sizeof...(VT);
+	static const cnVar::cRuntimeDataInfo::cItem Items[sizeof...(VT)];
+};
+
+template<class T,class...VT>
+const cnVar::cRuntimeDataInfo::cItem cRuntimeDataInfoItemsDefinition< T,cnVar::TTypePack<VT...> >::Items[sizeof...(VT)]={
+	{cnVar::TTypeID<typename cnVar::TRemoveCV<decltype(VT::Value)>::Type>::Value,VT::Value}...
+};
+
+struct cRuntimeDataInfoItemsDefinitionEmpty
+{
+	static cnLib_CONSTVAR uIntn ItemCount=0;
+	static cnLib_CONSTVAR cnVar::cRuntimeDataInfo::cItem *Items=0;
+};
+
+template<class T,class TTypePack>
+struct DataInfoDefTypesSelect
+	: cnVar::TTypeDef< cRuntimeDataInfoItemsDefinition<T,TTypePack> >{};
 
 template<class T>
-struct InfoDefTypesSelect< T,cnVar::TTypePack<> >
-	: cnVar::TTypeDef< cnVar::cRuntimeInfoDefinitionEmpty<T> >{};
+struct DataInfoDefTypesSelect< T,cnVar::TTypePack<> >
+	: cnVar::TTypeDef<cRuntimeDataInfoItemsDefinitionEmpty>{};
 
 
 template<class T,class=void>
-struct InfoDefSelect
-	: cnVar::TTypeDef< cnVar::cRuntimeInfoDefinitionEmpty<T> >{};
+struct DataInfoDefSelect
+	: cnVar::TTypeDef<cRuntimeDataInfoItemsDefinitionEmpty>{};
 
 template<class T>
-struct InfoDefSelect<T,typename cnVar::TSelect<0,void,typename T::tRuntimeInfoDecl::Type>::Type>
-	: InfoDefTypesSelect<T,typename T::tRuntimeInfoDecl::Type>{};
+struct DataInfoDefSelect<T,typename cnVar::TSelect<0,void,typename T::tRuntimeDataInfoDecl::Type>::Type>
+	: DataInfoDefTypesSelect<T,typename T::tRuntimeDataInfoDecl::Type>{};
 
 //---------------------------------------------------------------------------
 }	// namespace RuntimeInfo
@@ -1995,10 +1983,13 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
 //---------------------------------------------------------------------------
-
 template<class T>
-struct TRuntimeInfo
-	: cnVar::TConstantValue<const cnVar::cRuntimeInfo*,&cnLib_THelper::Var_TH::RuntimeInfo::InfoDefSelect<T>::Type::Info>{	};
+const cRuntimeDataInfo TRuntimeDataInfo<T>::Value=
+{
+	TRuntimeTypeInfo<T>::Value,
+	cnLib_THelper::Var_TH::RuntimeInfo::DataInfoDefSelect<T>::Type::ItemCount,
+	cnLib_THelper::Var_TH::RuntimeInfo::DataInfoDefSelect<T>::Type::Items,
+};
 
 
 template<class...VT>
@@ -2014,7 +2005,7 @@ struct TRuntimeInfoDecl<TRuntimeInfoDecl<VTParent...>,VT...>
 struct cMetaClassField
 {
 	const uChar16 *Name;
-	rtInfo RuntimeInfo;
+	rtDataInfo DataInfo;
 	uIntn Offset;
 };
 

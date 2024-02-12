@@ -44,6 +44,9 @@ template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cThr
 cnLib_GlobalVar cNT6TLSStaticPointer<cThread> gTLS_cThread;
 iThreadLocalVariable *const cThread::gTLS=&gTLS_cThread;
 
+template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cErrorReportRecord>::gDataTLS=nullptr;
+cnLib_GlobalVar cNT6TLSStaticPointer<cErrorReportRecord> gTLS_ErrorReportRecord;
+iThreadLocalVariable *const cErrorReportRecord::gTLSRecord=&gTLS_ErrorReportRecord;
 
 //- thread pool -------------------------------------------------------------
 cnLib_GlobalVar cnWinNT6::cDefaultThreadPool cnWinNT6::cDefaultThreadPool::gInstance;

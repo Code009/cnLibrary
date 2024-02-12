@@ -58,15 +58,15 @@ public:
 	bool await_ready(void)const noexcept(true){	return fTask->IsDone();		}
 	template<class TCoHandle>
 	bool await_suspend(TCoHandle&& CoHandle){
-		fCoHandle=static_cast<TCoHandle&&>(CoHandle);
+		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
 		return fTask->SetNotify(this);
 	}
 	void await_resume(void)noexcept(true){}
 private:
 	TAsyncTaskPtr fTask;
-	vtCoHandle fCoHandle;
+	cCoroutineHandleOperator::tHandle fCoHandle;
 	virtual void cnLib_FUNC Execute(void)override{
-		fCoHandle.resume();
+		cCoroutineHandleOperator::Resume(fCoHandle);
 	}
 };
 //---------------------------------------------------------------------------
@@ -88,14 +88,14 @@ public:
 	bool await_ready(void)const noexcept(true){	return fTask->IsDone();		}
 	template<class TCoHandle>
 	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
-		fCoHandle=static_cast<TCoHandle&&>(CoHandle);
+		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
 		return fTask->SetNotify(&fTaskNotifyProcedure);
 	}
 	void await_resume(void)noexcept(true){}
 private:
 	TAsyncTaskPtr fTask;
 	iPtr<iAsyncExecution> fResumeExecution;
-	vtCoHandle fCoHandle;
+	cCoroutineHandleOperator::tHandle fCoHandle;
 
 	class cTaskNotifyProcedure : public iProcedure
 	{
@@ -105,7 +105,7 @@ private:
 				Host->fResumeExecution->Execute(nullptr,&Host->fDispatchResumeProcedure);
 			}
 			else{
-				Host->fCoHandle.resume();
+				cCoroutineHandleOperator::Resume(Host->fCoHandle);
 			}
 		}
 	}fTaskNotifyProcedure;
@@ -114,7 +114,7 @@ private:
 	{
 		virtual void cnLib_FUNC Execute(void)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTaskExecutionAwaiter::fDispatchResumeProcedure);
-			Host->fCoHandle.resume();
+			cCoroutineHandleOperator::Resume(Host->fCoHandle);
 		}
 	}fDispatchResumeProcedure;
 
@@ -198,66 +198,57 @@ iPtr<iAsyncTask> DelayTask(uInt64 NS);
 class cAsyncTaskCoroutine : public iPtr<iAsyncTask>
 {
 public:
-	class impAsyncTask : public iAsyncTask
+	class impAsyncTask : public iAsyncTask, public cnAsync::iCoroutinePromiseAwaiter
 	{
 	public:
 		virtual bool cnLib_FUNC IsDone(void)override;
 		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
 
 		cAsyncTaskState State;
-	};
-	class promise_type : public cnAsync::cFreePromise
-	{
-	public:
-		promise_type();
-		~promise_type();
 
-		iPtr<impAsyncTask> get_return_object();
-		void return_void(void);
-	private:
-		iPtr<impAsyncTask> fTask;
+		virtual void NotifyCompletion(void)noexcept(true)override;
+
+		cCoroutine<void>::pPtr Promise;
+
+		impAsyncTask(cCoroutine<void>::pPtr &&Promise);
 	};
 
-	cAsyncTaskCoroutine(iPtr<impAsyncTask> &&Task);
 	cAsyncTaskCoroutine(const cAsyncTaskCoroutine&)=delete;
 	cAsyncTaskCoroutine &operator=(const cAsyncTaskCoroutine&)=delete;
 	cAsyncTaskCoroutine(cAsyncTaskCoroutine &&Src);
 	cAsyncTaskCoroutine &operator=(cAsyncTaskCoroutine &&Src);
 	~cAsyncTaskCoroutine();
+
+
+	// construct by promise
+	cAsyncTaskCoroutine(cCoroutine<void> &&Src)noexcept(true);
+
+
 };
 //---------------------------------------------------------------------------
 template<class TResult,class TResultInterface=TResult>
 class cAsyncFunctionCoroutine : public iPtr< iAsyncFunction<TResultInterface> >
 {
 public:
-	class impAsyncFunction : public iAsyncFunction<TResultInterface>
+	class impAsyncFunction : public iAsyncFunction<TResultInterface>, public cnAsync::iCoroutinePromiseAwaiter
 	{
 	public:
 		virtual bool cnLib_FUNC IsDone(void)override{	return State.IsDone();		}
 		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override{	return State.SetNotify(NotifyProcedure);	}
 		virtual void cnLib_FUNC Cancel(void)override{		}
-		virtual TResultInterface cnLib_FUNC GetResult(void)override{	return Result;	}
+		virtual TResultInterface cnLib_FUNC GetResult(void)override{	return Promise->fReturnValue;	}
 
 		cAsyncTaskState State;
-		TResult Result;
-	};
-	class promise_type : public cnAsync::cFreePromise
-	{
-	public:
-		promise_type():fTask(iCreate<impAsyncFunction>()){}
-		~promise_type(){}
 
-		iPtr<impAsyncFunction> get_return_object(){	return fTask;	}
-		template<class T>
-		void return_value(T&& Value){
-			fTask->Result=static_cast<T&&>(Value);
-			fTask->State.SetDone();
-		}
-	private:
-		iPtr<impAsyncFunction> fTask;
+		virtual void NotifyCompletion(void)noexcept(true)override;
+
+		typename cCoroutine<TResult>::pPtr Promise;
+
+		impAsyncFunction(cCoroutine<void>::pPtr &&Promise);
 	};
 
-	cAsyncFunctionCoroutine(iPtr<impAsyncFunction> &&Task):iPtr< iAsyncFunction<TResultInterface> >(cnVar::MoveCast(Task)){}
+	cAsyncFunctionCoroutine(cCoroutine<void> &&Src)noexcept(true):iPtr< iAsyncFunction<TResultInterface> >(iCreate<impAsyncFunction>(Src.TakePromise())){}
+
 	cAsyncFunctionCoroutine(const cAsyncFunctionCoroutine&)=delete;
 	cAsyncFunctionCoroutine &operator=(const cAsyncFunctionCoroutine&)=delete;
 	cAsyncFunctionCoroutine(cAsyncFunctionCoroutine &&Src):iPtr< iAsyncFunction<TResultInterface> >(cnVar::MoveCast(Src)){}

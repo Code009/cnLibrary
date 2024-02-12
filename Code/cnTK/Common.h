@@ -529,12 +529,6 @@ static cnLib_CONSTVAR cNoInitialization *NoInitialization=0;
 namespace cnMemory{
 //---------------------------------------------------------------------------
 
-cnLib_TYPELESS_ENUM_BEGIN(ByteOrder){
-	LittleEndian,
-	BigEndian,
-}cnLib_TYPELESS_ENUM_END(ByteOrder);
-
-//---------------------------------------------------------------------------
 template<uIntn Size>
 struct cPlainData
 {
@@ -799,14 +793,12 @@ struct TDefaultCompareResult
 };
 
 template<class TCompare1,class TCompare2>
-inline sfInt8 DefaultCompare(const TCompare1 &Item,const TCompare2 &Value)
-	noexcept(cnLib_NOEXCEPTEXPR(Item==Value) && cnLib_NOEXCEPTEXPR(Item<Value))
+inline sfInt8 DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
+	noexcept(cnLib_NOEXCEPTEXPR(Value1==Value2) && cnLib_NOEXCEPTEXPR(Value1<Value2))
 {
-	if(Item==Value)
-		return 0;
-	if(Item<Value)
-		return -1;
-	return 1;
+	sfInt8 ne=static_cast<sfInt8>(!(Value1==Value2));
+	sfInt8 lt=-static_cast<sfInt8>(Value1<Value2);
+	return ne|lt;
 }
 #endif	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION , cnLibrary_CPPFEATURE_DECLTYPE
 

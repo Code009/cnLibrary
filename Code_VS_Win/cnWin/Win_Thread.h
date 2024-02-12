@@ -86,6 +86,26 @@ private:
 	static void TLSSetExitNotify(void);
 };
 //---------------------------------------------------------------------------
+class cErrorReportRecord : public iErrorReport
+{
+public:
+	cErrorReportRecord(iErrorReport *Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error);
+	~cErrorReportRecord();
+
+	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
+	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
+
+	void* operator new(tSize Size)=delete;
+	void operator delete(void* p)=delete;
+
+	static iThreadLocalVariable *const gTLSRecord;
+
+	static rPtr<cErrorReportRecord> Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
+private:
+	cnRTL::cAtomicVar<uIntn> fRefCount;
+	uChar16 fStringContent[2];
+};
+//---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
 namespace cnWinNT6{

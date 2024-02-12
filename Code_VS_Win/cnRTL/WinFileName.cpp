@@ -146,7 +146,7 @@ cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeTemporaryFileName(const wchar_t *F
 	if(GetTempFileNameW(FolderName,TempPrefix,0,TempFileName)==0)
 		return nullptr;
 	// make copy
-	uIntn Length=cnString::GetLength(TempFileName);
+	uIntn Length=cnString::FindLength(TempFileName);
 	cStringBuffer<wchar_t> Name(TempFileName,Length,Length+1);
 	return Name;
 }

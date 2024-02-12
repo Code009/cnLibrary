@@ -43,6 +43,12 @@
     <Filter Include="Code - Windows\cnRTLCore - CRT">
       <UniqueIdentifier>{2fafd2cd-dd86-417a-9386-b29a277a8d0c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Code\cnTK">
+      <UniqueIdentifier>{38b5800d-9243-4974-b6ea-a8c85c83d7cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code\cnSystem">
+      <UniqueIdentifier>{36c5098a-9337-4166-9d79-cf774768e6c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -279,15 +285,6 @@
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreFundamental.h">
       <Filter>Code\cnRTLCore - CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMath.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMemory.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreString.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTFeatureCheck.h">
       <Filter>Code\cnRTLCore - CRT</Filter>
     </ClInclude>
@@ -302,6 +299,126 @@
     </ClInclude>
     <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h">
       <Filter>Code - Windows\cnRTLCore - CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\cnTK.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\CPPFeatureCheck.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFileSystem.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFundamental.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMedia.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMemory.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetwork.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetworkProtocol.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnStream.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnSystem.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnThread.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUI.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUIGraph.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osOpenGL.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osSocket.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnConsole.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnData.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDatabase.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDebug.h">
+      <Filter>Code\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h">
+      <Filter>Code\cnRTLCore - CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code\cnTK\ThreadSync.hpp">
+      <Filter>Code\cnTK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -503,5 +620,13 @@
     <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.cpp">
       <Filter>Code - Windows\cnUI</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosCleanup.inc">
+      <Filter>Code\cnTK</Filter>
+    </None>
+    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosDeclare.inc">
+      <Filter>Code\cnTK</Filter>
+    </None>
   </ItemGroup>
 </Project>

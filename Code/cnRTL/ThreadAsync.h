@@ -33,19 +33,19 @@ public:
 	bool await_ready(void)const noexcept(true){	return fExecution==nullptr;		}
 	template<class TCoHandle>
 	void await_suspend(TCoHandle&& CoHandle){
-		fCoHandle=static_cast<TCoHandle&&>(CoHandle);
+		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
 		fExecution->Execute(nullptr,&fExecuteProcedure);
 	}
 	void await_resume(void)noexcept(true){}
 private:
 	iPtr<iAsyncExecution> fExecution;
-	vtCoHandle fCoHandle;
+	cCoroutineHandleOperator::tHandle fCoHandle;
 
 	class cExecuteProcedure : public iProcedure
 	{
 		virtual void cnLib_FUNC Execute(void)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncExecutionThreadSwitch::fExecuteProcedure);
-			Host->fCoHandle.resume();
+			cCoroutineHandleOperator::Resume(Host->fCoHandle);
 		}
 	}fExecuteProcedure;
 

@@ -7,6 +7,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.h>
 #include <cnTK/TypeTraits.h>
+#include <cnTK/Interface.h>
 #include <cnTK/Memory.h>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 3

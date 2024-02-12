@@ -106,7 +106,7 @@ LPWSTR cShellString::Duplicate(const wchar_t *String)
 {
 	if(String==nullptr)
 		return nullptr;
-	uIntn StrLength=cnString::GetLength(String);
+	uIntn StrLength=cnString::FindLength(String);
 	auto *DupStr=static_cast<LPWSTR>(::CoTaskMemAlloc(StrLength*2));
 	cnMemory::Copy(DupStr,String,StrLength);
 	return DupStr;

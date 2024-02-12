@@ -546,20 +546,14 @@ public:
 	bool RadixPrefix;
 	bool RadixPrefixUpperCase;
 
-	template<class TInteger>
+	template<ufInt8 Radix,class TInteger>
 	typename cnVar::TTypeConditional<void,
 		cnVar::TIntegerConversion<TInteger>::IsMatch
-	>::Type SetValue(TInteger Value,ufInt8 Radix)
+	>::Type SetValue(TInteger Value)
 	{
-		bool Sign;
-		if cnRTL_IFCONSTEXPR(cnVar::TIsSigned<TInteger>::Value){
-			Sign=cnMath::Abs(Value);
-		}
-		else{
-			Sign=false;
-		}
+		bool Sign=cnMath::SetAbsolute(Value);
 
-		fDigitBufferIndex=static_cast<ufInt16>(cnString::ConvertIntegerToDigits(Value,Radix,fDigitBuffer,MaxDigits));
+		fDigitBufferIndex=static_cast<ufInt16>(cnString::ConvertIntegerToDigits<Radix>(Value,fDigitBuffer,MaxDigits));
 		fOutputDigitCount=static_cast<ufInt16>(MaxDigits-fDigitBufferIndex);
 		fLeadingZero=0;
 		if(RadixPrefix){
@@ -602,10 +596,10 @@ public:
 
 	}
 
-	template<class T>
+	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
 		!cnVar::TIntegerConversion<typename cnVar::RemoveCVRef<T>::Type>::IsMatch
-	>::Type SetValue(T &&Value,ufInt8 Radix){
+	>::Type SetValue(T &&Value){
 		if cnRTL_IFCONSTEXPR(cnVar::TIntegerConversion<T>::MatchSize==0){
 			fOutputDigitCount=0;
 			return;
@@ -613,7 +607,7 @@ public:
 		typedef typename cnVar::TIntegerOfSize<cnVar::TIntegerConversion<T>::MatchSize?cnVar::TIntegerConversion<T>::MatchSize:1,cnVar::TIntegerConversion<T>::IsSigned>::Type TInteger;
 		TInteger IntValue=cnVar::TIntegerConversion<T>::template Cast<TInteger>(Value);
 		static_assert(cnVar::TIntegerConversion<TInteger>::IsMatch);
-		return SetValue(IntValue,Radix);
+		return SetValue<Radix>(IntValue);
 	}
 
 	void SetPrecision(ufInt16 Precision){
@@ -626,8 +620,8 @@ public:
 		}
 	}
 
-	template<class T>
-	void SetValueAs(T &&Value,ufInt8 Radix,ufInt8 IntegerSize,bool Signed){
+	template<ufInt8 Radix,class T>
+	void SetValueAs(T &&Value,ufInt8 IntegerSize,bool Signed){
 		
 		if(IntegerSize==0){
 			IntegerSize=cnVar::TIntegerConversion<T>::MatchSize;
@@ -640,47 +634,47 @@ public:
 		case 1:
 			if(Signed){
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<sInt8>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 			else{
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<uInt8>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 		case 2:
 			if(Signed){
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<sInt16>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 			else{
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<uInt16>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 		case 4:
 			if(Signed){
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<sInt32>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 			else{
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<uInt32>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 		case 8:
 			if(Signed){
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<sInt64>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 			else{
 				auto IntValue=cnVar::TIntegerConversion<T>::template Cast<uInt64>(Value);
-				return SetValue(IntValue,Radix);
+				return SetValue<Radix>(IntValue);
 			}
 		//case 16:
 		//	if(Signed){
 		//		auto IntValue=cnVar::TIntegerConversion<T>::template Cast<sInt128>(Value);
-		//		return SetValue(IntValue,Radix);
+		//		return SetValue<Radix>(IntValue);
 		//	}
 		//	else{
 		//		auto IntValue=cnVar::TIntegerConversion<T>::template Cast<uInt128>(Value);
-		//		return SetValue(IntValue,Radix);
+		//		return SetValue<Radix>(IntValue);
 		//	}
 		}
 	}
@@ -799,12 +793,12 @@ public:
 	bool PrefixUpperCase;
 	bool OmitDot;
 
-	template<class T>
+	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
 		cnVar::TFloatConversion<T>::IsMatch
-	>::Type SetValue(T Value,ufInt8 Radix){
-		bool Sign=cnMath::Abs(Value);
-		fDigitCount=static_cast<ufInt16>(cnString::ConvertFloatSignificandToDigits(Value,Radix,fDigitBuffer,MaxDigits,fExponent));
+	>::Type SetValue(T Value){
+		bool Sign=cnMath::SetAbsolute(Value);
+		fDigitCount=static_cast<ufInt16>(cnString::ConvertFloatToDigits<Radix>(Value,fExponent,fDigitBuffer,MaxDigits));
 
 		if(RadixPrefix){
 			switch(Radix){
@@ -871,10 +865,10 @@ public:
 			fFractionTailingZero=0;
 		}
 	}
-	template<class T>
+	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
 		!cnVar::TFloatConversion<typename cnVar::TRemoveCVRef<T>::Type>::IsMatch
-	>::Type SetValue(T &&Value,ufInt8 Radix){
+	>::Type SetValue(T &&Value){
 		if cnRTL_IFCONSTEXPR(cnVar::TFloatConversion<T>::MatchSize==0){
 			fDigitCount=0;
 			return;
@@ -882,12 +876,12 @@ public:
 		typedef typename cnVar::TFloatOfSize<cnVar::TFloatConversion<T>::MatchSize?cnVar::TFloatConversion<T>::MatchSize:1>::Type TFloat;
 		TFloat FloatValue=cnVar::TFloatOfSize<T>::template Cast<TFloat>(Value);
 		static_assert(cnVar::TFloatConversion<TFloat>::IsMatch);
-		return SetValue(FloatValue,Radix);
+		return SetValue<Radix>(FloatValue);
 	}
 
 	
-	template<class T>
-	void SetValueAs(T &&Value,ufInt8 Radix,ufInt8 FloatSize){
+	template<ufInt8 Radix,class T>
+	void SetValueAs(T &&Value,ufInt8 FloatSize){
 		
 		if(FloatSize==0){
 			FloatSize=cnVar::TFloatConversion<T>::MatchSize;
@@ -901,12 +895,12 @@ public:
 		case 4:
 			{
 				auto FloatValue=cnVar::TFloatConversion<T>::template Cast<Float32>(Value);
-				return SetValue(FloatValue,Radix);
+				return SetValue<Radix>(FloatValue);
 			}
 		case 8:
 			{
 				auto FloatValue=cnVar::TFloatConversion<T>::template Cast<Float64>(Value);
-				return SetValue(FloatValue,Radix);
+				return SetValue<Radix>(FloatValue);
 			}
 		}
 	}
@@ -1046,16 +1040,16 @@ public:
 
 
 
-	template<class T>
-	void SetValue(T &&Value,ufInt8 Radix){
-		cFormatStringFloatConversion<MaxDigits>::SetValue(Value,Radix);
-		UpdateExponent(Radix);
+	template<ufInt8 Radix,class T>
+	void SetValue(T &&Value){
+		cFormatStringFloatConversion<MaxDigits>::SetValue<Radix>(Value);
+		UpdateExponent<Radix>();
 	}
 
-	template<class T>
-	void SetValueAs(T &&Value,ufInt8 Radix,ufInt8 FloatSize){
-		cFormatStringFloatConversion<MaxDigits>::SetValueAs(Value,Radix,FloatSize);
-		UpdateExponent(Radix);
+	template<ufInt8 Radix,class T>
+	void SetValueAs(T &&Value,ufInt8 FloatSize){
+		cFormatStringFloatConversion<MaxDigits>::SetValueAs<Radix>(Value,FloatSize);
+		UpdateExponent<Radix>();
 	}
 
 	void SetFormat(eFloatNumberConversionFormat Format,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
@@ -1132,10 +1126,11 @@ protected:
 	ufInt8 fExpPrefixLength;
 	char fExpPrefix[1];
 
-	void UpdateExponent(ufInt8 Radix){
+	template<ufInt8 Radix>
+	void UpdateExponent(void){
 		fExponentConversion.PositiveSign=true;
 		fExponentConversion.RadixPrefix=false;
-		fExponentConversion.SetValue(this->fExponent,Radix);
+		fExponentConversion.SetValue<Radix>(this->fExponent);
 
 		switch(Radix){
 		case 16:
@@ -1220,8 +1215,8 @@ struct cFormatStringFloatCharacterConversionMap : cFormatStringIntegerCharacterC
 namespace StringStream{
 //---------------------------------------------------------------------------
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8 Precision,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1232,14 +1227,14 @@ bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8
 	IntConversion.RadixPrefix=false;
 	IntConversion.RadixPrefixUpperCase=false;
 
-	IntConversion.SetValue(Value,Radix);
+	IntConversion.SetValue<Radix>(Value);
 	IntConversion.SetPrecision(Precision);
 
 	return WriteFormatItem(WriteBuffer,IntConversion,ConversionMap,Width,false,false);
 }
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8 Precision,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1251,14 +1246,14 @@ bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufIn
 	FloatConversion.PrefixUpperCase=false;
 	FloatConversion.OmitDot=false;
 
-	FloatConversion.SetValue(Value,Radix);
+	FloatConversion.SetValue<Radix>(Value);
 	FloatConversion.SetFormat(1,Precision,Precision);
 
 	return WriteFormatItem(WriteBuffer,FloatConversion,ConversionMap,Width,false,false);
 }
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision,eFloatNumberConversionFormat FormatNotation,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision,eFloatNumberConversionFormat FormatNotation,ufInt16 Width)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1270,28 +1265,28 @@ bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Ra
 	FloatConversion.PrefixUpperCase=false;
 	FloatConversion.OmitDot=false;
 
-	FloatConversion.SetValue(Value,Radix);
+	FloatConversion.SetValue<Radix>(Value);
 	FloatConversion.SetFormat(FormatNotation,IntegerPrecision,FractionMinPrecision,FractionMaxPrecision);
 
 	return WriteFormatItem(WriteBuffer,FloatConversion,ConversionMap,Width,false,false);
 }
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatFloatF(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8 Precision,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatFloatF(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
 {
-	return WriteFormatFloatNotation(WriteBuffer,Value,Radix,1,Precision,Precision,FloatNumberConversionFormat::Fraction,Width);
+	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Fraction,Width);
 }
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatFloatE(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8 Precision,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatFloatE(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
 {
-	return WriteFormatFloatNotation(WriteBuffer,Value,Radix,1,Precision,Precision,FloatNumberConversionFormat::Scientific,Width);
+	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Scientific,Width);
 }
 
-template<class TStreamWriteBuffer,class T>
-bool WriteFormatFloatG(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Radix,ufInt8 Precision,ufInt16 Width)
+template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
+bool WriteFormatFloatG(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
 {
-	return WriteFormatFloatNotation(WriteBuffer,Value,Radix,1,Precision,Precision,FloatNumberConversionFormat::Compact,Width);
+	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Compact,Width);
 }
 //---------------------------------------------------------------------------
 }	// namespace StringStream
@@ -1398,26 +1393,26 @@ struct cFormatStringStreamOutput
 		case FormatStringTokenType::String:	// %s
 			return StringToStream(Token);
 		case FormatStringTokenType::SignedDecimal:	// %d%i
-			return IntegerToStream(Token,true,10);
+			return IntegerToStream<10>(Token,true);
 		case FormatStringTokenType::UnsignedDecimal:// %u
-			return IntegerToStream(Token,false,10);
+			return IntegerToStream<10>(Token,false);
 		case FormatStringTokenType::UnsignedOctal:	// %o
-			return IntegerToStream(Token,false,8);
+			return IntegerToStream<8>(Token,false);
 		case FormatStringTokenType::UnsignedHex:	// %x%X
-			return IntegerToStream(Token,false,16);
+			return IntegerToStream<16>(Token,false);
 		case FormatStringTokenType::FloatDecimal:	// %f%F
-			return FloatToStream(Token,10,FloatNumberConversionFormat::Fraction);
+			return FloatToStream<10>(Token,FloatNumberConversionFormat::Fraction);
 		case FormatStringTokenType::ExponentDecimal:// %e%E
-			return FloatToStream(Token,10,FloatNumberConversionFormat::Scientific);
+			return FloatToStream<10>(Token,FloatNumberConversionFormat::Scientific);
 		case FormatStringTokenType::FloatHex:		// %a%A
-			return FloatToStream(Token,16,FloatNumberConversionFormat::Scientific);
+			return FloatToStream<10>(Token,FloatNumberConversionFormat::Scientific);
 		case FormatStringTokenType::FloatCompact:	// %g%G
-			return FloatToStream(Token,10,FloatNumberConversionFormat::Compact);
+			return FloatToStream<10>(Token,FloatNumberConversionFormat::Compact);
 		case FormatStringTokenType::OutputLength:	// %n
 			IntegerFromWrittenLength(Token);
 			return true;
 		case FormatStringTokenType::Pointer:		// %p
-			return IntegerToStream(Token,false,16);
+			return IntegerToStream<16>(Token,false);
 		}
 		// unknown token type
 		return true;
@@ -1549,7 +1544,7 @@ protected:
 				return;
 			}
 			// calculate Write length
-			uIntn WriteLength=cnString::GetLength(pStr,this->DefaultPrecision?cnString::StringMaxLength:this->Precision);
+			uIntn WriteLength=cnString::FindLength(pStr,this->DefaultPrecision?cnString::StringMaxLength:this->Precision);
 
 			// output
 			this->WriteResult=ArrayStream::WriteArray(this->WriteBuffer,pStr,WriteLength);
@@ -1562,9 +1557,9 @@ protected:
 		return Writer.WriteResult;
 	}
 
+	template<ufInt8 Radix>
 	struct cWriterInteger : cWriter
 	{
-		ufInt8 Radix;
 		bool Signed;
 		ufInt8 IntegerSize;
 
@@ -1615,7 +1610,7 @@ protected:
 			IntConversion.RadixPrefix=false;
 			IntConversion.RadixPrefixUpperCase=this->Token.ConversionUpperCase;
 
-			IntConversion.SetValueAs(Value,Radix,IntegerSize,Signed);
+			IntConversion.SetValueAs<Radix>(Value,IntegerSize,Signed);
 			IntConversion.SetPrecision(this->Precision);
 
 			this->WriteResult=StringStream::WriteFormatItem(this->WriteBuffer,IntConversion,ConversionMap,this->Width,this->Token.AlignLeft,false);
@@ -1623,9 +1618,9 @@ protected:
 
 	};
 	
-	bool IntegerToStream(const cFormatStringToken<tCharacter> &Token,bool Signed,ufInt8 Radix){
-		cWriterInteger Writer(this,Token);
-		Writer.Radix=Radix;
+	template<ufInt8 Radix>
+	bool IntegerToStream(const cFormatStringToken<tCharacter> &Token,bool Signed){
+		cWriterInteger<Radix> Writer(this,Token);
 		Writer.Signed=Signed;
 		if(Writer.DefaultPrecision){
 			Writer.Precision=1;
@@ -1636,11 +1631,10 @@ protected:
 	}
 	
 
-	
+	template<ufInt8 Radix>
 	struct cWriterFloat : cWriter
 	{
 
-		ufInt8 Radix;
 		eFloatNumberConversionFormat NotationFormat;
 		ufInt8 FloatSize;
 
@@ -1688,7 +1682,7 @@ protected:
 			FloatConversion.PrefixUpperCase=this->Token.ConversionUpperCase;
 			FloatConversion.OmitDot=false;
 
-			FloatConversion.SetValueAs(Value,Radix,FloatSize);
+			FloatConversion.SetValueAs<Radix>(Value,FloatSize);
 			FloatConversion.SetFormat(NotationFormat,1,this->Precision,this->Precision);
 
 			this->WriteResult=StringStream::WriteFormatItem(this->WriteBuffer,FloatConversion,ConversionMap,this->Width,false,false);
@@ -1696,9 +1690,9 @@ protected:
 
 	};
 	
-	bool FloatToStream(const cFormatStringToken<tCharacter> &Token,ufInt8 Radix,eFloatNumberConversionFormat NotationFormat){
-		cWriterFloat Writer(this,Token);
-		Writer.Radix=Radix;
+	template<ufInt8 Radix>
+	bool FloatToStream(const cFormatStringToken<tCharacter> &Token,eFloatNumberConversionFormat NotationFormat){
+		cWriterFloat<Radix> Writer(this,Token);
 		Writer.NotationFormat=NotationFormat;
 		if(Writer.DefaultPrecision){
 			Writer.Precision=6;
@@ -1768,7 +1762,7 @@ protected:
 	static const cFormatStringParseStateAction ActionNone;
 	static const cFormatStringParseStateAction ActionOutput;
 	static const cFormatStringParseStateAction ActionOutputInclude;
-	uIntn fArgumentIndex;
+	ufInt16 fArgumentIndex;
 	enum eCharType{
 		ctEnd,		// invalid format char
 		ctFmt,		// %
@@ -2001,15 +1995,15 @@ inline bool WriteGUID(TStreamWriteBuffer&& WriteBuffer,const void *Value)
 		uInt8 v3[8];
 	};
 	auto pIDData=static_cast<const GUIDStringData*>(Value);
-	if(WriteFormatInt(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v0),16,8,0)==false)
+	if(WriteFormatInt<16>(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v0),8,0)==false)
 		return false;
 	if(ArrayStream::WriteElement(WriteBuffer,'-')==false)
 		return false;
-	if(WriteFormatInt(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v1),16,4,0)==false)
+	if(WriteFormatInt<16>(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v1),4,0)==false)
 		return false;
 	if(ArrayStream::WriteElement(WriteBuffer,'-')==false)
 		return false;
-	if(WriteFormatInt(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v2),16,4,0)==false)
+	if(WriteFormatInt<16>(WriteBuffer,cnMemory::SwapLittleEndian(pIDData->v2),4,0)==false)
 		return false;
 	if(ArrayStream::WriteElement(WriteBuffer,'-')==false)
 		return false;
@@ -2063,28 +2057,28 @@ inline cStringBuffer<TCharacter> CreateStringFormat(const TCharacter *FormatStri
 }
 
 
-template<class TCharacter,class TInteger>
-inline cStringBuffer<TCharacter> CreateStringInteger(TInteger&& SrcInteger,ufInt8 Radix=10,ufInt8 Precision=1,ufInt16 Width=0){
+template<ufInt8 Radix=10,class TCharacter,class TInteger>
+inline cStringBuffer<TCharacter> CreateStringInteger(TInteger&& SrcInteger,ufInt8 Precision=1,ufInt16 Width=0){
 	cStringBuffer<TCharacter> Buffer;
-	StringStream::WriteFormatInt(Buffer.StreamWriteBuffer(),static_cast<TInteger&&>(SrcInteger),Radix,Precision,Width);
+	StringStream::WriteFormatInt<Radix>(Buffer.StreamWriteBuffer(),static_cast<TInteger&&>(SrcInteger),Precision,Width);
 	return Buffer;
 }
-template<class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloat(const double &SrcData,uInt8 Radix=10,ufInt8 Precision=6,ufInt16 Width=0){
+template<ufInt8 Radix=10,class TCharacter>
+inline cStringBuffer<TCharacter> CreateStringFloat(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
 	cStringBuffer<TCharacter> Buffer;
-	StringStream::WriteFormatFloat(Buffer.StreamWriteBuffer(),SrcData,Radix,Precision,Width);
+	StringStream::WriteFormatFloat<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
 }
-template<class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloatE(const double &SrcData,uInt8 Radix=10,ufInt8 Precision=6,ufInt16 Width=0){
+template<uInt8 Radix=10,class TCharacter>
+inline cStringBuffer<TCharacter> CreateStringFloatE(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
 	cStringBuffer<TCharacter> Buffer;
-	StringStream::WriteFormatFloatE(Buffer.StreamWriteBuffer(),SrcData,Radix,Precision,Width);
+	StringStream::WriteFormatFloatE<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
 }
-template<class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloatG(const double &SrcData,uInt8 Radix=10,ufInt8 Precision=6,ufInt16 Width=0){
+template<uInt8 Radix=10,class TCharacter>
+inline cStringBuffer<TCharacter> CreateStringFloatG(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
 	cStringBuffer<TCharacter> Buffer;
-	StringStream::WriteFormatFloatG(Buffer.StreamWriteBuffer(),SrcData,Radix,Precision,Width);
+	StringStream::WriteFormatFloatG<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
 }
 

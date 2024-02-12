@@ -4,10 +4,7 @@
 #include <cnRTL/CRTCoreCommon.h>
 
 #include <cnRTL/CRTCoreFundamental.h>
-#include <cnRTL/CRTCoreMemory.h>
-#include <cnRTL/CRTCoreMath.h>
-#include <cnRTL/CRTCoreString.h>
-
+#include <cnRTL/CRTCoreRuntime.h>
 #include <cnRTL/CRTTemplateKit.h>
 
 #endif

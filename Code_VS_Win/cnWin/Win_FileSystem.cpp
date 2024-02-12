@@ -24,7 +24,7 @@ cWin32FileName::~cWin32FileName()
 //---------------------------------------------------------------------------
 eiOrdering cWin32FileName::CompareWin32Name(const wchar_t *DestName,uIntn DestNameLength)const
 {
-	return static_cast<iOrdering>(cnString::Compare(fFileName.GetString(),fFileName.GetLength(),DestName,DestNameLength));
+	return static_cast<iOrdering>(cnMemory::Compare(fFileName.GetString(),fFileName.GetLength(),DestName,DestNameLength));
 }
 //---------------------------------------------------------------------------
 eiOrdering cWin32FileName::Compare(iFileName *Dest)
@@ -450,7 +450,7 @@ static cnRTL::cStringBuffer<wchar_t> Win32FileMakeShellFolderName(REFKNOWNFOLDER
 		PathLen=0;
 	}
 	else{
-		PathLen=cnString::GetLength(Path.GetString());
+		PathLen=cnString::FindLength(Path.GetString());
 	}
 
 	return NTFileNormalizeName(Path,PathLen);

@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include "XMLParse.h"
+#include "TextProcess.h"
 
 using namespace cnLibrary;
 using namespace cnRTL;
@@ -2285,285 +2286,278 @@ void cXMLSyntaxAnalyzer::OutputAttribute(const cXMLToken &Token)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cXMLTokenParser::Run(void)
+cXMLParser::cXMLParser()noexcept(true)
 {
-	cArray<const uChar32> Buffer;
-	while((Buffer=InputTextStream->GatherReadBuffer(16)).Length!=0){
-		uIntn ProcessedLength;
-		bool Output=ParseInput(Buffer.Pointer,Buffer.Length,ProcessedLength);
-
-		InputTextStream->DismissReadBuffer(ProcessedLength);
-
-		if(Output)
-			return true;
-	}
-	auto Transition=Lexer->InputFinish();
-	if(Transition.Output){
-		return true;
-	}
-	return false;
+	fLexer.SetOptionsDefault();
+	fConverter=UnicodeTranscoder(2,4);
+	fCurItem=&fRootItem;
+	fRootItem.Parent=nullptr;
 }
 //---------------------------------------------------------------------------
-cXMLToken& cXMLTokenParser::Value(void){	return Lexer->Output();	}
-//---------------------------------------------------------------------------
-bool cXMLTokenParser::operator () (void){	return Run();	}
-cXMLToken& cXMLTokenParser::operator * (){	return Value();	}
-//---------------------------------------------------------------------------
-bool cXMLTokenParser::ParseInput(const uChar32 *Text,uIntn Length,uIntn &ProcessedLength)
+cXMLParser::~cXMLParser()noexcept(true)
 {
-	uIntn ProcessIndex=0;
-	while(ProcessIndex<Length){
-		uChar32 c=Text[ProcessIndex];
-		auto Transition=Lexer->Input(c);
-		if(!Transition.CharacterStay){
-			ProcessIndex++;
-		}
+}
+//---------------------------------------------------------------------------
+void cXMLParser::Reset(iXMLVisitor *Visitor)noexcept(true)
+{
+	fLexer.Reset();
+	fSyntaxer.Reset();
+
+	if(fCurItem->Parent!=nullptr){
+		auto DeleteItem=fCurItem;
+		fCurItem=fCurItem->Parent;
+
+		delete DeleteItem;
+	}
+
+	fCurItem=&fRootItem;
+	fCurItem->Visitor=Visitor;
+}
+//---------------------------------------------------------------------------
+void cXMLParser::Finish(void)noexcept(true)
+{
+	{
+		auto Transition=fLexer.InputFinish();
 		if(Transition.Output){
-			ProcessedLength=ProcessIndex;
-			return true;
+			Syntax();
 		}
 	}
-	ProcessedLength=Length;
-	return false;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cXMLSymbol& cXMLSymbolParser::Value(void){	return Syntaxer->Output();	}
-//---------------------------------------------------------------------------
-bool cXMLSymbolParser::operator () (void)
-{
-	return Run();
-}
-//---------------------------------------------------------------------------
-cXMLSymbol& cXMLSymbolParser::operator * ()
-{
-	return Value();
-}
-//---------------------------------------------------------------------------
-bool cXMLSymbolParser::Run(void)
-{
-	cArray<const uChar32> Buffer;
-	while((Buffer=InputTextStream->GatherReadBuffer(16)).Length!=0){
-		uIntn ProcessedLength;
-		//bool Output=ParseInput(Buffer.Pointer,Buffer.Length,ProcessedLength);
-
-		InputTextStream->DismissReadBuffer(ProcessedLength);
-
-		//if(Output)
-		//	return true;
+	{
+		auto Transition=fSyntaxer.InputFinish();
+		if(Transition.Output){
+			Grammer();
+		}
 	}
-	auto Transition=Lexer->InputFinish();
+}
+//---------------------------------------------------------------------------
+bool cXMLParser::Input(uChar32 c)noexcept(true)
+{
+	auto Transition=fLexer.Input(c);
 	if(Transition.Output){
-		return true;
+		Syntax();
 	}
-	return false;
+	return Transition.CharacterStay;
+}
+//---------------------------------------------------------------------------
+void cXMLParser::Syntax(void)noexcept(true)
+{
 
-}
-//---------------------------------------------------------------------------
-#if	0
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cXMLParser::SetInput(cXMLSymbolParser *Parser)
-{
-	fSymbolParser=Parser;
-}
-//---------------------------------------------------------------------------
-void cXMLParser::Reset(void)
-{
-	fState=sText;
-}
-//---------------------------------------------------------------------------
-bool cXMLParser::Run(void)
-{
-	while(fSymbolParser->Run()){
-		auto &Symbol=fSymbolParser->Value();
-		switch(Symbol.Type){
-		case XMLSymbolType::Attribute:
-		case XMLSymbolType::Comment:
-		case XMLSymbolType::DTDTag:
-		case XMLSymbolType::EndTag:
-		case XMLSymbolType::Error:
-		case XMLSymbolType::PITag:
-		case XMLSymbolType::Tag:
-		case XMLSymbolType::TagClose:
-		case XMLSymbolType::TagEnd:
-		case XMLSymbolType::Text:
-			break;
-		}
+	auto &Token=fLexer.Output();
+	auto Transition=fSyntaxer.Input(Token);
+	if(Transition.Output){
+		Grammer();
 	}
-	return false;
 }
 //---------------------------------------------------------------------------
-bool cXMLParser::ParseText(cXMLToken &Token)
+void cXMLParser::Grammer(void)noexcept(true)
 {
-	switch(Token.Type){
-	case XMLTokenType::ElementStart:
-		fCurNode=aClsCreate<cXMLNode>();
-		fState=sElement;
-		// output text node
+	auto &Symbol=fSyntaxer.Output();
+
+	cString<uChar16> SymbolName=cnRTL::CreateStringConvertEncoding<uChar16>(fConverter,Symbol.Name->Pointer,Symbol.Name->Length);
+	switch(Symbol.Type){
+	case XMLSymbolType::Error:
 		break;
-	case XMLTokenType::Text:
-
+	case XMLSymbolType::Comment:
+	{
+		auto Text=cnRTL::CreateStringConvertEncoding<uChar16>(fConverter,Symbol.Value->Pointer,Symbol.Value->Length);
+		fCurItem->Visitor->Comment(cnVar::MoveCast(Text));
 	}
-	return true;
-}
-//---------------------------------------------------------------------------
-bool cXMLParser::ParseElement(cXMLToken &Token)
-{
-	switch(Token.Type){
-	case XMLTokenType::ElementEnd:
-		if(fCurNode!=nullptr){
-			// output element node
-			auto NewItem=new cXMLNodeStackItem;
-			NewItem->Parent=fCurNodeStack;
-			NewItem->Node=cnVar::MoveCast(fCurNode);
-			fCurNodeStack=NewItem;
-		}
-		fState=sText;
 		break;
-	case XMLTokenType::Equ:
-	case XMLTokenType::Identifier:
-		switch(fState){
-		case sElementBegin:
-			break;
-		}
-		break;
-	case XMLTokenType::String:
-	case XMLTokenType::Text:
-
+	case XMLSymbolType::Text:
+	{
+		auto Text=cnRTL::CreateStringConvertEncoding<uChar16>(fConverter,Symbol.Value->Pointer,Symbol.Value->Length);
+		fCurItem->Visitor->Text(cnVar::MoveCast(Text));
 	}
-}
-//---------------------------------------------------------------------------
-#if 0
-bool cXMLParser::Run(void)
-{
-	for(;;){
-		if(fTokenParser->Run()==false)
-			return false;
-
-		auto &Token=fTokenParser->Value();
-		switch(Token.Type){
-		case XMLTokenType::ElementStart:
-			//fCurNode=rClsCreate<cXMLNode>();
-			fState=sElementBegin;
+		break;
+	case XMLSymbolType::TagStart:
+	{
+		switch(Symbol.TagType){
+		case XMLSymbolTagType::Normal:
+			OpenTag(SymbolName);
+			fCurItem->TagType=Symbol.TagType;
 			break;
-		case XMLTokenType::ElementEnd:
-			if(fCurNode!=nullptr){
-				auto NewItem=new cXMLNodeStackItem;
-				NewItem->Parent=fCurNodeStack;
-				NewItem->Node=cnVar::MoveCast(fCurNode);
-				fCurNodeStack=NewItem;
+		case XMLSymbolTagType::DTD:
+		case XMLSymbolTagType::Error:
+		case XMLSymbolTagType::PI:
+			break;
+		case XMLSymbolTagType::Close:
+		{
+			// close tag
+			if(SymbolName==fCurItem->TagName){
+				RootNodeFinished=CloseTag();
 			}
-			fState=sText;
+			else{
+				// invalid close tag
+			}
+		}
 			break;
-		case XMLTokenType::Equ:
-		case XMLTokenType::Identifier:
-			switch(fState){
-			case sElementBegin:
+		}
+
+
+		Symbol.Type;
+		Symbol.TagType;
+		Symbol.Name;
+		Symbol.Value;
+	}
+		break;
+	case XMLSymbolType::TagFinish:
+	{
+		switch(fCurItem->TagType){
+		case XMLSymbolTagType::Normal:
+			switch(Symbol.TagType){
+			case XMLSymbolTagType::Normal:
+				break;
+			case XMLSymbolTagType::Close:
+				RootNodeFinished=CloseTag();
 				break;
 			}
 			break;
-		case XMLTokenType::String:
-		case XMLTokenType::Text:
-
-		}
-
-
-		switch(fState){
-		default:
-		case sEnd:
-			return false;
-		case sText:
-
-			if(ParseText()){
-				return true;
-			}
-			break;
-		//case sElementStart:
-		//	fValue.Type=XMLTokenType::ElementStart;
-		//	fValue.Token.Clear();
-		//	fState=sElement;
-		//	i++;
-		//	return true;
-		case sElement:
-			if(ParseElement()){
-				return true;
-			}
-			break;
-		case sElementID:
-			if(ParseElementID()){
-				return true;
-			}
-			break;
-		case sElementString:
-			if(ParseElementString()){
-				return true;
-			}
+		case XMLSymbolTagType::DTD:
+		case XMLSymbolTagType::Error:
+		case XMLSymbolTagType::PI:
+		case XMLSymbolTagType::Close:
 			break;
 		}
 	}
+		break;
+	case XMLSymbolType::Attribute:
+	{
+		auto Name=cnRTL::CreateStringConvertEncoding<uChar16>(fConverter,Symbol.Name->Pointer,Symbol.Name->Length);
+		auto Value=cnRTL::CreateStringConvertEncoding<uChar16>(fConverter,Symbol.Value->Pointer,Symbol.Value->Length);
+		fCurItem->Visitor->Attribute(cnVar::MoveCast(Name),cnVar::MoveCast(Value));
+	}
+		break;
+	}
 }
 //---------------------------------------------------------------------------
-cXMLToken& cXMLParser::Value(void){	return fValue;	}
-//---------------------------------------------------------------------------
-bool cXMLParser::operator () (void){	return Run();	}
-cXMLToken& cXMLParser::operator * (){	return Value();	}
-//---------------------------------------------------------------------------
-rClsRef<cXMLNode> XMLRead(const uChar8 *XMLData,uIntn Length)
+void cXMLParser::OpenTag(const cString<uChar16> &Name)noexcept(true)
 {
-	cXMLTokenParser TokenParser;
-	TokenParser.Reset(XMLData,Length);
-	
-	// find first element
-	do{
-		if(TokenParser()==false)
-			return nullptr;
-	}while((*TokenParser).Type!=XMLTokenType::ElementStart);
+	auto Visitor=fCurItem->Visitor;
+	auto NewItem=new cXMLNodeStackItem;
+	NewItem->Parent=fCurItem;
+	NewItem->Visitor=Visitor->TagStart(Name);
+	NewItem->TagName=Name;
+	fCurItem=NewItem;
+}
+//---------------------------------------------------------------------------
+bool cXMLParser::CloseTag(void)noexcept(true)
+{
+	auto Visitor=fCurItem->Visitor;
+	auto DeleteItem=fCurItem;
+	fCurItem=fCurItem->Parent;
+	// finish current node
+	if(fCurItem==nullptr){
+		// root node ended
+		return true;
+	}
+	fCurItem->Visitor->TagFinish(Visitor);
+	delete DeleteItem;
+	return false;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void cXMLNode::Visit(iXMLVisitor *Visitor)noexcept(true)
+{
+	cString<uChar16> TagName;
+	if(Namespace!=nullptr){
+		TagName=Namespace->Prefix+u":"+Name;
+	}
+	else{
+		TagName=Name;
+	}
+	auto TagVisitor=Visitor->TagStart(TagName);
 
-	cXMLNodeStackItem *CurItem=new cXMLNodeStackItem;
-	CurItem->Parent=nullptr;
-	CurItem->Node=rClsCreate<cXMLNode>();
-
-	while(TokenParser()){
-		auto &Token=*TokenParser;
-		switch(Token.Type){
-		case XMLTokenType::ElementStart:
+	if(TagVisitor!=nullptr){
+		for(auto &Item : AllItems){
+			switch(Item.Type){
+			case XMLSymbolType::Attribute:
 			{
-				auto NewItem=new cXMLNodeStackItem;
-				NewItem->Parent=CurItem;
-				NewItem->Node=rClsCreate<cXMLNode>();
-				CurItem=NewItem;
-			}
-			break;
-		case XMLTokenType::ElementEnd:
-			{
-				auto DeleteItem=CurItem;
-				CurItem=CurItem->Parent;
-				// finish current node
-				if(CurItem==nullptr){
-					// root node read
-					auto RootNode=cnVar::MoveCast(DeleteItem->Node);
-					delete DeleteItem;
-					return RootNode;
+				auto Attribute=Item.Attribute;
+				cString<uChar16> AttributeName;
+				if(Attribute->Namespace!=nullptr){
+					AttributeName=Attribute->Namespace->Prefix+u":"+Attribute->Name;
 				}
-
-				delete DeleteItem;
+				else{
+					AttributeName=Attribute->Name;
+				}
+				TagVisitor->Attribute(AttributeName,Attribute->Value);
 			}
-		case XMLTokenType::Equ:
-		case XMLTokenType::Identifier:
-		case XMLTokenType::String:
-		case XMLTokenType::Text:
-			break;
+				break;
+			case XMLSymbolType::Comment:
+				TagVisitor->Comment(Item.Text);
+				break;
+			case XMLSymbolType::Text:
+				TagVisitor->Text(Item.Text);
+				break;
+			case XMLSymbolType::TagStart:
+				Item.Child->Visit(TagVisitor);
+				break;
+			}
 		}
-	}
-	if(CurItem==nullptr){
-		return nullptr;
-	}
 
-	// finish all nodes
+		Visitor->TagFinish(TagVisitor);
+	}
 
 }
-#endif // 0
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cXMLNodeMaker::cXMLNodeMaker()noexcept(true)
+{
+	Node=aClsCreate<cXMLNode>();
+}
+//---------------------------------------------------------------------------
+iXMLVisitor* cXMLNodeMaker::TagStart(const cString<uChar16> &Name)noexcept(true)
+{
+	auto NewVisitor=new cXMLNodeMaker;
+	NewVisitor->Node->Name=Name;
+	return NewVisitor;
+}
+//---------------------------------------------------------------------------
+void cXMLNodeMaker::TagFinish(iXMLVisitor *Visitor)noexcept(true)
+{
+	auto SubNodeMaker=static_cast<cXMLNodeMaker*>(Visitor);
+	auto SubNode=SubNodeMaker->Node;
+	delete SubNodeMaker;
 
-#endif // 0
+	auto *NewItem=Node->AllItems.Append();
+	NewItem->Type=XMLSymbolType::TagStart;
+	NewItem->Child=SubNode;
+
+	auto Pair=Node->Children.InsertPair(SubNode->Name);
+	Pair->Value.AppendMake(SubNode);
+
+
+}
+//---------------------------------------------------------------------------
+void cXMLNodeMaker::Text(const cString<uChar16> &Text)noexcept(true)
+{
+	auto *NewItem=Node->AllItems.Append();
+	NewItem->Type=XMLSymbolType::Text;
+	NewItem->Text=Text;
+
+	Node->Texts.AppendMake(Text);
+}
+//---------------------------------------------------------------------------
+void cXMLNodeMaker::Comment(const cString<uChar16> &Text)noexcept(true)
+{
+	auto *NewItem=Node->AllItems.Append();
+	NewItem->Type=XMLSymbolType::Comment;
+	NewItem->Text=Text;
+
+	Node->Comments.AppendMake(Text);
+}
+//---------------------------------------------------------------------------
+void cXMLNodeMaker::Attribute(const cString<uChar16> &Name,const cString<uChar16> &Value)noexcept(true)
+{
+	auto Attribute=aClsCreate<cXMLAttribute>();
+	Attribute->Name=Name;
+	Attribute->Value=Value;
+
+	auto *NewItem=Node->AllItems.Append();
+	NewItem->Type=XMLSymbolType::Attribute;
+	NewItem->Attribute=Attribute;
+
+	auto AttribPair=Node->Attributes.InsertPair(Name);
+	AttribPair->Value.AppendMake(Attribute);
+}
+//---------------------------------------------------------------------------

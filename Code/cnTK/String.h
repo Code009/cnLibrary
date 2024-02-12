@@ -6,12 +6,12 @@
 #define __cnLibrary_cnTK_String_H__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Array.h>
-#include <cnTK/Stream.h>
 #include <cnTK/Interface.h>
 #include <cnTK/TypeInfo.h>
+#include <cnTK/Memory.h>
+#include <cnTK/Atomic.h>
+#include <cnTK/Array.h>
+#include <cnTK/Stream.h>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -19,20 +19,729 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+namespace cnString{
+//---------------------------------------------------------------------------
+	static cnLib_CONSTVAR uIntn StringMaxLength=cnVar::TIntegerValue<uIntn>::Max;
+//---------------------------------------------------------------------------
+
+// ViewCopy
+//	Copy string
+// [out]Dest	dest string buffer, buffer must has at least one character space for termination
+// MaxLength	max length of copy operation, not including null-termination.
+// [in]Src		source string
+// return	copied string length
+template<class TDestPtr,class TSrcPtr>
+inline uIntn ViewCopy(TDestPtr Dest,uIntn DestLength,TSrcPtr Src)noexcept(true)
+{
+	if(DestLength==0)
+		return 0;
+
+	uIntn Index;
+	for(Index=0;Index<DestLength;Index++){
+		if(*Src==0){
+			break;
+		}
+		++Src;
+		*Dest=*Src;
+		++Dest;
+	}
+	*Dest=0;
+	return Index;
+}
+
+// ViewSearch
+//	Search element in Src
+// [in]Src			pointer to array to search
+// Length			number of elements to look into
+// Comparison		Comparison function, check array element if it matches
+//					prototype: bool (const T &Element);
+//					return true if matches, false if unmatch
+// Return:	the index of the first matched data, or -1 if the Dest not found
+template<class TPtr,class TComparison>
+inline uIntn ViewSearch(TPtr Src,uIntn MaxLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
+{
+	for(uIntn Index=0;Index<MaxLength;Index++){
+		if(*Src==0)
+			break;
+		if(Comparison(*Src))
+			return Index;
+
+		++Src;
+	}
+	return IndexNotFound;
+}
+
+
+// ViewEqual
+//	test if string1 equal to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
+template<class TPtr1,class TPtr2>
+inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+{
+	for(uIntn i=0;i<MaxLength;i++){
+		if(!(*Str1==*Str2)){
+			return false;
+		}
+		if(*Str1==0){
+			return true;
+		}
+		++Str1;
+		++Str2;
+	}
+	return true;
+}
+
+// ViewEqual
+//	test if string1 equal to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
+template<class TPtr1,class TPtr2>
+inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+{
+	for(uIntn i=0;i<MaxLength;i++){
+		if(!(*Str1==*Str2)){
+			MatchLength=i;
+			return false;
+		}
+		if(*Str1==0){
+			MatchLength=i;
+			return true;
+		}
+		++Str1;
+		++Str2;
+	}
+	MatchLength=MaxLength;
+	return true;
+}
+
+// ViewCompare
+//	The encoding relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
+template<class TPtr1,class TPtr2>
+inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+{
+	for(uIntn i=0;i<MaxLength;i++){
+		if(!(*Str1==*Str2)){
+			return *Str1<*Str2?-1:1;
+		}
+		else if(*Str1==0){
+			return 0;
+		}
+		++Str1;
+		++Str2;
+	}
+	return 0;
+}
+
+// ViewCompare
+//	The encoding relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
+template<class TPtr1,class TPtr2>
+inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+{
+	for(uIntn i=0;i<MaxLength;i++){
+		if(!(*Str1==*Str2)){
+			MatchLength=i;
+			return *Str1<*Str2?-1:1;
+		}
+		else if(*Str1==0){
+			MatchLength=i;
+			return 0;
+		}
+		++Str1;
+		++Str2;
+	}
+	MatchLength=MaxLength;
+	return 0;
+}
+
+template<class TPtr1,class TPtr2>
+inline sfInt8 ViewCompare(TPtr1 Str1,uIntn Str1MaxLength,TPtr2 Str2,uIntn Str2MaxLength)noexcept(true)
+{
+	if(Str1MaxLength==Str2MaxLength){
+		return ViewCompare(Str1,Str2,Str1MaxLength);
+	}
+	uIntn CompareLength;
+	sfInt8 MatchResult;
+	if(Str1MaxLength<Str2MaxLength){
+		CompareLength=Str1MaxLength;
+		MatchResult=-1;
+	}
+	else{
+		CompareLength=Str2MaxLength;
+		MatchResult=1;
+	}
+	uIntn MatchLength;
+	sfInt8 r=ViewCompare(Str1,Str2,CompareLength,MatchLength);
+	if(MatchLength==CompareLength){
+		return MatchResult;
+	}
+	return r;
+}
+//---------------------------------------------------------------------------
+} 	// namespace cnString
+//---------------------------------------------------------------------------
 namespace TKRuntime{
 //---------------------------------------------------------------------------
-template<uIntn ElementSize>	
-struct tString;
+template<uIntn CharacterSize>	
+struct TString;
 //{
-//	static uIntn QueryLength(const void *String)noexcept(true);
-//	static uIntn QueryLength(const void *String,uIntn MaxLength)noexcept(true);
-//	static void Copy(void *Dest,uIntn DestLength,const void *Src)noexcept(true);
-//	static bool Equal(const void *Src1,uIntn Src1Length,const void *Src2)noexcept(true);
-//	static sfInt8 Compare(const void *Str1,uIntn Src1Length,const void *Str2)noexcept(true);
-//	static sfInt8 Compare(const void *Str1,uIntn Src1Length,const void *Str2,uIntn Src2Length)noexcept(true);
+//	static uIntn FindLength(const void *String,uIntn MaxLength)noexcept;
+//	static void Copy(void *Dest,uIntn DestLength,const void *Src)noexcept;
+//	static uIntn Search(const void *String,uIntn MaxLength,TInt Character)noexcept;
+//	static bool Equal(const void *Str1,const void *Str2,uIntn MaxLength,uIntn &MatchLength)noexcept;
+//	static sfInt8 Compare(const void *Str1,const void *Str2,uIntn MaxLength,uIntn &MatchLength)noexcept;
+//};
+
+template<uIntn ValueSize,ufInt8 Radix>
+struct TStringConvertInteger;
+//{
+//	static uIntn ToDigits(tUInt Value,ufInt8 *DigitBuffer,uIntn DigitBufferIndex)noexcept;
+//	static tUInt FromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept;
+//};
+template<uIntn ValueSize,ufInt8 Radix>
+struct TStringConvertFloat;
+//{
+//	static uIntn ToDigits(tFloat Value,ufInt8 *DigitBuffer,uIntn DigitBufferLenght,sfInt16 &Exponent)noexcept;
+//	static tFloat FromDigits(sfInt16 Exponent,const uInt8 *DigitBuffer,uIntn DigitCount)noexcept;
 //};
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
+//---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+template<uIntn CharacterSize>	
+struct TString
+{
+	typedef typename cnVar::TIntegerOfSize<CharacterSize,false>::Type tUInt;
+
+	static uIntn FindLength(const void *String,uIntn MaxLength)noexcept(true){
+		if(MaxLength==0)
+			return 0;
+		cnLib_ASSERT(String!=nullptr);
+
+		for(uIntn i=0;i<MaxLength;i++){
+			if(static_cast<const tUInt*>(String)[i]==0){
+				return i;
+			}
+		}
+		return MaxLength;
+	}
+
+	static uIntn Copy(void *Dest,uIntn DestLength,const void *Src)noexcept(true){
+		return cnString::ViewCopy(static_cast<tUInt*>(Dest),DestLength,static_cast<const tUInt*>(Src));
+	}
+	
+
+	struct cSearchProc
+	{
+		tUInt Character;
+		bool operator ()(const tUInt &Element){
+			return Element==Character;
+		}
+	};
+	static uIntn Search(const void *String,uIntn MaxLength,tUInt Character)noexcept(true){
+		cSearchProc SearchProc={Character};
+		return cnString::ViewSearch(static_cast<const tUInt*>(String),MaxLength,SearchProc);
+	}
+
+	static bool Equal(const void *Str1,const void *Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(true){
+		return cnString::ViewEqual(static_cast<const tUInt*>(Str1),static_cast<const tUInt*>(Str2),MaxLength,MatchLength);
+	}
+
+	static sfInt8 Compare(const void *Str1,const void *Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(true){
+		return cnString::ViewCompare(static_cast<const tUInt*>(Str1),static_cast<const tUInt*>(Str2),MaxLength,MatchLength);
+	}
+
+
+};
+
+//---------------------------------------------------------------------------
+
+template<uIntn ValueSize,ufInt8 Radix>
+struct TStringConvertInteger
+{
+	typedef typename cnVar::TIntegerOfSize<ValueSize,false>::Type tUInt;
+
+
+	static uIntn ToDigits(tUInt Value,uInt8 *DigitBuffer,uIntn DigitBufferIndex)noexcept(true){
+		if(Value==0)
+			return DigitBufferIndex;
+		if(DigitBufferIndex==0)
+			return 0;
+		DigitBufferIndex--;
+		while(Value>=Radix){
+			DigitBuffer[DigitBufferIndex]=static_cast<uInt8>(Value%Radix);
+			Value/=Radix;
+			if(DigitBufferIndex==0)
+				return 0;
+			DigitBufferIndex--;
+		}
+		DigitBuffer[DigitBufferIndex]=static_cast<uInt8>(Value);
+		return DigitBufferIndex;
+	}
+
+	static tUInt FromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true){
+		if(DigitCount==0)
+			return 0;
+		tUInt Result=static_cast<tUInt>(DigitBuffer[0]);
+		for(uIntn DigitIndex=1;DigitIndex<DigitCount;DigitIndex++){
+			tUInt DigitValue=static_cast<tUInt>(DigitBuffer[DigitIndex]);
+			Result*=Radix;
+			Result+=DigitValue;
+		}
+
+		return Result;
+	}
+
+};
+
+template<uIntn ValueSize,ufInt8 Radix>
+struct TStringConvertFloat
+{
+	typedef typename cnVar::TIntegerOfSize<ValueSize,false>::Type tUInt;
+	typedef typename cnVar::TFloatOfSize<ValueSize>::Type tFloat;
+	
+	static uIntn ToDigits(tFloat Value,sfInt16 &Exponent,uInt8 *DigitBuffer,uIntn DigitBufferLength)noexcept(true){
+		if(Value==0){
+			Exponent=0;
+			return 0;
+		}
+
+		tFloat RadixFactor=Radix;
+		tFloat log2r=cnMath::FloatNaturalLogarithm(static_cast<tFloat>(RadixFactor))/cnMath::TFloatConstant<tFloat>::loge2;
+		uIntn MaxSignificand=static_cast<uIntn>(ValueSize*ByteBitCount/log2r);
+		if(DigitBufferLength>MaxSignificand)
+			DigitBufferLength=MaxSignificand;
+
+
+		tFloat IntValue=cnMath::FloatRoundTruncate(Value);
+		tFloat Fraction;
+		uIntn DigitIndex=0;
+		if(IntValue!=0){
+			Fraction=Value-IntValue;
+			sfInt16 e2;
+			IntValue=cnMath::FloatSplitExponent(IntValue,e2);
+			tFloat Scale=e2/log2r;
+			uIntn ScaleExp=static_cast<uIntn>(Scale);
+			if(ScaleExp>MaxSignificand){
+				// scale down
+				ScaleExp-=MaxSignificand;
+				Scale=cnMath::FloatPower(RadixFactor,static_cast<tFloat>(ScaleExp));
+				IntValue/=Scale;
+			}
+			else{
+				ScaleExp=0;
+			}
+			uInt8 IntDigits[ValueSize*ByteBitCount];
+			uIntn IntDigitIndex=TKRuntime::TStringConvertInteger<ValueSize,Radix>::ToDigits(static_cast<typename cnVar::TIntegerOfSize<ValueSize,false>::Type>(IntValue),IntDigits,ValueSize*ByteBitCount);
+			uIntn IntDigitCount=ValueSize*ByteBitCount-IntDigitIndex;
+			Exponent=static_cast<sfInt16>(IntDigitCount+ScaleExp);
+
+			if(IntDigitCount>DigitBufferLength){
+				TKRuntime::TMemory<1>::Copy(DigitBuffer,IntDigits+IntDigitIndex,DigitBufferLength);
+				return DigitBufferLength;
+			}
+
+			TKRuntime::TMemory<1>::Copy(DigitBuffer,IntDigits+IntDigitIndex,IntDigitCount);
+			DigitIndex=IntDigitCount;
+		}
+		else{
+			Fraction=Value;
+			sfInt16 e2;
+			Fraction=cnMath::FloatSplitExponent(Fraction,e2);
+
+			// all fraction
+			tFloat Scale=(-e2)/log2r;
+			uIntn ScaleExp=static_cast<uIntn>(Scale);
+			Scale=cnMath::FloatPower(RadixFactor,static_cast<tFloat>(ScaleExp));
+			Fraction*=Scale;
+			sfInt16 e=static_cast<sfInt16>(ScaleExp);
+			e=-e;
+			tFloat NextValue=Fraction*RadixFactor;
+			while(NextValue<1.){ 
+				Fraction=NextValue;
+				e--;
+				NextValue=Fraction*RadixFactor;
+			}
+			Exponent=e;
+		}
+
+		while(Fraction!=0){
+			Fraction*=RadixFactor;
+			tFloat DigitValue=cnMath::FloatRoundTruncate(Fraction);
+			Fraction-=DigitValue;
+			DigitBuffer[DigitIndex++]=static_cast<uInt8>(DigitValue);
+			if(DigitIndex>=DigitBufferLength)
+				return DigitBufferLength;
+		}
+		return DigitIndex;
+	}
+
+
+	static tFloat FromDigits(sfInt16 Exponent,const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true){
+		tUInt IntDigitsValue=TKRuntime::TStringConvertInteger<ValueSize,Radix>::FromDigits(DigitBuffer,DigitCount);
+		if(IntDigitsValue==0)
+			return static_cast<tFloat>(0);
+		
+		Exponent-=DigitCount;
+		tFloat DigitValue=static_cast<tFloat>(IntDigitsValue)/static_cast<tFloat>(1<<(ValueSize*ByteBitCount));
+
+		if(Exponent!=0){
+			tFloat RadixFactor=cnMath::FloatPower(static_cast<tFloat>(Radix),static_cast<tFloat>(Exponent));
+			DigitValue*=RadixFactor;
+		}
+		return DigitValue;
+	}
+
+};
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnString{
+//---------------------------------------------------------------------------
+
+// FindLength
+//	Get the length of string
+// [in]String
+// MaxLength		maximum length of string
+// return length of string
+template<class TCharacter>
+inline uIntn FindLength(const TCharacter *String)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::FindLength(String,StringMaxLength);
+}
+
+// FindLength
+//	Get the length of string
+// [in]String
+// MaxLength		maximum length of string
+// return length of string
+template<class TCharacter>
+inline uIntn FindLength(const TCharacter *String,uIntn MaxLength)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::FindLength(String,MaxLength);
+}
+
+
+// Copy
+//	Copy string
+// [out]Dest		destination string buffer
+// [in]DestMax		max length of destination buffer
+// [in]Src			source string, unknow length
+// return	copied length
+template<class TCharacter,class TSrcPtr>
+inline typename cnVar::TTypeConditional<uIntn,
+	cnVar::TIsPointerOf<TCharacter,typename cnVar::TRemoveReference<TSrcPtr>::Type>::Value
+>::Type Copy(TCharacter *Dest,uIntn DestMax,TSrcPtr&& Src)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,DestMax-1,Src);
+}
+
+
+// Copy
+//	Copy string
+// <DestMax>		max capacity of destination buffer
+// [out]Dest		destination string buffer
+// [in]Src			source string, unknow length
+// return	copied length
+template<class TCharacter,uIntn DestCapacity,class TSrcPtr>
+inline typename cnVar::TTypeConditional<uIntn,
+	cnVar::TIsPointerOf<TCharacter,typename cnVar::TRemoveReference<TSrcPtr>::Type>::Value
+>::Type Copy(TCharacter (&Dest)[DestCapacity],TSrcPtr&& Src)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,DestCapacity-1,Src);
+}
+
+
+// Copy
+//	Copy string
+// [out]Dest		destination string buffer
+// [in]DestMax		max length of destination buffer
+// [in]Src			source string array
+// return	copied string length
+template<class TCharacter,uIntn SrcMax>
+inline uIntn Copy(TCharacter *Dest,uIntn DestMax,const TCharacter (&Src)[SrcMax])
+{
+	uIntn CopyMax=DestMax-1;
+	if(CopyMax>SrcMax)
+		CopyMax=SrcMax;
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
+}
+
+// Copy
+//	Copy string
+// [in]DestMax		max length of dest, including null-termination
+// [out]Dest		destination string buffer
+// [in]Src			source string array
+// return	copied length
+template<class TCharacter,uIntn DestMax,uIntn SrcMax>
+inline uIntn Copy(TCharacter (&Dest)[DestMax],const TCharacter (&Src)[SrcMax])
+{
+	uIntn CopyMax=DestMax-1;
+	if(CopyMax>SrcMax)
+		CopyMax=SrcMax;
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
+}
+
+// Copy
+//	Copy string
+// [out]Dest		destination string buffer
+// [in]DestMax		max length of destination buffer
+// [in]Src			source string
+// [in]SrcMax		max length of source string
+// return	copied string length
+template<class TCharacter>
+inline uIntn Copy(TCharacter *Dest,uIntn DestMax,const TCharacter *Src,uIntn SrcMax)
+{
+	uIntn CopyMax=DestMax-1;
+	if(CopyMax>SrcMax)
+		CopyMax=SrcMax;
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
+}
+// Copy
+//	Copy string
+// <DestMax>		max length of destination buffer
+// [out]Dest		destination string buffer
+// [in]Src			source string
+// [in]SrcMax		max length of source string
+// return	copied string length
+template<class TCharacter,uIntn DestMax>
+inline uIntn Copy(TCharacter (&Dest)[DestMax],const TCharacter *Src,uIntn SrcMax)
+{
+	uIntn CopyMax=DestMax-1;
+	if(CopyMax>SrcMax)
+		CopyMax=SrcMax;
+	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
+}
+
+
+// Search
+//	Search a character from string
+//	[in]Src	string
+//	[in]Dest	character to search
+//	return: the index of first matched char, or IndexNotFound if not found
+template<class TCharacter>
+uIntn Search(const TCharacter *Src,typename cnVar::TTypeDef<TCharacter>::Type Dest)noexcept(true)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::Search(Src,StringMaxLength,Dest);
+}
+// Search
+//	Search a character from string
+//	[in]Src	string
+//	[in]SrcLength	length of Src
+//	[in]Dest	character to search
+//	return: the index of first matched char, or IndexNotFound if not found
+template<class TCharacter>
+uIntn Search(const TCharacter *Src,uIntn MaxLength,typename cnVar::TTypeDef<TCharacter>::Type Dest)noexcept(true)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::Search(Src,MaxLength,Dest);
+}
+
+// Equal
+//	The encoding relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	[in]Length	length of first characters in string to compare
+//	return:	if strings matched
+template<class TCharacter>
+bool Equal(const TCharacter *Str1,const typename cnVar::TTypeDef<TCharacter>::Type *Str2)noexcept(true)
+{
+	uIntn MatchLength;
+	return TKRuntime::TString<sizeof(TCharacter)>::Equal(Str1,Str2,StringMaxLength,MatchLength);
+}
+
+// Equal
+//	The encoding relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	[in]Length	length of first characters in string to compare
+//	return:	if strings matched
+template<class TCharacter>
+bool Equal(const TCharacter *Str1,const typename cnVar::TTypeDef<TCharacter>::Type *Str2,uIntn MaxLength)noexcept(true)
+{
+	return TKRuntime::TString<sizeof(TCharacter)>::Equal(Str1,Str2,MaxLength,MaxLength);
+}
+
+
+// Compare
+//	The relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
+template<class TCharacter>
+sfInt8 Compare(const TCharacter *Str1,const typename cnVar::TTypeDef<TCharacter>::Type *Str2)noexcept(true)
+{
+	uIntn MatchLength;
+	return TKRuntime::TString<sizeof(TCharacter)>::Compare(Str1,Str2,StringMaxLength,MatchLength);
+}
+
+// Compare
+//	The encoding relation of string1 to string2
+//	[in]Str1	string to subtract
+//	[in]Str2	string to be subtracted
+//	[in]Length	length of first characters in string to compare
+//	return:	the differ of first differnet char, 0 if two strings matched
+template<class TCharacter>
+sfInt8 Compare(const TCharacter *Str1,const typename cnVar::TTypeDef<TCharacter>::Type *Str2,uIntn MaxLength)noexcept(true)
+{
+	uIntn MatchLength;
+	return TKRuntime::TString<sizeof(TCharacter)>::Compare(Str1,Str2,MaxLength,MatchLength);
+}
+
+
+template<class TCharacter>
+sfInt8 Compare(const TCharacter *Str1,uIntn Str1MaxLength,const typename cnVar::TTypeDef<TCharacter>::Type *Str2,uIntn Str2MaxLength)noexcept(true)
+{
+	uIntn MatchLength;
+	if(Str1MaxLength==Str2MaxLength){
+		return TKRuntime::TString<sizeof(TCharacter)>::Compare(Str1,Str2,Str1MaxLength,MatchLength);
+	}
+	uIntn CompareLength;
+	sfInt8 MatchResult;
+	if(Str1MaxLength<Str2MaxLength){
+		CompareLength=Str1MaxLength;
+		MatchResult=-1;
+	}
+	else{
+		CompareLength=Str2MaxLength;
+		MatchResult=1;
+	}
+	sfInt8 r=TKRuntime::TString<sizeof(TCharacter)>::Compare(Str1,Str2,CompareLength,MatchLength);
+	if(MatchLength==CompareLength){
+		return MatchResult;
+	}
+	return r;
+}
+
+//---------------------------------------------------------------------------
+}	// namespace cnString
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+namespace cnLib_THelper{
+namespace String_TH{
+
+template<uIntn MatchSize,ufInt8 Radix>
+struct StringConvert{
+
+	template<class T>
+	static uIntn ConvertIntegerToDigits(T Value,uInt8 *DigitBuffer,uIntn DigitBufferIndex)noexcept(true){
+
+		typedef typename cnVar::TIntegerOfSize<MatchSize,false>::Type tUInt;
+
+		typename cnVar::TIntegerConversion<T>::tMatch IntValue=cnVar::TIntegerConversion<T>::template Cast<typename cnVar::TIntegerConversion<T>::tMatch>(Value);
+		tUInt ConvertValue=static_cast<tUInt>(cnMath::Absolute(IntValue));
+
+		return TKRuntime::TStringConvertInteger<MatchSize,Radix>::ToDigits(ConvertValue,DigitBuffer,DigitBufferIndex);
+	}
+
+	
+	template<class T>
+	static uIntn ConvertFloatToDigits(T Value,sfInt16 &Exponent,uInt8 *DigitBuffer,uIntn DigitBufferLength)noexcept(true)
+	{
+		typedef typename cnVar::TFloatConversion<T>::tMatch tFloat;
+
+		tFloat FloatValue=cnVar::TFloatConversion<T>::template Cast<tFloat>(Value);
+		FloatValue=cnMath::FloatAbsolute(FloatValue);
+
+		return TKRuntime::TStringConvertFloat<MatchSize,Radix>::ToDigits(FloatValue,Exponent,DigitBuffer,DigitBufferLength);
+	}
+
+	template<class T>
+	static T ConvertIntegerFromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
+	{
+		typedef typename cnVar::TIntegerOfSize<MatchSize,false>::Type tUInt;
+
+		typename cnVar::TIntegerConversion<T>::tMatch IntValue=cnVar::TIntegerConversion<T>::template Cast<typename cnVar::TIntegerConversion<T>::tMatch>(Value);
+		tUInt ConvertValue=static_cast<tUInt>(cnMath::Absolute(IntValue));
+
+		tUInt IntValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(DigitBuffer,DigitBufferIndex);
+		return static_cast<T>(IntValue);
+	}
+
+	template<class T>
+	static T ConvertFloatFromDigits(sfInt16 Exponent,const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
+	{
+		typedef typename cnVar::TFloatConversion<T>::tMatch tFloat;
+
+		tFloat FloatValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(Exponent,DigitBuffer,DigitBufferLength);;
+		return static_cast<T>(FloatValue);
+	}
+};
+
+
+template<ufInt8 Radix>
+struct StringConvert<Radix,0>{
+
+	template<class T>
+	static uIntn ConvertIntegerToDigits(T,uInt8*,uIntn DigitBufferIndex)noexcept(true){
+		return DigitBufferIndex;
+	}
+
+	template<class T>
+	static uIntn ConvertFloatToDigits(T,sfInt16 &Exponent,uInt8*,uIntn)noexcept(true){
+		Exponent=0;
+		return 0;
+	}
+
+	template<class T>
+	static T ConvertIntegerFromDigits(const uInt8*,uIntn)noexcept(true){
+		return T();
+	}
+
+	template<class T>
+	static T ConvertFloatFromDigits(sfInt16,const ufInt8*,uIntn)noexcept(true){
+		return T();
+	}
+};
+//---------------------------------------------------------------------------
+}	//	namespace String_TH
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnString{
+//---------------------------------------------------------------------------
+
+template<ufInt8 Radix,class T>
+inline uIntn ConvertIntegerToDigits(T Value,uInt8 *DigitBuffer,uIntn DigitBufferIndex)noexcept(true)
+{
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TIntegerConversion<T>::MatchSize,Radix>::ConvertIntegerToDigits(Value,DigitBuffer,DigitBufferIndex);
+}
+
+template<ufInt8 Radix,class T>
+inline uIntn ConvertFloatToDigits(T Value,sfInt16 &Exponent,uInt8 *DigitBuffer,uIntn DigitBufferLength)noexcept(true)
+{
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TFloatConversion<T>::MatchSize,Radix>::ConvertFloatToDigits(Value,Exponent,DigitBuffer,DigitBufferLength);
+}
+
+template<ufInt8 Radix,class T>
+inline T ConvertIntegerFromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
+{
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TIntegerConversion<T>::MatchSize,Radix>::template ConvertIntegerFromDigits<T>(DigitBuffer,DigitBufferIndex);
+}
+
+template<ufInt8 Radix,class T>
+inline T ConvertFloatFromDigits(sfInt16 Exponent,const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
+{
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TFloatConversion<T>::MatchSize,Radix>::template ConvertFloatFromDigits<T>(Exponent,DigitBuffer,DigitBufferIndex);
+}
+
+//---------------------------------------------------------------------------
+}	// namespace cnString
 //---------------------------------------------------------------------------
 namespace cnDataStruct{
 //---------------------------------------------------------------------------
@@ -81,7 +790,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		// data
 		this->Length=Length;
 		if(Length!=0){
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer,String,Length);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer,String,Length);
 		}
 	}
 	
@@ -94,7 +803,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 			this->Capacity=InitialCapacity;
 			this->Pointer=TAMFunc::Allocate(InitialCapacity,1);
 			this->Length=Src.Length;
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer,Src.Pointer,Src.Length);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer,Src.Pointer,Src.Length);
 		}
 	}
 
@@ -103,7 +812,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		this->Capacity=InitialCapacity;
 		this->Pointer=TAMFunc::Allocate(InitialCapacity);
 		this->Length=Src.Length;
-		TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer,Src.Pointer,Src.Length);
+		TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer,Src.Pointer,Src.Length);
 	}
 
 	cStringStorage& operator =(const cStringStorage &Src)noexcept(true){
@@ -192,7 +901,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		bool ManualCopy;
 		tPointer NewArray=TAMFunc::Relocate(this->Pointer,this->Capacity,NewCapacity,ManualCopy);
 		if(ManualCopy){
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,this->Length);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,this->Length);
 			TAMFunc::Deallocate(this->Pointer,this->Capacity);
 		}
 		this->Pointer=NewArray;
@@ -212,7 +921,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 				GrowCapacityForLength(NewLength);
 			}
 		}
-		TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer+Index,Src,CopyLength);
+		TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer+Index,Src,CopyLength);
 	}
 	void Copy(tConstPointer Src,uIntn SrcLength)noexcept(true){
 		if(SrcLength>=this->Capacity){
@@ -220,7 +929,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		}
 		this->Length=SrcLength;
 
-		TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer,Src,SrcLength);
+		TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer,Src,SrcLength);
 	}
 
 	void Remove(uIntn Index,uIntn RemoveLength)noexcept(true){
@@ -238,7 +947,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		uIntn CopyLength=this->Length-CopySrc;
 		this->Length-=RemoveLength;
 		if(CopyLength!=0){
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(this->Pointer+Index,this->Pointer+CopySrc,CopyLength);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer+Index,this->Pointer+CopySrc,CopyLength);
 		}
 	}
 	
@@ -269,7 +978,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		bool ManualCopy;
 		tPointer NewArray=TAMFunc::Relocate(this->Pointer,this->Capacity,NewCapacity,ManualCopy);
 		if(ManualCopy){
-			TKRuntime::tMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,this->Length);
+			TKRuntime::TMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,this->Length);
 			TAMFunc::Deallocate(this->Pointer,this->Capacity);
 		}
 		this->Pointer=NewArray;
@@ -298,8 +1007,8 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 			bool ManualCopy;
 			tPointer NewArray=TAMFunc::Relocate(this->Pointer,this->Capacity,NewCapacity,ManualCopy);
 			if(ManualCopy){
-				TKRuntime::tMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,Index);
-				TKRuntime::tMemory<sizeof(tElement)>::Copy(NewArray+TailDest,this->Pointer+TailSrc,TailLength);
+				TKRuntime::TMemory<sizeof(tElement)>::Copy(NewArray,this->Pointer,Index);
+				TKRuntime::TMemory<sizeof(tElement)>::Copy(NewArray+TailDest,this->Pointer+TailSrc,TailLength);
 				TAMFunc::Deallocate(this->Pointer,this->Capacity);
 				this->Pointer=NewArray;
 				this->Capacity=NewCapacity;
@@ -309,7 +1018,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 			this->Capacity=NewCapacity;
 		}
 		if(TailSrc!=TailDest){
-			TKRuntime::tMemory<sizeof(tElement)>::CopyOverlapped(this->Pointer+TailDest,this->Pointer+TailSrc,TailLength);
+			TKRuntime::TMemory<sizeof(tElement)>::CopyOverlapped(this->Pointer+TailDest,this->Pointer+TailSrc,TailLength);
 		}
 	}
 };
@@ -449,8 +1158,6 @@ inline cStringStorageStreamWriteBuffer<TAllocationOperator,TCharacter> ArrayStre
 //---------------------------------------------------------------------------
 namespace cnString{
 //---------------------------------------------------------------------------
-	static cnLib_CONSTVAR uIntn StringMaxLength=cnVar::TIntegerValue<uIntn>::Max;
-//---------------------------------------------------------------------------
 template<class TCharacter>
 struct TEmptyString
 {
@@ -523,14 +1230,14 @@ public:
 		StorageSafeSetTermination();
 	}
 	cStringBuffer(tConstPointer String)noexcept(true)
-		: fString(String,(String!=nullptr?TKRuntime::tString<sizeof(tCharacter)>::QueryLength(String):0),0)
+		: fString(String,(String!=nullptr?cnString::FindLength(String):0),0)
 	{
 		StorageSafeSetTermination();
 	}
 
 	cStringBuffer& operator = (tConstPointer String)noexcept(true){
 		if(String!=nullptr){
-			uIntn StrLength=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(String);
+			uIntn StrLength=cnString::FindLength(String);
 			if(StrLength!=0){
 				fString.Copy(String,StrLength);
 				StorageSetTermination();
@@ -629,7 +1336,7 @@ public:
 		fString.Replace(Index,ReplaceLength,ReplacementLength);
 
 		if(Replacement!=nullptr)
-			TKRuntime::tMemory<sizeof(tCharacter)>::Copy(fString.Pointer+Index,Replacement,ReplacementLength);
+			TKRuntime::TMemory<sizeof(tCharacter)>::Copy(fString.Pointer+Index,Replacement,ReplacementLength);
 		StorageSafeSetTermination();
 	}
 
@@ -641,14 +1348,14 @@ public:
 		if(NewLength>=fString.Capacity)
 			fString.GrowCapacityForLength(NewLength+1);
 		if(Content!=nullptr){
-			TKRuntime::tMemory<sizeof(tCharacter)>::Copy(fString.Pointer+Index,Content,ContentLength);
+			TKRuntime::TMemory<sizeof(tCharacter)>::Copy(fString.Pointer+Index,Content,ContentLength);
 		}
 		fString.Length+=ContentLength;
 		StorageSetTermination();
 	}
 	void Append(tConstPointer String)noexcept(true){
 		if(String!=nullptr){
-			uIntn StrLength=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(String);
+			uIntn StrLength=cnString::FindLength(String);
 			Append(String,StrLength);
 		}
 	}
@@ -678,7 +1385,7 @@ public:
 		if(SrcString==0){
 			return *this;
 		}
-		uIntn SrcLength=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(SrcString);
+		uIntn SrcLength=cnString::FindLength(SrcString);
 		if(SrcLength==0)
 			return *this;
 		cStringBuffer r(fString.Pointer,fString.Length,fString.Length+SrcLength);
@@ -718,7 +1425,7 @@ public:
 		uIntn NewLength=fString.Length+Count;
 		if(NewLength>=fString.Capacity)
 			fString.GrowCapacityForLength(NewLength+1);
-		TKRuntime::tArray<sizeof(tCharacter)>::Fill(fString.Pointer+fString.Length,Count,&Char);
+		TKRuntime::TArray<sizeof(tCharacter)>::Fill(fString.Pointer+fString.Length,Count,&Char);
 		fString.Length+=Count;
 		StorageSetTermination();
 	}
@@ -732,7 +1439,7 @@ public:
 	}
 	void Insert(uIntn InsertIndex,tConstPointer Content)noexcept(true){
 		if(Content!=nullptr){
-			uIntn ContentLength=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(Content);
+			uIntn ContentLength=cnString::FindLength(Content);
 			return Replace(InsertIndex,0,ContentLength,Content);
 		}
 	}
@@ -861,7 +1568,7 @@ protected:
 		if(Src==nullptr){
 			return TConstStringTokenOperator::MakeFrom();
 		}
-		return TConstStringTokenOperator::MakeStringCopy(Src,TKRuntime::tString<sizeof(tCharacter)>::QueryLength(Src));
+		return TConstStringTokenOperator::MakeStringCopy(Src,cnString::FindLength(Src));
 	}
 
 public:
@@ -1063,29 +1770,29 @@ public:
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
 		if(StringArray.Length!=String.Length)
 			return false;
-		return TKRuntime::tMemory<sizeof(tCharacter)>::Equal(StringArray.Pointer,String.Pointer,StringArray.Length);
+		return TKRuntime::TMemory<sizeof(tCharacter)>::Equal(StringArray.Pointer,String.Pointer,StringArray.Length);
 	}
     bool operator != (const cArray<const tCharacter> &String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
 		if(StringArray.Length!=String.Length)
 			return true;
-		return !TKRuntime::tMemory<sizeof(tCharacter)>::Equal(StringArray.Pointer,String.Pointer,StringArray.Length);
+		return !TKRuntime::TMemory<sizeof(tCharacter)>::Equal(StringArray.Pointer,String.Pointer,StringArray.Length);
 	}
     bool operator < (const cArray<const tCharacter> &String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)<0;
+		return cnString::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)<0;
 	}
     bool operator <= (const cArray<const tCharacter> &String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)<=0;
+		return cnString::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)<=0;
 	}
     bool operator > (const cArray<const tCharacter> &String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)>0;
+		return cnString::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)>0;
 	}
     bool operator >= (const cArray<const tCharacter> &String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)>=0;
+		return cnString::Compare(StringArray.Pointer,StringArray.Length,String.Pointer,String.Length)>=0;
 	}
 
 	// Operators - compare cString
@@ -1119,27 +1826,27 @@ public:
 
     bool operator == (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Equal(StringArray.Pointer,StringArray.Length,String);
+		return cnString::Equal(StringArray.Pointer,String,StringArray.Length);
 	}
     bool operator != (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return !TKRuntime::tString<sizeof(tCharacter)>::Equal(StringArray.Pointer,StringArray.Length,String);
+		return !cnString::Equal(StringArray.Pointer,String,StringArray.Length);
 	}
     bool operator < (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String)<0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)<0;
 	}
     bool operator <= (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String)<=0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)<=0;
 	}
     bool operator > (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String)>0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)>0;
 	}
     bool operator >= (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return TKRuntime::tString<sizeof(tCharacter)>::Compare(StringArray.Pointer,StringArray.Length,String)>=0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)>=0;
 	}
 
 protected:
@@ -1151,7 +1858,7 @@ protected:
 		if(String[0]==0){
 			return TConstStringTokenOperator::MakeFrom();
 		}
-		return TConstStringTokenOperator::MakeStringCopy(String,TKRuntime::tString<sizeof(tCharacter)>::QueryLength(String,MaxLength));
+		return TConstStringTokenOperator::MakeStringCopy(String,cnString::FindLength(String,MaxLength));
 	}
 };
 //---------------------------------------------------------------------------
@@ -1370,7 +2077,7 @@ public:
 		}
 		tStringBuffer Buffer;
 		Buffer.SetLength(Length);
-		TKRuntime::tArray<sizeof(tCharacter)>::Fill(Buffer->Pointer,Length,Src);
+		TKRuntime::TArray<sizeof(tCharacter)>::Fill(Buffer->Pointer,Length,Src);
 		SwapStringBuffer(Buffer);
 	}
 
@@ -1378,7 +2085,7 @@ public:
 		if(Src==nullptr){
 			return;
 		}
-		uIntn Length=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(Src);
+		uIntn Length=cnString::FindLength(Src);
 		if(Length==0){
 			return;
 		}
@@ -1439,7 +2146,7 @@ public:
 		if(Src==nullptr){
 			return;
 		}
-		uIntn Length=TKRuntime::tString<sizeof(tCharacter)>::QueryLength(Src);
+		uIntn Length=TKRuntime::TString<sizeof(tCharacter)>::QueryLength(Src);
 		if(Length==0){
 			return;
 		}
@@ -1701,7 +2408,7 @@ public:
 		NewToken->Pointer=NewString;
 		NewToken->Length=Length;
 
-		TKRuntime::tMemory<sizeof(tCharacter)>::Copy(NewString,Src,Length);
+		TKRuntime::TMemory<sizeof(tCharacter)>::Copy(NewString,Src,Length);
 		NewString[Length]=0;
 
 		return NewToken;
@@ -1723,7 +2430,7 @@ public:
 				bool ManualCopy;
 				NewPointer=static_cast<tCharacter*>(TAllocationOperator::Relocate(Array.Pointer,Array.Capacity,sizeof(tCharacter),NewCapacitySize,cnMemory::TAlignmentOf<cRefStringArrayStorage>::Value,ManualCopy));
 				if(ManualCopy){
-					TKRuntime::tMemory<sizeof(tCharacter)>::Copy(NewPointer,Array.Pointer,Array.Length);
+					TKRuntime::TMemory<sizeof(tCharacter)>::Copy(NewPointer,Array.Pointer,Array.Length);
 					TAllocationOperator::Deallocate(Array.Pointer,Array.Capacity,sizeof(tCharacter));
 				}
 			}

@@ -319,36 +319,127 @@ private:
 	void OutputAttribute(const cXMLToken &Token);
 };
 //---------------------------------------------------------------------------
-class cXMLTokenParser
+class iXMLVisitor
 {
 public:
-	iReadBuffer<uChar32> *InputTextStream;
-	cXMLLexicalAnalyzer *Lexer;
+	virtual iXMLVisitor* TagStart(const cString<uChar16> &Name)noexcept(true)=0;
+	virtual void TagFinish(iXMLVisitor *Visitor)noexcept(true)=0;
 
-	bool Run(void);
-	cXMLToken& Value(void);
-
-	bool operator () (void);
-	cXMLToken& operator * ();
-private:
-
-	bool ParseInput(const uChar32 *Text,uIntn Length,uIntn &ProcessedLength);
+	virtual void Text(const cString<uChar16> &Text)noexcept(true)=0;
+	virtual void Comment(const cString<uChar16> &Text)noexcept(true)=0;
+	virtual void Attribute(const cString<uChar16> &Name,const cString<uChar16> &Value)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class cXMLSymbolParser
+class cXMLParser
 {
 public:
-	iReadBuffer<uChar32> *InputTextStream;
-	cXMLLexicalAnalyzer *Lexer;
-	cXMLSyntaxAnalyzer *Syntaxer;
+	cXMLParser()noexcept(true);
+	~cXMLParser()noexcept(true);
 
-	bool Run(void);
-	cXMLSymbol& Value(void);
+	void Reset(iXMLVisitor *Visitor)noexcept(true);
 
-	bool operator () (void);
-	cXMLSymbol& operator * ();
+	template<class TTextGenerator>
+	void Input(TTextGenerator &TextGenerator)noexcept(true){
+		if(TextGenerator()==false)
+			return;
+		bool Stay;
+		do{
+			auto c=*TextGenerator;
+			Stay=Input(c);
+		}while(Stay || TextGenerator());
+	}
+
+
+	void Finish(void)noexcept(true);
+
 private:
+	cXMLLexicalAnalyzer fLexer;
+	cXMLSyntaxAnalyzer fSyntaxer;
+
+	
+
+	bool Input(uChar32 c)noexcept(true);
+	void Syntax(void)noexcept(true);
+
+	void Grammer(void)noexcept(true);
+
+	rPtr<iTextEncodingConverter> fConverter;
+
+	eXMLSymbolTagType fCurTagType;
+	cString<uChar16> fCurTagName;
+
+	bool RootNodeFinished=false;
+	
+	struct cXMLNodeStackItem
+	{
+		cXMLNodeStackItem *Parent;
+		iXMLVisitor *Visitor;
+		eXMLSymbolTagType TagType;
+		cString<uChar16> TagName;
+	};
+	cXMLNodeStackItem *fCurItem;
+	cXMLNodeStackItem fRootItem;
+
+	void OpenTag(const cString<uChar16> &Name)noexcept(true);
+	bool CloseTag(void)noexcept(true);
 };
+//---------------------------------------------------------------------------
+struct cXMLNamespace
+{
+	cString<uChar16> Prefix;
+	cString<uChar16> URI;
+};
+//---------------------------------------------------------------------------
+struct cXMLAttribute
+{
+	aClsRef<cXMLNamespace> Namespace;
+	cString<uChar16> Name;
+	cString<uChar16> Value;
+};
+//---------------------------------------------------------------------------
+struct cXMLNode
+{
+	aClsRef<cXMLNamespace> Namespace;
+	cString<uChar16> Name;
+
+	struct cNodeItem
+	{
+		eXMLSymbolType Type;
+		aClsRef<cXMLAttribute> Attribute;	// Attribute
+		cString<uChar16> Text;			// Text / Comment
+		aClsRef<cXMLNode> Child;		// Tag
+
+	};
+	cSeqList<cNodeItem> AllItems;
+
+	cSeqMap< cString<uChar16>,cSeqList< aClsRef<cXMLAttribute> > > Attributes;
+	cSeqList< cString<uChar16> > Texts;
+	cSeqList< cString<uChar16> > Comments;
+	cSeqMap< cString<uChar16>,cSeqList< aClsRef<cXMLNode> > > Children;
+
+	void Visit(iXMLVisitor *Visitor)noexcept(true);
+};
+//---------------------------------------------------------------------------
+class cXMLNodeMaker : public iXMLVisitor
+{
+public:
+	cXMLNodeMaker()noexcept(true);
+
+	aClsRef<cXMLNode> Node;
+
+	virtual iXMLVisitor* TagStart(const cString<uChar16> &Name)noexcept(true) override;
+	virtual void TagFinish(iXMLVisitor *Visitor)noexcept(true) override;
+
+	virtual void Text(const cString<uChar16> &Text)noexcept(true) override;
+	virtual void Comment(const cString<uChar16> &Text)noexcept(true) override;
+
+	virtual void Attribute(const cString<uChar16> &Name,const cString<uChar16> &Value)noexcept(true) override;
+private:
+
+
+};
+//---------------------------------------------------------------------------
+#if 0
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,XMLNodeElementType)
 {
@@ -360,47 +451,6 @@ cnLib_ENUM_BEGIN(ufInt8,XMLNodeElementType)
 	XMLDecl,	// <?xml ...?>
 }cnLib_ENUM_END(XMLNodeElementType);
 //---------------------------------------------------------------------------
-struct cXMLAttribute
-{
-	cString<uChar8> Namespace;
-	cString<uChar8> Name;
-	cString<uChar8> Value;
-};
-struct cXMLNodeElement
-{
-	cString<uChar8> Namespace;
-	cString<uChar8> Name;
-	cSeqMap< cString<uChar8>,cString<uChar8> > Attributes;
-};
-//---------------------------------------------------------------------------
-struct cXMLNode
-{
-	cString<uChar8> Name;
-	cSeqList< aClsRef<cXMLAttribute> > Attributes;
-
-
-	cSeqList< cString<uChar8> > Texts;
-	cSeqList< cString<uChar8> > Comments;
-	cSeqList< aClsRef<cXMLNode> > Children;
-	cSeqMap< cString<uChar8>,cSeqList< aClsRef<cXMLNode> > > NamedChildren;
-};
-//---------------------------------------------------------------------------
-cnLib_ENUM_BEGIN(ufInt8,XMLNodeTextType)
-{
-	Text,
-	CDATA,
-	Comment,		// <!--Comment-->
-}cnLib_ENUM_END(XMLNodeTextType);
-//---------------------------------------------------------------------------
-struct cXMLNodeText
-{
-	cString<uChar8> Text;
-};
-//---------------------------------------------------------------------------
-struct cXMLDocument : cXMLNode
-{
-};
-//---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,XMLParseOutputType)
 {
 	Error,
@@ -411,46 +461,7 @@ cnLib_ENUM_BEGIN(ufInt8,XMLParseOutputType)
 	Text,			// Text
 	Comment,		// <!--Comment-->
 }cnLib_ENUM_END(XMLParseOutputType);
-//---------------------------------------------------------------------------
-class cXMLParser
-{
-public:
-	void SetInput(cXMLSymbolParser *SymbolParser);
-	void Reset(void);
-
-	bool Run(void);
-	cXMLToken& Value(void);
-
-	bool operator () (void);
-	cXMLToken& operator * ();
-private:
-	cXMLToken fValue;
-
-
-	cXMLSymbolParser *fSymbolParser;
-	enum{
-		sText,
-		sElement,
-	}fState;
-
-	bool ParseText(cXMLToken &Token);
-	bool ParseElement(cXMLToken &Token);
-
-
-	bool ParseElementID(void);
-	bool ParseElementString(void);
-
-	void SetResultID(uIntn Start,uIntn End);
-
-	
-	struct cXMLNodeStackItem
-	{
-		cXMLNodeStackItem *Parent;
-		aClsRef<cXMLNode> Node;
-	};
-	cXMLNodeStackItem *fCurNodeStack;
-	aClsRef<cXMLNode> fCurNode;
-};
+#endif // 0
 //---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------

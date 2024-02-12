@@ -764,6 +764,11 @@ bool bcWPFViewContentDrawing::SetZPosition(Float32 ZPosition)
 	return true;
 }
 //---------------------------------------------------------------------------
+Float32 bcWPFViewContentDrawing::GetContentScale(void)
+{
+	return fView->GetViewContentContentScale();
+}
+//---------------------------------------------------------------------------
 void bcWPFViewContentDrawing::UpdateDrawing(void)
 {
 	if(fView!=nullptr){
@@ -1177,6 +1182,11 @@ void cWPFUIView::UpdateViewContentZPosition(void)
 void cWPFUIView::UpdateViewContent(void)
 {
 	ApplyContentChanged();
+}
+//---------------------------------------------------------------------------
+Float32 cWPFUIView::GetViewContentContentScale(void)
+{
+	return fContentScale;
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::SetupContentOrderCache(void)

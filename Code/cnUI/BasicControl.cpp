@@ -315,6 +315,10 @@ void vLabel::SetupTextCache(void)
 	auto Device=fViewContent->QueryDevice();
 	auto String=fData->ControlTextString();
 	auto &Style=fData->ControlTextStyle();
+
+	auto ContentScale=fViewContent->GetContentScale();
+	ContentScale*Style.FontSize;
+	Style.FontSize;
 	fCacheTextGraph=Device->CreateTextGraph(String,Length,Style,nullptr);
 	if(fCacheTextGraph==nullptr)
 		return;

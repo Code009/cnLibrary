@@ -20,7 +20,7 @@ void cTextStreamOutputLogger::Log(aClsConstRef<cLogContent> Content)
 		auto WriteBuffer=Text.StreamWriteBuffer();
 		StringStream::WriteConvertEncoding(WriteBuffer,Converter,Content->Name->Pointer,Content->Name->Length);
 		ArrayStream::WriteArray(WriteBuffer,u" - (",4);
-		StringStream::WriteFormatInt(WriteBuffer,Content->Level,10,1,0);
+		StringStream::WriteFormatInt(WriteBuffer,Content->Level,1,0);
 		ArrayStream::WriteElement(WriteBuffer,')');
 		StringStream::WriteConvertEncoding(WriteBuffer,Converter,Content->Type->Pointer,Content->Type->Length);
 		ArrayStream::WriteArray(WriteBuffer,u" : ",3);

@@ -172,6 +172,7 @@ public:
 	virtual bool cnLib_FUNC SetVisible(bool Visible)override;
 	virtual Float32 cnLib_FUNC GetZPosition(void)override;
 	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)override;
+	virtual Float32 cnLib_FUNC GetContentScale(void)override;
 
 	// iUISimpleViewContent
 
@@ -230,6 +231,7 @@ public:
 	virtual bool cnLib_FUNC SetVisible(bool Visible)override;
 	virtual Float32 cnLib_FUNC GetZPosition(void)override;
 	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)override;
+	virtual Float32 cnLib_FUNC GetContentScale(void)override;
 
 	// iUIDCViewContent
 
@@ -330,6 +332,7 @@ public:
 	virtual bool cnLib_FUNC SetVisible(bool Visible)override;
 	virtual Float32 cnLib_FUNC GetZPosition(void)override;
 	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)override;
+	virtual Float32 cnLib_FUNC GetContentScale(void)override;
 
 	// iUIDCViewContent
 

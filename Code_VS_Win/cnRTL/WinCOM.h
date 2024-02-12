@@ -104,6 +104,16 @@ inline T** COMRetPtrT(COMPtr<T> &Ptr){
 	return &Ptr.Token();
 }
 //---------------------------------------------------------------------------
+template<class T>
+inline REFIID COMUUID(T* &){
+	return __uuidof(T);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline REFIID COMUUID(const COMPtr<T>&){
+	return __uuidof(T);
+}
+//---------------------------------------------------------------------------
 // COM
 //---------------------------------------------------------------------------
 template<class TDestInterface,class T>

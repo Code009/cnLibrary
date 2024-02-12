@@ -23,6 +23,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewWindow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewContent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinRTLM.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_Common.cpp">

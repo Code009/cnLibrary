@@ -1017,7 +1017,7 @@ namespace cnVar{
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-//- forward argument --------------------------------------------------------
+// forward argument
 template<class T>
 inline T&& Forward(typename TRemoveReference<T>::Type &Arg)noexcept(true){
 	return static_cast<T&&>(Arg);
@@ -1026,10 +1026,16 @@ template<class T>
 inline T&& Forward(typename TRemoveReference<T>::Type &&Arg)noexcept(true){
 	return static_cast<T&&>(Arg);
 }
-//- explicit move -----------------------------------------------------------
+// explicit move
 template<class T>
 inline typename TRemoveReference<T>::Type && MoveCast(T&& Var)noexcept(true)
 {	return static_cast<typename TRemoveReference<T>::Type&&>(Var);	}
+
+// cast return value as it is
+
+template<class TRet,class T>
+inline TRet ReturnCast(T&& Var)noexcept(true)
+{	return reinterpret_cast<TRet&&>(Var);	}
 
 // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 #else
@@ -1041,6 +1047,10 @@ inline T& Forward(T &Arg)noexcept(true)
 template<class T>
 inline T& MoveCast(T &Var)noexcept(true)
 {	return Var;	}
+
+template<class TRet,class T>
+inline const TRet& ReturnCast(const T& Var)noexcept(true)
+{	return reinterpret_cast<const TRet&>(Var);	}
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 
@@ -1125,6 +1135,7 @@ struct MatchTypeDef<T,typename MatchType_Expression<T>::template Test<>::Type>
 template<class T,class TMatch>
 struct Decl
 {
+	typedef TMatch tMatch;
 	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(TMatch);
 	static cnLib_CONSTVAR bool IsSigned=cnVar::TIsSigned<TMatch>::Value;
 	static cnLib_CONSTVAR bool IsConvertible=true;
@@ -1142,6 +1153,7 @@ struct Decl
 template<class T>
 struct Decl<T,T>
 {
+	typedef T tMatch;
 	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(T);
 	static cnLib_CONSTVAR bool IsSigned=cnVar::TIsSigned<T>::Value;
 	static cnLib_CONSTVAR bool IsConvertible=true;

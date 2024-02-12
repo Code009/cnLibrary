@@ -97,12 +97,12 @@ uIntn WriteMemory(TStreamWriteBuffer &Buffer,typename TStreamWriteBuffer::tEleme
 	cArray<typename TStreamWriteBuffer::tElement> CurBuffer;
 	while((CurBuffer=Buffer.ReserveWriteBuffer(Length)).Length!=0){
 		if(CurBuffer.Length>=Length){
-			TKRuntime::tArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(CurBuffer.Pointer,Src,Length);
+			TKRuntime::TArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(CurBuffer.Pointer,Src,Length);
 			Buffer.CommitWriteBuffer(Length);
 			return TotalLengthWritten+Length;
 		}
 		// copy from src
-		TKRuntime::tArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(CurBuffer.Pointer,Src,CurBuffer.Length);
+		TKRuntime::TArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(CurBuffer.Pointer,Src,CurBuffer.Length);
 		// offset src pointer
 		Length-=CurBuffer.Length;
 		Src=ArrayOffsetPointer(Src,CurBuffer.Length);
@@ -132,12 +132,12 @@ uIntn ReadMemory(TStreamReadBuffer &Buffer,typename TStreamReadBuffer::tElement 
 	cArray<typename TStreamReadBuffer::tElement const> CurBuffer;
 	while((CurBuffer=Buffer.GatherReadBuffer(Length)).Length!=0){
 		if(CurBuffer.Length>=Length){
-			TKRuntime::tArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(Dest,CurBuffer.Pointer,Length);
+			TKRuntime::TArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(Dest,CurBuffer.Pointer,Length);
 			Buffer.DismissReadBuffer(Length);
 			return TotalLengthRead+Length;
 		}
 		// copy to dest
-		TKRuntime::tArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(Dest,CurBuffer.Pointer,CurBuffer.Length);
+		TKRuntime::TArray<sizeof(<typename TStreamWriteBuffer::tElement)>::Copy(Dest,CurBuffer.Pointer,CurBuffer.Length);
 		// offset dest pointer
 		Length-=CurBuffer.Length;
 		Dest=ArrayOffsetPointer(Dest,CurBuffer.Length);

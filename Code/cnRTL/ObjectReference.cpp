@@ -42,7 +42,7 @@ void bcObservedReference::RefInvalidate(iObservedReference *ObservedReference)
 	}
 	// wait for all unregistered
 	while(fRegisterCount.Acquire.Load()!=0){
-		if(fRegisterCount.WatchUntilEqual(0,16384)==false){
+		if(fRegisterCount.WatchEqual(0,16384)==false){
 			cnSystem::CurrentThread::SwitchThread();
 		}
 	}
@@ -137,7 +137,7 @@ void cClassReferenceWithWeakSet::RefInvalidate(void)
 	}
 	// wait for all unregistered
 	while(fRegisterCount.Acquire.Load()!=0){
-		if(fRegisterCount.WatchUntilEqual(0,16384)==false){
+		if(fRegisterCount.WatchEqual(0,16384)==false){
 			cnSystem::CurrentThread::SwitchThread();
 		}
 	}

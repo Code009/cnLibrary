@@ -311,6 +311,11 @@ bool cWPFUISimpleViewContent::SetZPosition(Float32 ZPosition)
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
+Float32 cWPFUISimpleViewContent::GetContentScale(void)
+{
+	return bcWPFViewContentDrawing::GetContentScale();
+}
+//---------------------------------------------------------------------------
 rPtr<iUISimplePaintDevice> cWPFUISimpleViewContent::QueryDevice(void)
 {
 	return rCreate<cWPFUISimplePaintDevice>();
@@ -541,6 +546,11 @@ Float32 cWPFDCViewContent::GetZPosition(void)
 bool cWPFDCViewContent::SetZPosition(Float32 ZPosition)
 {
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
+}
+//---------------------------------------------------------------------------
+Float32 cWPFDCViewContent::GetContentScale(void)
+{
+	return bcWPFViewContentDrawing::GetContentScale();
 }
 //---------------------------------------------------------------------------
 RECT cWPFDCViewContent::GetPaintRect(void)
@@ -982,6 +992,11 @@ Float32 cWPFDXGIViewContent::GetZPosition(void)
 bool cWPFDXGIViewContent::SetZPosition(Float32 ZPosition)
 {
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
+}
+//---------------------------------------------------------------------------
+Float32 cWPFDXGIViewContent::GetContentScale(void)
+{
+	return bcWPFViewContentDrawing::GetContentScale();
 }
 //---------------------------------------------------------------------------
 cWPFDXGIViewContent::ePainterState cWPFDXGIViewContent::CheckPainterState(void)

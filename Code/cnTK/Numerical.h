@@ -16,6 +16,199 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+namespace TKRuntime{
+//---------------------------------------------------------------------------
+
+struct NativeByteOrder;
+//{
+//	static constexpr eByteOrder Value;
+//};
+
+template<uIntn IntegerSize>
+struct TInteger;
+//{
+//	static T UnalignRead(const T *Variable)noexcept;
+//	static void UnalignWrite(T *Variable,T Value)noexcept;
+//	static T ReverseBytes(T Value)noexcept;
+//	static sfInt8 Compare(T Src1,T Src2)noexcept;
+//	static sfInt8 BytesCompare(T Src1,T Src2)noexcept;
+//	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept;
+//	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept;
+//};
+
+//---------------------------------------------------------------------------
+}	// namespace TKRuntime
+//---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn IntegerSize>
+struct TInteger
+{
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,true>::Type tSInt;
+
+	static sfInt8 Compare(tUInt Src1,tUInt Src2)noexcept(true){
+		return cnVar::DefaultCompare(Src1,Src2);
+	}
+
+
+	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept(true)
+	{
+		tUInt v=ValueHigh<<Count;
+		v|=ValueLow>>(IntegerSize*ByteBitCount-Count);
+		return v;
+	}
+	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept(true)
+	{
+		tUInt v=ValueLow>>Count;
+		v|=ValueHigh<<(IntegerSize*ByteBitCount-Count);
+		return v;
+	}
+};
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
+namespace cnMemory{
+//---------------------------------------------------------------------------
+
+cnLib_TYPELESS_ENUM_BEGIN(ByteOrder){
+	LittleEndian,
+	BigEndian,
+}cnLib_TYPELESS_ENUM_END(ByteOrder);
+
+	
+template<eByteOrder TargetOrder,eByteOrder ValueOrder>
+struct TByteOrderConvert;
+
+template<cnMemory::eByteOrder Order>
+struct TByteOrderConvert<Order,Order>
+{
+	template<class T>
+	static T Convert(const T &Data){
+		return Data;
+	}
+};
+
+template<>
+struct TByteOrderConvert<cnMemory::ByteOrder::LittleEndian,cnMemory::ByteOrder::BigEndian>
+{	// BigEndian -> LittleEndian
+	template<class T>
+	static T Convert(const T &Data){
+		typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+		return cnVar::ReturnCast<T>(
+			TKRuntime::TInteger<sizeof(T)>::ReverseBytes(reinterpret_cast<const tInt&>(Data))
+		);
+	}
+};
+
+template<>
+struct TByteOrderConvert<cnMemory::ByteOrder::BigEndian,cnMemory::ByteOrder::LittleEndian>
+{	// LittleEndian -> BigEndian
+	template<class T>
+	static T Convert(const T &Data){
+		typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+		return cnVar::ReturnCast<T>(
+			TKRuntime::TInteger<sizeof(T)>::ReverseBytes(reinterpret_cast<const tInt&>(Data))
+		);
+	}
+};
+
+
+// SwapByteOrder
+//	swap byte order between native and specified
+// [in]Value		bytes of data to swap
+// return converted data
+template<eByteOrder Order,class T>
+inline T SwapByteOrder(T Value)
+{
+	return TByteOrderConvert<TKRuntime::NativeByteOrder::Value,Order>::Convert(Value);
+}
+
+// SwapLittleEndian
+//	swap byte order between native and little endian
+// [in]Value		little endian data
+// return converted data
+template<class T>
+inline T SwapLittleEndian(T Value)
+{
+	return TByteOrderConvert<TKRuntime::NativeByteOrder::Value,ByteOrder::LittleEndian>::Convert(Value);
+}
+
+// SwapBigEndian
+//	swap byte order between native and big endian
+// [in]Value		big endian data
+// return converted data
+template<class T>
+inline T SwapBigEndian(T Value)
+{
+	return TByteOrderConvert<TKRuntime::NativeByteOrder::Value,ByteOrder::BigEndian>::Convert(Value);
+}
+
+
+// UnalignedRead
+//	read from unaligned memory
+// Pointer	[in]	pointer to memory to read
+// return: content of pointer
+template<class T>
+inline T UnalignedRead(const T *Pointer)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+	return cnVar::ReturnCast<T>(
+		TKRuntime::TInteger<sizeof(T)>::UnalignedRead(reinterpret_cast<const tInt*>(Pointer))
+	);
+}
+
+// UnalignedWrite
+//	write to unaligned memory
+// Pointer	[out]	pointer to memory to write
+// Value			value to write
+template<class T>
+inline void UnalignedWrite(T *Pointer,const cnVar::TypeDef<T> &Value)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+	return TKRuntime::TInteger<sizeof(T)>::UnalignedWrite(reinterpret_cast<tInt*>(Pointer),reinterpret_cast<tInt&>(Value));
+}
+
+
+
+// ShiftLeftInto
+//	Shift High while moving bits from Low
+// [in]High		uIntn to shift
+// [in]Low		bits to shift into Dest
+// [in]Count	counts to shift, must smaller than bit count of uIntn
+// return: High<<Count<<Low
+template<class T>
+T ShiftLeftInto(typename cnVar::TTypeDef<T>::Type High,T Low,ufInt8 Count)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::ShiftLeftInto(
+		static_cast<tUInt>(High),
+		static_cast<tUInt>(Low),
+		static_cast<uInt8>(Count)
+	));
+}
+// ShiftRightInto
+//	Shift Low while moving bits from High
+// [in]Low		uIntn to shift
+// [in]High		bits to shift into Dest
+// [in]Count	counts to shift, must smaller than bit count of uIntn
+// return: Low>>Count>>High
+template<class T>
+T ShiftRightInto(T Low,typename cnVar::TTypeDef<T>::Type High,uIntn Count)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::ShiftRightInto(
+		static_cast<tUInt>(Low),
+		static_cast<tUInt>(High),
+		static_cast<uInt8>(Count)
+	));
+}
+
+//---------------------------------------------------------------------------
+}	// namespace cnMemory
+//---------------------------------------------------------------------------
 namespace cnMath{
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
@@ -55,6 +248,19 @@ namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Integer_TH{
 //---------------------------------------------------------------------------
+template<class TValueDecl,class TNextDecl>
+struct IntegerValueMSBCalc;
+
+template<class T,T v1,T v>
+struct IntegerValueMSBCalc< cnVar::TConstantValue<T,v1>,cnVar::TConstantValue<T,v>  >
+	: IntegerValueMSBCalc<cnVar::TConstantValue<T,v>,cnVar::TConstantValue<T,v&(v-1)> >
+{
+};
+template<class T,T v>
+struct IntegerValueMSBCalc< cnVar::TConstantValue<T,v>,cnVar::TConstantValue<T,0>  >
+	: cnVar::TConstantValue<T,v>
+{
+};
 
 
 template<uIntn Size,bool Sign>
@@ -73,6 +279,18 @@ struct IntegerValue<Size,false>
 	// MSB
 	//	unsigned most sigificand bit
 	static cnLib_CONSTVAR Type MSB=static_cast<Type>(static_cast<Type>(1)<<(sizeof(Type)*ByteBitCount-1));
+
+	template<Type v>
+	struct tValueLSB
+		: cnVar::TConstantValue<Type,v&~(v-1)>
+	{
+	};
+
+	template<Type v>
+	struct tValueMSB
+		: IntegerValueMSBCalc< cnVar::TConstantValue<Type,v>,cnVar::TConstantValue<Type,v&(v-1)> >
+	{
+	};
 };
 template<uIntn Size>
 struct IntegerValue<Size,true>
@@ -89,7 +307,20 @@ struct IntegerValue<Size,true>
 	// MSB
 	//	signed min value
 	static cnLib_CONSTVAR Type MSB=Min;
+
+	template<Type v>
+	struct tValueLSB
+		: cnVar::TConstantValue<Type,v&~(v-1)>
+	{
+	};
+
+	template<Type v>
+	struct tValueMSB
+		: IntegerValueMSBCalc< cnVar::TConstantValue<Type,v>,cnVar::TConstantValue<Type,v&(v-1)> >
+	{
+	};
 };
+
 //---------------------------------------------------------------------------
 }	// namespace Integer_TH
 //---------------------------------------------------------------------------
@@ -137,6 +368,12 @@ template<uIntn Dest>
 struct TIntegerConstantMSBPos
 	: TConstantValueUIntn<1+TIntegerConstantMSBPos<(Dest>>1)>::Value>{};
 
+template<uIntn Dest>
+struct TIntegerConstantLSBPos
+	: TIntegerConstantMSBPos<Dest&~(Dest-1)>{};
+
+
+
 //consteval uIntn MSBPos(const uIntn Dest)
 //{	return Dest==0? 0 : TIntegerConstantMSBPos(Dest>>1)+1;	}
 //---------------------------------------------------------------------------
@@ -152,19 +389,32 @@ namespace Math_TH{
 	struct Abs
 	{
 		template<class T>
-		static bool Call(T &Value)noexcept(cnLib_NOEXCEPTEXPR(Value>=0) && cnLib_NOEXCEPTEXPR(Value=-Value))
+		static T Call(T Value)noexcept(cnLib_NOEXCEPTEXPR(Value>=0) && cnLib_NOEXCEPTEXPR(T(-Value)))
 		{
-			if(Value>=0)
-				return false;
-			Value=-Value;
-			return true;
+			if(Value<0)
+				return -Value;
+			return Value;
+		}
+
+		template<class T>
+		static bool Set(T Value)noexcept(cnLib_NOEXCEPTEXPR(Value>=0) && cnLib_NOEXCEPTEXPR(Value=-Value))
+		{
+			if(Value<0){
+				Value=-Value;
+				return true;
+			}
+			return false;
 		}
 	};
 	template<>
 	struct Abs<false>
 	{
 		template<class T>
-		static bool Call(T &)noexcept(true){
+		static T Call(T v)noexcept(true){
+			return v;
+		}
+		template<class T>
+		static bool Set(T &)noexcept(true){
 			return false;
 		}
 	};
@@ -201,8 +451,12 @@ struct TFloatConstant
 
 //---------------------------------------------------------------------------
 template<class T>
-inline bool Abs(T &Value)noexcept(cnLib_NOEXCEPTEXPR(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
+inline T Absolute(T Value)noexcept(cnLib_NOEXCEPTEXPR(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
 {	return cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value);	}
+
+template<class T>
+inline bool SetAbsolute(T &Value)noexcept(cnLib_NOEXCEPTEXPR(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
+{	return cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Set(Value);	}
 //---------------------------------------------------------------------------
 template<class T>
 inline const T& Min(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Value2)noexcept(cnLib_NOEXCEPTEXPR(Value1<Value2))
@@ -216,6 +470,186 @@ inline const T& Max(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Val
 }
 //---------------------------------------------------------------------------
 }	// namespace cnMath
+//---------------------------------------------------------------------------
+namespace TKRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn FloatSize>
+struct TMathFloat;
+//{
+//	static tFloat Absolute(tFloat n)noexcept;
+//	static tFloat RoundNearest(tFloat n)noexcept;
+//	static tFloat RoundTruncate(tFloat n)noexcept;
+//	static tFloat RoundNegative(tFloat n)noexcept;
+//	static tFloat RoundPositive(tFloat n)noexcept;
+//	static tFloat SplitExponent(tFloat n,sfInt16 &Exponent)noexcept;
+//	static tFloat Modulo(tFloat Dividend,tFloat Divisor)noexcept;
+//	static tFloat SquareRoot(tFloat n)noexcept;
+//	static tFloat NaturalLogarithm(tFloat n)noexcept;
+//	static tFloat BinaryLogarithm(tFloat n)noexcept;
+//	static tFloat NaturalExponential(tFloat n)noexcept;
+//	static tFloat BinaryExponential(tFloat n)noexcept;
+//	static tFloat Power(tFloat Base,tFloat Exponent)noexcept;
+//	static tFloat Sine(tFloat n)noexcept;
+//	static tFloat Cosine(tFloat n)noexcept;
+//	static tFloat Tangent(tFloat n)noexcept;
+//	static tFloat ArcSine(tFloat n)noexcept;
+//	static tFloat ArcCosine(tFloat n)noexcept;
+//	static tFloat ArcTangent(tFloat n)noexcept;
+//	static tFloat ArcTangent2(tFloat y,tFloat x)noexcept;
+//};
+//---------------------------------------------------------------------------
+}	// namespace TKRuntime
+//---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn FloatSize>
+struct TMathFloat
+{
+	typedef typename cnVar::TFloatOfSize<FloatSize>::Type tFloat;
+
+	static tFloat Absolute(tFloat n)noexcept(true){
+		return n<0?-n:n;
+	}
+	/*
+	static tFloat RoundNearest(tFloat n)noexcept(true){
+	}
+
+	static tFloat RoundTruncate(tFloat n)noexcept(true){
+	}
+
+	static tFloat RoundNegative(tFloat n)noexcept(true){
+	}
+
+	static tFloat RoundPositive(tFloat n)noexcept(true){
+	}
+
+	static tFloat SplitExponent(tFloat n,sfInt16 &Exponent)noexcept(true){
+	}
+
+	static tFloat Modulo(tFloat Dividend,tFloat Divisor)noexcept(true){
+	}
+	static tFloat SquareRoot(tFloat n)noexcept(true){
+	}
+	static tFloat NaturalLogarithm(tFloat n)noexcept(true){
+	}
+	static tFloat BinaryLogarithm(tFloat n)noexcept(true){
+	}
+	static tFloat NaturalExponential(tFloat n)noexcept(true){
+	}
+	static tFloat BinaryExponential(tFloat n)noexcept(true){
+	}
+	static tFloat Power(tFloat Base,tFloat Exponent)noexcept(true){
+	}
+	static tFloat Sine(tFloat n)noexcept(true){
+	}
+	static tFloat Cosine(tFloat n)noexcept(true){
+	}
+	static tFloat Tangent(tFloat n)noexcept(true){
+	}
+	static tFloat ArcSine(tFloat n)noexcept(true){
+	}
+	static tFloat ArcCosine(tFloat n)noexcept(true){
+	}
+	static tFloat ArcTangent(tFloat n)noexcept(true){
+	}
+	static tFloat ArcTangent2(tFloat y,tFloat x)noexcept(true){
+	}
+	*/
+};
+
+
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
+namespace cnMath{
+//---------------------------------------------------------------------------
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatAbsolute(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Absolute(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundNearest(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundNearest(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundTruncate(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundTruncate(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundNegative(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundNegative(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundPositive(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundPositive(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatSplitExponent(T n,sfInt16 &Exponent)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::SplitExponent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n),Exponent);	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatModulo(const T &Dividend,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Modulo(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Dividend),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Divisor));	}
+
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatSquareRoot(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::SquareRoot(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatNaturalLogarithm(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::NaturalLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatBinaryLogarithm(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::BinaryLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatNaturalExponential(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::NaturalExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatBinaryExponential(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::BinaryExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatPower(const T &Base,typename cnVar::TTypeDef<T>::Type Exponent)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Power(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Base),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Exponent));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatSine(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Sine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatCosine(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Cosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatTangent(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Tangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatArcSine(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcSine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatArcCosine(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcCosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatArcTangent(const T &n)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcTangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+
+template<class T>
+inline typename cnVar::TFloatConversion<T>::tMatch FloatArcTangentFloatArcTangent2(const T &y,typename cnVar::TTypeDef<T>::Type x)noexcept(true)
+{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Power(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(y),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(x));	}
+
+//---------------------------------------------------------------------------
+}	//	namespace cnMath
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
@@ -360,6 +794,17 @@ struct IntRoundFunction<T,false> :
 	IntBaseNRound<T,cnVar::TIsSigned<T>::Value>
 {};
 
+template<class T,T r,T f,uIntn e>
+struct TConstantPowI
+{
+	static cnLib_CONSTVAR T Value=TConstantPowI<T,r*f,f,e-1>::Value;
+};
+template<class T,T r,T f>
+struct TConstantPowI<T,r,f,0>
+{
+	static cnLib_CONSTVAR T Value=r;
+};
+
 }	// namespace Integer_TH
 }	// namespace cnLib_THelper
 //---------------------------------------------------------------------------
@@ -409,436 +854,11 @@ inline cnLib_CONSTEXPR_FUNC TInt IntRoundUp(TInt Value,typename cnVar::TTypeDef<
 {
 	return IntRoundDown(Value+Base-1,Base);
 }
-//---------------------------------------------------------------------------
-}	// namespace cnMath
-//---------------------------------------------------------------------------
-}	// namespace cnLibrary
-//---------------------------------------------------------------------------
-namespace cnLib_THelper{
-namespace Math_TH{
 
 
-template<class T,T r,T f,uIntn e>
-struct TConstantPowI
-{
-	static cnLib_CONSTVAR T Value=TConstantPowI<T,r*f,f,e-1>::Value;
-};
-template<class T,T r,T f>
-struct TConstantPowI<T,r,f,0>
-{
-	static cnLib_CONSTVAR T Value=r;
-};
-
-
-template<uIntn IntSize>
-struct TMultiprecisionInteger_AddSub
-{
-	typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tUInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize,true>::Type tSInt;
-
-	static bool UAdd(tUInt &Result,tUInt Augend,tUInt Addend,bool Carry)noexcept(true)
-	{
-		if(Carry){
-			if(++Addend==0){
-				Result=Augend;
-				return true;
-			}
-		}
-		tUInt r=Augend+Addend;
-		Result=r;
-		return r<Augend;
-	}
-	static bool SAdd(tSInt &Result,tSInt Augend,tSInt Addend,bool Carry)noexcept(true)
-	{
-		if(Carry){
-			if(++Addend==cnVar::TIntegerValue<tSInt>::MSB){
-				Result=Augend^cnVar::TIntegerValue<tSInt>::MSB;
-				return true;
-			}
-		}
-		tSInt r=Augend+Addend;
-		Result=r;
-		ufInt8 AugendSign=static_cast<ufInt8>(static_cast<tUInt>(Augend)>>(IntSize*ByteBitCount-1));
-		ufInt8 AddendSign=static_cast<ufInt8>(static_cast<tUInt>(Addend)>>(IntSize*ByteBitCount-1));
-		ufInt8 rSign=static_cast<ufInt8>(static_cast<tUInt>(r)>>(IntSize*ByteBitCount-1));
-		rSign=~(AugendSign^AddendSign) & (AugendSign^rSign);
-		return reinterpret_cast<bool&>(rSign);
-	}
-	static bool USub(tUInt &Result,tUInt Minuend,tUInt Subtrahend,bool Borrow)noexcept(true)
-	{
-		if(Borrow){
-			if(++Subtrahend==0){
-				Result=Minuend;
-				return true;
-			}
-		}
-		tUInt r=Minuend-Subtrahend;
-		Result=r;
-		return r>Minuend;
-	}
-	static bool SSub(tSInt &Result,tSInt Minuend,tSInt Subtrahend,bool Borrow)noexcept(true)
-	{
-		if(Borrow){
-			if(++Subtrahend==cnVar::TIntegerValue<tSInt>::MSB){
-				Result=Minuend^cnVar::TIntegerValue<tSInt>::MSB;
-				return true;
-			}
-		}
-		tSInt r=Minuend-Subtrahend;
-		Result=r;
-		ufInt8 MinuendSign=static_cast<ufInt8>(static_cast<tUInt>(Minuend)>>(IntSize*ByteBitCount-1));
-		ufInt8 SubtrahendSign=static_cast<ufInt8>(static_cast<tUInt>(Subtrahend)>>(IntSize*ByteBitCount-1));
-		ufInt8 rSign=static_cast<ufInt8>(static_cast<tUInt>(r)>>(IntSize*ByteBitCount-1));
-		rSign=~(MinuendSign^SubtrahendSign) & (MinuendSign^rSign);
-		return reinterpret_cast<bool&>(rSign);
-	}
-};
-
-template<uIntn IntSize>
-struct TMultiprecisionInteger_Shift
-{
-	typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tUInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize,true>::Type tSInt;
-
-	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept(true)
-	{
-		tUInt v=ValueHigh<<Count;
-		v|=ValueLow>>(IntSize*ByteBitCount-Count);
-		return v;
-	}
-	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept(true)
-	{
-		tUInt v=ValueLow>>Count;
-		v|=ValueHigh<<(IntSize*ByteBitCount-Count);
-		return v;
-	}
-	
-};
-
-template<uIntn IntSize,bool DoubleSizeAvailable>
-struct TMultiprecisionInteger_MulDiv
-{
-	typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tUInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize,true>::Type tSInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize*2,false>::Type t2UInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize*2,true>::Type t2SInt;
-
-	static tUInt UMul(tUInt &ResultHigh,tUInt Multiplicand,tUInt Multiplier)noexcept(true)
-	{
-		t2UInt r=static_cast<t2UInt>(Multiplicand)*Multiplier;
-		ResultHigh=static_cast<tUInt>(r>>IntSize*8);
-		return static_cast<tUInt>(r);
-	}
-
-	static tUInt SMul(tSInt &ResultHigh,tSInt Multiplicand,tSInt Multiplier)noexcept(true)
-	{
-		t2SInt r=static_cast<t2SInt>(Multiplicand)*Multiplier;
-		ResultHigh=static_cast<tSInt>(r>>IntSize*8);
-		return static_cast<tUInt>(r);
-	}
-
-	static tUInt UMulH(tUInt Multiplicand,tUInt Multiplier)noexcept(true)
-	{
-		t2UInt r=static_cast<t2UInt>(Multiplicand)*Multiplier;
-		return static_cast<tUInt>(r>>IntSize*8);
-	}
-
-	static tSInt SMulH(tSInt Multiplicand,tSInt Multiplier)noexcept(true)
-	{
-		t2SInt r=static_cast<t2SInt>(Multiplicand)*Multiplier;
-		return static_cast<tSInt>(r>>IntSize*8);
-	}
-
-	static tUInt UDiv(tUInt &Remainder,tUInt Dividend_Lo,tUInt Dividend_Hi,tUInt Divisor)noexcept(true)
-	{
-		t2UInt d=Dividend_Hi;
-		d= (d<<IntSize*8) | Dividend_Lo;
-		Remainder=static_cast<tUInt>(d%Divisor);
-		return static_cast<tUInt>(d/Divisor);
-	}
-
-	static tSInt SDiv(tSInt &Remainder,tUInt Dividend_Lo,tSInt Dividend_Hi,tSInt Divisor)noexcept(true)
-	{
-		t2SInt d=Dividend_Hi;
-		d= (d<<IntSize*8) | Dividend_Lo;
-		Remainder=static_cast<tSInt>(d%Divisor);
-		return static_cast<tSInt>(d/Divisor);
-	}
-
-
-	static tUInt UMulDiv(tUInt &Remainder,tUInt Multiplicand,tUInt Multiplier,tUInt Divisor)noexcept(true)
-	{
-		t2UInt d=static_cast<t2UInt>(Multiplicand)*Multiplier;
-		Remainder=static_cast<tUInt>(d%Divisor);
-		return static_cast<tUInt>(d/Divisor);
-	}
-
-	static tSInt SMulDiv(tSInt &Remainder,tSInt Multiplicand,tSInt Multiplier,tSInt Divisor)noexcept(true)
-	{
-		t2SInt d=static_cast<t2SInt>(Multiplicand)*Multiplier;
-		Remainder=static_cast<tSInt>(d%Divisor);
-		return static_cast<tSInt>(d/Divisor);
-	}
-};
-
-template<uIntn IntSize>
-struct TMultiprecisionInteger_MulDiv<IntSize,false>
-{
-	typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tUInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize,true>::Type tSInt;
-
-	static tUInt UMul(tUInt &ResultHigh,tUInt Multiplicand,tUInt Multiplier)noexcept(true)
-	{
-		static cnLib_CONSTVAR tUInt hIntBitCount=IntSize*4;
-		static cnLib_CONSTVAR tUInt hIntMask=(static_cast<tUInt>(1)<<hIntBitCount)-1;
-		tUInt r[2];
-		tUInt t;
-
-		// - *
-		// - *
-		r[0]=Multiplier&hIntMask;
-		r[0]*=Multiplicand&hIntMask;
-
-		// * -
-		// * -
-		r[1]=Multiplicand>>hIntBitCount;
-		r[1]*=Multiplier>>hIntBitCount;
-
-		bool Carry;
-		// - *
-		// * -
-		t=Multiplier>>hIntBitCount;
-		t*=Multiplicand&hIntMask;
-		Carry=TMultiprecisionInteger_AddSub<IntSize>::UAdd(r[0],r[0],t<<hIntBitCount,false);
-		TMultiprecisionInteger_AddSub<IntSize>::UAdd(r[1],r[1],t>>hIntBitCount,Carry);
-
-		// * -
-		// - *
-		t=Multiplicand>>hIntBitCount;
-		t*=Multiplier&hIntMask;
-		Carry=TMultiprecisionInteger_AddSub<IntSize>::UAdd(r[0],r[0],t<<hIntBitCount,false);
-		TMultiprecisionInteger_AddSub<IntSize>::UAdd(r[1],r[1],t>>hIntBitCount,Carry);
-
-		ResultHigh=r[1];
-		return r[0];
-	}
-
-	static tUInt SMul(tSInt &ResultHigh,tSInt Multiplicand,tSInt Multiplier)noexcept(true)
-	{
-		static cnLib_CONSTVAR tUInt hIntBitCount=IntSize*4;
-		static cnLib_CONSTVAR tUInt hIntMask=(static_cast<tUInt>(1)<<hIntBitCount)-1;
-		tUInt rl;
-		tSInt rh;
-		tSInt t;
-
-		// * -
-		// * -
-		rh=Multiplicand>>hIntBitCount;
-		rh*=Multiplier>>hIntBitCount;
-
-		// - *
-		// - *
-		rl=static_cast<tUInt>(Multiplier)&hIntMask;
-		rl*=static_cast<tUInt>(Multiplicand)&hIntMask;
-
-		bool Carry;
-		// - *
-		// * -
-		t=Multiplier>>hIntBitCount;
-		t*=Multiplicand&hIntMask;
-		Carry=TMultiprecisionInteger_AddSub<IntSize>::UAdd(rl,rl,t<<hIntBitCount,false);
-		TMultiprecisionInteger_AddSub<IntSize>::SAdd(rh,rh,t>>hIntBitCount,Carry);
-
-		// * -
-		// - *
-		t=Multiplicand>>hIntBitCount;
-		t*=Multiplier&hIntMask;
-		Carry=TMultiprecisionInteger_AddSub<IntSize>::UAdd(rl,rl,t<<hIntBitCount,false);
-		TMultiprecisionInteger_AddSub<IntSize>::SAdd(rh,rh,t>>hIntBitCount,Carry);
-
-		ResultHigh=rh;
-		return rl;
-	}
-	
-	static tUInt UMulH(tUInt Multiplicand,tUInt Multiplier)noexcept(true)
-	{
-		tUInt rh;
-		UMul(rh,Multiplicand,Multiplier);
-		return rh;
-	}
-	static tSInt SMulH(tSInt Multiplicand,tSInt Multiplier)noexcept(true)
-	{
-		tSInt rh;
-		SMul(rh,Multiplicand,Multiplier);
-		return rh;
-	}
-
-	static tUInt UDiv(tUInt &Remainder,tUInt Dividend_Lo,tUInt Dividend_Hi,tUInt Divisor)noexcept(true)
-	{
-		if(Dividend_Hi==0){
-			Remainder=Dividend_Lo%Divisor;
-			return Dividend_Lo/Divisor;
-		}
-		if(Dividend_Hi>=Divisor){
-			// overflow
-			Remainder=0;
-			return cnVar::TIntegerValue<tUInt>::Max;
-		}
-		// half integer bit count
-		cnLib_CONSTVAR uIntn hiBitCount=IntSize*ByteBitCount/2;
-
-
-		tUInt qh,q;
-		tUInt rh,rl;
-		if(Divisor<static_cast<tUInt>(1)<<hiBitCount){
-			// Divisor can be used directly
-
-			tUInt dt;
-			// Dividend[1:2] / Divisor
-			dt=Dividend_Hi<<hiBitCount;
-			dt|=Dividend_Lo>>hiBitCount;
-			qh=dt/Divisor;
-			dt%=Divisor;
-
-			// Dividend[0:1] / Divisor
-			dt<<=hiBitCount;
-			dt|=Dividend_Lo&((static_cast<tUInt>(1)<<hiBitCount)-1);
-			q=dt/Divisor;
-
-			Remainder=dt%Divisor;
-			q|=qh<<hiBitCount;
-			return q;
-		}
-		// scale down Divisor
-		tUInt dv=Divisor;
-		ufInt8 dvScale=0;
-		do{
-			dv>>=1;
-			dvScale++;
-		}while(dv>=(static_cast<tUInt>(1)<<hiBitCount));
-
-		tUInt dt;
-		ufInt8 dScale=hiBitCount-dvScale;
-		// Dividend[1:2]
-		if(dScale!=0){
-			dt=TMultiprecisionInteger_Shift<IntSize>::ShiftLeftInto(Dividend_Hi,Dividend_Lo,dScale);
-		}
-		else{
-			dt=Dividend_Hi;
-		}
-		// Dividend[1:2] / ScaledDownDivisor
-		qh=dt/dv;
-		tUInt dh,dl;	// remaining dividend
-		bool rBorrow;
-		if(qh>=static_cast<tUInt>(1)<<hiBitCount){
-			dh=Dividend_Hi-Divisor;
-			dl=Dividend_Lo;
-			rBorrow=true;
-		}
-		else{
-			rl=UMul(rh,qh<<hiBitCount,Divisor);
-		
-			dl=Dividend_Lo;
-			rBorrow=TMultiprecisionInteger_AddSub<IntSize>::USub(dh,Dividend_Hi,rh,false);
-		}
-		if(rBorrow){
-			bool c=TMultiprecisionInteger_AddSub<IntSize>::UAdd(dl,dl,Divisor<<hiBitCount,false);
-			TMultiprecisionInteger_AddSub<IntSize>::UAdd(dh,dh,Divisor>>hiBitCount,c);
-			qh--;
-		}
-
-
-		// Dividend[0:1] / Divisor
-		dt=TMultiprecisionInteger_Shift<IntSize>::ShiftLeftInto(dh,dl,hiBitCount+dScale);
-		q=dt/dv;
-
-		// Remainder
-		if(q>=static_cast<tUInt>(1)<<hiBitCount){
-			// rh is no longer needed
-			// rBorrow=true;		// should be true
-
-			// rl=Divisor*q;
-			// rl=dl-rl;
-			// if(true){
-			//	rl+=Divisor;
-			//	q--;
-			// }
-			
-			rl=dl-(Divisor<<hiBitCount);
-			rl+=Divisor;
-			q--;
-		}
-		else{
-			rl=UMul(rh,q,Divisor);
-			rBorrow=TMultiprecisionInteger_AddSub<IntSize>::USub(rl,dl,rl,false);
-			rBorrow=TMultiprecisionInteger_AddSub<IntSize>::USub(rh,dh,rh,rBorrow);
-			if(rBorrow){
-				rl+=Divisor;
-				q--;
-			}
-		}
-
-		Remainder=rl;
-		q|=qh<<hiBitCount;
-		return q;
-	}
-
-	static tSInt SDiv(tSInt &Remainder,tUInt Dividend_Lo,tSInt Dividend_Hi,tSInt Divisor)noexcept(true)
-	{
-
-		bool Signend=Dividend_Hi<0;
-		if(Signend){
-			if(Dividend_Lo==0){
-				Dividend_Hi=-Dividend_Hi;
-			}
-			else{
-				Dividend_Hi=~Dividend_Hi;
-				Dividend_Lo=-static_cast<tSInt>(Dividend_Lo);
-			}
-		}
-		bool Signor=Divisor<0;
-		if(Signor)
-			Divisor=-Divisor;
-
-		tUInt q,r;
-		q=UDiv(reinterpret_cast<tUInt&>(r),Dividend_Lo,Dividend_Hi,Divisor);
-
-		if(Signend ^ Signor){
-			q=-q;
-		}
-		if(Signend){
-			r=-r;
-		}
-		Remainder=r;
-		return q;
-	}
-
-	static tUInt UMulDiv(tUInt &Remainder,tUInt Multiplicand,tUInt Multiplier,tUInt Divisor)noexcept(true)
-	{
-		tUInt dh,dl;
-		dl=UMul(dh,Multiplicand,Multiplier);
-		return UDiv(Remainder,dl,dh,Divisor);
-	}
-
-	static tSInt SMulDiv(tSInt &Remainder,tSInt Multiplicand,tSInt Multiplier,tSInt Divisor)noexcept(true)
-	{
-		tSInt dh;
-		tUInt dl;
-		dl=SMul(dh,Multiplicand,Multiplier);
-		return SDiv(Remainder,dl,dh,Divisor);
-	}
-};
-
-}	// namespace Math_TH
-}	// namespace cnLib_THelper
-//---------------------------------------------------------------------------
-namespace cnLibrary{
-//---------------------------------------------------------------------------
-namespace cnMath{
-//---------------------------------------------------------------------------
 
 template<class T,T n,uIntn e>
-struct TConstantPowI : cnLib_THelper::Math_TH::TConstantPowI<T,1,n,e>
+struct TConstantPowI : cnLib_THelper::Integer_TH::TConstantPowI<T,1,n,e>
 {
 };
 
@@ -856,41 +876,6 @@ inline T PowI(T n,uIntn e)noexcept(true)
 	}
 	return r;
 }
-
-template<uIntn IntSize>
-struct TMultiprecisionInteger
-	: cnLib_THelper::Math_TH::TMultiprecisionInteger_AddSub<IntSize>
-	, cnLib_THelper::Math_TH::TMultiprecisionInteger_Shift<IntSize>
-	, cnLib_THelper::Math_TH::TMultiprecisionInteger_MulDiv<IntSize,(IntSize<cnVar::MaxIntegerSize)>
-{
-	typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tUInt;
-	typedef typename cnVar::TIntegerOfSize<IntSize,true>::Type tSInt;
-};
-
-template<class TMPInteger>
-inline typename TMPInteger::tUInt MPUPowMod(typename TMPInteger::tUInt Base,uIntn Exponent,typename TMPInteger::tUInt Divisor){
-	typename TMPInteger::tUInt r;
-	if(Exponent&1){
-		TMPInteger::UDiv(r,Base,0,Divisor);
-	}
-	else{
-		r=1;
-	}
-	Exponent>>=1;
-	while(Exponent!=0){
-		TMPInteger::UMulDiv(Base,Base,Base,Divisor);
-
-		if(Exponent&1){
-			TMPInteger::UMulDiv(r,r,Base,Divisor);
-		}
-
-		Exponent>>=1;
-	};
-	return r;
-}
-
-//template<class TMPInteger>
-//struct TIntegerArray;
 //---------------------------------------------------------------------------
 }	// namespace cnMath
 //---------------------------------------------------------------------------

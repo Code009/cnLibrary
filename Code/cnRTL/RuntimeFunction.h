@@ -39,7 +39,7 @@ namespace cnMemory{
 
 // ZeroFill
 // [in]Data		array to fill
-inline void ZeroFill(void *Data,uIntn Size){	return TKRuntime::tMemory<1>::ZeroFill(Data,Size);	}
+inline void ZeroFill(void *Data,uIntn Size){	return TKRuntime::TMemory<1>::ZeroFill(Data,Size);	}
 
 // ZeroFill
 // [in]Data		array to fill
@@ -52,25 +52,19 @@ template<class T,uIntn DataLength>
 inline void ZeroFill(T (&Data)[DataLength]){	return ZeroFill(&Data,sizeof(T)*DataLength);	}
 
 
-inline bool IsEqual(const void *Mem1,const void *Mem2,uIntn Size){
-	return TKRuntime::tMemory<1>::Equal(Mem1,Mem2,Size);
-}
+inline void Copy(void *Dest,const void *Src,uIntn Size){	return TKRuntime::TMemory<1>::Copy(Dest,Src,Size);	}
+inline void CopyO(void *Dest,const void *Src,uIntn Size){	return TKRuntime::TMemory<1>::CopyOverlapped(Dest,Src,Size);	}
 
-// Fill
-//	Fill Dest with Data
-// [in]Dest		array to fill
-// [in]Length	length to fill
-// [in]Data		data
-template<class T>
-inline void Fill(void *Dest,uIntn Length,const T Data)noexcept(true)
-{
-	return TKRuntime::tArray<sizeof(T)>::Fill(Dest,Length,static_cast<typename cnVar::TIntegerOfSize<sizeof(T),false>::Type>(Data));
+
+inline bool IsEqual(const void *Mem1,const void *Mem2,uIntn Size){
+	return TKRuntime::TMemory<1>::Equal(Mem1,Mem2,Size);
 }
 
 inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)
 {
-	return TKRuntime::tArray<1>::Compare(Mem1,Mem2,Size);
+	return TKRuntime::TMemory<1>::Compare(Mem1,Mem2,Size);
 }
+
 
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
@@ -78,155 +72,25 @@ inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)
 namespace cnString{
 //---------------------------------------------------------------------------
 
-// GetLength
-//	Get the length of string
-// [in]String
-// MaxLength		maximum length of string
-// return length of string
-template<class TCharacter>
-inline uIntn GetLength(const TCharacter *String)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::QueryLength(String);
-}
-
-// GetLength
-//	Get the length of string
-// [in]String
-// MaxLength		maximum length of string
-// return length of string
-template<class TCharacter>
-inline uIntn GetLength(const TCharacter *String,uIntn MaxLength)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::QueryLength(String,MaxLength);
-}
-
-// Copy
-//	Copy string
-// [out]Dest		destination string buffer
-// [in]DestMax		max length of destination buffer
-// [in]Src			source string, unknow length
-// return	copied length
-template<class TCharacter,class TSrcPtr>
-inline typename cnVar::TTypeConditional<uIntn,
-	cnVar::TIsPointerOf<TCharacter,typename cnVar::TRemoveReference<TSrcPtr>::Type>::Value
->::Type Copy(TCharacter *Dest,uIntn DestMax,TSrcPtr&& Src)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,DestMax-1,Src);
-}
-// Copy
-//	Copy string
-// <DestMax>		max capacity of destination buffer
-// [out]Dest		destination string buffer
-// [in]Src			source string, unknow length
-// return	copied length
-template<class TCharacter,uIntn DestCapacity,class TSrcPtr>
-inline typename cnVar::TTypeConditional<uIntn,
-	cnVar::TIsPointerOf<TCharacter,typename cnVar::TRemoveReference<TSrcPtr>::Type>::Value
->::Type Copy(TCharacter (&Dest)[DestCapacity],TSrcPtr&& Src)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,DestCapacity-1,Src);
-}
-
-// Copy
-//	Copy string
-// [out]Dest		destination string buffer
-// [in]DestMax		max length of destination buffer
-// [in]Src			source string array
-// return	copied string length
-template<class TCharacter,uIntn SrcMax>
-inline uIntn Copy(TCharacter *Dest,uIntn DestMax,const TCharacter (&Src)[SrcMax])
-{
-	uIntn CopyMax=DestMax-1;
-	if(CopyMax>SrcMax)
-		CopyMax=SrcMax;
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
-}
-
-// Copy
-//	Copy string
-// [in]DestMax		max length of dest, including null-termination
-// [out]Dest		destination string buffer
-// [in]Src			source string array
-// return	copied length
-template<class TCharacter,uIntn DestMax,uIntn SrcMax>
-inline uIntn Copy(TCharacter (&Dest)[DestMax],const TCharacter (&Src)[SrcMax])
-{
-	uIntn CopyMax=DestMax-1;
-	if(CopyMax>SrcMax)
-		CopyMax=SrcMax;
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
-}
-
-// Copy
-//	Copy string
-// [out]Dest		destination string buffer
-// [in]DestMax		max length of destination buffer
-// [in]Src			source string
-// [in]SrcMax		max length of source string
-// return	copied string length
-template<class TCharacter>
-inline uIntn Copy(TCharacter *Dest,uIntn DestMax,const TCharacter *Src,uIntn SrcMax)
-{
-	uIntn CopyMax=DestMax-1;
-	if(CopyMax>SrcMax)
-		CopyMax=SrcMax;
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
-}
-// Copy
-//	Copy string
-// <DestMax>		max length of destination buffer
-// [out]Dest		destination string buffer
-// [in]Src			source string
-// [in]SrcMax		max length of source string
-// return	copied string length
-template<class TCharacter,uIntn DestMax>
-inline uIntn Copy(TCharacter (&Dest)[DestMax],const TCharacter *Src,uIntn SrcMax)
-{
-	uIntn CopyMax=DestMax-1;
-	if(CopyMax>SrcMax)
-		CopyMax=SrcMax;
-	return TKRuntime::tString<sizeof(TCharacter)>::Copy(Dest,CopyMax,Src);
-}
-
-// Equal
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	[in]Length	length of first characters in string to compare
-//	return:	if strings matched
-template<class TCharacter>
-bool Equal(const TCharacter *Str1,uIntn Str1Length,const typename cnVar::TTypeDef<TCharacter>::Type *Str2)noexcept(true)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::Equal(Str1,Str1Length,Str2);
-}
-
-// Compare
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	[in]Length	length of first characters in string to compare
-//	return:	the differ of first differnet char, 0 if two strings matched
-template<class TCharacter>
-sfInt8 Compare(const TCharacter *Str1,uIntn Str1Length,const typename cnVar::TTypeDef<TCharacter>::Type *Str2)noexcept(true)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::Compare(Str1,Str1Length,Str2);
-}
-
-// Compare
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
-template<class TCharacter>
-sfInt8 Compare(const TCharacter *Str1,uIntn Str1Length,const typename cnVar::TTypeDef<TCharacter>::Type *Str2,uIntn Str2Length)noexcept(true)
-{
-	return TKRuntime::tString<sizeof(TCharacter)>::Compare(Str1,Str1Length,Str2,Str2Length);
-}
-
 //---------------------------------------------------------------------------
 }	// namespace cnString
 //---------------------------------------------------------------------------
 namespace cnRTL{
+//---------------------------------------------------------------------------
+
+class cErrorFrame
+{
+public:
+	cErrorFrame()noexcept(true);
+	~cErrorFrame()noexcept(true);
+	rPtr<iErrorReport> MakeReport(void)noexcept(true);
+
+	cStringBuffer<uChar16> Function;
+	cStringBuffer<uChar16> Action;
+	cStringBuffer<uChar16> Error;
+
+};
+
 //---------------------------------------------------------------------------
 
 // Meta Class
@@ -316,8 +180,8 @@ struct cVariantTypeOperator
 		return TypeIDList[TypeIndex];
 	}
 
-	static const rtType TypeInfoList[];
-	static rtType GetTypeInfo(uIntn TypeIndex){
+	static const rtTypeInfo TypeInfoList[];
+	static rtTypeInfo GetTypeInfo(uIntn TypeIndex){
 		return TypeInfoList[TypeIndex];
 	}
 
@@ -337,7 +201,7 @@ struct cVariantTypeOperator
 };
 
 template<class...VT>	const tTypeID cVariantTypeOperator<VT...>::TypeIDList[]={cnVar::TTypeID<VT>::Value...};
-template<class...VT>	const rtType cVariantTypeOperator<VT...>::TypeInfoList[]={cnVar::TRuntimeTypeInfo<VT>::Value...};
+template<class...VT>	const rtTypeInfo cVariantTypeOperator<VT...>::TypeInfoList[]={cnVar::TRuntimeTypeInfo<VT>::Value...};
 
 template<class...VT>
 using cVariant=cnVar::cVariant< cVariantTypeOperator<VT...> >;
@@ -1030,12 +894,12 @@ inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffe
 	cArray<tElement> CurBuffer;
 	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Count)).Length!=0){
 		if(CurBuffer.Length>=Count){
-			TKRuntime::tArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,Count,Element);
+			TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,Count,Element);
 			WriteBuffer.CommitWriteBuffer(Count);
 			return true;
 		}
 		// fill
-		TKRuntime::tArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,CurBuffer.Length,Element);
+		TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,CurBuffer.Length,Element);
 		Count-=CurBuffer.Length;
 		// next block
 		WriteBuffer.CommitWriteBuffer(CurBuffer.Length);

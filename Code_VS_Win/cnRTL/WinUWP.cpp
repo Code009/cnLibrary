@@ -18,7 +18,7 @@ HRESULT cHStringReference::Create(const wchar_t *String,uIntn Length)
 //---------------------------------------------------------------------------
 HRESULT cHStringReference::Create(const wchar_t *String)
 {
-	uIntn Length=cnString::GetLength(String);
+	uIntn Length=cnString::FindLength(String);
 	return ::WindowsCreateStringReference(String,Length,&Header,&Handle);
 }
 //---------------------------------------------------------------------------

@@ -115,6 +115,89 @@ void cThread::DependentShutdownNotification(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+cErrorReportRecord::cErrorReportRecord(iErrorReport *NextReport,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)
+	: iErrorReport(NextReport
+		, {fStringContent,Function.Length}
+		, {fStringContent+Function.Length+1,Action.Length}
+		, {fStringContent+Function.Length+Action.Length+2,Error.Length}
+	  )
+	, fRefCount(1)
+{
+	uChar16 *pStringContent=fStringContent;
+	cnMemory::Copy(pStringContent,Function.Pointer,Function.Length*2);
+	pStringContent+=Function.Length;
+	*pStringContent++=0;
+	cnMemory::Copy(pStringContent,Action.Pointer,Action.Length*2);
+	pStringContent+=Action.Length;
+	*pStringContent++=0;
+	cnMemory::Copy(pStringContent,Error.Pointer,Error.Length*2);
+	pStringContent+=Error.Length;
+	*pStringContent++=0;
+}
+//---------------------------------------------------------------------------
+cErrorReportRecord::~cErrorReportRecord()
+{
+	if(Next!=nullptr){
+		rDecReference(Next,'recd');
+	}
+}
+//---------------------------------------------------------------------------
+void cErrorReportRecord::IncreaseReference(void)noexcept(true)
+{
+	++fRefCount.Free;
+}
+//---------------------------------------------------------------------------
+void cErrorReportRecord::DecreaseReference(void)noexcept(true)
+{
+	if(--fRefCount.Free==0){
+		this->~cErrorReportRecord();
+		uIntn StringLength=Function.Length+Action.Length+Error.Length+3;
+		uIntn RecordSize=sizeof(cErrorReportRecord)+StringLength*2-4;
+		cAllocationOperator::Deallocate(this,RecordSize,cnMemory::TAlignmentOf<cErrorReportRecord>::Value);
+	}
+}
+//---------------------------------------------------------------------------
+rPtr<cErrorReportRecord> cErrorReportRecord::Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+{
+	uIntn StringLength=Function.Length+Action.Length+Error.Length+3;
+	uIntn RecordSize=sizeof(cErrorReportRecord)+StringLength*2-4;
+	auto Record=static_cast<cErrorReportRecord*>(cAllocationOperator::Allocate(RecordSize,cnMemory::TAlignmentOf<cErrorReportRecord>::Value));
+	iErrorReport *NextRecord=Next!=nullptr?rExtract(Next,'recd'):nullptr;
+	cnVar::ManualConstruct(*Record,NextRecord,Function,Action,Error);
+	return rPtr<cErrorReportRecord>::TakeFromManual(Record);
+}
+//---------------------------------------------------------------------------
+void cnSystem::ErrorReportManager::Clear(void)noexcept(true)
+{
+	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
+	if(TLSObject!=nullptr){
+		cErrorReportRecord::gTLSRecord->Clear();
+	}
+}
+//---------------------------------------------------------------------------
+void cnSystem::ErrorReportManager::Report(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+{
+	auto Record=Make(Function,Action,Error);
+	cErrorReportRecord::gTLSRecord->Set(cnVar::MoveCast(Record),Record);
+}
+//---------------------------------------------------------------------------
+rPtr<iErrorReport> cnSystem::ErrorReportManager::Make(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+{
+	return cErrorReportRecord::Make(Fetch(),Function,Action,Error);
+}
+//---------------------------------------------------------------------------
+rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept(true)
+{
+	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
+	rPtr<iErrorReport> RetReport;
+	if(TLSObject!=nullptr){
+		RetReport=static_cast<iErrorReport*>(TLSObject);
+		cErrorReportRecord::gTLSRecord->Clear();
+	}
+	return RetReport;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //- Thread pool -------------------------------------------------------------
 //- Thread pool -------------------------------------------------------------

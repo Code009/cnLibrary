@@ -155,6 +155,46 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code\cnTK\ThreadSync.hpp" />
+    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnConsole.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnData.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDatabase.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDebug.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFileSystem.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFundamental.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMedia.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMemory.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetwork.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetworkProtocol.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnStream.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnSystem.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnThread.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUI.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUIGraph.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osOpenGL.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osSocket.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\cnTK.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\CPPFeatureCheck.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\cnProtocol.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.h" />
@@ -233,9 +273,6 @@
     <ClInclude Include="..\..\Code_CRT\cnRTL\cnRTLCore.h" />
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreCommon.h" />
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreFundamental.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMath.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreMemory.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreString.h" />
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTFeatureCheck.h" />
     <ClInclude Include="..\..\Code_CRT\cnRTL\CRTTemplateKit.h" />
     <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h" />
@@ -314,6 +351,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosCleanup.inc" />
+    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosDeclare.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

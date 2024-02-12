@@ -25,6 +25,12 @@ struct tVectorOperatorEnumeration;
 // 	typedef cnVar::TTypePack<TVectorOperator...> tIntegerOperatorPack;
 //};
 
+//template<class TElement>
+//struct TVector;
+//{
+//};
+
+
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
 //---------------------------------------------------------------------------

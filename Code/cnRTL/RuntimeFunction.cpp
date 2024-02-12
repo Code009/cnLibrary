@@ -6,6 +6,25 @@ using namespace cnRTL;
 
 
 //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cErrorFrame::cErrorFrame()noexcept(true)
+{
+	// clear error in tls
+	cnSystem::ErrorReportManager::Clear();
+}
+//---------------------------------------------------------------------------
+cErrorFrame::~cErrorFrame()noexcept(true)
+{
+	if(Action->Length!=0 || Error->Length!=0){
+		cnSystem::ErrorReportManager::Report(Function.GetArray(),Action.GetArray(),Error.GetArray());
+	}
+}
+//---------------------------------------------------------------------------
+rPtr<iErrorReport> cErrorFrame::MakeReport(void)noexcept(true)
+{
+	return cnSystem::ErrorReportManager::Make(Function.GetArray(),Action.GetArray(),Error.GetArray());
+}
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
@@ -258,7 +277,7 @@ bool cnRTL::operator >= (iTimepoint *Dest,const cTime &Src)
 void cSpinLock::Acquire(void)
 {
 	while(fOwned.Acquire.CmpStore(false,true)==false){
-		if(fOwned.WatchUntilEqual(false,SpinCount)==false){
+		if(fOwned.WatchEqual(false,SpinCount)==false){
 			cnSystem::CurrentThread::SwitchThread();
 		}
 	}

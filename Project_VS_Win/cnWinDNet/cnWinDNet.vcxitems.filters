@@ -36,6 +36,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFComponent.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinRTLM.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_Common.cpp">

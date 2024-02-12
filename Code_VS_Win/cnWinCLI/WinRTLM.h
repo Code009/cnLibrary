@@ -12,6 +12,40 @@
 #if _MANAGED
 //---------------------------------------------------------------------------
 namespace cnLibrary{
+
+struct TKRuntime::ThreadNotification
+{
+	CRITICAL_SECTION CS;
+	CONDITION_VARIABLE CondVar;
+
+	ThreadNotification(){
+		::InitializeCriticalSection(&CS);
+		::InitializeConditionVariable(&CondVar);
+	}
+	~ThreadNotification(){
+		::DeleteCriticalSection(&CS);
+	}
+
+	void Start(void){
+		Notified=false;
+	}
+	void Finish(void){
+	}
+	void Wait(void){
+		if(Notified)
+			return;
+
+		::EnterCriticalSection(&CS);
+		::SleepConditionVariableCS(&CondVar,&CS,INFINITE);
+		::LeaveCriticalSection(&CS);
+	}
+	void Notify(void){
+		Notified=true;
+		::WakeConditionVariable(&CondVar);
+	}
+
+	bool Notified;
+};
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------

@@ -132,38 +132,32 @@ iPtr<iAsyncTask> cnRTL::DelayTask(uInt64 NS)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+cAsyncTaskCoroutine::impAsyncTask::impAsyncTask(cCoroutine<void>::pPtr &&Promise)
+	: Promise(cnVar::MoveCast(Promise))
+{
+	if(Promise->SetupAwait(this)==false){
+		State.SetDone();
+	}
+}
+//---------------------------------------------------------------------------
 bool cAsyncTaskCoroutine::impAsyncTask::IsDone(void)
 {
 	return State.IsDone();
 }
+//---------------------------------------------------------------------------
 bool cAsyncTaskCoroutine::impAsyncTask::SetNotify(iProcedure *NotifyProcedure)
 {
 	return State.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cAsyncTaskCoroutine::promise_type::promise_type()
-	: fTask(iCreate<impAsyncTask>())
+void cAsyncTaskCoroutine::impAsyncTask::NotifyCompletion(void)noexcept(true)
 {
-}
-//---------------------------------------------------------------------------
-cAsyncTaskCoroutine::promise_type::~promise_type()
-{
-}
-//---------------------------------------------------------------------------
-iPtr<cAsyncTaskCoroutine::impAsyncTask> cAsyncTaskCoroutine::promise_type::get_return_object()
-{
-	return fTask;
-}
-//---------------------------------------------------------------------------
-void cAsyncTaskCoroutine::promise_type::return_void(void)
-{
-	fTask->State.SetDone();
+	State.SetDone();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine::cAsyncTaskCoroutine(iPtr<impAsyncTask> &&Task)
-	: iPtr<iAsyncTask>(cnVar::MoveCast(Task))
+cAsyncTaskCoroutine::cAsyncTaskCoroutine(cCoroutine<void> &&Src)noexcept(true)
+	: iPtr<iAsyncTask>(iCreate<impAsyncTask>(Src.TakePromise()))
 {
 }
 //---------------------------------------------------------------------------

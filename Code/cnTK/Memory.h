@@ -7,6 +7,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.h>
 #include <cnTK/TypeTraits.h>
+#include <cnTK/Numerical.h>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -16,114 +17,83 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace TKRuntime{
 //---------------------------------------------------------------------------
+
+
 template<uIntn ElementSize>	
-struct tMemory;
+struct TMemory;
 //{
-//	static void Copy(void *Dest,const void *Src,uIntn Length)noexcept(true);
-//	static void CopyOverlapped(void *Dest,const void *Src,uIntn Length)noexcept(true);
-//	static void ZeroFill(void *Dest,uIntn Length)noexcept(true);
-//	static bool Equal(const void *Src1,const void *Src2,uIntn Length)noexcept(true);
+//	static void Copy(void *Dest,const void *Src,uIntn Length)noexcept;
+//	static void CopyOverlapped(void *Dest,const void *Src,uIntn Length)noexcept;
+//	static void ZeroFill(void *Dest,uIntn Length)noexcept;
+//	static bool Equal(const void *Src1,const void *Src2,uIntn Length)noexcept;
+//	static sfInt8 Compare(const void *Src1,const void *Src2,uIntn Length)noexcept;
 //};
 
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
 //---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn ElementSize>
+struct TMemory
+{
+	static cnLib_CONSTVAR uIntn OperateSize=cnVar::TIntegerValue<uIntn>::tValueLSB<ElementSize>::Value;
+	static cnLib_CONSTVAR uIntn Scale=ElementSize/OperateSize;
+	typedef typename cnVar::TIntegerOfSize<OperateSize,false>::Type tUInt;
+
+	static void Copy(void *Dest,const void *Src,uIntn Length)noexcept(true){
+		uIntn CopyLength=Length*Scale;
+		for(uIntn i=0;i<CopyLength;i++){
+			static_cast<tUInt*>(Dest)[i]=static_cast<const tUInt*>(Src)[i];
+		}
+	}
+	static void CopyOverlapped(void *Dest,const void *Src,uIntn Length)noexcept(true){
+		uIntn CopyLength=Length*Scale;
+		if(static_cast<uIntn>(static_cast<const tUInt*>(Dest)-static_cast<const tUInt*>(Src))>=CopyLength){
+			// not overlapped
+			for(uIntn i=0;i<CopyLength;i++){
+				static_cast<tUInt*>(Dest)[i]=static_cast<const tUInt*>(Src)[i];
+			}
+		}
+		else{
+			// overlapped
+			while(CopyLength!=0){
+				CopyLength--;
+				static_cast<tUInt*>(Dest)[CopyLength]=static_cast<const tUInt*>(Src)[CopyLength];
+			}
+		}
+	}
+	static void ZeroFill(void *Dest,uIntn Length)noexcept(true){
+		uIntn FillLength=Length*Scale;
+		for(uIntn i=0;i<CopyLength;i++){
+			static_cast<tUInt*>(Dest)[i]=static_cast<tUInt>(0);
+		}
+	}
+	static bool Equal(const void *Src1,const void *Src2,uIntn Length)noexcept(true){
+		for(uIntn i=0;i<Length;i++){
+			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Array2)[i])){
+				return false;
+			}
+		}
+		return true;
+	}
+	static sfInt8 Compare(const void *Src1,const void *Src2,uIntn Length)noexcept(true){
+		for(uIntn i=0;i<Length;i++){
+			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Array2)[i])){
+			return static_cast<const tUInt*>(Src1)[i]<static_cast<const tUInt*>(Array2)[i]?-1:1;
+			}
+		}
+		return true;
+	}
+};
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
 namespace cnMemory{
 //---------------------------------------------------------------------------
 
-// ViewCopy
-//	Copy memory buffer
-// [out]Dest	dest buffer
-// [in]Src		source buffer
-// Length		length of copy operation
-template<class TDestPtr,class TSrcPtr>
-inline void ViewCopy(TDestPtr Dest,TSrcPtr Src,uIntn Length)noexcept(true)
-{
-	while(Length!=0){
-		*Dest=*Src;
-		++Dest;
-		++Src;
-		Length--;
-	}
-}
-
-// ViewCopyOverlapped
-//	Copy memory buffer
-// [out]Dest	dest buffer
-// [in]Src		source buffer
-// Length		length of copy operation
-template<class TPtr>
-inline void ViewCopyOverlapped(TPtr Dest,typename cnVar::TTypeDef<TPtr>::Type Src,uIntn Length)noexcept(true)
-{
-	if(static_cast<uIntn>(Dest-Src)>=Length){
-		return ViewCopy(Dest,Src,Length);
-	}
-	// overlapped
-	Src+=Length;
-	Dest+=Length;
-	while(Length!=0){
-		--Dest;
-		--Src;
-		Length--;
-		*Dest=*Src;
-	}
-}
-
-
-// ViewFill
-//	fill memory buffer
-// [out]Dest	dest buffer
-// [in]Src		source data
-// Length		length of fill operation
-template<class TDestPtr,class TSrc>
-inline void ViewFill(TDestPtr Dest,uIntn Length,TSrc Src)noexcept(true)
-{
-	while(Length!=0){
-		*Dest=Src;
-		++Dest;
-		Length--;
-	}
-}
-
-// ViewLinearSearch
-//	Search element in Src
-// [in]Src			pointer to array to search
-// Length			number of elements to look into
-// Comparison		Comparison function, check array element if it matches
-//					prototype: bool (const T &Element);
-//					return true if matches, false if unmatch
-// Return:	the index of the first matched data, or -1 if the Dest not found
-template<class TPtr,class TComparison>
-inline uIntn ViewLinearSearch(TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
-{
-	for(uIntn i=0;i<SrcLength;i++){
-		if(Comparison(*Src++)){
-			return i;
-		}
-	}
-	return IndexNotFound;
-}
-// ViewLinearSearch
-//	Search element in Src
-// [in]Src			pointer to array to search
-// Length			number of elements to look into
-// Comparison		Comparison function, check array element if it matches
-//					prototype: bool (const T &Element);
-//					return true if matches, false if unmatch
-// Return:	the index of the first matched data, or -1 if the Dest not found
-template<class TPtr,class TComparison>
-inline uIntn ViewLinearReverseSearch(TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
-{
-	Src+=SrcLength;
-	while(SrcLength>0){
-		SrcLength--;
-		Src--;
-		if(Comparison(*Src)){
-			return SrcLength;
-		}
-	}
-	return IndexNotFound;
-}
 
 // ViewBinarySearch
 //	Search in ordered array
@@ -136,7 +106,7 @@ inline uIntn ViewLinearReverseSearch(TPtr Src,uIntn SrcLength,TComparison cnLib_
 //			false if the Dest is not found, and the ResultIndex is proper position for dest element
 // note: if source array is not ordered, the Result is undefined
 template<class TPtr,class TComparison>
-inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
+inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(Src[0])))
 {
 	if(SrcLength==0){
 		ResultIndex=0;
@@ -195,281 +165,8 @@ inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TCompar
 	return false;
 }
 
-template<class TPtr1,class TPtr2>
-inline bool ViewIsEqual(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1!=*Array2))
-{
-	for(uIntn i=0;i<Length;i++){
-		if(Array1[i]!=Array2[i]){
-			return false;
-		}
-	}
-	return true;
-}
-
-// ViewMatchLength
-//	Find match length between 2 array
-//	[in]Array1
-//	[in]Array2
-//	[in]Length	length to compare
-//	return:	the length of matched elements
-template<class TPtr1,class TPtr2>
-inline uIntn ViewMatchLength(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1!=*Array2))
-{
-	for(uIntn i=0;i<Length;i++){
-		if(Array1[i]!=Array2[i]){
-			return i;
-		}
-	}
-	return Length;
-}
-
-// ViewCompare
-//	The encoding relation of string1 to string2
-//	[in]Src1	string to subtract
-//	[in]Src2	string to be subtracted
-//	[in]Length	length of first characters in string to compare
-//	return:	the differ of first differnet char, 0 if two strings matched
-template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1<*Array2) && cnLib_NOEXCEPTEXPR(*Array1>*Array2))
-{
-	for(uIntn Index=0;Index<Length;Index++){
-		if(Array1[Index]<Array2[Index])
-			return -1;
-		else if(Array1[Index]>Array2[Index])
-			return 1;
-	}
-	return 0;
-}
-
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
-//---------------------------------------------------------------------------
-namespace cnString{
-//---------------------------------------------------------------------------
-
-// ViewCopy
-//	Copy string
-// [out]Dest	dest string buffer, buffer must has at least one character space for termination
-// MaxLength	max length of copy operation, not including null-termination.
-// [in]Src		source string
-// return	copied string length
-template<class TDestPtr,class TSrcPtr>
-inline uIntn ViewCopy(TDestPtr Dest,uIntn DestLength,TSrcPtr Src)noexcept(true)
-{
-	if(DestLength==0)
-		return 0;
-
-	uIntn Index;
-	for(Index=0;Index<DestLength;Index++){
-		typename cnVar::TRemovePointer<TSrcPtr>::Type &c=*Src;
-		if(c==0){
-			break;
-		}
-		*Dest=c;
-		++Dest;
-		++Src;
-	}
-	*Dest=0;
-	return Index;
-}
-
-
-// ViewLinearSearch
-//	Search element in Src
-// [in]Src			pointer to string to search
-// Comparison		Comparison function, check array element if it matches
-//					prototype: bool (const T &Element);
-//					return true if matches, false if unmatch
-// Return:	the index of the first matched data, or -1 if the Dest not found
-template<class TPtr,class TComparison>
-inline uIntn ViewLinearSearch(TPtr Src,TComparison cnLib_UREF Comparison)noexcept(true)
-{
-	uIntn Index=0;
-	while(*Src!=0){
-		if(Comparison(*Src))
-			return Index;
-		++Src;
-		++Index;
-	}
-	return IndexNotFound;
-}
-
-// ViewLinearSearch
-//	Search element in Src
-// [in]Src			pointer to array to search
-// Length			number of elements to look into
-// Comparison		Comparison function, check array element if it matches
-//					prototype: bool (const T &Element);
-//					return true if matches, false if unmatch
-// Return:	the index of the first matched data, or -1 if the Dest not found
-template<class TPtr,class TComparison>
-inline uIntn ViewLinearSearch(TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
-{
-	for(uIntn Index=0;Index<SrcLength;Index++){
-		if(Comparison(*Src))
-			return Index;
-
-		if(*Src==0)
-			break;
-		++Src;
-	}
-	return IndexNotFound;
-}
-
-// ViewDiffIndex
-//	Find index of different character between 2 strings
-//	[in]Src1
-//	[in]Src2
-//	return:	the index of first differnet char, or IndexNotFound if two strings matched
-template<class TPtr1,class TPtr2>
-inline uIntn ViewDiffIndex(TPtr1 Str1,TPtr2 Str2)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2))
-{
-	uIntn Index=0;
-	while(*Str1==*Str2){
-		if(*Str1==0){
-			// reached the end
-			return IndexNotFound;
-		}
-		Index++;
-		++Str1;
-		++Str2;
-	}
-	return Index;
-}
-
-// ViewDiffIndex
-//	Find index of different character between 2 strings
-//	[in]Str1
-//	[in]Str1Length	length of first characters in string to compare
-//	[in]Str2
-//	return:	the index of first differnet char, or IndexNotFound if first length of two strings matched
-template<class TPtr1,class TPtr2>
-inline uIntn ViewDiffIndex(TPtr1 Str1,uIntn Str1Length,TPtr2 Str2)noexcept(cnLib_NOEXCEPTEXPR(*Str1!=*Str2))
-{
-	for(uIntn i=0;i<Str1Length;i++){
-		if(*Str1!=*Str2){
-			return i;
-		}
-		if(*Str1==0){
-			// reached the end
-			break;
-		}
-		++Str1;
-		++Str2;
-	}
-	return IndexNotFound;
-}
-
-
-// ViewEqual
-//	test if string1 equal to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
-template<class TPtr1,class TPtr2>
-inline bool ViewEqual(TPtr1 Str1,uIntn Str1Length,TPtr2 Str2)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2))
-{
-	for(uIntn i=0;i<Str1Length;i++){
-		if(!(*Str1==*Str2)){
-			return false;
-		}
-		++Str1;
-		++Str2;
-	}
-	cnLib_ASSERT(*Str1==0);
-	return *Str2==0;
-}
-
-
-
-// ViewCompare
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
-template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2))
-{
-	while(*Str1==*Str2){
-		if(*Str1==0)
-			return 0;
-		++Str1;
-		++Str2;
-	}
-	if(*Str1<*Str2)
-		return -1;
-	else
-		return 1;
-}
-
-
-// ViewCompare
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
-template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Str1,uIntn Str1Length,TPtr2 Str2)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2))
-{
-	for(uIntn i=0;i<Str1Length;i++){
-		if(!(*Str1==*Str2)){
-			if(*Str1<*Str2)
-				return -1;
-			return 1;
-		}
-		++Str1;
-		++Str2;
-	}
-	cnLib_ASSERT(*Str1==0);
-	if(*Str1==*Str2)
-		return 0;
-	if(*Str1<*Str2)
-		return -1;
-	return 1;
-}
-
-// ViewCompare
-//	The encoding relation of string1 to string2
-//	[in]Str1	string to subtract
-//	[in]Str2	string to be subtracted
-//	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
-template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Str1,uIntn Str1Length,TPtr2 Str2,uIntn Str2Length)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1>*Str2))
-{
-	if(Str1Length==Str2Length){
-		return ViewCompare(Str1,Str1Length,Str2);
-	}
-
-	uIntn CompareLength;
-	bool TailCharIsZero;
-	sfInt8 TailRelation;
-	if(Str1Length<Str2Length){
-		CompareLength=Str1Length;
-		TailCharIsZero=Str2[Str1Length]==0;
-		TailRelation=-1;
-	}
-	else{
-		CompareLength=Str2Length;
-		TailCharIsZero=Str1[Str2Length]==0;
-		TailRelation=1;
-	}
-	for(uIntn Index=0;Index<Str1Length;Index++){
-		if(*Str1<*Str2)
-			return -1;
-		else if(*Str1>*Str2)
-			return 1;
-		if(*Str1==0)
-			return 0;
-		++Str1;
-		++Str2;
-	}
-	if(TailCharIsZero)
-		return 0;
-	else
-		return TailRelation;
-}
-//---------------------------------------------------------------------------
-} 	// namespace cnString
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
@@ -927,6 +624,142 @@ const T* StaticInitializedConstSinglton(void)noexcept(true){
 
 #endif	// cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
+
+//---------------------------------------------------------------------------
+template<uIntn Size,class TAlignment>
+class cPolymorphicBlock : protected cnMemory::cPlainAlignedData<Size,TAlignment>
+{
+public:
+	void* operator &()noexcept(true){				return this;	}
+	const void* operator &()const noexcept(true){	return this;	}
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+	template<class TDest,class...TArgs>
+	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
+	{
+		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
+		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
+	}
+
+	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+	template<class TDest>
+	void Construct(void)noexcept(cnLib_NOEXCEPTEXPR(TDest()))
+	{	ManualConstruct(*reinterpret_cast<TDest*>(this));	}
+	template<class TDest,class TArg0>
+	void Construct(TArg0 cnLib_UREF Arg0)
+		noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArg0)(Arg0))))
+	{
+		ManualConstruct(*reinterpret_cast<TDest*>(this)
+			,cnLib_UREFCAST(TArg0)(Arg0)
+		);
+	}
+	template<class TDest,class TArg0,class TArg1>
+	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1)
+		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+			cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+		)))
+	{
+		ManualConstruct(*reinterpret_cast<TDest*>(this)
+			,cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+		);
+	}
+	template<class TDest,class TArg0,class TArg1,class TArg2>
+	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2)
+		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+			cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+			,cnLib_UREFCAST(TArg2)(Arg2)
+		)))
+	{
+		ManualConstruct(*reinterpret_cast<TDest*>(this)
+			,cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+			,cnLib_UREFCAST(TArg2)(Arg2)
+		);
+	}
+	template<class TDest,class TArg0,class TArg1,class TArg2,class TArg3>
+	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2,TArg3 cnLib_UREF Arg3)
+		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+			cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+			,cnLib_UREFCAST(TArg2)(Arg2)
+			,cnLib_UREFCAST(TArg3)(Arg3)
+		)))
+	{
+		ManualConstruct(*reinterpret_cast<TDest*>(this)
+			,cnLib_UREFCAST(TArg0)(Arg0)
+			,cnLib_UREFCAST(TArg1)(Arg1)
+			,cnLib_UREFCAST(TArg2)(Arg2)
+			,cnLib_UREFCAST(TArg3)(Arg3)
+		);
+	}
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+	template<class TDest>
+	void DestructAs(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<TDest&>().~TDest()))
+	{
+		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
+		ManualDestruct(*reinterpret_cast<TDest*>(this));
+	}
+};
+//---------------------------------------------------------------------------
+
+template<class TInterface,uIntn Size=sizeof(TInterface),class TAlignment=TInterface>
+class cPolymorphicInterface : public cPolymorphicBlock<Size,TAlignment>
+{
+public:
+	cnLib_STATIC_ASSERT(Size>=sizeof(TInterface),"error storage size");
+
+	operator TInterface&()noexcept(true){					return *reinterpret_cast<TInterface*>		(this);	}
+	operator const TInterface&()const noexcept(true){		return *reinterpret_cast<const TInterface*>	(this);	}
+	TInterface* operator &()noexcept(true){					return reinterpret_cast<TInterface*>		(this);	}
+	const TInterface* operator &()const noexcept(true){		return reinterpret_cast<const TInterface*>	(this);	}
+	TInterface* operator ->()noexcept(true){				return reinterpret_cast<TInterface*>		(this);	}
+	const TInterface* operator ->()const noexcept(true){	return reinterpret_cast<const TInterface*>	(this);	}
+};
+
+//---------------------------------------------------------------------------
+template<uIntn Size,class TAlignment>
+class cPolymorphicInterface<void,Size,TAlignment> : public cPolymorphicBlock<Size,TAlignment>
+{
+};
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class TInterface,class...TImplementations>
+using cPolymorphicObject = cPolymorphicInterface<TInterface,
+	cnMath::TMax<tSize,sizeof(TImplementations)...>::Value,
+	typename cnMemory::TSelectAlignmentType<TImplementations...>::Type
+>;
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+
+template<class TInterface,uIntn Size=sizeof(TInterface),class TAlignment=TInterface>
+class cPolymorphicClass : public cnMemory::cPlainAlignedData<Size,TAlignment>
+{
+public:
+	cnLib_STATIC_ASSERT(sizeof(TInterface)<=Size,"not enough size");
+
+	TInterface* operator ->()noexcept(true){				return reinterpret_cast<TInterface*>		(this);	}
+	const TInterface* operator ->()const noexcept(true){	return reinterpret_cast<const TInterface*>	(this);	}
+
+	cPolymorphicClass(){	ManualConstruct(*reinterpret_cast<TInterface*>(this));	}
+	~cPolymorphicClass(){	reinterpret_cast<TInterface*>(this)->~TInterface();	}
+
+	template<class TDest,class...TArgs>
+	void Replace(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
+	{
+		reinterpret_cast<TInterface*>(this)->~TInterface();
+		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
+		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
+	}
+};
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------

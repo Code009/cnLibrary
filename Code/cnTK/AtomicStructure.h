@@ -59,7 +59,7 @@ class cRingIndex
 public:
 	cnLib_STATIC_ASSERT(SizeBit<cnVar::TIntegerValue<uIntn>::BitCount,"SizeBit too large");
 	typedef TIndex tIndex;
-	typedef TKRuntime::tAtomicInteger<TIndex> tAtomicIntegerOperator;
+	typedef TKRuntime::TAtomicInteger<TIndex> tAtomicIntegerOperator;
 	cnLib_STATIC_ASSERT(RingIndexCount>=2,"require RingIndexCount>=2");
 
 	cRingIndex()noexcept(true){
@@ -227,7 +227,7 @@ class cRingIndex<TIndex,RingIndexCount,0>
 {
 public:
 	typedef TIndex tIndex;
-	typedef TKRuntime::tAtomicInteger<TIndex> tAtomicIntegerOperator;
+	typedef TKRuntime::TAtomicInteger<TIndex> tAtomicIntegerOperator;
 	cnLib_STATIC_ASSERT(RingIndexCount>=2,"require RingIndexCount>=2");
 
 	cRingIndex()noexcept(true)
@@ -405,7 +405,7 @@ class cAtomicStack
 {
 public:
 	typedef typename TSingleLinkedItemOperator::tItem tItem;
-	typedef typename TKRuntime::template tAtomicLink<tItem*> tLinkOperator;
+	typedef typename TKRuntime::template TAtomicLink<tItem*> tLinkOperator;
 
 	cnLib_CONSTEXPR_FUNC cAtomicStack()noexcept(true) : fTop(nullptr){}
 
@@ -515,7 +515,7 @@ class cAtomicQueue
 {
 public:
 	typedef typename TSingleLinkedItemOperator::tItem tItem;
-	typedef typename TKRuntime::template tAtomicLink<tItem*> tLinkOperator;
+	typedef typename TKRuntime::template TAtomicLink<tItem*> tLinkOperator;
 
 	cnLib_CONSTEXPR_FUNC cAtomicQueue()noexcept(true):fHead(nullptr),fTail(nullptr){}
 

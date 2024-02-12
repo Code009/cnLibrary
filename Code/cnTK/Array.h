@@ -17,18 +17,169 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+namespace cnMemory{
+//---------------------------------------------------------------------------
+
+template<class TPtr1,class TPtr2>
+inline bool ViewEqual(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1==*Array2) && cnLib_NOEXCEPTEXPR(++Array1) && cnLib_NOEXCEPTEXPR(++Array2))
+{
+	for(uIntn i=0;i<Length;i++){
+		if(!(*Array1==*Array2)){
+			return false;
+		}
+		++Array1;
+		++Array2;
+	}
+	return true;
+}
+
+// ViewCompare
+//	The encoding relation of string1 to string2
+//	[in]Src1	string to subtract
+//	[in]Src2	string to be subtracted
+//	[in]Length	length of first characters in string to compare
+//	return:	the differ of first differnet char, 0 if two strings matched
+template<class TPtr1,class TPtr2>
+inline sfInt8 ViewCompare(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1==*Array2) && cnLib_NOEXCEPTEXPR(*Array1<*Array2) && cnLib_NOEXCEPTEXPR(++Array1) && cnLib_NOEXCEPTEXPR(++Array2))
+{
+	for(uIntn i=0;i<Length;i++){
+		if(!(*Array1==*Array2)){
+			return *Array1<*Array2?-1:1;
+		}
+		++Array1;
+		++Array2;
+	}
+	return 0;
+}
+
+
+// ViewMatchLength
+//	Find match length between 2 array
+//	[in]Array1
+//	[in]Array2
+//	[in]Length	length to compare
+//	return:	the length of matched elements
+//template<class TPtr1,class TPtr2>
+//inline uIntn ViewMatchLength(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1!=*Array2))
+//{
+//	for(uIntn i=0;i<Length;i++){
+//		if(Array1[i]!=Array2[i]){
+//			return i;
+//		}
+//	}
+//	return Length;
+//}
+
+//---------------------------------------------------------------------------
+}	// namespace cnMemory
+//---------------------------------------------------------------------------
 namespace TKRuntime{
 //---------------------------------------------------------------------------
 template<uIntn ElementSize>	
-struct tArray;
+struct TArray;
 //{
-//	static void Fill(void *Dest,uIntn Length,T Data)noexcept(true);
-//	static sfInt8 Compare(const void *Src1,const void *Src2,uIntn Length)noexcept(true);
+//	static void Fill(void *Dest,uIntn Length,TInt Data)noexcept;
+//	static uIntn Search(const void *Src,uIntn Length,TInt Dest)noexcept;
 //};
 
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
 //---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+template<uIntn ElementSize>	
+struct TArray
+{
+	typedef typename cnVar::TIntegerOfSize<ElementSize,false>::Type tUInt;
+
+	static void Fill(void *Dest,uIntn Length,tUInt Data)noexcept(true){
+		for(uIntn i=0;i<Length;i++){
+			static_cast<tUInt*>(Dest)[i]=Data;
+		}
+	}
+
+	static uIntn Search(const void *Src,uIntn Length,tUInt Dest)noexcept(true){
+		for(uIntn i=0;i<Length;i++){
+			if(static_cast<const tUInt*>(Src)[i]==Dest){
+				return i;
+			}
+		}
+		return IndexNotFound;
+	}
+	
+	static uIntn ReverseSearch(const void *Src,uIntn Length,tUInt Dest)noexcept(true){
+		while(Length!=0){
+			Length--;
+			if(Src[Length]==Dest)
+				return Length;
+		}
+		return IndexNotFound;
+	}
+
+};
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
+namespace cnMemory{
+//---------------------------------------------------------------------------
+
+// Fill
+//	Fill Dest with Data
+// [in]Dest		array to fill
+// [in]Length	length to fill
+// [in]Data		data
+template<class T>
+inline void Fill(void *Dest,uIntn Length,const T Data)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return TKRuntime::TArray<sizeof(T)>::Fill(Dest,Length,reinterpret_cast<const tUInt&>(Data));
+}
+
+// Search
+//	Search data in Src
+// Src	[in]	array to search
+// Length		length of array
+// Dest			data to search
+// Return:	the index of the first matched data, or -1 if the Dest not found
+template<class T>
+inline uIntn Search(const T *Src,uIntn Length,typename cnVar::TTypeDef<T>::Type Dest)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return TKRuntime::TArray<sizeof(T)>::Search(Src,Length,reinterpret_cast<tUInt&>(Dest));
+}
+
+// ViewReverseSearch
+//	Search data in Src in backward direction
+// [in]Src	array to search
+// [in]Length	length of array
+// [in]Dest	data to search
+// Return:	the index of the first matched data, or -1 if the Dest not found
+template<class T>
+inline uIntn ReverseSearch(const T *Src,uIntn Length,typename cnVar::TTypeDef<T>::Type Dest)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return TKRuntime::TArray<sizeof(T)>::Search(Src,Length,reinterpret_cast<tUInt&>(Dest));
+}
+
+template<class T>
+inline sfInt8 Compare(const T *Src1,uIntn Length1,const T *Src2,uIntn Length2)noexcept(true)
+{
+	if(Length1==Length2){
+		return TKRuntime::TMemory<sizeof(T)>::Compare(Src1,Src2,Length1);
+	}
+	if(Length1<Length2){
+		sfInt8 r=TKRuntime::TMemory<sizeof(T)>::Compare(Src1,Src2,Length1);
+		return r==0?-1:r;
+	}
+	else{
+		sfInt8 r=TKRuntime::TMemory<sizeof(T)>::Compare(Src1,Src2,Length2);
+		return r==0?1:r;
+	}
+}
+
+//---------------------------------------------------------------------------
+}	// namespace cnMemory
 //---------------------------------------------------------------------------
 template<class T>
 struct TArrayElement : cnVar::TTypeDef<T>{};
@@ -96,17 +247,17 @@ struct cTrivialArrayMemoryOperator
 
 	
 	static void Copy(tElement *Dest,const tElement *Src,uIntn Length)noexcept(true){
-		return TKRuntime::tMemory<sizeof(TElement)>::Copy(Dest,Src,Length);
+		return TKRuntime::TMemory<sizeof(TElement)>::Copy(Dest,Src,Length);
 	}
 	static void CopyOverlapped(tElement *Dest,const tElement *Src,uIntn Length)noexcept(true){
-		return TKRuntime::tMemory<sizeof(TElement)>::CopyOverlapped(Dest,Src,Length);
+		return TKRuntime::TMemory<sizeof(TElement)>::CopyOverlapped(Dest,Src,Length);
 	}
 
 	static void Move(tElement *Dest,tElement *Src,uIntn Length)noexcept(true){
-		return TKRuntime::tMemory<sizeof(TElement)>::Copy(Dest,Src,Length);
+		return TKRuntime::TMemory<sizeof(TElement)>::Copy(Dest,Src,Length);
 	}
 	static void MoveOverlapped(tElement *Dest,tElement *Src,uIntn Length)noexcept(true){
-		return TKRuntime::tMemory<sizeof(TElement)>::CopyOverlapped(Dest,Src,Length);
+		return TKRuntime::TMemory<sizeof(TElement)>::CopyOverlapped(Dest,Src,Length);
 	}
 };
 template<class TElement>
@@ -195,27 +346,27 @@ struct cTrivialArrayMemoryFunction
 	static void Destruct(tElement *,uIntn,uIntn)noexcept(true){}
 
 	static void CopyConstruct(tElement *Array,uIntn ArrayIndex,const tElement *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
+		TKRuntime::TMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
 	}
 	static void MoveConstruct(tElement *Array,uIntn ArrayIndex,tElement *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
+		TKRuntime::TMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
 	}
 
 	static void Copy(tElement *Array,uIntn ArrayIndex,const tElement *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
+		TKRuntime::TMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,Length);
 	}
 
 	static void MoveInArray(tElement *Array,uIntn DestIndex,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<sizeof(TElement)>::Copy(Array+DestIndex,Array+SrcIndex,Length);
+		TKRuntime::TMemory<sizeof(TElement)>::Copy(Array+DestIndex,Array+SrcIndex,Length);
 	}
 
 	static void CopyHeadConstructTail(tElement *Array,uIntn ArrayIndex,const tElement *SrcArray,uIntn SrcIndex,uIntn,uIntn TotalLength)noexcept(true){
-		TKRuntime::tMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,TotalLength);
+		TKRuntime::TMemory<sizeof(TElement)>::Copy(Array+ArrayIndex,SrcArray+SrcIndex,TotalLength);
 	}
 
 	static void MoveHeadConstructTailInArray(tElement *Array,uIntn ArrayLength,uIntn DestIndex,uIntn MoveLength)noexcept(true){
 		cnLib_ASSERT(DestIndex+MoveLength>ArrayLength);
-		TKRuntime::tMemory<sizeof(TElement)>::CopyOverlapped(Array+DestIndex,Array+ArrayLength-MoveLength,MoveLength);
+		TKRuntime::TMemory<sizeof(TElement)>::CopyOverlapped(Array+DestIndex,Array+ArrayLength-MoveLength,MoveLength);
 	}
 
 	static tElement* Relocate(tElement *Pointer,uIntn Length,uIntn NewLength,bool &ManualCopy)noexcept(true)
@@ -366,27 +517,27 @@ struct cArrayMemoryFunction<TAllocationOperator,void>
 	static void Destruct(void*,uIntn,uIntn)noexcept(true){}
 
 	static void CopyConstruct(void *Array,uIntn ArrayIndex,const void*SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
 	}
 	static void Copy(void *Array,uIntn ArrayIndex,const void *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
 	}
 
 	static void CopyHeadConstructTail(void *Array,uIntn ArrayIndex,const void *SrcArray,uIntn SrcIndex,uIntn,uIntn TotalLength)noexcept(true){
-		TKRuntime::tMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),TotalLength);
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),TotalLength);
 	}
 
 	static void MoveConstruct(void *Array,uIntn ArrayIndex,void *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,ArrayIndex),cnMemory::PointerAddByteOffset(SrcArray,SrcIndex),Length);
 	}
 
 	static void MoveInArray(void *Array,uIntn DestIndex,uIntn SrcIndex,uIntn Length)noexcept(true){
-		TKRuntime::tMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,DestIndex),cnMemory::PointerAddByteOffset(Array,SrcIndex),Length);
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Array,DestIndex),cnMemory::PointerAddByteOffset(Array,SrcIndex),Length);
 	}
 
 	static void MoveHeadConstructTailInArray(void *Array,uIntn ArrayLength,uIntn DestIndex,uIntn MoveLength)noexcept(true){
 		cnLib_ASSERT(DestIndex+MoveLength>ArrayLength);
-		TKRuntime::tMemory<1>::CopyOverlapped(cnMemory::PointerAddByteOffset(Array,DestIndex),cnMemory::PointerAddByteOffset(Array,ArrayLength-MoveLength),MoveLength);
+		TKRuntime::TMemory<1>::CopyOverlapped(cnMemory::PointerAddByteOffset(Array,DestIndex),cnMemory::PointerAddByteOffset(Array,ArrayLength-MoveLength),MoveLength);
 	}
 
 	static void* Relocate(void *Pointer,uIntn Length,uIntn NewLength,bool &ManualCopy)noexcept(true)
@@ -407,7 +558,7 @@ struct cArrayBlock : cArray<TElement>
 	typedef cArray<const TElement> tConstArray;
 	typedef cArrayMemoryFunction<TAllocationOperator,TElement> TAMFunc;
 
-#if cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+#if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT) && cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
 
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsDefaultConstructNoexcept<tElement>::Value,"noexcept default constructor required");
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsDestructNoexcept<tElement>::Value,"noexcept destructor required");
@@ -415,7 +566,7 @@ struct cArrayBlock : cArray<TElement>
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsMoveConstructNoexcept<tElement>::Value,"noexcept move constructor required");
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
 
-#endif // cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+#endif	// !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT) && cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
 
 	void Reset(void)noexcept(true){
 		this->Pointer=nullptr;
@@ -1065,7 +1216,7 @@ public:
 	typedef cArray<const TElement> tConstArray;
 	typedef cArrayMemoryFunction<TAllocationOperator,TElement> TAMFunc;
 
-#if cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+#if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT) && cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
 
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsDefaultConstructNoexcept<tElement>::Value,"noexcept default constructor required");
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsDestructNoexcept<tElement>::Value,"noexcept destructor required");
@@ -1073,7 +1224,7 @@ public:
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsMoveConstructNoexcept<tElement>::Value,"noexcept move constructor required");
 	static_assert(cnVar::TIsSame<tElement,void>::Value || cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
 
-#endif	// cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+#endif	// !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT) && cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
 
 	cArrayBuffer()noexcept(true){}
     ~cArrayBuffer()noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){}

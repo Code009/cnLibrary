@@ -176,7 +176,8 @@ public:
 	template<class TCoHandle>
 	bool await_suspend(TCoHandle&& CoHandle){
 		fHandler=COMCreate<cCompletionHandler>();
-		fHandler->CoHandle=static_cast<TCoHandle&&>(CoHandle);
+
+		cCoroutineHandleOperator::Assign(fHandler->CoHandle,static_cast<TCoHandle&&>(CoHandle));
 
 		if(FAILED(fTask->put_Completed(fHandler))){
 			return false;
@@ -194,9 +195,9 @@ private:
 	class cCompletionHandler : public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>
 	{
 	public:
-		vtCoHandle CoHandle;
+		cCoroutineHandleOperator::tHandle CoHandle;
         virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *,ABI::Windows::Foundation::AsyncStatus)override{
-			CoHandle.Resume();
+			cCoroutineHandleOperator::Resume(CoHandle);
 			return S_OK;
 		}
 

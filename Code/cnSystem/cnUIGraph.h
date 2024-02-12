@@ -33,6 +33,8 @@ public:
 	virtual Float32 cnLib_FUNC GetZPosition(void)=0;
 	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)=0;
 
+	virtual Float32 cnLib_FUNC GetContentScale(void)=0;
+
 	//virtual bool cnLib_FUNC GetTopLayer(void)=0;
 	//virtual bool cnLib_FUNC SetTopLayer(bool TopLayer)=0;
 };

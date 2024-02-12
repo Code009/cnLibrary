@@ -7,6 +7,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.h>
 #include <cnTK/TypeInfo.h>
+#include <cnTK/Memory.h>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -148,121 +149,6 @@ inline cAnyPtr AnyPtr(tNullptr)noexcept(true){
 	return cAnyPtr(TTypeID<void>::Value,nullptr);
 }
 #endif
-
-//---------------------------------------------------------------------------
-template<uIntn Size,class TAlignment>
-class cPolymorphicBlock : protected cnMemory::cPlainAlignedData<Size,TAlignment>
-{
-public:
-	void* operator &()noexcept(true){				return this;	}
-	const void* operator &()const noexcept(true){	return this;	}
-
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
-	template<class TDest,class...TArgs>
-	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
-	{
-		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
-		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
-	}
-
-// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-#else
-// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-	template<class TDest>
-	void Construct(void)noexcept(cnLib_NOEXCEPTEXPR(TDest()))
-	{	ManualConstruct(*reinterpret_cast<TDest*>(this));	}
-	template<class TDest,class TArg0>
-	void Construct(TArg0 cnLib_UREF Arg0)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArg0)(Arg0))))
-	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
-			,cnLib_UREFCAST(TArg0)(Arg0)
-		);
-	}
-	template<class TDest,class TArg0,class TArg1>
-	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
-			cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-		)))
-	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
-			,cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-		);
-	}
-	template<class TDest,class TArg0,class TArg1,class TArg2>
-	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
-			cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-			,cnLib_UREFCAST(TArg2)(Arg2)
-		)))
-	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
-			,cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-			,cnLib_UREFCAST(TArg2)(Arg2)
-		);
-	}
-	template<class TDest,class TArg0,class TArg1,class TArg2,class TArg3>
-	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2,TArg3 cnLib_UREF Arg3)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
-			cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-			,cnLib_UREFCAST(TArg2)(Arg2)
-			,cnLib_UREFCAST(TArg3)(Arg3)
-		)))
-	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
-			,cnLib_UREFCAST(TArg0)(Arg0)
-			,cnLib_UREFCAST(TArg1)(Arg1)
-			,cnLib_UREFCAST(TArg2)(Arg2)
-			,cnLib_UREFCAST(TArg3)(Arg3)
-		);
-	}
-
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-
-	template<class TDest>
-	void DestructAs(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<TDest&>().~TDest()))
-	{
-		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
-		ManualDestruct(*reinterpret_cast<TDest*>(this));
-	}
-};
-//---------------------------------------------------------------------------
-
-template<class TInterface,uIntn Size=sizeof(TInterface),class TAlignment=TInterface>
-class cPolymorphicInterface : public cPolymorphicBlock<Size,TAlignment>
-{
-public:
-	cnLib_STATIC_ASSERT(Size>=sizeof(TInterface),"error storage size");
-
-	operator TInterface&()noexcept(true){					return *reinterpret_cast<TInterface*>		(this);	}
-	operator const TInterface&()const noexcept(true){		return *reinterpret_cast<const TInterface*>	(this);	}
-	TInterface* operator &()noexcept(true){					return reinterpret_cast<TInterface*>		(this);	}
-	const TInterface* operator &()const noexcept(true){		return reinterpret_cast<const TInterface*>	(this);	}
-	TInterface* operator ->()noexcept(true){				return reinterpret_cast<TInterface*>		(this);	}
-	const TInterface* operator ->()const noexcept(true){	return reinterpret_cast<const TInterface*>	(this);	}
-};
-
-//---------------------------------------------------------------------------
-template<uIntn Size,class TAlignment>
-class cPolymorphicInterface<void,Size,TAlignment> : public cPolymorphicBlock<Size,TAlignment>
-{
-};
-
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
-template<class TInterface,class...TImplementations>
-using cPolymorphicObject = cPolymorphicInterface<TInterface,
-		cnMath::TMax<tSize,sizeof(TImplementations)...>::Value,
-		typename cnMemory::TSelectAlignmentType<TImplementations...>::Type
-	>;
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
 
 //---------------------------------------------------------------------------
 }	// namespace cnVar
@@ -686,7 +572,7 @@ namespace cnVar{
 //	static constexpr bool IsMoveAssignNoexcept;
 //
 //	static tTypeID GetTypeID(tTypeIndex TypeIndex);
-//	static rtType GetTypeInfo(tTypeIndex TypeIndex);
+//	static rtTypeInfo GetTypeInfo(tTypeIndex TypeIndex);
 //
 //	static constexpr tTypeIndex DefaultTypeIndex;
 //	
@@ -711,20 +597,20 @@ public:
 		ManualConstruct(reinterpret_cast<typename TVariantTypeOperator::template tTypeByIndex<TVariantTypeOperator::DefaultTypeIndex>::Type&>(fContent));
 	}
 	~cVariant()noexcept(TVariantTypeOperator::IsDestructNoexcept){
-		rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 		TypeInfo->Operators->Destruct(&fContent);
 	}
 
 	cVariant(const cVariant &Src)noexcept(TVariantTypeOperator::IsCopyConstructNoexcept){
 		fTypeIndex=Src.fTypeIndex;
-		rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 		TypeInfo->Operators->CopyConstruct(&fContent,&Src.fContent);
 	}
 	
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	cVariant(cVariant &&Src)noexcept(TVariantTypeOperator::IsMoveConstructNoexcept){
 		fTypeIndex=Src.fTypeIndex;
-		rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 		TypeInfo->Operators->MoveConstruct(&fContent,&Src.fContent);
 	}
 #endif
@@ -736,8 +622,8 @@ public:
 	){
 		if(this==&Src)
 			return *this;
-		rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
-		rtType NewTypeInfo;
+		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo NewTypeInfo;
 		if(fTypeIndex==Src.fTypeIndex || TypeInfo==(NewTypeInfo=TVariantTypeOperator::GetTypeInfo(Src.fTypeIndex))){
 			if(TypeInfo->IsCopyAssignable){
 				TypeInfo->Operators->Copy(&fContent,&Src.fContent);
@@ -758,8 +644,8 @@ public:
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	cVariant& operator = (cVariant &&Src)noexcept(TVariantTypeOperator::IsMoveConstructNoexcept && TVariantTypeOperator::IsMoveAssignNoexcept && TVariantTypeOperator::IsDestructNoexcept){
-		rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
-		rtType NewTypeInfo;
+		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo NewTypeInfo;
 		if(fTypeIndex==Src.fTypeIndex || TypeInfo==(NewTypeInfo=TVariantTypeOperator::GetTypeInfo(Src.fTypeIndex))){
 			if(TypeInfo->IsMoveAssignable){
 				TypeInfo->Operators->Move(&fContent,&Src.fContent);
@@ -783,8 +669,8 @@ public:
 		noexcept(TVariantTypeOperator::IsDefaultConstructNoexcept && TVariantTypeOperator::IsDestructNoexcept)
 	{
 		if(fTypeIndex!=TypeIndex){
-			rtType CurTypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
-			rtType TypeInfo=TRuntimeTypeInfo<typename TVariantTypeOperator::template tTypeByIndex<TypeIndex>::Type>::Value;
+			rtTypeInfo CurTypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+			rtTypeInfo TypeInfo=TRuntimeTypeInfo<typename TVariantTypeOperator::template tTypeByIndex<TypeIndex>::Type>::Value;
 			if(CurTypeInfo!=TypeInfo){
 				CurTypeInfo->Operator->Destruct(&fContent);
 				fTypeIndex=TypeIndex;
@@ -822,8 +708,8 @@ public:
 		if(fTypeIndex==NewTypeIndex)
 			return;
 
-		rtType CurTypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
-		rtType NewTypeInfo=TVariantTypeOperator::GetTypeInfo(NewTypeIndex);
+		rtTypeInfo CurTypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+		rtTypeInfo NewTypeInfo=TVariantTypeOperator::GetTypeInfo(NewTypeIndex);
 		fTypeIndex=NewTypeIndex;
 		if(CurTypeInfo!=NewTypeInfo){
 			CurTypeInfo->Operator->Destruct(&fContent);
@@ -852,7 +738,7 @@ public:
 			AssignOrReconstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArg)(Arg));
 		}
 		else{
-			rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+			rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 			if(TypeInfo==TRuntimeTypeInfo<TNewType>::Value){
 				AssignOrReconstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArg)(Arg));
 			}
@@ -876,7 +762,7 @@ public:
 			ManualDestruct(reinterpret_cast<TNewType&>(fContent));
 		}
 		else{
-			rtType TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
+			rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 			TypeInfo->Operators->Destruct(&fContent);
 			fTypeIndex=NewTypeIndex;
 		}
@@ -939,7 +825,7 @@ template<uIntn Size,class TAlignment>
 struct cAnyVariableContent_Value
 {
 	cnVar::cPolymorphicBlock<Size,TAlignment> Content;
-	rtType TypeInfo;
+	rtTypeInfo TypeInfo;
 
 	template<class T>
 	T* Ptr(void){
@@ -1011,7 +897,7 @@ template<uIntn Size,class TAlignment>
 struct cAnyVariableContent_Pointer
 {
 	cnVar::cPolymorphicInterface<void*,Size,TAlignment> Pointer;
-	rtType TypeInfo;
+	rtTypeInfo TypeInfo;
 
 	template<class T>
 	T* Ptr(void){
@@ -1188,11 +1074,11 @@ public:
 		return SetTypeInfo(TRuntimeTypeInfo<T>::Value);
 	}
 
-	rtType GetTypeInfo(void)const{
+	rtTypeInfo GetTypeInfo(void)const{
 		return fValueContent.TypeInfo;
 	}
 	
-	void SetTypeInfo(rtType NewTypeInfo){
+	void SetTypeInfo(rtTypeInfo NewTypeInfo){
 		if(fValueContent.TypeInfo==NewTypeInfo)
 			return;
 
@@ -1228,7 +1114,7 @@ public:
 			typename TRemoveCVRef<TSrc>::Type
 		>::Type TVal;
 
-		rtType NewTypeInfo=TRuntimeTypeInfo<TVal>::Value;
+		rtTypeInfo NewTypeInfo=TRuntimeTypeInfo<TVal>::Value;
 		if(NewTypeInfo==fValueContent.TypeInfo){
 			auto &Content=ContentSelector<TVal>();
 			Content.template SetVar<TVal>(cnLib_UREFCAST(TSrc)(Src));
@@ -1248,7 +1134,7 @@ public:
 	// reconstruct
 	template<class T,class...TArgs>
 	void Set(TArgs cnLib_UREF...Args){
-		rtType NewTypeInfo=TRuntimeTypeInfo<T>::Value;
+		rtTypeInfo NewTypeInfo=TRuntimeTypeInfo<T>::Value;
 		if(NewTypeInfo==fValueContent.TypeInfo){
 			auto &Content=ContentSelector<T>();
 			Content.template Reconstruct<T>(cnLib_UREFCAST(TArgs)(Args)...);
@@ -1299,11 +1185,11 @@ private:
 	static bool NeedPointer(void){
 		return StorageSize<sizeof(T);
 	}
-	static bool IsPointerContent(rtType TypeInfo){
+	static bool IsPointerContent(rtTypeInfo TypeInfo){
 		return TypeInfo->ID->Size>StorageSize;
 	}
 	bool IsPointerContent(void)const{
-		return fValueContent.TypeInfo->ID->Size>StorageSize;
+		return fValueContent.TypeInfo->Size>StorageSize;
 	}
 
 	template<uIntn sSize,class sTAlignment>

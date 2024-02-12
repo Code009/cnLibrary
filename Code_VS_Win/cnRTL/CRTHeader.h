@@ -19,6 +19,21 @@
 #include <algorithm>
 #include <atomic>
 
+#if _MANAGED
+
+#define	cnLibrary_MANAGED_CRTEXCLUDE
+
+// _MANAGED
+#else
+//	!_MANAGED
+
+#include <mutex>
+#include <condition_variable>
+
+
+#endif // !_MANAGED
+
+
 
 //	_MSC_FULL_VER : 190023506			Visual C++ 2015 (14.0)	Toolset v140 update 1
 //	_MSC_FULL_VER : 190023918			Visual C++ 2015 (14.0)	Toolset v140 update 2

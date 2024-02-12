@@ -162,8 +162,8 @@ void aMouseHover::MouseMove(iUIMouseEvent *MouseEvent)
 	if(fHoverStarted){
 		Float32 dx=CurPos.x-fHoverPos.x;
 		Float32 dy=CurPos.y-fHoverPos.y;
-		cnMath::Abs(dx);
-		cnMath::Abs(dy);
+		dx=cnMath::Absolute(dx);
+		dy=cnMath::Absolute(dy);
 		if(dx>=CancelDistance || dy>=CancelDistance){
 			cTime TimeNow;
 			TimeNow.SetTimeNow();

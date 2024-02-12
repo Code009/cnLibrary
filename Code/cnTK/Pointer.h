@@ -194,18 +194,6 @@ public:
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	// copy construct and assign
-
-#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DELETE
-	cPtrOwner(const cPtrOwner &Src)=delete;
-	cPtrOwner& operator =(const cPtrOwner &Src)=delete;
-#else
-private:
-	cPtrOwner(const cPtrOwner &Src);
-	cPtrOwner& operator =(const cPtrOwner &Src);
-public:
-#endif
-
 	// move construct
 	cPtrOwner(cPtrOwner &&Src)noexcept(true)
 		: fOwnerToken(static_cast<tOwnerToken&&>(Src.fOwnerToken))
@@ -334,6 +322,23 @@ public:
 
 protected:
 	tOwnerToken fOwnerToken;
+	
+	template<class TToken>
+	struct ConstructByToken
+	{
+		TToken Value;
+	};
+
+	static ConstructByToken<const tOwnerToken &> MakeConstructByToken(const tOwnerToken &Token){
+		ConstructByToken<const tOwnerToken &> Ret={Token};
+		return Ret;
+	}
+	// construct with token
+	explicit cPtrOwner(ConstructByToken<const tOwnerToken &> ByToken)noexcept(true)
+		: fOwnerToken(ByToken.Value)
+	{
+		TOwnerTokenOperator::Acquire(fRefToken);
+	}
 
 };
 //---------------------------------------------------------------------------
@@ -403,7 +408,7 @@ public:
 	}
 
 	
-private:
+protected:
 	template<class TToken>
 	struct ConstructByToken
 	{
@@ -442,7 +447,6 @@ public:
 	>::Type TakeFromManual(TSrcPtr *Pointer)noexcept(true)
 	{
 		return cPtrReference(MakeConstructByToken(TRefTokenOperator::TokenFrom(Pointer)));
-		//return cPtrReference(TRefTokenOperator::TokenFrom(Pointer));
 	}
 
 	tPtr ExtractToManual(void)noexcept(true){
