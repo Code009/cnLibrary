@@ -155,8 +155,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code\cnTK\ThreadSync.hpp" />
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\ThreadSync.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnConsole.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnData.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDatabase.h" />
@@ -174,27 +174,27 @@
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUIGraph.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osOpenGL.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osSocket.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.hpp" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\cnTK.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.hpp" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\CPPFeatureCheck.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.h" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.hpp" />
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.hpp" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\cnProtocol.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.h" />

@@ -3,29 +3,29 @@
 #define __cnLibrary_cnTK_H__
 /*-------------------------------------------------------------------------*/
 
-#include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
-#include <cnTK/Pointer.h>
-#include <cnTK/Interface.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
+#include <cnTK/Pointer.hpp>
+#include <cnTK/Interface.hpp>
 
-#include <cnTK/TypeInfo.h>
-#include <cnTK/Numerical.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Atomic.h>
-#include <cnTK/Coroutine.h>
+#include <cnTK/TypeInfo.hpp>
+#include <cnTK/Numerical.hpp>
+#include <cnTK/Memory.hpp>
+#include <cnTK/Atomic.hpp>
+#include <cnTK/Coroutine.hpp>
 
-#include <cnTK/Variant.h>
-#include <cnTK/Function.h>
-#include <cnTK/Array.h>
-#include <cnTK/Vector.h>
+#include <cnTK/Variant.hpp>
+#include <cnTK/Function.hpp>
+#include <cnTK/Array.hpp>
+#include <cnTK/Vector.hpp>
 
 #include <cnTK/Multiprecision.hpp>
-#include <cnTK/Stream.h>
-#include <cnTK/String.h>
-#include <cnTK/StructItem.h>
-#include <cnTK/AtomicStructure.h>
-#include <cnTK/SeqStruct.h>
-#include <cnTK/LinkStruct.h>
+#include <cnTK/Stream.hpp>
+#include <cnTK/String.hpp>
+#include <cnTK/StructItem.hpp>
+#include <cnTK/AtomicStructure.hpp>
+#include <cnTK/SeqStruct.hpp>
+#include <cnTK/LinkStruct.hpp>
 #include <cnTK/ThreadSync.hpp>
 
 /*-------------------------------------------------------------------------*/

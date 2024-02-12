@@ -300,67 +300,67 @@
     <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h">
       <Filter>Code - Windows\cnRTLCore - CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\cnTK.h">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\CPPFeatureCheck.h">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFileSystem.h">
@@ -414,10 +414,10 @@
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDebug.h">
       <Filter>Code\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h">
+    <ClInclude Include="..\..\..\cnLibrary\Code_CRT\cnRTL\CRTCoreRuntime.h">
       <Filter>Code\cnRTLCore - CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code\cnTK\ThreadSync.hpp">
+    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\ThreadSync.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
   </ItemGroup>
