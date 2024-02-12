@@ -5,7 +5,7 @@
 #ifndef __cnLibrary_cnSystem_cnFundamental_H__
 #define	__cnLibrary_cnSystem_cnFundamental_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Interface.h>
+#include <cnTK/Interface.hpp>
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------

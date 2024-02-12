@@ -5,9 +5,9 @@
 #ifndef __cnLibrary_cnTK_ThreadSync_H__
 #define	__cnLibrary_cnTK_ThreadSync_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/Atomic.h>
-#include <cnTK/Coroutine.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/Atomic.hpp>
+#include <cnTK/Coroutine.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 3
 //---------------------------------------------------------------------------

@@ -5,11 +5,11 @@
 #ifndef __cnLibrary_cnTK_AtomicLinkStruct_H__
 #define	__cnLibrary_cnTK_AtomicLinkStruct_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/Numerical.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Atomic.h>
-#include <cnTK/Interface.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/Numerical.hpp>
+#include <cnTK/Memory.hpp>
+#include <cnTK/Atomic.hpp>
+#include <cnTK/Interface.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

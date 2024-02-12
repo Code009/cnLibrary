@@ -5,10 +5,10 @@
 #ifndef __cnLibrary_cnTK_Function_H__
 #define	__cnLibrary_cnTK_Function_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
-#include <cnTK/Interface.h>
-#include <cnTK/Memory.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
+#include <cnTK/Interface.hpp>
+#include <cnTK/Memory.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 3
 //---------------------------------------------------------------------------

@@ -5,9 +5,9 @@
 #ifndef __cnLibrary_cnTK_Multiprecision_H__
 #define __cnLibrary_cnTK_Multiprecision_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
-#include <cnTK/Numerical.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
+#include <cnTK/Numerical.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

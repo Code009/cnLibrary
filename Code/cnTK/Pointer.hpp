@@ -5,8 +5,8 @@
 #ifndef __cnLibrary_cnTK_Pointer_H__
 #define	__cnLibrary_cnTK_Pointer_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

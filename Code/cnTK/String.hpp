@@ -5,13 +5,13 @@
 #ifndef __cnLibrary_cnTK_String_H__
 #define __cnLibrary_cnTK_String_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/Interface.h>
-#include <cnTK/TypeInfo.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Atomic.h>
-#include <cnTK/Array.h>
-#include <cnTK/Stream.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/Interface.hpp>
+#include <cnTK/TypeInfo.hpp>
+#include <cnTK/Memory.hpp>
+#include <cnTK/Atomic.hpp>
+#include <cnTK/Array.hpp>
+#include <cnTK/Stream.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

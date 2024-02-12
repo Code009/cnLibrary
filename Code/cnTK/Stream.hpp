@@ -5,9 +5,9 @@
 #ifndef __cnLibrary_cnTK_Stream_H__
 #define	__cnLibrary_cnTK_Stream_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Array.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/Memory.hpp>
+#include <cnTK/Array.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

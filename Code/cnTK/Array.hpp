@@ -5,11 +5,11 @@
 #ifndef __cnLibrary_cnTK_Array_H__
 #define	__cnLibrary_cnTK_Array_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/TypeTraits.h>
-#include <cnTK/Memory.h>
-#include <cnTK/Variant.h>
-#include <cnTK/Interface.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
+#include <cnTK/Memory.hpp>
+#include <cnTK/Variant.hpp>
+#include <cnTK/Interface.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------

@@ -5,9 +5,9 @@
 #ifndef __cnLibrary_cnTK_Variant_H__
 #define	__cnLibrary_cnTK_Variant_H__
 /*-------------------------------------------------------------------------*/
-#include <cnTK/Common.h>
-#include <cnTK/TypeInfo.h>
-#include <cnTK/Memory.h>
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeInfo.hpp>
+#include <cnTK/Memory.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
