@@ -15,7 +15,7 @@
 namespace cnLibrary{
 namespace cnMac{
 //---------------------------------------------------------------------------
-void iTimeToDispatchTimeNS(dispatch_time_t &dt,const iTimepoint *Time,sInt64 Delay);
+void iTimeToDispatchTimeNS(dispatch_time_t &dt,iTimepoint *Time,sInt64 Delay);
 //---------------------------------------------------------------------------
 #if !OS_OBJECT_USE_OBJC
 void GCDSync(dispatch_queue_t Queue,iProcedure *Procedure);
@@ -50,7 +50,7 @@ public:
 #endif
 	~cGCDTimer();
 
-	virtual void cnLib_FUNC Start(const iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)override;
+	virtual void cnLib_FUNC Start(iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)override;
 	virtual void cnLib_FUNC Stop(void)override;
 protected:
 	dispatch_queue_t fQueue;
@@ -74,10 +74,10 @@ public:
 #endif
 	~cGCDThreadPool();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID IID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)override;
 
 
-	virtual void cnLib_FUNC StartWork(iReference *Reference,iProcedure *ThreadProcedure)override;
+	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)override;
 	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)override;
 	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)override;
 
@@ -98,7 +98,7 @@ public:
 #if !OS_OBJECT_USE_OBJC
 	cGCDDispatch(dispatch_queue_t Queue);
 #endif
-	virtual const void* cnLib_FUNC CastInterface(iTypeID ID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)override;
 
 	virtual bool cnLib_FUNC IsCurrentThread(void)override;
 

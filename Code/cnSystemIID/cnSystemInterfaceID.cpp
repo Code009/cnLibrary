@@ -148,7 +148,7 @@ cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iIPv4Address{
 using namespace cnLibrary;
 using namespace InterfaceID;
 
-#define	cnSystem_INTERFACE_ID_DEFINE(_class_)	cnLib_CONSTVAR iTypeID TInterfaceIDDefine<_class_>::Value=IID_##_class_;
+#define	cnSystem_INTERFACE_ID_DEFINE(_class_)	cnLib_CONSTVAR iTypeID _class_::tInterfaceID::Value=IID_##_class_;
 
 #include "cnSystemInterfaceIDList.inc"
 

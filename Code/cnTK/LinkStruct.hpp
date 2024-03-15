@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2019-08-03                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_LinkStruct_H__
-#define	__cnLibrary_cnTK_LinkStruct_H__
+#ifndef __cnLibrary_cnTK_LinkStruct_HPP__
+#define	__cnLibrary_cnTK_LinkStruct_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -2074,8 +2074,8 @@ public:
 	// [in]Item
     // return true if item is removed
     bool Remove(tNode *Node)noexcept(true){
-    	if(VerifyNode(Node)==false)
-    		return false;
+		if(VerifyNode(Node)==false)
+			return false;
 		// found
 		fTree.RemoveNode(Node);
 
@@ -2095,7 +2095,7 @@ public:
 
     tIterator Find(tNode *Node)const noexcept(true){
     	if(VerifyNode(Node)==false)
-    		return end();
+			return end();
 
 		return tIterator(Node);
 	}

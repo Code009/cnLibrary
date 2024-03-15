@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2024-02-05                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_ThreadSync_H__
-#define	__cnLibrary_cnTK_ThreadSync_H__
+#ifndef __cnLibrary_cnTK_ThreadSync_HPP__
+#define	__cnLibrary_cnTK_ThreadSync_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/Atomic.hpp>
@@ -97,7 +97,7 @@ private:
 	virtual void NotifyCompletion(void)noexcept(true)override{
 		fStateNotification.Notify();
 	}
-	TKRuntime::ThreadNotification fStateNotification;
+	typename cnVar::TSelect<1,TCoroutineHandleOperator,TKRuntime::ThreadNotification>::Type fStateNotification;
 };
 //---------------------------------------------------------------------------
 template<class TCoroutineHandleOperator>
@@ -134,13 +134,13 @@ public:
 	// run function
 
 	bool Run(void)const noexcept(true){
-		StateNotification.Start();
+		fStateNotification.Start();
 
 		bool RunResult=fPromise->Run(this);
 		if(RunResult){
-			StateNotification.Wait();
+			fStateNotification.Wait();
 		}
-		StateNotification.Finish();
+		fStateNotification.Finish();
 		return RunResult;
 	}
 	bool operator () (void)const noexcept(true){
@@ -150,9 +150,9 @@ public:
 private:
 	pPtr fPromise;
 	virtual void NotifyCompletion(void)noexcept(true)override{
-		StateNotification.Notify();
+		fStateNotification.Notify();
 	}
-	TKRuntime::ThreadNotification StateNotification;
+	typename cnVar::TSelect<1,TCoroutineHandleOperator,TKRuntime::ThreadNotification>::Type fStateNotification;
 };
 
 //---------------------------------------------------------------------------

@@ -17,23 +17,24 @@ namespace cnLibrary{
 class cnLib_INTERFACE iOpenGLContext : public iInterface
 {
 public:
-	virtual void cnLib_FUNC Enter(void)=0;
-	virtual void cnLib_FUNC Leave(void)=0;
+	virtual bool cnLib_FUNC Enter(void)noexcept(true)=0;
+	virtual void cnLib_FUNC Leave(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iOpenGLViewPainter : public iUIPainter
 {
 public:
-	virtual void cnLib_FUNC PaintRectChanged(void)=0;
-	virtual void cnLib_FUNC GLPaint(void)=0;
+	virtual void cnLib_FUNC PaintRectChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC NotifyRender(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iOpenGLViewContent : public iUIViewContent
 {
 public:
-	virtual cUIPoint cnLib_FUNC GetPaintSize(void)=0;
-	virtual iOpenGLContext* cnLib_FUNC GetOpenGLContext(void)=0;
-	virtual void cnLib_FUNC SetRender(void)=0;
+	virtual cUIPoint cnLib_FUNC GetPaintSize(void)noexcept(true)=0;
+	virtual void cnLib_FUNC NotifyPresent(void)noexcept(true)=0;
+	virtual iOpenGLContext* cnLib_FUNC GetOpenGLContext(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GLBindRenderBuffer(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary

@@ -56,18 +56,14 @@ using ocPtr = cnVar::cPtrReference< cOCRefToken<T> >;
 template<class T>
 ocPtr<T> ocTake(T *Src,uInt32 Tag)
 {
-#ifdef	cnLib_DEBUG
-	cnSystem::DebugLogReferenceDec(Src,Tag);
-#endif
+	cnRTL_DEBUG_LOG_REFERENCE_DEC(static_cast<T*>(Src),Tag);
 	return ocPtr<T>::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
 T* ocExtract(ocPtr<T> &Src,uInt32 Tag)
 {
-#ifdef	cnLib_DEBUG
-	cnSystem::DebugLogReferenceInc(Src,Tag);
-#endif
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
@@ -103,7 +99,7 @@ inline TCast* ociSafeCast(iInterface *Interface)
 template<class T>
 inline bool ocTypeEncode_IsSame(const char *TypeName)
 {
-	return cnString::DiffIndex(TypeName,@encode(T),sizeof(@encode(T))-1)==IndexNotFound;
+	return cnString::Equal(TypeName,@encode(T),sizeof(@encode(T)));
 }
 //---------------------------------------------------------------------------
 //	NSString

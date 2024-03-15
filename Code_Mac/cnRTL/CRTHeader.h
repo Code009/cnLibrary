@@ -10,7 +10,10 @@
 #include <algorithm>
 #include <math.h>
 
-#include <experimental/coroutine>
+#include <mutex>
+#include <condition_variable>
+
+//#include <experimental/coroutine>
 
 #ifndef _LIBCPP_HAS_NO_COROUTINES
 #define	cnLibrary_STL_EXPERIMENTAL_COROUTINE
@@ -19,4 +22,6 @@
 
 #include <cnTK/cnTK.h>
 
+#define cnCRT_BYTEORDER_LITTLEENDIAN	1
+#define cnCRT_BYTEORDER_BIGENDIAN		0
 #endif

@@ -11,12 +11,17 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iSocketAddress : public iAddress
 {
 public:
-	cnLib_INTERFACE_DEFINE(iSocketAddress,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual const sockaddr* cnLib_FUNC SockAddr(void)=0;
 	virtual socklen_t cnLib_FUNC SockAddrLen(void)=0;
@@ -29,6 +34,10 @@ iPtr<iSocketAddress> cnLib_FUNC CreateSocketAddress(const sockaddr *addr,socklen
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

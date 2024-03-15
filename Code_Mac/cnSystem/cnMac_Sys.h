@@ -13,7 +13,7 @@
 #ifdef	__cplusplus
 
 #include <cnSystem/cnSystem.h>
-#include <cnSystem/POSIXSystem.h>
+//#include <cnSystem/POSIXSystem.h>
 #include <cnRTL/cnRTL.h>
 
 #define	cnLibOC_INTERFACE_DEFINE(_i_,_pi_)	\
@@ -27,10 +27,12 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 #ifdef	__OBJC__
 //---------------------------------------------------------------------------
+class iOCObject;
+template<> struct TInterfaceID<iOCObject>{	static iTypeID Value;	};
 class cnLib_INTERFACE iOCObject : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iOCObject,iInterface);
+	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual id GetOCObject(void)=0;
 };
@@ -46,10 +48,12 @@ public:
 //	virtual uIntn GetMacFileNameLength(void)=0;
 //};
 //---------------------------------------------------------------------------
+class iGCDDispatch;
+template<> struct TInterfaceID<iGCDDispatch>{	static iTypeID Value;	};
 class cnLib_INTERFACE iGCDDispatch : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iGCDDispatch,iInterface);
+	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual dispatch_queue_t GetGCDDispatch(void)=0;
 };

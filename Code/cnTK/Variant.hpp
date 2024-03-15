@@ -2,12 +2,12 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Variant_H__
-#define	__cnLibrary_cnTK_Variant_H__
+#ifndef __cnLibrary_cnTK_Variant_HPP__
+#define	__cnLibrary_cnTK_Variant_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeInfo.hpp>
-#include <cnTK/Memory.hpp>
+#include <cnTK/Pointer.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -32,11 +32,11 @@ struct AssignOrReconstruct<false>
 	template<class T,class TSrc>
 	static void Call(T &Dest,TSrc cnLib_UREF Src)
 		noexcept(
-			cnLib_NOEXCEPTEXPR(ManualDestruct(Dest) && cnLib_NOEXCEPTEXPR(T(cnLib_UREFCAST(TSrc)(Src))))
+			cnLib_NOEXCEPTEXPR(cnVar::ManualDestruct(Dest) && cnLib_NOEXCEPTEXPR(T(cnLib_UREFCAST(TSrc)(Src))))
 		)
 	{
-		ManualDestruct(Dest);
-		ManualConstruct(Dest,cnLib_UREFCAST(TSrc)(Src));
+		cnVar::ManualDestruct(Dest);
+		cnVar::ManualConstruct(Dest,cnLib_UREFCAST(TSrc)(Src));
 	}
 
 };
@@ -53,9 +53,9 @@ namespace cnVar{
 template<class TDest,class TSrc>
 void AssignOrReconstruct(TDest &Dest,TSrc cnLib_UREF Src)
 	noexcept(
-		cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignable<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src))))
+		cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignableFrom<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src))))
 	)
-{	return cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignable<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src));	}
+{	return cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignableFrom<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src));	}
 
 
 class cAnyPtr
@@ -63,10 +63,10 @@ class cAnyPtr
 public:
 
 	cnLib_CONSTEXPR_FUNC cAnyPtr()noexcept(true)
-		: Pointer(nullptr),TypeID(TTypeID<void>::Value){}
+		: TypeID(TTypeID<void>::Value),Pointer(nullptr){}
 #ifndef cnLibrary_CPPEXCLUDE_NULLPTR
 	cnLib_CONSTEXPR_FUNC cAnyPtr(tNullptr)noexcept(true)
-		: Pointer(nullptr),TypeID(TTypeID<void>::Value){}
+		: TypeID(TTypeID<void>::Value),Pointer(nullptr){}
 #endif
 	cAnyPtr(const cAnyPtr &Src)noexcept(true){	Pointer=Src.Pointer;	TypeID=Src.TypeID;	}
 	cAnyPtr(tTypeID ti,void *p)noexcept(true){	Pointer=p;	TypeID=ti;	}
@@ -164,26 +164,82 @@ namespace Var_TH{
 namespace VarPack{
 //---------------------------------------------------------------------------
 
-template<class...VT>		struct cVarPackStruct{ char n;	};	// some compiler need this usless n
-template<>					struct cVarPackStruct<>{};
-template<class T,class...VT>struct cVarPackStruct<T,VT...>
+template<uIntn Index,class T>
+struct Variable
 {
-	T v;
-	cVarPackStruct<VT...> n;
+	T Value;
+};
+
+template<class TIndexSequence,class...T>
+struct PackStruct;
+
+
+template<uIntn...Indics,class...T>
+struct PackStruct<cnVar::TValueSequence<uIntn,Indics...>,T...>
+	: Variable<Indics,T>...
+{
+
+	template<uIntn Index>
+	struct tAccessor
+	{
+		typedef PackStruct<cnVar::TValueSequence<uIntn,Indics...>,T...> tPackStruct;
+		static cnLib_CONSTVAR uIntn AccessIndex=Index;
+
+		tPackStruct &Pack;
+
+		tAccessor(tPackStruct &Pack):Pack(Pack){}
+
+		typedef typename cnVar::TSelect<Index,T...>::Type tVariable;
+
+		typename cnVar::TSelect<Index,T...>::Type& operator *()const noexcept(true){
+			return Pack.Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value;
+		}
+
+		typename cnVar::TSelect<Index,typename cnVar::TRemoveReference<T>::Type...>::Type* operator &()const noexcept(true){
+			return cnMemory::AddressOf(Pack.Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value);
+		}
+	};
+};
+
+#ifndef cnLibrary_CPPEXCLUDE_NOEXCEPT
+
+template<class TFunc,class...VTVarPackAccessor>
+struct FunctionIsNoexcept;
+	
+template<class TFunc,class TVarPackAccessor,class...VTVarPackAccessor>
+struct FunctionIsNoexcept<TFunc,TVarPackAccessor,VTVarPackAccessor...>
+	: cnVar::TSelect<cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TFunc>()(cnVar::DeclVal<typename TVarPackAccessor::tVariable>(),cnVar::DeclVal<typename VTVarPackAccessor::tVariable>()...))
+		, cnVar::TConstantValueFalse
+		, FunctionIsNoexcept<TFunc,VTVarPackAccessor...>
+	>::Type{};
+
+template<class TFunc>
+struct FunctionIsNoexcept<TFunc>
+	: cnVar::TConstantValueTrue{};
+
+// !cnLibrary_CPPEXCLUDE_NOEXCEPT
+#else
+// cnLibrary_CPPEXCLUDE_NOEXCEPT
+
+template<class TFunc,class...VTVarPackAccessor>
+struct FunctionIsNoexcept
+	: cnVar::TConstantValueFalse{};
+
+
+#endif // cnLibrary_CPPEXCLUDE_NOEXCEPT
+
+template<uIntn Index,class TIndexSequence,class...T>
+struct OffsetCalculate
+	: PackStruct<TIndexSequence,T...>
+{
+	using Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value;
 };
 
 
-template<uIntn Offset,uIntn Index,class...VT>
-struct TDataOffset;
-
-template<uIntn Offset,uIntn Index,class T,class...VT>
-struct TDataOffset<Offset,Index,T,VT...>
-	: TDataOffset<Offset+reinterpret_cast<uIntn>(&static_cast<cVarPackStruct<T,VT...>*>(nullptr)->n),Index-1,VT...>
-{
-};
-
-template<uIntn Offset,uIntn Index>	struct TDataOffset<Offset,Index>	: cnVar::TConstantValue<uIntn,Offset>{};
-template<uIntn Offset,class...VT>	struct TDataOffset<Offset,0,VT...>	: cnVar::TConstantValue<uIntn,Offset>{};
+template<class TOffsetCalculate>
+struct DataOffset
+	: cnVar::TConstantValueUIntn<cnLib_MEMBER_OFFSET(TOffsetCalculate,Value)>
+{};
 
 
 template<uIntn Index>
@@ -195,31 +251,6 @@ struct FieldName
 template<uIntn Index>
 const uChar16 FieldName<Index>::Value[8]={
 	u'M',u'V',u'A',u'R',u'0'+(Index/100)%10,u'0'+(Index/10)%10,u'0'+Index%10,0
-};
-
-template<class TDest,class TSrc>
-struct Convertable 
-	: cnVar::TConstantValueBool< sizeof(TDest) == sizeof(TSrc) && cnVar::template TIsConvertible<TSrc,TDest>::Value>
-{};
-
-template<bool,class...VTDest>
-struct PackConvertable
-{
-	template<class...VTSrc>
-	struct From{
-		static constexpr bool Value=cnVar::TBooleanValuesAnd<Convertable<VTDest,VTSrc>::Value...>::Value;
-	};
-
-};
-
-template<class...VTDest>
-struct PackConvertable<false,VTDest...>
-{
-	template<class...VTSrc>
-	struct From{
-		static constexpr bool Value=false;
-	};
-
 };
 
 //---------------------------------------------------------------------------
@@ -234,6 +265,169 @@ namespace cnLibrary{
 namespace cnVar{
 //---------------------------------------------------------------------------
 
+template<uIntn Index,uIntn Begin,uIntn End,class TPackStruct>
+struct cVarPackAccessor
+	: TPackStruct::template tAccessor<Index>
+{
+	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<Index>(Pack){}
+
+	typedef cVarPackAccessor<Index+1,Begin,End,TPackStruct> tNext;
+	typedef cVarPackAccessor<Index-1,Begin,End,TPackStruct> tPrev;
+
+	tNext operator +(void)const noexcept(true){
+		tNext Accessor={this->Pack};
+		return Accessor;
+	}
+
+	tPrev operator -(void)const noexcept(true){
+		tPrev Accessor={this->Pack};
+		return Accessor;
+	}
+};
+
+struct cVarPackNoAccess{};
+
+template<uIntn Begin,uIntn End,class TPackStruct>
+struct cVarPackAccessor<Begin,Begin,End,TPackStruct>
+	: TPackStruct::template tAccessor<Begin>
+{
+	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<Begin>(Pack){}
+
+	typedef cVarPackAccessor<Begin+1,Begin,End,TPackStruct> tNext;
+	typedef cVarPackNoAccess tPrev;
+
+	tNext operator +(void)const noexcept(true){
+		tNext Accessor={this->Pack};
+		return Accessor;
+	}
+
+	cVarPackNoAccess operator -(void)const noexcept(true){	return cVarPackNoAccess();	}
+};
+
+template<uIntn Begin,uIntn End,class TPackStruct>
+struct cVarPackAccessor<End,Begin,End,TPackStruct>
+	: TPackStruct::template tAccessor<End>
+{
+	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<End>(Pack){}
+
+	typedef cVarPackNoAccess tNext;
+	typedef cVarPackAccessor<End-1,Begin,End,TPackStruct> tPrev;
+
+	cVarPackNoAccess operator +(void)const noexcept(true){	return cVarPackNoAccess();	}
+
+	tPrev operator -(void)const noexcept(true){
+		tPrev Accessor={this->Pack};
+		return Accessor;
+	}
+};
+
+template<uIntn SingleIndex,class TPackStruct>
+struct cVarPackAccessor<SingleIndex,SingleIndex,SingleIndex,TPackStruct>
+	: TPackStruct::template tAccessor<SingleIndex>
+{
+	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<SingleIndex>(Pack){}
+
+	typedef cVarPackNoAccess tNext;
+	typedef cVarPackNoAccess tPrev;
+
+	cVarPackNoAccess operator +(void)const noexcept(true){	return cVarPackNoAccess();	}
+	cVarPackNoAccess operator -(void)const noexcept(true){	return cVarPackNoAccess();	}
+};
+
+template<class...T>
+struct cVarPack
+	: cnLib_THelper::Var_TH::VarPack::PackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...>
+{
+	typedef cnLib_THelper::Var_TH::VarPack::PackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
+	typedef cVarPackAccessor<0,0,sizeof...(T)-1,tPackStruct> tAllAccessor;
+
+	tAllAccessor All(void){
+		tAllAccessor Accessor={*this};
+		return Accessor;
+	}
+
+};
+
+
+template<uIntn Index,class...T>
+struct TVarPackOffsetOf
+	: cnLib_THelper::Var_TH::VarPack::DataOffset< cnLib_THelper::Var_TH::VarPack::OffsetCalculate<Index,typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> >
+{
+};
+
+
+
+//---------------------------------------------------------------------------
+template<class...VT>
+cVarPack<typename cnVar::TRemoveCVRef<VT>::Type...> VarPack(VT cnLib_UREF...v)noexcept(true)
+{
+	cVarPack<typename cnVar::TRemoveCVRef<VT>::Type...> Pack={cnLib_UREFCAST(VT)(v)...};
+	return Pack;
+}
+//---------------------------------------------------------------------------
+template<class...VT>
+cVarPack<VT&...> VarRefPack(VT &...v)noexcept(true)
+{
+	cVarPack<VT&...> Pack={v...};
+	return Pack;
+}
+
+//---------------------------------------------------------------------------
+template<uIntn Index,class...T>
+typename TSelect<Index,T...>::Type& VarPackAt(cVarPack<T...> &Pack)noexcept(true)
+{
+	return Pack.cnLib_THelper::Var_TH::VarPack::template Variable<Index,typename TSelect<Index,T...>::Type>::Value;
+}
+
+template<uIntn Index,class...T>
+typename TSelect<Index,T...>::Type const& VarPackAt(const cVarPack<T...> &Pack)noexcept(true)
+{
+	return Pack.cnLib_THelper::Var_TH::VarPack::template Variable<Index,typename TSelect<Index,T...>::Type>::Value;
+}
+
+//---------------------------------------------------------------------------
+
+template<class TFunc,class...VTVarPackAccessor>
+bool VarPackCallAt(uIntn,const TFunc &,cVarPackNoAccess,VTVarPackAccessor...)noexcept(true){
+	return true;
+}
+template<class TFunc,class...VTVarPackAccessor>
+bool VarPackCallAt(uIntn DestIndex,const TFunc &Func,const VTVarPackAccessor&...Accessor)noexcept(cnLib_THelper::Var_TH::VarPack::FunctionIsNoexcept<TFunc,VTVarPackAccessor...>::Value)
+{
+	if(DestIndex==0){
+		Func((*Accessor)...);
+		return true;
+	}
+	return VarPackCallAt(DestIndex-1,Func,+Accessor...);
+}
+
+//---------------------------------------------------------------------------
+template<class TFunc,class...VTVarPackAccessor>
+void VarPackForEach(const TFunc &,cVarPackNoAccess,const VTVarPackAccessor&...)noexcept(true)
+{
+}
+template<class TFunc,class...VTVarPackAccessor>
+void VarPackForEach(const TFunc &Func,const VTVarPackAccessor&...Accessor)noexcept(cnLib_THelper::Var_TH::VarPack::FunctionIsNoexcept<TFunc,VTVarPackAccessor...>::Value)
+{
+	Func((*Accessor)...);
+	return VarPackForEach(Func,+Accessor...);
+}
+//---------------------------------------------------------------------------
+template<class TFunc,class...VTVarPackAccessor>
+bool VarPackForWhile(const TFunc &,cVarPackNoAccess,const VTVarPackAccessor&...)noexcept(true)
+{
+	return true;
+}
+template<class TFunc,class...VTVarPackAccessor>
+bool VarPackForWhile(const TFunc &Func,const VTVarPackAccessor&...Accessor)noexcept(cnLib_THelper::Var_TH::VarPack::FunctionIsNoexcept<TFunc,VTVarPackAccessor...>::Value)
+{
+	if(Func((*Accessor)...)==false)
+		return false;
+	return VarPackForWhile(Func,+Accessor...);
+}
+//---------------------------------------------------------------------------
+
+
 template<class...VT>
 struct cVarPackMetaClass
 {
@@ -242,135 +436,6 @@ struct cVarPackMetaClass
 	static const cMetaClass *const Value;
 };
 
-template<class...>	class cVarPack;
-template<>
-class cVarPack<>
-{
-public:
-	static cnLib_CONSTVAR uIntn Count=0;
-
-};
-
-template<class T>
-class cVarPack<T>
-{
-protected:
-	T fValue;
-public:
-	typedef T tValue;
-	typedef cVarPack<> tNextPack;
-
-	static cnLib_CONSTVAR uIntn Count=1;
-	
-	cnLib_CONSTEXPR_FUNC cVarPack()noexcept(true){}
-	
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	
-	template<class TArg
-#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		,class=typename TTypeConditional<void,TIsConstuctableBy<T,TArg&&>::Value>::Type
-#endif
-	>
-	cVarPack(TArg &&Value)noexcept(cnLib_NOEXCEPTEXPR(T(Value)))
-		: fValue(static_cast<TArg&&>(Value))
-	{}
-#else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
-	template<class TArg>
-	cVarPack(TArg Value)noexcept(cnLib_NOEXCEPTEXPR(T(Value)))
-		: fValue(Value){}
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES
-
-	T& operator *()noexcept(true){	return fValue;	}
-	const T& operator *()const noexcept(true){	return fValue;	}
-
-	cVarPack<>& operator +(void)const noexcept(true){	return *reinterpret_cast<cVarPack<>*>(const_cast<cVarPack*>(this));	}
-
-	template<class TDest,class TPack=typename TSelect<cnLib_THelper::Var_TH::VarPack::Convertable<TDest,T>::Value,void,cVarPack<TDest> >::Type&>
-	operator cVarPack<TDest> &(void)noexcept(true){
-		return reinterpret_cast<TPack>(*this);
-	}
-	template<class TDest,class TPack=typename TSelect<cnLib_THelper::Var_TH::VarPack::Convertable<TDest,T>::Value,void,const cVarPack<TDest> >::Type&>
-	operator const cVarPack<TDest> &(void)const noexcept(true){
-		return reinterpret_cast<TPack>(*this);
-	}
-
-	typename TRemoveReference<T>::Type* operator &()noexcept(true){			return cnMemory::AddressOf(fValue);	}
-	const typename TRemoveReference<T>::Type* operator &()const noexcept(true){	return cnMemory::AddressOf(fValue);	}
-
-	cAnyPtr operator [](uIntn Index)noexcept(true){
-		if(Index==0){
-			return cAnyPtr(TTypeID<T>::Value,this);
-		}
-		return nullptr;
-	}
-
-	typedef cVarPackMetaClass<T> tMetaClass;
-};
-
-template<class T,class...VT>
-class cVarPack<T,VT...>
-{
-protected:
-	T fValue;
-	cVarPack<VT...> fNext;
-
-public:
-	typedef T tValue;
-	typedef cVarPack<VT...> tNextPack;
-
-	static cnLib_CONSTVAR uIntn Count=sizeof...(VT)+1;
-	
-	cnLib_CONSTEXPR_FUNC cVarPack()noexcept(true){}
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-	template<class TArg,class...TArgs
-#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		,class=typename TTypeConditional<void,TIsConstuctableBy<T,TArg&&>::Value && TIsConstuctableBy<cVarPack<VT...>,TArgs&&...>::Value>::Type
-#endif
-	>
-	cVarPack(TArg&& Value,TArgs&&...Args)noexcept(cnLib_NOEXCEPTEXPR(T(static_cast<TArg&&>(Value))) && cnLib_NOEXCEPTEXPR(cVarPack<VT...>(static_cast<TArgs&&>(Args)...)))
-		: fValue(static_cast<TArg&&>(Value))
-		, fNext(static_cast<TArgs&&>(Args)...)
-	{}
-#else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
-	template<class TArg,class...TArgs>
-	cVarPack(TArg Value,TArgs...Args)
-		: fValue(Value),fNext(Args...){}
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES
-
-	T& operator *()noexcept(true){	return fValue;	}
-	const T& operator *()const noexcept(true){	return fValue;	}
-
-	cVarPack<VT...>& operator +(void)noexcept(true){	return fNext;	}
-	const cVarPack<VT...>& operator +(void)const noexcept(true){	return fNext;	}
-	
-	typename tNextPack::tNextPack& operator ++(void)noexcept(true){	return +fNext;	}
-	typename tNextPack::tNextPack const& operator ++(void)const noexcept(true){	return +fNext;	}
-
-	
-	template<class...VTDest,class TPack=typename TSelect<cnLib_THelper::Var_TH::VarPack::PackConvertable<sizeof...(VT)+1==sizeof...(VTDest),VTDest...>::template From<T,VT...>::Value,void,cVarPack<VTDest...> >::Type&>
-	operator cVarPack<VTDest...> &(void)noexcept(true){
-		return reinterpret_cast<TPack>(*this);
-	}
-	template<class...VTDest,class TPack=typename TSelect<cnLib_THelper::Var_TH::VarPack::PackConvertable<sizeof...(VT)+1==sizeof...(VTDest),VTDest...>::template From<T,VT...>::Value,void,const cVarPack<VTDest...> >::Type&>
-	operator const cVarPack<VTDest...> &(void)const noexcept(true){
-		return reinterpret_cast<TPack>(*this);
-	}
-
-	typename TRemoveReference<T>::Type* operator &()noexcept(true){			return cnMemory::AddressOf(fValue);	}
-	const typename TRemoveReference<T>::Type* operator &()const noexcept(true){	return cnMemory::AddressOf(fValue);	}
-	
-
-	cAnyPtr operator [](uIntn Index)noexcept(true){
-		if(Index==0){
-			return cAnyPtr(TTypeID<T>::Value,cnMemory::AddressOf(fValue));
-		}
-		return fNext[Index-1];
-	}
-
-	typedef cVarPackMetaClass<T,VT...> tMetaClass;
-};
 
 template<class T,T...Values>
 template<class...VT>
@@ -383,9 +448,9 @@ template<class T,T...Indexes>
 template<class...VT>
 const cMetaClassField TValueSequence<T,Indexes...>::Declarator< cVarPack<VT...> >::Fields[sizeof...(VT)]={
 	{
-		cnLib_THelper::Var_TH::VarPack::FieldName<Indexes>::Value,			//const uChar16 *Name;
-		TRuntimeInfo<VT>::Value,											//rtInfo RuntimeInfo;
-		cnLib_THelper::Var_TH::VarPack::TDataOffset<0,Indexes,VT...>::Value,	//uIntn Offset;
+		cnLib_THelper::Var_TH::VarPack::FieldName<Indexes>::Value,	//const uChar16 *Name;
+		TRuntimeTypeInfo<VT>::Value,								//rtInfo RuntimeInfo;
+		TVarPackOffsetOf<Indexes,VT...>::Value,						//uIntn Offset;
 	}...
 };
 
@@ -413,41 +478,6 @@ namespace Var_TH{
 namespace VarPack{
 
 
-template<uIntn Index,class...VT>
-struct TSelectPack;
-
-template<uIntn Index>
-struct TSelectPack<Index>
-{
-};
-
-template<uIntn Index,class T,class...VT>
-struct TSelectPack<Index,T,VT...> : TSelectPack<Index-1,VT...>
-{
-	static typename TSelectPack<Index-1,VT...>::Type& Posit(cnVar::cVarPack<T,VT...> &Pack)noexcept(true)
-	{
-		return TSelectPack<Index-1,VT...>::Posit(+Pack);
-	}
-	static typename TSelectPack<Index-1,VT...>::Type const& Posit(const cnVar::cVarPack<T,VT...> &Pack)noexcept(true)
-	{
-		return TSelectPack<Index-1,VT...>::Posit(+Pack);
-	}
-};
-template<class T,class...VT>
-struct TSelectPack<0,T,VT...>
-{
-	typedef T Type;
-
-	static T& Posit(cnVar::cVarPack<T,VT...> &Pack)noexcept(true)
-	{
-		return *Pack;
-	}
-	static const T& Posit(const cnVar::cVarPack<T,VT...> &Pack)noexcept(true)
-	{
-		return *Pack;
-	}
-};
-
 
 //---------------------------------------------------------------------------
 }	// namespace VarPack
@@ -461,96 +491,18 @@ namespace cnLibrary{
 namespace cnVar{
 //---------------------------------------------------------------------------
 
-template<uIntn Index,class...VT>
-typename TSelect<Index,VT...>::Type& VarPackAt(cVarPack<VT...> &Pack)noexcept(true)
-{
-	return cnLib_THelper::Var_TH::VarPack::TSelectPack<Index,VT...>::Posit(Pack);
-}
-
-template<uIntn Index,class...VT>
-typename TSelect<Index,VT...>::Type const& VarPackAt(const cVarPack<VT...> &Pack)noexcept(true)
-{
-	return cnLib_THelper::Var_TH::VarPack::TSelectPack<Index,VT...>::Posit(Pack);
-}
-
-//---------------------------------------------------------------------------
-#ifndef cnLibrary_CPPEXCLUDE_NOEXCEPT
-
-template<class TFunc,class...TVarPacks>
-struct TVarPackFunctionIsNoexcept
-	: TSelect<noexcept(DeclVar<TFunc>()(DeclVar<typename TVarPacks::tValue>()...))
-		,TConstantValueFalse
-		,TVarPackFunctionIsNoexcept<TFunc,typename TVarPacks::tNextPack...>
-	>::Type{};
-
-template<class TFunc,class...TVarPacks>
-struct TVarPackFunctionIsNoexcept<TFunc,cVarPack<>,TVarPacks...>
-	: TConstantValueTrue{};
-
-// !cnLibrary_CPPEXCLUDE_NOEXCEPT
-#else
-// cnLibrary_CPPEXCLUDE_NOEXCEPT
-
-template<class TFunc,class...TVarPacks>
-struct TVarPackFunctionIsNoexcept
-	: TConstantValueFalse{};
-
-
-#endif // cnLibrary_CPPEXCLUDE_NOEXCEPT
 //---------------------------------------------------------------------------
 
-template<class TFunc,class...VT>	bool VarPackCallAt(uIntn,const TFunc &,cVarPack<>&,VT...){	return true;	}
-template<class TFunc,class...TVarPacks>
-bool VarPackCallAt(uIntn DestIndex,const TFunc &Func,TVarPacks&...VarPacks)noexcept((TVarPackFunctionIsNoexcept<TFunc,TVarPacks...>::Value))
-{
-	if(DestIndex==0){
-		Func((*VarPacks)...);
-		return true;
-	}
-	return VarPackCallAt(DestIndex-1,Func,+VarPacks...);
-}
-//---------------------------------------------------------------------------
-template<class...VT>
-cVarPack<VT...> VarPack(VT cnLib_UREF...v)noexcept(true)
-{
-	return {cnLib_UREFCAST(VT)(v)...};
-}
-//---------------------------------------------------------------------------
-//template<class T> inline T DeclVarParameter(T v)noexcept(true);
-//template<class...VT>
-//auto VarPack(VT cnLib_UREF...v)noexcept(true)	->cVarPack<decltype(cnLib_THelper::Var_TH::VarPack::DeclVarParameter(v))...>
-//{
-//	return {cnLib_UREFCAST(VT)(v)...};
-//}
-//---------------------------------------------------------------------------
-template<class...VT>
-auto VarRefPack(VT &...v)noexcept(true)	->cVarPack<VT&...>
-{
-	return {v...};
-}
-//---------------------------------------------------------------------------
-template<class TFunc,class...VT>	void VarPackForEach(const TFunc &,cVarPack<>&,VT...)noexcept(true){}
-template<class TFunc,class...TVarPacks>
-void VarPackForEach(const TFunc &Func,TVarPacks&...VarPacks)noexcept((TVarPackFunctionIsNoexcept<TFunc,TVarPacks...>::Value))
-{
-	Func((*VarPacks)...);
-	return VarPackForEach(Func,+VarPacks...);
-}
-//---------------------------------------------------------------------------
-template<class TFunc,class...VT>	bool VarPackForWhile(const TFunc &,cVarPack<>&,VT...)noexcept(true){	return true;	}
-template<class TFunc,class...TVarPacks>
-bool VarPackForWhile(const TFunc &Func,TVarPacks&...VarPacks)noexcept((TVarPackFunctionIsNoexcept<TFunc,TVarPacks...>::Value))
-{
-	if(Func((*VarPacks)...)==false)
-		return false;
-	return VarPackForWhile(Func,+VarPacks...);
-}
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------
 }   // namespace cnLibrary
 //---------------------------------------------------------------------------
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+//---------------------------------------------------------------------------
+
+#if	cnLibrary_CPPFEATURELEVEL >= 2
+
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
@@ -629,7 +581,7 @@ public:
 				TypeInfo->Operators->Copy(&fContent,&Src.fContent);
 			}
 			else{
-				TypeInfo->Destruct(&fContent);
+				TypeInfo->Operators->Destruct(&fContent);
 				TypeInfo->Operators->CopyConstruct(&fContent,&Src.fContent);
 			}
 		}
@@ -651,7 +603,7 @@ public:
 				TypeInfo->Operators->Move(&fContent,&Src.fContent);
 			}
 			else{
-				TypeInfo->Destruct(&fContent);
+				TypeInfo->Operators->Destruct(&fContent);
 				TypeInfo->Operators->MoveConstruct(&fContent,&Src.fContent);
 			}
 		}
@@ -672,7 +624,7 @@ public:
 			rtTypeInfo CurTypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 			rtTypeInfo TypeInfo=TRuntimeTypeInfo<typename TVariantTypeOperator::template tTypeByIndex<TypeIndex>::Type>::Value;
 			if(CurTypeInfo!=TypeInfo){
-				CurTypeInfo->Operator->Destruct(&fContent);
+				CurTypeInfo->Operators->Destruct(&fContent);
 				fTypeIndex=TypeIndex;
 				TypeInfo->Operators->Construct(&fContent);
 			}
@@ -712,8 +664,8 @@ public:
 		rtTypeInfo NewTypeInfo=TVariantTypeOperator::GetTypeInfo(NewTypeIndex);
 		fTypeIndex=NewTypeIndex;
 		if(CurTypeInfo!=NewTypeInfo){
-			CurTypeInfo->Operator->Destruct(&fContent);
-			NewTypeInfo->Operator->Construct(&fContent);
+			CurTypeInfo->Operators->Destruct(&fContent);
+			NewTypeInfo->Operators->Construct(&fContent);
 		}
 	}
 
@@ -729,7 +681,7 @@ public:
 
 	template<tTypeIndex NewTypeIndex,class TArg>
 	void Set(TArg cnLib_UREF Arg)noexcept(
-		cnLib_NOEXCEPTEXPR(AssignOrReconstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArg)(Arg)))
+		cnLib_NOEXCEPTEXPR(AssignOrReconstruct(DeclVal<typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type&>(),cnLib_UREFCAST(TArg)(Arg)))
 		&& cnLib_NOEXCEPTEXPR(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArg)(Arg)))
 		&& TVariantTypeOperator::IsDestructNoexcept
 	){
@@ -754,7 +706,7 @@ public:
 
 	template<tTypeIndex NewTypeIndex,class...TArgs>
 	void Set(TArgs cnLib_UREF...Args)noexcept(
-		cnLib_NOEXCEPTEXPR(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type>::Value(cnLib_UREFCAST(TArgs)(Args)...))
+		cnLib_NOEXCEPTEXPR(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArgs)(Args)...))
 		&& TVariantTypeOperator::IsDestructNoexcept
 	){
 		typedef typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type TNewType;
@@ -814,8 +766,6 @@ private:
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-//---------------------------------------------------------------------------
 namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Var_TH{
@@ -844,6 +794,8 @@ struct cAnyVariableContent_Value
 		this->TypeInfo->Operators->Destruct(&this->Content);
 	}
 
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
 	template<class T,class...TArgs>
 	void ConstructAs(TArgs cnLib_UREF...Args){
 		Content.template ConstructAs<T>(cnLib_UREFCAST(TArgs)(Args)...);
@@ -855,6 +807,24 @@ struct cAnyVariableContent_Value
 		this->Content.template DestructAs<T>();
 		this->Content.template ConstructAs<T>(cnLib_UREFCAST(TArgs)(Args)...);
 	}
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+	template<class T,class TArg>
+	void ConstructAs(TArgs cnLib_UREF Arg){
+		Content.template ConstructAs<T>(cnLib_UREFCAST(TArg)(Arg));
+	}
+
+	// reconstruct
+	template<class T,class TArg>
+	void Reconstruct(TArgs cnLib_UREF Arg){
+		this->Content.template DestructAs<T>();
+		this->Content.template ConstructAs<T>(cnLib_UREFCAST(TArg)(Arg));
+	}
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class T,class TSrc>
 	void SetVar(TSrc cnLib_UREF Src){
@@ -919,6 +889,9 @@ struct cAnyVariableContent_Pointer
 		this->TypeInfo->Operators->Delete(this->Pointer);
 	}
 
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
 	template<class T,class...TArgs>
 	void ConstructAs(TArgs cnLib_UREF...Args){
 		reinterpret_cast<T*&>(this->Pointer)=new T(cnLib_UREFCAST(TArgs)(Args)...);
@@ -930,6 +903,22 @@ struct cAnyVariableContent_Pointer
 		cnVar::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
 		cnVar::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArgs)(Args)...);
 	}
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+	template<class T,class TArg>
+	void ConstructAs(TArgs cnLib_UREF Arg){
+		reinterpret_cast<T*&>(this->Pointer)=new T(cnLib_UREFCAST(TArg)(Arg));
+	}
+
+	// reconstruct
+	template<class T,class...TArg>
+	void Reconstruct(TArgs cnLib_UREF Arg){
+		cnVar::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
+		cnVar::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArg)(Arg));
+	}
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class T,class TSrc>
 	void SetVar(TSrc cnLib_UREF Src){
@@ -945,7 +934,7 @@ struct cAnyVariableContent_Pointer
 	template<uIntn SrcSize,class TSrcAlignment>
 	void MoveConstructValue(cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src){
 		static_cast<void*&>(this->Pointer)=Src.Pointer;
-		Src.TypeInfo=cnVar::TRuntimeTypeInfo<void>::Value;
+		Src.TypeInfo=cnVar::TRuntimeTypeInfo<typename cnVar::TSelect<0,void,TAlignment>::Type>::Value;
 	}
 
 
@@ -988,7 +977,7 @@ class cAnyVariable
 {
 public:
 
-	cAnyVariable(){		fValueContent.TypeInfo=TRuntimeTypeInfo<void>::Value;	}
+	cAnyVariable(){		fValueContent.TypeInfo=TRuntimeTypeInfo<typename TSelect<0,void,TAlignment>::Type>::Value;	}
 	~cAnyVariable(){
 		if(IsPointerContent()){
 			fPointerContent.Destruct();
@@ -1131,6 +1120,9 @@ public:
 			Content.template ConstructAs<TVal>(cnLib_UREFCAST(TSrc)(Src));
 		}
 	}
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
 	// reconstruct
 	template<class T,class...TArgs>
 	void Set(TArgs cnLib_UREF...Args){
@@ -1151,7 +1143,7 @@ public:
 			Content.template ConstructAs<T>(cnLib_UREFCAST(TArgs)(Args)...);
 		}
 	}
-	
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 private:
 	template<uIntn,class> friend class cnLibrary::cnVar::cAnyVariable;
 
@@ -1186,7 +1178,7 @@ private:
 		return StorageSize<sizeof(T);
 	}
 	static bool IsPointerContent(rtTypeInfo TypeInfo){
-		return TypeInfo->ID->Size>StorageSize;
+		return TypeInfo->Size>StorageSize;
 	}
 	bool IsPointerContent(void)const{
 		return fValueContent.TypeInfo->Size>StorageSize;
@@ -1310,7 +1302,7 @@ private:
 
 	template<class T>
 	struct cSelector
-		: decltype(cSelector_Tester(DeclVar<T&>()))
+		: decltype(cSelector_Tester(DeclVal<T&>()))
 	{
 	};
 };
@@ -1320,7 +1312,9 @@ private:
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+#endif	// cnLibrary_CPPFEATURELEVEL >= 2
+
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosCleanup.inc>
 //---------------------------------------------------------------------------

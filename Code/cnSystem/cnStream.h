@@ -11,6 +11,10 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iAsyncNotificationCallback
@@ -175,7 +179,8 @@ cnLib_ENUM_BEGIN(ufInt8,EndpointWriteEndMode)
 class cnLib_INTERFACE iEndpoint : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iEndpoint,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual void cnLib_FUNC Close(void)=0;
 	virtual iReadQueue* cnLib_FUNC GetReadQueue(void)=0;
@@ -200,7 +205,6 @@ cnLib_ENUM_BEGIN(uInt8,StreamError)
 class iStreamErrorReport : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iStreamErrorReport,iInterface)
 
 	virtual eStreamError cnLib_FUNC GetStreamError(void)=0;
 };
@@ -252,7 +256,8 @@ public:
 class cnLib_INTERFACE iStream : public iSyncStream
 {
 public:
-	cnLib_INTERFACE_DEFINE(iStream,iSyncStream)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC  CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
 		// ReadAsync
 	//	read from stream
@@ -269,6 +274,10 @@ public:
 };
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+	//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

@@ -32,8 +32,8 @@ private:
 	{
 		cUIRect Rect;
 	};
-	cnRTL::cOrderedReferenceSet<iUILayoutHandler*> fContentInsets;
-	cnRTL::cSeqMap<iUILayoutHandler*,cInsetItem> fContentInsetsData;
+	//cnRTL::cOrderedReferenceSet<iUILayoutHandler*> fContentInsets;
+	//cnRTL::cSeqMap<iUILayoutHandler*,cInsetItem> fContentInsetsData;
 
 };
 
@@ -42,12 +42,15 @@ namespace cnMac{
 class cMacTouchEvent : public iUITouchEvent
 {
 public:
+
+	virtual eUIEventSourceType cnLib_FUNC GetSourceType(void)override;
 	virtual iUIView* cnLib_FUNC GetSourceView(void)override;
-	virtual iUITouchPoint* cnLib_FUNC GetTouchPoint(void)override;
-	virtual bool cnLib_FUNC GetPosition(iUIArea *Relative,cUIPoint &Position)override;
+	virtual void cnLib_FUNC CancelEvent(void)override;
+	virtual bool cnLib_FUNC IsCancelled(void)override;
+	virtual void* cnLib_FUNC GetTouchID(void)override;
+	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)override;
 
 	cnLib_UIView *SenderView;
-	iUITouchPoint *TouchPoint;
 	UITouch *Touch;
 };
 //---------------------------------------------------------------------------
@@ -58,9 +61,9 @@ public:
 	~cMacUIView();
 	cMacUIView(const cMacUIView &)=delete;
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID InterfaceID)const override;
-	virtual void cnLib_FUNC IncReference(void)override;
-	virtual void cnLib_FUNC DecReference(void)override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
+	virtual void cnLib_FUNC IncreaseReference(void)noexcept override;
+	virtual void cnLib_FUNC DecreaseReference(void)noexcept override;
 
 	cnLib_UIView* GetView(void)const;
 
@@ -69,7 +72,7 @@ public:
 	class iCalculateMarginFromParent
 	{
 	public:
-		virtual cRectangle Calculate(void)=0;
+		virtual cUIRectangle Calculate(void)=0;
 	};
 	void ResetCalculateMarginFromParent(void);
 	void SetCalculateMarginFromParent(iCalculateMarginFromParent *Calculator);
@@ -107,15 +110,14 @@ public:
 // iUIArea methods
 
 	virtual iUIThread* cnLib_FUNC GetUIThread(void)override;
-	virtual uIntn cnLib_FUNC FindRelativeBase(cUIPoint &Offset,iUIArea*const *Relatives,uIntn Count)override;
-	virtual bool cnLib_FUNC GetPosition(iUIArea *Relative,cUIPoint &Position)override;
-	virtual bool cnLib_FUNC SetPosition(iUIArea *Relative,cUIPoint Position)override;
+	virtual Float32 cnLib_FUNC GetContentScale(void)override;
 	virtual cUIPoint cnLib_FUNC GetSize(void)override;
 	virtual bool cnLib_FUNC SetSize(cUIPoint Size)override;
-	virtual bool cnLib_FUNC SetRectangle(iUIArea *Relative,cUIPoint Position,cUIPoint Size)override;
-	virtual sfInt16 cnLib_FUNC GetZIndex(void)override;
-	virtual bool cnLib_FUNC SetZIndex(sfInt16 Index)override;
-	virtual Float32 cnLib_FUNC GetContentScale(void)override;
+	virtual bool cnLib_FUNC TranslatePointTo(iInterface *Relative,cUIPoint &Position)override;
+	virtual bool cnLib_FUNC MoveTo(iInterface *Relative,cUIPoint Position)override;
+	virtual bool cnLib_FUNC ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)override;
+	virtual Float32 cnLib_FUNC GetZPosition(void)override;
+	virtual bool cnLib_FUNC SetZPosition(Float32 Position)override;
 
 // iUIView methods
 
@@ -127,14 +129,15 @@ public:
 	virtual bool cnLib_FUNC IsEnabled(void)override;
 	virtual bool cnLib_FUNC GetEnable(void)override;
 	virtual bool cnLib_FUNC SetEnable(bool Enable)override;
-	virtual bool cnLib_FUNC InsertLayoutHandler(iUILayoutHandler *Handler,sfInt16 Order)override;
-	virtual bool cnLib_FUNC RemoveLayoutHandler(iUILayoutHandler *Handler)override;
+	virtual bool cnLib_FUNC InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order)override;
+	virtual bool cnLib_FUNC RemoveViewHandler(iUIViewHandler *Handler)override;
+
 	virtual void cnLib_FUNC SetArrangement(void)override;
 	virtual void cnLib_FUNC ArrangeLayout(void)override;
 	virtual void cnLib_FUNC SetIncludeParentFrameMargin(bool Include)override;
 	virtual cRectangle cnLib_FUNC GetFrameMargin(void)override;
 
-	virtual iUIWindow* cnLib_FUNC GetWindow(void)override;
+	virtual iUIArea* cnLib_FUNC GetWindow(void)override;
 	virtual iUIView* cnLib_FUNC GetParent(void)override;
 	virtual bool cnLib_FUNC InsertView(iUIView *View)override;
 	virtual bool cnLib_FUNC RemoveView(iUIView *View)override;
@@ -148,7 +151,7 @@ public:
 	virtual bool cnLib_FUNC RemoveTouchFilter(iUITouchHandler *Filter)override;
 
 	virtual bool cnLib_FUNC TouchAcquireExclusive(iUITouchHandler *Handler)override;
-	virtual void cnLib_FUNC TouchReleaseExclusive(iUITouchHandler *Handler)override;
+	virtual bool cnLib_FUNC TouchReleaseExclusive(iUITouchHandler *Handler)override;
 
 
 protected:

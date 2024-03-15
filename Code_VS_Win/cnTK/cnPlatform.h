@@ -214,7 +214,14 @@
 
 #if _MSC_VER < 1910
 
-#define	cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION
+// not supported : global variable constant initialization
+#define	cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION
+
+// not supported : decltype expressions evaluation when SFINAE
+#define	cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION
+
+#include <type_traits>
+#include <cnTK/STLTypeTraits.h>
 
 #endif	// _MSC_VER < 1910
 
@@ -288,6 +295,10 @@
 
 #endif	// _MSC_VER >= 1916
 
+
+// not supported : size expressions evaluation when SFINAE
+#define	cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
 #endif	// _MSC_VER < 1920
 
 #ifdef _MSVC_LANG
@@ -337,9 +348,19 @@
 
 #endif	// _MSVC_LANG
 
-#ifdef _MANAGED
+#if _MANAGED
+
 #define	cnLibrary_CPPEXCLUDE_ALIGNMENT
 #define	cnLibrary_CPPEXCLUDE_NOEXCEPT
+
+#ifdef cnLibrary_CPPFEATURE_EXCEPTIONS
+#undef	cnLibrary_CPPFEATURE_EXCEPTIONS
+#endif // cnLibrary_CPPFEATURE_EXCEPTIONS
+#ifdef cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+#undef	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+
+
 #endif // _MANAGED
 
 
@@ -374,7 +395,6 @@ typedef long				sIntn;
 #endif
 
 static const uIntn ByteBitCount=8;
-// types for alignment
 
 typedef size_t	tSize;
 
@@ -443,6 +463,7 @@ typedef uInt32			uChar32;
 // float
 typedef float		Float32;
 typedef double		Float64;
+typedef void		Float128;
 
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
@@ -458,6 +479,7 @@ typedef double		Float64;
 #define	cnLib_FUNC			__cdecl
 #define	cnLib_INTERFACE		__declspec(novtable)
 #define	cnLib_DEPRECATED	__declspec(deprecated)
+
 
 #if cnLibrary_CPPFEATURE_ATTRIBUTES >= 200809L
 
@@ -477,8 +499,23 @@ typedef double		Float64;
 
 #define	cnLib_SWITCH_FALLTHROUGH
 
-#endif 
+#endif
+
+#define	cnLib_MEMBER_OFFSET(_type_,_member_)	( (&static_cast<_type_*>(nullptr)->_member_-static_cast<decltype(&static_cast<_type_*>(nullptr)->_member_)>(nullptr)) * sizeof(static_cast<_type_*>(nullptr)->_member_) )
 
 
+#ifdef	_DEBUG
+#define	cnLib_DEBUG
+#endif
+
+#define	cnLib_MEXP(...)	__VA_ARGS__
+
+//---------------------------------------------------------------------------
+#define cnLib_TO_STR(_arg_)  #_arg_
+#define cnLib_MACRO_TO_STR(...)  cnLib_TO_STR(__VA_ARGS__)
+
+#define cnLib_FILE_LINE	__FILE__ "(" cnLib_MACRO_TO_STR(__LINE__) ")"
+
+#define	cnLib_ASSUME(_e_)	__assume(_e_)
 
 /*-------------------------------------------------------------------------*/

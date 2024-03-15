@@ -737,9 +737,9 @@ void bcAsyncSignal::NotifyClose(void)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bcAsyncNotificationProcessor::bcAsyncNotificationProcessor(iAsyncNotification *Queue)
-	: fActiveMutex(false)
+	: fAsyncNotification(Queue)
 	, fNotificationActive(false)
-	, fAsyncNotification(Queue)
+	, fActiveMutex(false)
 {
 }
 //---------------------------------------------------------------------------

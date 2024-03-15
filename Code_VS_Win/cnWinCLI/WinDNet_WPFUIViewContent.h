@@ -21,7 +21,8 @@ namespace cnWin{
 class cnLib_INTERFACE miWPFUISimpleGraph : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(miWPFUISimpleGraph,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)=0;
 };
@@ -375,7 +376,7 @@ private:
 			fVariable=Host->QueryAffixedVariable(cnVar::TTypeID<T>::Value);
 			fValue=static_cast<T*>(fVariable->Get());
 			if(fValue==nullptr){
-				auto NewContent=rCreate<T>(Host);
+				auto NewContent=cnRTL::rCreate<T>(Host);
 				fValue=NewContent;
 				fVariable->Set(cnVar::MoveCast(NewContent),fValue);
 			}

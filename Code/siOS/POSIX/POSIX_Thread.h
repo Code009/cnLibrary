@@ -13,7 +13,7 @@
 namespace cnLibrary{
 namespace siPOSIX{
 //---------------------------------------------------------------------------
-void iTimepoint2timespec(timespec &ts,const iTimepoint *Time,uInt64 Delay);
+void iTimepoint2timespec(timespec &ts,iTimepoint *Time,uInt64 Delay);
 //---------------------------------------------------------------------------
 #ifdef	siOS_POSIX_ENABLE_THREAD
 //---------------------------------------------------------------------------
@@ -38,16 +38,6 @@ protected:
 	pthread_mutex_t f_mutex;
 };
 //---------------------------------------------------------------------------
-class cMutexLock : public iMutex
-{
-public:
-	virtual void cnLib_FUNC Acquire(void)override;
-	virtual bool cnLib_FUNC TryAcquire(void)override;
-	virtual void cnLib_FUNC Release(void)override;
-protected:
-	c_pthread_mutex fMutex;
-};
-//---------------------------------------------------------------------------
 class c_pthread_rwlock
 {
 	// _POSIX_THREADS
@@ -62,21 +52,16 @@ public:
 	void wrlock(void);
 	bool trywrlock(void);
 	void unlock(void);
+
+	void Acquire(void);
+	bool TryAcquire(void);
+	void Release(void);
+
+	void AcquireShared(void);
+	bool TryAcquireShared(void);
+	void ReleaseShared(void);
 protected:
 	pthread_rwlock_t f_lock;
-};
-//---------------------------------------------------------------------------
-class cSharedMutex : public iSharedMutex
-{
-public:
-	virtual void cnLib_FUNC Acquire(void)override;
-	virtual bool cnLib_FUNC TryAcquire(void)override;
-	virtual void cnLib_FUNC Release(void)override;
-	virtual void cnLib_FUNC AcquireShared(void)override;
-	virtual bool cnLib_FUNC TryAcquireShared(void)override;
-	virtual void cnLib_FUNC ReleaseShared(void)override;
-protected:
-	c_pthread_rwlock fRWLock;
 };
 //---------------------------------------------------------------------------
 class c_pthread_cond
@@ -110,13 +95,24 @@ protected:
 class cThreadLocalVariable : public iThreadLocalVariable
 {
 public:
-	cThreadLocalVariable(void (cnLib_FUNC*Destructor)(void*)=nullptr);
+	cThreadLocalVariable();
 	~cThreadLocalVariable();
 
-	virtual void* cnLib_FUNC Get(void)override;
-	virtual bool cnLib_FUNC Set(void *Data)override;
+	virtual void cnLib_FUNC Clear(void)noexcept(true)override;
+	virtual void* cnLib_FUNC Get(void)noexcept(true)override;
+	virtual void cnLib_FUNC Set(iReference *Reference,void *Value)noexcept(true)override;
+	virtual void cnLib_FUNC SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept(true)override;
 protected:
 	c_pthread_key fTS;
+
+	struct cThreadData
+	{
+		void *Object;
+		iReference *Reference;
+		iThreadExitNotifyProc *NotifyProc;
+	};
+
+	static void PThreadKeyDestructor(void *pThreadData);
 };
 //---------------------------------------------------------------------------
 #ifdef	siOS_POSIX_ENABLE_THREAD_PRIORITY

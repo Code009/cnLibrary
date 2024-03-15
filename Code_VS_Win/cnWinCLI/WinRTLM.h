@@ -2,6 +2,7 @@
 
 #define	WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <cnRTL\CRTHeader.h>
 
 #include <cnWinCLI\cnWinCLI.h>
 #include <cnRTL\cnRTLCore.h>

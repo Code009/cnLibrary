@@ -4,24 +4,33 @@
 /*-------------------------------------------------------------------------*/
 #pragma once
 #include <TargetConditionals.h>
+#include <stddef.h>
+#include <assert.h>
 /*-------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus
 
-#if	!__has_feature(cxx_alignas) || !__has_feature(cxx_alignof)
-// not supported : c++11 alignment (alignas,alignof)
-#define	cnLibrary_CPPEXCLUDE_ALIGNMENT
+#include <cnTK/CPPFeatureCheck.h>
+
+#if	!__has_feature(cxx_nullptr)
+// not supported : c++11 nullptr
+#define	cnLibrary_CPPEXCLUDE_NULLPTR
+#endif
+
+#if	!__has_feature(cxx_override_control)
+// not supported : c++11 override
+#define	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#endif
+
+#if	!__has_feature(cxx_strong_enums)
+// not supported : c++11 scoped enumeration
+#define	cnLibrary_CPPEXCLUDE_ENUMCLASS
 #endif
 
 #if	!__has_feature(cxx_default_function_template_args)
 // not supported : c++11 Default template arguments for function templates
 #define	cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-#endif
-
-#if	!__has_feature(cxx_defaulted_functions)
-// not supported : c++11 class member default implemetation
-#define	cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 #endif
 
 #if	!__has_feature(cxx_deleted_functions)
@@ -34,14 +43,14 @@
 #define	cnLibrary_CPPEXCLUDE_EXPLICIT_CONVERSION
 #endif
 
-#if	!__has_feature(cxx_nullptr)
-// not supported : c++11 nullptr
-#define	cnLibrary_CPPEXCLUDE_NULLPTR
+#if	!__has_feature(cxx_alignas) || !__has_feature(cxx_alignof)
+// not supported : c++11 alignment (alignas,alignof)
+#define	cnLibrary_CPPEXCLUDE_ALIGNMENT
 #endif
 
-#if	!__has_feature(cxx_override_control)
-// not supported : c++11 override
-#define	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#if	!__has_feature(cxx_defaulted_functions)
+// not supported : c++11 class member default implemetation
+#define	cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 #endif
 
 #if	!__has_feature(cxx_unrestricted_unions)
@@ -49,108 +58,28 @@
 #define	cnLibrary_CPPEXCLUDE_UNRESTRICTED_UNION
 #endif
 
-#if	!__has_feature(cxx_strong_enums)
-// not supported : c++11 scoped enumeration
-#define	cnLibrary_CPPEXCLUDE_ENUMCLASS
+//cnLibrary_CPPEXCLUDE_NOEXCEPT
+//cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION
+
+
+#if	!cnLibrary_CPPFEATURE_COROUTINE
+
+#if __has_builtin(__builtin_coro_resume)
+#define cnLibrary_CPPEXCLUDE_COROUTINES	201902L
 #endif
 
-#ifndef	__cpp_static_assert				// static_assert	200410L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_STATIC_ASSERT
-#endif
-
-#ifndef	__cpp_decltype					// decltype	200707L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_AUTOTYPE
-#endif
-
-#ifndef	__cpp_rvalue_references			//Rvalue reference	200610L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_MOVE_SEMANTICS
-#endif
-
-#ifndef	__cpp_nsdmi						// Non-static data member initializers	200809L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_CLASS_NSDMI
-#endif
-
-#ifndef	__cpp_initializer_lists			// List-initialization and std::initializer_list	200806L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_UNIFORM_INITIALIZATION
-#endif
-
-#ifndef	__cpp_variadic_templates		// Variadic templates	200704L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_VARIADIC_TEMPLATE
-#endif
-
-#ifndef	__cpp_alias_templates			// Alias templates	200704L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_ALIAS_TEMPLATE
-#endif
-
-#ifndef	__cpp_delegating_constructors	// Delegating constructors	200604L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_DELEGATE_CONSTRUCTOR
-#endif
-
-#ifndef	__cpp_inheriting_constructors	// Inheriting constructors	200802L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_INHERIT_CONSTRUCTOR
-#endif
-
-#ifndef	__cpp_constexpr					// constexpr		200704L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_CONSTEXPR
-#endif
-
-#ifndef	__cpp_user_defined_literals		// User-defined literals	200809L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_USER_DEFINED_LITERALS
-#endif
-
-#ifndef	__cpp_ref_qualifiers			// ref-qualifiers	200710L	(C++11)
-#define	cnLibrary_CPPEXCLUDE_CLASS_REF_QUALIFIER
-#endif
-
-#ifndef	__cpp_sized_deallocation		// Sized deallocation	201309L	(C++14)
-#define	cnLibrary_CPPEXCLUDE_SIZED_DEALLOCATION
-#endif
-
-#ifndef	__cpp_variable_templates		// Variable templates	201304L	(C++14)
-#define	cnLibrary_CPPEXCLUDE_TEMPLATE_VARIABLE
-#endif
-
-#ifndef	__cpp_inline_variables			// Inline variables	201606L	(C++17)
-#define	cnLibrary_CPPEXCLUDE_INLINE_VARIABLE
-#endif
-
-#ifndef	__cpp_aligned_new				// Dynamic memory allocation for over-aligned data	201606L	(C++17)
-#define	cnLibrary_CPPEXCLUDE_ALIGNED_ALLOCATION
-#endif
-
-#ifndef	__cpp_if_constexpr				//constexpr if	201606L	(C++17)
-#define	cnLibrary_CPPEXCLUDE_CONSTEXPR_IF
 #endif
 
 
-#ifndef __cpp_coroutines
-#define cnLibrary_CPPEXCLUDE_COROUTINES
-#endif
-
-#if !__has_builtin(__builtin_coro_resume)
-#define cnLibrary_CPPEXCLUDE_COROUTINES
-#endif
 //#ifndef	__cpp_impl_coroutine			// Coroutines (compiler support)	201902L	(C++20)
 //static_assert(false,"not supported : Coroutines");
 //#define cnLibrary_CPPEXCLUDE_COROUTINES
 //#endif
 
-//__cpp_impl_three_way_comparison	Three-way comparison (compiler support)	201907L	(C++20)
-
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 
-// integer
-
-typedef unsigned char		uInt8;
-typedef signed char			sInt8;
-typedef unsigned short		uInt16;
-typedef signed short		sInt16;
-typedef unsigned int		uInt32;
-typedef signed int			sInt32;
-typedef unsigned long long	uInt64;
-typedef signed long long	sInt64;
 // word integer
 
 #if	TARGET_CPU_X86
@@ -170,6 +99,24 @@ typedef __uint128_t			uInt128;
 typedef __int128_t			sInt128;
 
 #endif // TARGET_CPU_X86_64
+
+typedef size_t	tSize;
+
+#ifndef cnLibrary_CPPEXCLUDE_NULLPTR
+typedef std::nullptr_t tNullptr;
+#endif
+
+
+// integer
+
+typedef unsigned char		uInt8;
+typedef signed char			sInt8;
+typedef unsigned short		uInt16;
+typedef signed short		sInt16;
+typedef unsigned int		uInt32;
+typedef signed int			sInt32;
+typedef unsigned long long	uInt64;
+typedef signed long long	sInt64;
 
 #if	TARGET_CPU_ARM	// arm 32
 
@@ -204,35 +151,73 @@ typedef sInt128					sfInt128;
 
 // character
 
-typedef char		uChar8;
+#if cnLibrary_CPPFEATURE_UCHAR8 >= 201811L
+typedef	char8_t				uChar8;
+#else	// cnLibrary_CPPFEATURE_UCHAR8 < 201811L
+typedef	char				uChar8;
+#endif	// cnLibrary_CPPFEATURE_UCHAR8
 
-#ifdef	__cpp_unicode_characters
-typedef char16_t	uChar16;
-typedef char32_t	uChar32;
+#if cnLibrary_CPPFEATURE_UCHARS >= 200704L
+
+typedef char16_t			uChar16;
+typedef char32_t			uChar32;
+
+// cnLibrary_CPPFEATURE_UCHARS >= 200704L
 #else
+// cnLibrary_CPPFEATURE_UCHARS < 200704L
+
 #error	"char16_t and char32_t not supported"
-#endif
+
+#endif	// cnLibrary_CPPFEATURE_UCHARS < 200704L
+
 
 // float
-typedef float		Float32;
-typedef double		Float64;
+typedef float			Float32;
+typedef double			Float64;
+typedef long double		Float128;
 
 
-static constexpr uIntn byteBitCount=8;
+static constexpr uIntn ByteBitCount=8;
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #endif	// __cplsuplus
-//---------------------------------------------------------------------------
+/*-------------------------------------------------------------------------*/
+// <=> not ready
+#undef	cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION
 
-#define	cnLib_INTERFACE
 #define	cnLib_FUNC
+#define	cnLib_INTERFACE
 #define	cnLib_DEPRECATED	[[deprecated]]
 
+#define	cnLib_CPPATTRIBUTE(__attribute__)	[[__attribute__]]
+
 #define	cnLib_SWITCH_FALLTHROUGH	[[fallthrough]]
-#define	cnLib_NOEXCEPT		noexcept
+
+#define cnLib_MEMBER_OFFSET(_type_,_member_)	offsetof(_type_,_member_)
+
+/*-------------------------------------------------------------------------*/
 
 
-//---------------------------------------------------------------------------
+#ifdef	DEBUG
+#define	cnLib_DEBUG
+#endif
+
+#define	cnLib_MEXP(...)	__VA_ARGS__
+/*-------------------------------------------------------------------------*/
+#define cnLib_TO_STR(_arg_)  #_arg_
+#define	cnLib_EXP_TO_STR(_arg_)	cnLib_TO_STR(_arg_)
+
+#define cnLib_FILE_LINE	__FILE__ "(" cnLib_EXP_TO_STR(__LINE__) ")"
+
+/*-------------------------------------------------------------------------*/
+// assert
+#ifdef	cnLib_DEBUG
+#define	cnLib_ASSERT(_x_)	assert(_x_)
+#else
+#define	cnLib_ASSERT(_x_)	((void)(_x_))
+#endif
+/*-------------------------------------------------------------------------*/
 
 
+//#define	cnLib_LOCAL	//__attribute__((visibility("hidden")))

@@ -1,4 +1,4 @@
-﻿#include <cnTK\cnDebug.h>
+﻿#include <cnTK\cnPlatform.h>
 
 #ifdef	cnLib_DEBUG
 #include <crtdbg.h>

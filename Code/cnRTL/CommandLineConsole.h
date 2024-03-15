@@ -164,7 +164,7 @@ protected:
 	static sfInt8 StringCompare(const cString<uChar16> &Str1,const cArray<const uChar16> &Str2){
 		cStringUpperCaseView<uChar16> Str2View={Str2.Pointer};
 		return cnString::ViewCompare(Str1->Pointer,Str1->Length,Str2View,Str2.Length);
-		if(Str1->Length==Str2.Length)
+		/*if(Str1->Length==Str2.Length)
 		if(Str1->Length<Str2.Length){
 			sfInt8 r=cnString::ViewCompare(Str1->Pointer,Str2View,Str1->Length);
 			if(r==0 && Str2.Pointer[Str1->Length]!=0){
@@ -177,7 +177,7 @@ protected:
 			if(r==0)
 				return 1;
 			return r;
-		}
+		}*/
 	}
 
 	struct cCmdOrderOperator

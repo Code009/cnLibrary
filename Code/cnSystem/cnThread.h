@@ -17,6 +17,10 @@
 // cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
 #define	cnLib_CONSTVAR	const
 #endif	// cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
+
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
@@ -106,7 +110,8 @@ public:
 class cnLib_INTERFACE iThread : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iThread,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	// Wake
 	//	wake thread on sleep
@@ -254,10 +259,11 @@ extern iThreadPool*const DefaultThreadPool;
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
-class iDataCache : public iInterface
+class cnLib_INTERFACE iDataCache : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iDataCache,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual bool cnLib_FUNC IsCached(void)=0;
 	virtual void cnLib_FUNC Cache(void)=0;
@@ -267,6 +273,9 @@ public:
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #undef	cnLib_CONSTVAR
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

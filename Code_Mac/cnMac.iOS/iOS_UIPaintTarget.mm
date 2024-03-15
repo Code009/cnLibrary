@@ -106,10 +106,13 @@ void cOpenGLESRenderBuffer::GLSetupWithRenderBuffer(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOpenGLESViewLayer::cOpenGLESViewLayer()
+cOpenGLESViewLayer::cOpenGLESViewLayer(iOpenGLViewPainter *Painter)
+	: fPainter(Painter)
 {
 	fLayer=[[CAEAGLLayer alloc]init];
 
+	fNeedNotifyRectChange=true;
+	UpdatePainterState();
 	fPainterState=UIState::Null;
 }
 //---------------------------------------------------------------------------
@@ -119,9 +122,9 @@ cOpenGLESViewLayer::~cOpenGLESViewLayer()
 	[fLayer release];
 }
 //---------------------------------------------------------------------------
-const void* cOpenGLESViewLayer::CastInterface(iTypeID IID)const
+void* cOpenGLESViewLayer::CastInterface(iTypeID IID)
 {
-	return ImpCastInterface<iOCObject>(this,IID);
+	return cnVar::FindInterface<iOCObject>(this,IID);
 }
 //---------------------------------------------------------------------------
 id cOpenGLESViewLayer::GetOCObject(void)
@@ -341,36 +344,23 @@ bool cOpenGLESViewLayer::SetVisible(bool Visible)
 	return true;
 }
 //---------------------------------------------------------------------------
-sfInt16 cOpenGLESViewLayer::GetZIndex(void)
+Float32 cOpenGLESViewLayer::GetZPosition(void)
 {
-	return static_cast<sfInt16>(fLayer.zPosition);
+	return static_cast<Float32>(fLayer.zPosition);
 }
 //---------------------------------------------------------------------------
-bool cOpenGLESViewLayer::SetZIndex(sfInt16 ZIndex)
+bool cOpenGLESViewLayer::SetZIndex(Float32 ZPosition)
 {
-	fLayer.zPosition=ZIndex;
+	fLayer.zPosition=ZPosition;
 	return true;
-}
-//---------------------------------------------------------------------------
-void cOpenGLESViewLayer::SetPainter(iOpenGLViewPainter *Painter)
-{
-	if(fPainter!=nullptr){
-		fPainterState=UIState::Null;
-		NotifyPainterState(fPainterState,UIState::Null);
-	}
-	fPainter=Painter;
-	if(fPainter!=nullptr){
-		fNeedNotifyRectChange=true;
-		UpdatePainterState();
-	}
 }
 //---------------------------------------------------------------------------
 cUIPoint cOpenGLESViewLayer::GetPaintSize(void)
 {
 	auto Size=fLayer.bounds.size;
 	auto cs=fLayer.contentsScale;
-	sfInt32 x=static_cast<sfInt32>(Size.width*cs);
-	sfInt32 y=static_cast<sfInt32>(Size.height*cs);
+	Float32 x=static_cast<Float32>(Size.width*cs);
+	Float32 y=static_cast<Float32>(Size.height*cs);
 	return {x,y};
 }
 //---------------------------------------------------------------------------

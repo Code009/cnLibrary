@@ -40,18 +40,14 @@ cfPtr<T> cfTakeFromManual(T Src)
 template<class T>
 cfPtr<T> cfTake(T Src,uInt32 Tag)
 {
-#ifdef	cnLib_DEBUG
-	cnSystem::DebugLogReferenceDec(Src,Tag);
-#endif
+	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return cfPtr< cnVar::RemoveConst<T> >::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
 T* cfExtract(cfPtr<T> &Src,uInt32 Tag)
 {
-#ifdef	cnLib_DEBUG
-	cnSystem::DebugLogReferenceInc(Src,Tag);
-#endif
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T>(Src),Tag);
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------

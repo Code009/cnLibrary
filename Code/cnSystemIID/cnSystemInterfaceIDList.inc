@@ -28,8 +28,8 @@ cnSystem_INTERFACE_ID_DEFINE(iPrintPaper)
 //cnSystem_INTERFACE_ID_DEFINE(iUIBitmap)
 
 
-cnSystem_INTERFACE_ID_DEFINE(iStreamErrorReport)
-cnSystem_INTERFACE_ID_DEFINE(iConnectErrorReport)
+//cnSystem_INTERFACE_ID_DEFINE(iStreamErrorReport)
+//cnSystem_INTERFACE_ID_DEFINE(iConnectErrorReport)
 
 #ifdef __cnLibrary_cnSystem_Socket_H__
 

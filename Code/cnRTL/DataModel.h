@@ -337,7 +337,7 @@ private:
 	static cnVar::TTypeDef< impDBIDCreate_Reference		<T,TAtomicOperator,TAllocator> >	ImpTypeTest(iReference*);
 	static cnVar::TTypeDef< impDBIDCreate_VirtualReference	<T,TAtomicOperator,TAllocator> >	ImpTypeTest(bcVirtualLifeCycle*);
 public:
-	typedef decltype(ImpTypeTest(cnVar::DeclVar<T*>())) TypeDef;
+	typedef decltype(ImpTypeTest(cnVar::DeclVal<T*>())) TypeDef;
 };
 template<class T,class TAtomicOperator,class TAllocator>
 struct TDBIDCreateImplementClass

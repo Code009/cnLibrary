@@ -5,8 +5,7 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 
-#include <cnWinCLI\cnWinCLI.h>
-#include <cnSystem\cnWindows.h>
+//#include <cnSystem\cnWindows.h>
 #include <cnWinCLI\WinRTLM.h>
 
 #ifdef __cplusplus
@@ -18,8 +17,7 @@ namespace cnWin{
 class iCLIObject : public iInterface
 {
 public:
-	cnLib_INTERFACE_ID(iCLIObject)
-
+	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)=0;

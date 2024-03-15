@@ -6,7 +6,7 @@ using namespace cnMac;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cnMac::iTimeToDispatchTimeNS(dispatch_time_t &dt,const iTimepoint *Time,sInt64 Delay)
+void cnMac::iTimeToDispatchTimeNS(dispatch_time_t &dt,iTimepoint *Time,sInt64 Delay)
 {
 	if(Time==nullptr){
 		dt=DISPATCH_TIME_FOREVER;
@@ -133,7 +133,7 @@ void cGCDTimer::TimerSourceDeletor(void *Parameter)
 	rDecReference(This,'tmsr');
 }
 //---------------------------------------------------------------------------
-void cGCDTimer::Start(const iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)
+void cGCDTimer::Start(iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)
 {
 	if(fLocking.Acquire.Xchg(true)){
 		return;
@@ -208,9 +208,9 @@ cGCDThreadPool::~cGCDThreadPool()
 	dispatch_release(fQueue);
 }
 //---------------------------------------------------------------------------
-const void* cGCDThreadPool::CastInterface(iTypeID InterfaceID)const
+void* cGCDThreadPool::CastInterface(iTypeID InterfaceID)
 {
-	return ImpCastInterface<iThreadPool,iGCDDispatch>(this,InterfaceID);
+	return cnVar::FindInterface<iThreadPool,iGCDDispatch>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
 dispatch_queue_t cGCDThreadPool::GetGCDDispatch(void)
@@ -218,7 +218,7 @@ dispatch_queue_t cGCDThreadPool::GetGCDDispatch(void)
 	return fQueue;
 }
 //---------------------------------------------------------------------------
-void cGCDThreadPool::StartWork(iReference *Reference,iProcedure *Procedure)
+void cGCDThreadPool::Execute(iReference *Reference,iProcedure *Procedure)
 {
 	if(Reference!=nullptr){
 		GCDAsync(fQueue,Reference,Procedure);
@@ -250,9 +250,9 @@ cGCDDispatch::~cGCDDispatch()
 	dispatch_release(fQueue);
 }
 //---------------------------------------------------------------------------
-const void* cGCDDispatch::CastInterface(iTypeID InterfaceID)const
+void* cGCDDispatch::CastInterface(iTypeID InterfaceID)
 {
-	return ImpCastInterface<iDispatch,iGCDDispatch>(this,InterfaceID);
+	return cnVar::FindInterface<iDispatch,iGCDDispatch>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
 dispatch_queue_t cGCDDispatch::GetGCDDispatch(void)

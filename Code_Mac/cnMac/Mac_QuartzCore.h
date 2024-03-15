@@ -18,6 +18,10 @@
 #endif	// __OBJC__
 //---------------------------------------------------------------------------
 namespace cnLibrary{
+//---------------------------------------------------------------------------
+class iUIViewCALayerHost;
+template<> struct cnLibrary::TInterfaceID<iUIViewCALayerHost>{	static iTypeID Value;	};
+//---------------------------------------------------------------------------
 namespace cnMac{
 //---------------------------------------------------------------------------
 class cCFCGImage : public iCFCGImage
@@ -26,7 +30,7 @@ public:
 	cCFCGImage(CGImageRef Image);
 	~cCFCGImage();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID InterfaceID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
 
 	// iCGContextDrawable
 
@@ -111,7 +115,7 @@ public:
 
 	// iUISimplePaintContext
 
-	virtual bool cnLib_FUNC Fill(cUIPoint DrawPosition,cUIPoint DrawSize,uInt32 Color)override;
+	virtual bool cnLib_FUNC Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)override;
 	virtual bool cnLib_FUNC Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)override;
 	virtual bool cnLib_FUNC Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator)override;
 protected:
@@ -123,7 +127,7 @@ public:
 	cCTTextGraph();
 	~cCTTextGraph();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID InterfaceID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
 
 	virtual cUIPoint cnLib_FUNC GetSize(void)override;
 
@@ -131,7 +135,7 @@ public:
 	uIntn GetTextPos(uIntn Length,uInt32 *TextPos);
 
 	void Clear(void);
-	void SetText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const cUITextLineLayout *Layout);
+	void SetText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,iUITextLineLayout *Layout);
 	void Draw(CGContextRef Context,float x,float y)const;
 
 // iCGContextDrawable
@@ -168,7 +172,7 @@ public:
 	cCGLayerBitmap(CGLayerRef Layer);
 	~cCGLayerBitmap();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID InterfaceID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
 
 	// iUIGraph
 
@@ -190,8 +194,8 @@ public:
 
 	// iUISimpleBitmapCanvas
 
-	virtual iUISimplePaintContext* cnLib_FUNC GetContext(void)override;
-	virtual void cnLib_FUNC Clear(uInt32 Color=0)override;
+	virtual iUISimplePaintContext* cnLib_FUNC StartContext(cUIColor Color)override;
+	virtual void cnLib_FUNC DiscardContext(void)override;
 	virtual iPtr<iUIBitmap> cnLib_FUNC FinishBitmap(bool CopyContent)override;
 	virtual iPtr<iBitmapDataSource> cnLib_FUNC FinishBitmapSource(bool CopyContent)override;
 
@@ -231,8 +235,10 @@ protected:
 class cCGSimplePaintDevice : public iUISimplePaintDevice
 {
 public:
+
+
 	virtual rPtr<iUISimpleBitmapCanvas> cnLib_FUNC CreateBitmapCanvas(cUIPoint Size)override;
-	virtual iPtr<iUITextGraph> cnLib_FUNC CreateTextGraph(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const cUITextLineLayout *Layout)override;
+	virtual iPtr<iUITextGraph> cnLib_FUNC CreateTextGraph(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)override;
 
 	virtual iPtr<iUIBitmap> cnLib_FUNC CreateBitmapCopyFromSource(iBitmapDataSource *Source)override;
 };
@@ -251,7 +257,7 @@ public:
 class cnLib_INTERFACE iUIViewCALayerHost : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIViewCALayerHost,iInterface);
+	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual bool InsertViewCALayer(iUIViewCALayer *ViewLayer)=0;
 	virtual bool RemoveViewCALayer(iUIViewCALayer *ViewLayer)=0;
@@ -267,7 +273,7 @@ public:
 
 	cMacSimpleViewContent(const cMacSimpleViewContent&)=delete;
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID IID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)override;
 
 	void OnLayerDisplay(void);
 	CALayer *GetLayer(void);
@@ -278,13 +284,12 @@ public:
 	virtual bool cnLib_FUNC SetView(iUIView *View)override;
 	virtual bool cnLib_FUNC GetVisible(void)override;
 	virtual bool cnLib_FUNC SetVisible(bool Visible)override;
-	virtual sfInt16 cnLib_FUNC GetZIndex(void)override;
-	virtual bool cnLib_FUNC SetZIndex(sfInt16 ZIndex)override;
+	virtual Float32 cnLib_FUNC GetZPosition(void)override;
+	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)override;
 
 // iUISimpleViewContent
 
 	virtual rPtr<iUISimplePaintDevice> cnLib_FUNC QueryDevice(void)override;
-	virtual void cnLib_FUNC SetPainter(iUISimplePainter *Painter)override;
 	virtual eUIState cnLib_FUNC GetPaintState(void)override;
 	virtual cUIPoint cnLib_FUNC GetPaintSize(void)override;
 	virtual void cnLib_FUNC QueryUpdate(void)override;
@@ -319,8 +324,8 @@ protected:
 	bool fNeedNotifyRectChange=false;
 	bool fEmptySize;
 
-	virtual void cnLib_FUNC IncReference(void)override;
-	virtual void cnLib_FUNC DecReference(void)override;
+	virtual void cnLib_FUNC IncreaseReference(void)noexcept override;
+	virtual void cnLib_FUNC DecreaseReference(void)noexcept override;
 
 	void OnLayerLayout(void);
 

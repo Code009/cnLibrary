@@ -74,13 +74,12 @@ public:
 	cStringFileName(cStringPath FilePath);
 	~cStringFileName();
 
-	virtual eOrdering cnLib_FUNC Compare(const iFileName *Dest)const override;
-
 // iFile
 
 	virtual bool	cnLib_FUNC IsExists(void)override;
 	virtual bool	cnLib_FUNC HasData(void)override;
 	virtual bool	cnLib_FUNC HasFolder(void)override;
+	virtual bool	cnLib_FUNC Delete(void)override;
 
 	virtual uInt64	cnLib_FUNC GetDataSize(void)override;
 	virtual iPtr<iFileSyncStream>	cnLib_FUNC OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)override;
@@ -94,11 +93,14 @@ public:
 
 // iFileName
 
+	virtual eiOrdering cnLib_FUNC Compare(iFileName *Dest)override;
+
 	virtual iPtr<iFileName>	cnLib_FUNC ParentFileName(void)override;
 	virtual rPtr<iFileEnumerator>	cnLib_FUNC EnumFileNames(const uChar16 *Filter)override;
 	virtual const uChar16*	cnLib_FUNC GetName(void)override;
 	virtual uIntn			cnLib_FUNC GetNameLength(void)override;
 	virtual iPtr<iFileName>	cnLib_FUNC MakeName(const uChar16*const *Path,uIntn Depth)override;
+
 
 // iPOSIXFileName
 

@@ -4,733 +4,6 @@ using namespace cnLibrary;
 using namespace cnRTL;
 using namespace cnMac;
 
-
-bcBufferedRWQueue::bcBufferedRWQueue()
-{
-}
-//---------------------------------------------------------------------------
-bcBufferedRWQueue::~bcBufferedRWQueue()
-{
-}
-//---------------------------------------------------------------------------
-void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)
-{
-	auto WriteMemory=fReadDataQueue.ReserveWriteBuffer(Size);
-	cnMemory::Copy(WriteMemory.Pointer,Data,Size);
-	fReadDataQueue.CommitWriteBuffer(Size);
-
-	UpdateReadQueueState();
-}
-//---------------------------------------------------------------------------
-cMemory bcBufferedRWQueue::QueryReadDataBuffer(uIntn QuerySize)
-{
-	return fReadDataQueue.ReserveWriteBuffer(QuerySize);
-}
-//---------------------------------------------------------------------------
-uIntn bcBufferedRWQueue::AdvanceReadDataBuffer(uIntn Size)
-{
-	return fReadDataQueue.CommitWriteBuffer(Size);
-}
-//---------------------------------------------------------------------------
-cConstMemory bcBufferedRWQueue::QueryWriteData(void)
-{
-	return fWriteDataQueue.GatherReadBuffer(0);
-}
-//---------------------------------------------------------------------------
-uIntn bcBufferedRWQueue::AdvanceWriteData(uIntn Size)
-{
-	return fWriteDataQueue.DismissReadBuffer(Size);
-}
-//---------------------------------------------------------------------------
-bool bcBufferedRWQueue::IsWriteDataEnded(void)
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-cConstMemory bcBufferedRWQueue::GatherReadBuffer(uIntn QuerySize)
-{
-	return fReadDataQueue.GatherReadBuffer(QuerySize);
-}
-//---------------------------------------------------------------------------
-uIntn bcBufferedRWQueue::DismissReadBuffer(uIntn Size)
-{
-	uIntn DismissedSize=fReadDataQueue.DismissReadBuffer(Size);
-	if(DismissedSize!=0){
-		ReadBufferNotify();
-	}
-	return DismissedSize;
-}
-//---------------------------------------------------------------------------
-cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)
-{
-	return fWriteDataQueue.ReserveWriteBuffer(QuerySize);
-}
-//---------------------------------------------------------------------------
-uIntn bcBufferedRWQueue::CommitWriteBuffer(uIntn Size)
-{
-	uIntn CommitSize=fWriteDataQueue.CommitWriteBuffer(Size);
-	if(CommitSize!=0){
-		WriteDataNotify();
-	}
-	return CommitSize;
-}
-//---------------------------------------------------------------------------
-void bcBufferedRWQueue::ReadQueueClosed(void)
-{
-}
-//---------------------------------------------------------------------------
-void bcBufferedRWQueue::WriteQueueClosed(void)
-{
-}
-
-
-cnLib_INTERFACE_LOCALID_DEFINE(cGATTTunnelConectionDevice);
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cRWQueue::cRWQueue(rPtr<cGATTTunnelConectionDevice> Device)
-	: fDevice(cnVar::MoveCast(Device))
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cRWQueue::~cRWQueue()
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::VirtualStarted(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::VirtualStopped(void)
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionDevice* cGATTTunnelConectionDevice::cRWQueue::GetDevice(void)const
-{
-	return fDevice;
-}
-//---------------------------------------------------------------------------
-iReference*_Nonnull cGATTTunnelConectionDevice::cRWQueue::RWQueueInnerReference(void)
-{
-	return &fInnerReference;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::ReadBufferNotify(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::WriteDataNotify(void)
-{
-	fDevice->RWQueueNotifyWrite();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cGATTTunnelConectionDevice(iPtr<iGATTService> Service,iPtr<iGATTCharacteristic> ReadChar,iPtr<iGATTCharacteristic> WriteChar)
-	: fService(cnVar::MoveCast(Service))
-	, fReadChar(cnVar::MoveCast(ReadChar))
-	, fWriteChar(cnVar::MoveCast(WriteChar))
-	, fConnectState(csIdle)
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::~cGATTTunnelConectionDevice()
-{
-}
-//---------------------------------------------------------------------------
-eOrdering cGATTTunnelConectionDevice::Compare(const iAddress *_Nullable Dest)const
-{
-	auto DestDevice=iCast<cGATTTunnelConectionDevice>(Dest);
-	if(DestDevice==nullptr){
-		return Ordering::Different;
-	}
-
-	if(this==DestDevice)
-		return Ordering::Equal;
-	if(this<DestDevice){
-		return Ordering::Less;
-	}
-	return Ordering::Greater;
-}
-//---------------------------------------------------------------------------
-iGATTService*_Nullable cGATTTunnelConectionDevice::GetService(void)const
-{
-	return fService;
-}
-//---------------------------------------------------------------------------
-iGATTCharacteristic*_Nullable cGATTTunnelConectionDevice::GetReadCharacteristic(void)const
-{
-	return fReadChar;
-}
-//---------------------------------------------------------------------------
-iGATTCharacteristic*_Nullable cGATTTunnelConectionDevice::GetWriteCharacteristic(void)const
-{
-	return fWriteChar;
-}
-//---------------------------------------------------------------------------
-bool cGATTTunnelConectionDevice::Connect(iConnectCallback *Callback)
-{
-	if(fRWQueue!=nullptr || fConnectState!=csIdle)
-		return false;
-
-	auto AutoLock=TakeLock(&fConnectProcedureMutex);
-
-	if(fConnectState!=csIdle){
-		// is connecting
-		return false;
-	}
-	// start connect
-	fConnectState=csWaitConnectPerpheral;
-	fConnectCallback=Callback;
-
-	auto Peripheral=fService->GetPeripheral();
-	Peripheral->Connect();
-	return true;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::GATTServiceStateChanged(void)
-{
-	UpdateFunctionState();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::GATTServiceCharacteristListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::UpdateFunctionState(void)
-{
-	switch(fConnectState){
-	case csIdle:
-		break;
-	case csWaitConnectPerpheral:
-		break;
-	case csCheckService:
-		// check service state
-		{
-			auto ServiceState=fService->GetFunctionState();
-			auto ReadCharState=fReadChar->GetFunctionState();
-			auto WriteCharState=fWriteChar->GetFunctionState();
-			if(ServiceState==GATTFunctionState::Absent || ReadCharState==GATTFunctionState::Absent || WriteCharState==GATTFunctionState::Absent){
-				// cannot connect to device
-				fConnectState=csIdle;
-				ConnectProcFailed();
-			}
-			else if(ServiceState==GATTFunctionState::Online && ReadCharState==GATTFunctionState::Online && WriteCharState==GATTFunctionState::Online){
-				// online
-				if(fReadNotifyDescriptor!=nullptr){
-					// operate in event mode
-					fConnectState=csWaitNotifyDescriptor;
-					goto case_csWaitNotifyDescriptor;
-				}
-				else{
-					// operate in poll mode
-					fConnectState=csConnected;
-					ConnectProcSucceed();
-				}
-
-			}
-		}
-		break;
-	case csWaitNotifyDescriptor:
-		{
-case_csWaitNotifyDescriptor:
-			auto AutoNotifyFunctionState=fReadNotifyDescriptor->GetFunctionState();
-			if(AutoNotifyFunctionState==GATTFunctionState::Absent){
-				// operate in poll mode
-				fConnectState=csConnected;
-				ConnectProcSucceed();
-			}
-			else if(AutoNotifyFunctionState==GATTFunctionState::Online){
-				//fReadNotifyDescriptor->Write(0);
-				fConnectState=csWaitRegisterNotify;
-			}
-		}
-		break;
-	case csWaitRegisterNotify:
-		//if(fReadNotifyDescriptor->GetValue()){
-			fConnectState=csConnected;
-			ConnectProcSucceed();
-		//}
-		break;
-	case csConnected:
-		break;
-	}
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ConnectProcSucceed(void)
-{
-	auto RWQueue=rCreate<cRWQueue>(this);
-	fRWQueue=RWQueue;
-	fConnectCallback->TunnelDeviceOnConnectDone(cnVar::MoveCast(RWQueue));
-	fConnectCallback=nullptr;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ConnectProcFailed(void)
-{
-	//fConnectCallback->TunnelDeviceOnConnectFailed();
-	fConnectCallback->TunnelDeviceOnConnectDone(nullptr);
-	fConnectCallback=nullptr;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::RWQueueNotifyWrite(void)
-{
-	auto WriteData=fRWQueue->QueryWriteData();
-
-	uIntn SendSize=14;
-	if(SendSize>WriteData.Length)
-		SendSize=WriteData.Length;
-	fWriteChar->WriteWithoutResponse(WriteData.Pointer,SendSize);
-
-
-	fRWQueue->AdvanceWriteData(SendSize);
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ReadCharValueNotify(void)
-{
-	auto Value=fReadChar->GetValue();
-	auto DataArray=Value->GetArray();
-
-	if(fRWQueue!=nullptr){
-		fRWQueue->PutReadData(DataArray.Pointer,DataArray.Length);
-	}
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristStateChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristDescriptorListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristValueNotify(void)
-{
-
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristStateChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristDescriptorListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristValueNotify(void)
-{
-
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cEndpoint::cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
-	: fRWQueue(cnVar::MoveCast(RWQueue))
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cEndpoint::~cEndpoint()
-{
-}
-//---------------------------------------------------------------------------
-const void*_Nullable cGATTTunnelConectionConnector::cEndpoint::CastInterface(iTypeID IID)const
-{
-	return ImpCastInterface<iConnection,iEndpoint>(this,IID);
-}
-//---------------------------------------------------------------------------
-iAddress*_Nullable cGATTTunnelConectionConnector::cEndpoint::GetLocalAddress(void)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iAddress* cGATTTunnelConectionConnector::cEndpoint::GetRemoteAddress(void)
-{
-	return fRWQueue->GetDevice();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cEndpoint::Close(void)
-{
-	fRWQueue->CloseReadQueue();
-	fRWQueue->CloseWriteQueue();
-}
-//---------------------------------------------------------------------------
-iReadQueue* cGATTTunnelConectionConnector::cEndpoint::GetReadQueue(void)
-{
-	return fRWQueue;
-}
-//---------------------------------------------------------------------------
-iWriteQueue* cGATTTunnelConectionConnector::cEndpoint::GetWriteQueue(void)
-{
-	return fRWQueue;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cEndpoint::SetWriteEndMode(eEndpointWriteEndMode EndMode)
-{
-	return fRWQueue->WriteQueueSetEndMode(EndMode);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectSyncObject::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
-{
-	Connection=CreateConnection(ConnectionIID,cnVar::MoveCast(RWQueue));
-
-	Notify();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-bool cGATTTunnelConectionConnector::cConnectAsyncTask::IsDone(void)
-{
-	return TaskState.IsDone();
-}
-//---------------------------------------------------------------------------
-bool cGATTTunnelConectionConnector::cConnectAsyncTask::SetNotify(iProcedure *_Nonnull NotifyProcedure)
-{
-	return TaskState.SetNotify(NotifyProcedure);
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::Cancel(void)
-{
-}
-//---------------------------------------------------------------------------
-iConnection*_Nullable cGATTTunnelConectionConnector::cConnectAsyncTask::GetConnection(void)
-{
-	return fConnection;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectStart(void)
-{
-	rIncReference(this,'conn');
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectCancel(void)
-{
-	rDecReference(this,'conn');
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
-{
-	fConnection=CreateConnection(ConnectionIID,cnVar::MoveCast(RWQueue));
-
-	TaskState.SetDone();
-
-	rDecReference(this,'conn');
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cGATTTunnelConectionConnector(iTypeID ConnectionIID)
-	: fConnectionIID(ConnectionIID)
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::~cGATTTunnelConectionConnector()
-{
-}
-//---------------------------------------------------------------------------
-iAddress* cGATTTunnelConectionConnector::GetLocalAddress(void)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnection> cGATTTunnelConectionConnector::Connect(iAddress *_Nullable RemoteAddress)
-{
-	if(RemoteAddress==nullptr)
-		return nullptr;
-	auto TunnelDevice=iCast<cGATTTunnelConectionDevice>(RemoteAddress);
-	if(TunnelDevice==nullptr)
-		return nullptr;
-
-	cConnectSyncObject ConnectObject;
-	ConnectObject.ConnectionIID=fConnectionIID;
-	if(TunnelDevice->Connect(&ConnectObject)==false)
-		return nullptr;
-
-	ConnectObject.Wait();
-
-	return cnVar::MoveCast(ConnectObject.Connection);
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionTask> cGATTTunnelConectionConnector::ConnectAsync(iAddress *_Nullable RemoteAddress)
-{
-	if(RemoteAddress==nullptr)
-		return nullptr;
-	auto TunnelDevice=iCast<cGATTTunnelConectionDevice>(RemoteAddress);
-	if(TunnelDevice==nullptr)
-		return nullptr;
-
-	auto Task=iCreate<cConnectAsyncTask>();
-	Task->ConnectStart();
-	if(TunnelDevice->Connect(Task)==false){
-		Task->ConnectCancel();
-		return nullptr;
-	}
-
-	return Task;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnection> cGATTTunnelConectionConnector::CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
-{
-	if(ConnectionIID==iTypeOf<iEndpoint>()){
-		return iCreate<cEndpoint>(cnVar::MoveCast(RWQueue));
-	}
-	return nullptr;
-	//if(ConnectionIID==iTypeOf<iStream>()){
-	//}
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::cGATTTunnelConectionObserver(iGATTPeripheralObserver *Observer)
-	: fObserver(Observer)
-	, fCallback(nullptr)
-{
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::~cGATTTunnelConectionObserver()
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::VirtualStarted(void)
-{
-	InnerIncReference('self');
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::VirtualStopped(void)
-{
-	CloseSignal();
-
-	InnerDecReference('self');
-}
-//---------------------------------------------------------------------------
-bool cGATTTunnelConectionObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)
-{
-	auto StartProc=StartSignal();
-	if(StartProc==false){
-		return false;
-	}
-
-	fCallback=Callback;
-	fCallbackReference=Reference;
-
-	StartProc.Execute();
-	return true;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::StopNotify(void)
-{
-	return StopSignal();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::NotifyCallback(bool IdleNotify)
-{
-	return NotifySignal(IdleNotify);
-}
-//---------------------------------------------------------------------------
-rPtr<iGATTTunnelConnectionEnumerator> cGATTTunnelConectionObserver::EnumAllDevices(void)
-{
-}
-//---------------------------------------------------------------------------
-rPtr<iGATTTunnelConnectionEnumerator> cGATTTunnelConectionObserver::FetchDeviceChanges(void)
-{
-	auto Changes=fObserver->QueryChanges();
-	if(Changes==nullptr){
-		// no changes
-		return nullptr;
-	}
-
-	auto Array=Changes->GetArray();
-	Array.Length;
-	Array.Pointer[0];
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::DiscardChanges(void)
-{
-}
-//---------------------------------------------------------------------------
-iPtr<iAddress> cGATTTunnelConectionObserver::Fetch(void)
-{
-	auto Item=fDeviceQueue.Dequeue();
-	if(Item==nullptr)
-		return nullptr;
-
-	auto Device=cnVar::MoveCast(Item->Device);
-
-	fDeviceItemRecycler.Recycle(Item);
-
-	return Device;
-}
-//---------------------------------------------------------------------------
-bool cGATTTunnelConectionObserver::FetchBLEDevice(cGATTTunnelConnectionDeviceInfo &DeviceInfo)
-{
-	auto Item=fDeviceQueue.Dequeue();
-	if(Item==nullptr)
-		return false;
-
-	auto Device=cnVar::MoveCast(Item->Device);
-
-	// address
-	DeviceInfo.Address=Device;
-
-	auto Service=Device->GetService();
-	auto ReadChar=Device->GetReadCharacteristic();
-	auto WrtteChar=Device->GetWriteCharacteristic();
-
-	// uuids
-	DeviceInfo.DeviceID.ServiceID=Service->GetUUID();
-	DeviceInfo.DeviceID.ReadCharID=ReadChar->GetUUID();
-	DeviceInfo.DeviceID.WriteCharID=WrtteChar->GetUUID();
-
-	// name
-	auto Peripheral=Service->GetPeripheral();
-	DeviceInfo.Name=Peripheral->GetName();
-
-	fDeviceItemRecycler.Recycle(Item);
-
-	return true;
-}
-//---------------------------------------------------------------------------
-iReference* cGATTTunnelConectionObserver::AsyncSignalInnerReference(void)
-{
-	return &fInnerReference;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncSignalStarted(void)
-{
-	fPeripheralObserverError=false;
-	fPeripheralObserverNotified=false;
-	if(fObserver->StartNotify(&fInnerReference,this)==false){
-		fPeripheralObserverError=true;
-	}
-
-	fCallback->AsyncStarted();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncSignalStopped(void)
-{
-	fObserver->StopNotify();
-
-	auto Callback=fCallback;
-	fCallback=nullptr;
-	Callback->AsyncStopped();
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::Availability cGATTTunnelConectionObserver::AsyncSignalAvailable(void)
-{
-	if(fPeripheralObserverError){
-		return Availability::Terminated;
-	}
-	if(fPeripheralObserverNotified){
-		return Availability::Available;
-	}
-	return Availability::Empty;
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncSignalNotify(void)
-{
-	fPeripheralObserverNotified=false;
-	fCallback->AsyncNotify();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncNotify(void)
-{
-	// notify from perpheral
-	fPeripheralObserverNotified=true;
-	UpdateSignalState();
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::GATTPeripheralListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::BLEOnDeviceChecked(cnLib_BluetoothLEConectionPeripheral *ConnectionPeripheral)
-{
-	bool UpdateQueue=false;
-	auto CPPConnectionPeripheral=CPPBluetoothLEConectionPeripheral(ConnectionPeripheral);
-	for(auto &ServiceIDItem : fServiceIDs){
-		auto Service=CPPConnectionPeripheral->GetServiceByUUID(ServiceIDItem->ID.ServiceUUID);
-		if(Service!=nullptr){
-			auto ReadChar=CPPConnectionPeripheral->GetCharacteristByUUID(ServiceIDItem->ID.ServiceUUID,ServiceIDItem->ID.ReadCharacteristUUID);
-			auto WriteChar=CPPConnectionPeripheral->GetCharacteristByUUID(ServiceIDItem->ID.ServiceUUID,ServiceIDItem->ID.WriteCharacteristUUID);
-			if(ReadChar!=nil && WriteChar!=nil){
-				UpdateQueue=true;
-				auto Device=iCreate<cBluetoothLEConectionDevice>(ConnectionPeripheral,Service,ReadChar,WriteChar);
-
-				auto Item=fDeviceItemRecycler.Query();
-				Item->Peripheral=ConnectionPeripheral;
-				Item->Device=Device;
-				fDeviceQueue.Enqueue(Item);
-			}
-
-		}
-	}
-	if(UpdateQueue){
-		UpdateSignalState();
-	}
-}
-//---------------------------------------------------------------------------//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTTunnelConectionProtocol::cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central,rPtr<iGATTPeripheralDevice> Device)
-	: fCentral(cnVar::MoveCast(Central))
-	, fDevice(cnVar::MoveCast(Device))
-{
-	if(fCentral!=nullptr){
-		fStreamConnector=iCreate<cGATTTunnelConectionConnector>(iTypeOf<iStream>());
-		fEndpointConnector=iCreate<cGATTTunnelConectionConnector>(iTypeOf<iEndpoint>());
-	}
-}
-//---------------------------------------------------------------------------
-cGATTTunnelConectionProtocol::~cGATTTunnelConectionProtocol()
-{
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateStreamConnector(iAddress *_Nullable LocalAddress,iAddress *_Nullable RemoteAddress)
-{
-	if(LocalAddress!=nullptr)
-		return nullptr;
-
-	return fStreamConnector;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateStreamListener(iAddress *_Nullable LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionQueue> cGATTTunnelConectionProtocol::CreateStreamConnectionQueue(iAddress *_Nullable LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateEndpointConnector(iAddress *_Nullable LocalAddress,iAddress *_Nullable RemoteAddress)
-{
-	if(LocalAddress!=nullptr)
-		return nullptr;
-
-	return fEndpointConnector;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateEndpointListener(iAddress *_Nullable LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionQueue> cGATTTunnelConectionProtocol::CreateEndpointConnectionQueue(iAddress *_Nullable LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iGATTTunnelConnectionBrowser> cGATTTunnelConectionProtocol::CreateBrowser(const cGATTTunnelConnectionDeviceID *_Nonnull ServiceIDs,uIntn ServiceCount)
-{
-	cnRTL::cArrayBlock<cGATTUUID> ServiceUUIDs;
-	ServiceUUIDs.SetLength(ServiceCount);
-	for(uIntn i=0;i<ServiceCount;i++){
-		ServiceUUIDs.Pointer[i]=ServiceIDs[i].ServiceID;
-	}
-	auto Query=fCentral->CreatePeripheralQuery(ServiceUUIDs.Pointer,ServiceUUIDs.Length);
-	if(Query==nullptr)
-		return nullptr;
-
-	auto Browser=iCreate<cGATTTunnelConectionBrowser>(Query);
-
-	Browser->DeviceIDs.SetCount(ServiceCount);
-
-	return Browser;
-}
 //---------------------------------------------------------------------------
 
 @interface cnLib_BluetoothLEPeripheralContext()<CBPeripheralDelegate>
@@ -934,7 +207,7 @@ bool cBLEDescriptor::RemoveHandler(iGATTDescriptorHandler *_Nullable Handler)
 //---------------------------------------------------------------------------
 eGATTFunctionState cBLEDescriptor::GetFunctionState(void)
 {
-	return GATTFunctionState::Offline;
+	return GATTFunctionState::Absent;
 }
 //---------------------------------------------------------------------------
 iGATTCharacteristic*_Nonnull cBLEDescriptor::GetCharacterist(void)
@@ -975,7 +248,7 @@ bool cBLECharacteristic::RemoveHandler(iGATTCharacteristHandler *_Nullable Handl
 //---------------------------------------------------------------------------
 eGATTFunctionState cBLECharacteristic::GetFunctionState(void)
 {
-	return GATTFunctionState::Offline;
+	return GATTFunctionState::Absent;
 }
 //---------------------------------------------------------------------------
 iGATTService*_Nonnull cBLECharacteristic::GetService(void)
@@ -986,10 +259,6 @@ iGATTService*_Nonnull cBLECharacteristic::GetService(void)
 rPtr<iGATTDescriptor> cBLECharacteristic::PersistDescriptor(const cGATTUUID &ID)
 {
 	return nullptr;
-}
-//---------------------------------------------------------------------------
-void cBLECharacteristic::SetScanForDescriptors(bool AllowScan)
-{
 }
 //---------------------------------------------------------------------------
 rPtr< iArrayReference<const void> > cBLECharacteristic::GetValue(void)
@@ -1039,7 +308,7 @@ bool cBLEService::RemoveHandler(iGATTServiceHandler *_Nullable Handler)
 //---------------------------------------------------------------------------
 eGATTFunctionState cBLEService::GetFunctionState(void)
 {
-	return GATTFunctionState::Offline;
+	return GATTFunctionState::Absent;
 }
 //---------------------------------------------------------------------------
 iGATTPeripheral*_Nonnull cBLEService::GetPeripheral(void)
@@ -1052,7 +321,7 @@ rPtr<iGATTCharacteristic> cBLEService::PersistCharacteristic(const cGATTUUID &ID
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference< rPtr<iGATTCharacteristic> > > cBLEService::QueryCharacteristics(void)
+iPtr<iGATTCharacteristicAsyncFunction> cBLEService::QueryCharacteristics(void)
 {
 	return nullptr;
 }
@@ -1075,12 +344,12 @@ cBLEPeripheral::~cBLEPeripheral()
 	}
 }
 //---------------------------------------------------------------------------
-void cBLEPeripheral::IncReference(void)
+void cBLEPeripheral::IncreaseReference(void)
 {
 	[fContext retain];
 }
 //---------------------------------------------------------------------------
-void cBLEPeripheral::DecReference(void)
+void cBLEPeripheral::DecreaseReference(void)
 {
 	[fContext release];
 }
@@ -1112,7 +381,7 @@ bool cBLEPeripheral::RemoveHandler(iGATTPeripheralHandler *_Nullable Handler)
 //---------------------------------------------------------------------------
 eGATTFunctionState cBLEPeripheral::GetFunctionState(void)
 {
-	return GATTFunctionState::Offline;
+	return GATTFunctionState::Absent;
 }
 //---------------------------------------------------------------------------
 iGATTPeripheralCentral* cBLEPeripheral::GetPeripheralCentral(void)
@@ -1133,7 +402,7 @@ rPtr<iGATTService> cBLEPeripheral::PersistService(const cGATTUUID &ID)
 	//return NewService;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference< rPtr<iGATTService> > > cBLEPeripheral::QueryServices(void)
+iPtr<iGATTServiceAsyncFunction> cBLEPeripheral::QueryServices(void)
 {
 	return nullptr;
 }
@@ -1199,12 +468,12 @@ cBLEPeripheralCentral::~cBLEPeripheralCentral()
 	}
 }
 //---------------------------------------------------------------------------
-void cBLEPeripheralCentral::IncReference(void)
+void cBLEPeripheralCentral::IncreaseReference(void)
 {
 	[fContext retain];
 }
 //---------------------------------------------------------------------------
-void cBLEPeripheralCentral::DecReference(void)
+void cBLEPeripheralCentral::DecreaseReference(void)
 {
 	[fContext release];
 }
@@ -1254,7 +523,7 @@ bool cBLEPeripheralCentral::RemoveHandler(iGATTPeripheralCentralHandler *Handler
 	return false;
 }
 //---------------------------------------------------------------------------
-rPtr<iGATTPeripheral> cBLEPeripheralCentral::PersistPeripheral(void)
+rPtr<iGATTPeripheral> cBLEPeripheralCentral::AccessPeripheral(iAddress *_Nullable Address)
 {
 	auto Peripherals=[fCentralManager retrievePeripheralsWithIdentifiers:nil];
 	CBPeripheral *Peripheral=[Peripherals objectAtIndex:0];
@@ -1265,7 +534,7 @@ rPtr<iGATTPeripheral> cBLEPeripheralCentral::PersistPeripheral(void)
 	return rPtr<iGATTPeripheral>::TakeFromManual(CPPPeripheral);
 }
 //---------------------------------------------------------------------------
-rPtr<iGATTPeripheralQuery> cBLEPeripheralCentral::CreatePeripheralQuery(const cGATTUUID *Service,uIntn ServiceCount)
+rPtr<iGATTPeripheralObserver> cBLEPeripheralCentral::CreatePeripheralObserver(const cGATTUUID *_Nonnull Service,uIntn ServiceCount)
 {
 	return nullptr;
 }

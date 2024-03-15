@@ -66,14 +66,14 @@ template<class T>
 struct aTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
 {
 	static void Acquire(T* const &Token){
-		return typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		return typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			aTokenOperator_Auto<T>,
 			aTokenOperator_VLC<T>
 		>::Type::Acquire(Token);
 	}
 
 	static void Release(T* const &Token){
-		return typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		return typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			aTokenOperator_Auto<T>,
 			aTokenOperator_VLC<T>
 		>::Type::Release(Token);
@@ -100,7 +100,7 @@ typename cnVar::TSelect<0,aPtr<T>
 }
 template<class T,class...TArgs>
 typename cnVar::TSelect<0,aPtr<T>
-	, decltype(new T(cnVar::DeclVar<T>()))
+	, decltype(new T(cnVar::DeclVal<T>()))
 >::Type aCreate(TArgs&&...Args)
 {
 	auto Object=new T(static_cast<TArgs&&>(Args)...);
@@ -203,22 +203,22 @@ public:
 		TLifeCycleInstance::LifeCycleStop(Object);
 	}
 
-	virtual void cnLib_FUNC IncreaseReference(void)override{
+	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true)override{
 		bcObservedReference::RefInc();
 	}
-	virtual void cnLib_FUNC DecreaseReference(void)override{
+	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true)override{
 		if(bcObservedReference::RefDec()){
 			LifeCycleStop(this);
 		}
 	}
 
-	virtual	void cnLib_FUNC InvalidationRegisterNotification(iReferenceInvalidationNotify *Notify)override{
+	virtual	void cnLib_FUNC InvalidationRegisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
 		return bcObservedReference::WeakRegister(Notify);
 	}
-	virtual	void cnLib_FUNC InvalidationUnregisterNotification(iReferenceInvalidationNotify *Notify)override{
+	virtual	void cnLib_FUNC InvalidationUnregisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
 		return bcObservedReference::WeakUnregister(Notify);
 	}
-	virtual	bool cnLib_FUNC Reference(void)override{
+	virtual	bool cnLib_FUNC Reference(void)noexcept(true)override{
 		return bcObservedReference::WeakToStrong();
 	}
 
@@ -229,12 +229,12 @@ private:
 template<class T>
 struct rCreateTemplate : private T
 {
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< impReferenceCreateLifeCycleObject<T,cCPPLifeCycleInstance> >
 			, cVirtualLifeCycleDefaultManager< impReferenceCreateLifeCycleObject<T,cVirtualLifeCycleInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< impObservedReferenceCreateLifeCycleObject<T,cCPPLifeCycleInstance> >
 			, cVirtualLifeCycleDefaultManager< impObservedReferenceCreateLifeCycleObject<T,cVirtualLifeCycleInstance> >
 		>::Type
@@ -255,7 +255,7 @@ typename cnVar::TSelect<0,rPtr<T>
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
 typename cnVar::TSelect<0,rPtr<T>
-	, decltype(new typename rCreateTemplate<T>::TLifeCycleManager::tLifeCycleObject(cnVar::DeclVar<TArgs>()...))
+	, decltype(new typename rCreateTemplate<T>::TLifeCycleManager::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
 >::Type rCreate(TArgs&&...Args)
 {
 	typedef typename rCreateTemplate<T>::TLifeCycleManager tManager;
@@ -300,7 +300,7 @@ class impObsRefInterface : public T
 public:
 	using T::T;
 
-	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override{
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override{
 		if(InterfaceID==TInterfaceID<iReference>::Value){
 			return static_cast<iReference*>(static_cast<TRefereceInterace*>(this));
 		}
@@ -335,12 +335,12 @@ struct iCreateTemplate
 	typedef impRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TRefClass;
 	typedef impObsRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TObsRefClass;
 
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< impReferenceCreateLifeCycleObject<TRefClass,cCPPLifeCycleInstance> >
 			, cVirtualLifeCycleDefaultManager< impReferenceCreateLifeCycleObject<TRefClass,cVirtualLifeCycleInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cCPPLifeCycleInstance> >
 			, cVirtualLifeCycleDefaultManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cVirtualLifeCycleInstance> >
 		>::Type
@@ -361,7 +361,7 @@ typename cnVar::TSelect<0,iPtr<T>
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
 typename cnVar::TSelect<0,iPtr<T>
-	, decltype(new typename iCreateTemplate<T>::TLifeCycleManager::tLifeCycleObject(cnVar::DeclVar<TArgs>()...))
+	, decltype(new typename iCreateTemplate<T>::TLifeCycleManager::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
 >::Type iCreate(TArgs&&...Args)
 {
 	typedef typename iCreateTemplate<T>::TLifeCycleManager tManager;
@@ -378,7 +378,7 @@ typename cnVar::TSelect<0,iPtr<T>
 template<class T>
 class cAutoRecyclableObject
 	: public T
-	, public cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	, public cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 		, cCPPLifeCycleRecyclableInstance
 		, cVirtualLifeCycleRecyclableInstance
 	>::Type
@@ -407,7 +407,7 @@ using arPtr = cnVar::cPtrOwner< arPointerOwnerTokenOperator<T> >;
 //---------------------------------------------------------------------------
 template<class T>
 inline arPtr<T> arCreateUnrecyclable(void){
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleManager< cAutoRecyclableObject<T> >,
 		cVirtualLifeCycleDefaultManager< cAutoRecyclableObject<T> >
 	>::Type TLifeCycleUnrecyclableManager;
@@ -421,7 +421,7 @@ template<class T>
 class arSharedObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleSharedRecyclableManager< cAutoRecyclableObject<T> >,
 		cVirtualLifeCycleSharedRecyclableManager< cAutoRecyclableObject<T> >
 	>::Type TLifeCycleSharedRecyclableManager;
@@ -460,7 +460,7 @@ template<class T>
 class arObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleRecyclableManager< cAutoRecyclableObject<T> >,
 		cVirtualLifeCycleRecyclableManager< cAutoRecyclableObject<T> >
 	>::Type TLifeCycleRecyclableManager;
@@ -487,12 +487,12 @@ template<class T>
 class rSharedObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedRecyclableManager< impReferenceCreateLifeCycleObject<T,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleSharedRecyclableManager< impReferenceCreateLifeCycleObject<T,cVirtualLifeCycleRecyclableInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedRecyclableManager< impObservedReferenceCreateLifeCycleObject<T,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleSharedRecyclableManager< impObservedReferenceCreateLifeCycleObject<T,cVirtualLifeCycleRecyclableInstance> >
 		>::Type
@@ -531,12 +531,12 @@ template<class T>
 class rObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleRecyclableManager< impReferenceCreateLifeCycleObject<T,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleRecyclableManager< impReferenceCreateLifeCycleObject<T,cVirtualLifeCycleRecyclableInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleRecyclableManager< impObservedReferenceCreateLifeCycleObject<T,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleRecyclableManager< impObservedReferenceCreateLifeCycleObject<T,cVirtualLifeCycleRecyclableInstance> >
 		>::Type
@@ -560,12 +560,12 @@ class iSharedObjectRecycler
 public:
 	typedef impRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TRefClass;
 	typedef impObsRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TObsRefClass;
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedRecyclableManager< impReferenceCreateLifeCycleObject<TRefClass,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleSharedRecyclableManager< impReferenceCreateLifeCycleObject<TRefClass,cVirtualLifeCycleRecyclableInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedRecyclableManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleSharedRecyclableManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cVirtualLifeCycleRecyclableInstance> >
 		>::Type
@@ -606,12 +606,12 @@ class iObjectRecycler
 public:
 	typedef impRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TRefClass;
 	typedef impObsRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> TObsRefClass;
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,iObservedReference>::Value,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleRecyclableManager< impReferenceCreateLifeCycleObject<TRefClass,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleRecyclableManager< impReferenceCreateLifeCycleObject<TRefClass,cVirtualLifeCycleRecyclableInstance> >
 		>::Type,
-		typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+		typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleRecyclableManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cCPPLifeCycleRecyclableInstance> >,
 			cVirtualLifeCycleRecyclableManager< impObservedReferenceCreateLifeCycleObject<TObsRefClass,cVirtualLifeCycleRecyclableInstance> >
 		>::Type
@@ -672,22 +672,22 @@ template<class T>	struct cAutoClassWeakRefTokenOperator;
 template<class T>	struct cAutoClassRefTokenOperator;
 template<class T>
 class aCls : public T
-	, cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	, cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleInstance,cVirtualLifeCycleInstance
 	>::Type
-	, protected cClassReferenceWithWeakSet, protected cRTLAllocator
+	, protected cClassReferenceWithWeakSet, public cRTLAllocator
 {
 	friend cAutoClassRefTokenOperator<T>;
 	friend cAutoClassRefTokenOperator<const T>;
 
 	friend cAutoClassWeakRefTokenOperator<aCls>;
 
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 		, cCPPLifeCycleInstance
 		, cVirtualLifeCycleInstance
 	>::Type tLiftCycleInstance;
 	friend tLiftCycleInstance;
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< aCls >
 			, cVirtualLifeCycleDefaultManager< aCls >
 	>::Type tLifeCycleManager;
@@ -697,15 +697,16 @@ public:
 	typedef T tClass;
 	using T::T;
 	using T::operator =;
+
 protected:
 
-	template<class T>
-	static void LifeCycleStart(T *Object){
+	template<class TObject>
+	static void LifeCycleStart(TObject *Object){
 		Object->RefReset();
 		tLiftCycleInstance::LifeCycleStart(Object);
 	}
-	template<class T>
-	static void LifeCycleStop(T *Object){
+	template<class TObject>
+	static void LifeCycleStop(TObject *Object){
 		Object->RefInvalidate();
 		tLiftCycleInstance::LifeCycleStop(Object);
 	}
@@ -720,7 +721,6 @@ struct cAutoClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< aCls<T>* >
 	static void Acquire(aCls<T> *Token){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
 	static void Release(aCls<T> *Token){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
 
-	template<class=decltype(new aCls<T>)>
 	static cnVar::cPtrReference<cAutoClassRefTokenOperator> Create(void)
 	{
 		auto NewObject=new aCls<T>;
@@ -729,16 +729,13 @@ struct cAutoClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< aCls<T>* >
 		return cnVar::cPtrReference<cAutoClassRefTokenOperator>::TakeFromManual(NewObject);
 	}
 	template<class...TArgs>
-	static typename cnVar::TSelect<0,cnVar::cPtrReference<cAutoClassRefTokenOperator>
-		, decltype(new aCls<T>(cnVar::DeclVar<TArgs>()...))
-	>::Type Create(TArgs&&...Args)
+	static cnVar::cPtrReference<cAutoClassRefTokenOperator> Create(TArgs&&...Args)
 	{
 		auto NewObject=new aCls<T>(cnVar::Forward<TArgs>(Args)...);
 		aCls<T>::tLifeCycleManager::ManageGlobal(NewObject);
 		aCls<T>::LifeCycleStart(NewObject);
 		return cnVar::cPtrReference<cAutoClassRefTokenOperator>::TakeFromManual(NewObject);
 	}
-
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -759,7 +756,7 @@ using aClsAtomicRef = cnVar::cAtomicPtrReference< cAutoClassRefTokenOperator<T> 
 template<class T>	struct cAutoRecyclableClassRefTokenOperator;
 template<class T>
 class arCls : public T
-	, cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	, cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleRecyclableInstance,cVirtualLifeCycleRecyclableInstance
 	>::Type
 	, protected cClassReferenceWithWeakSet, protected cRTLAllocator
@@ -767,13 +764,13 @@ class arCls : public T
 	friend cAutoRecyclableClassRefTokenOperator<T>;
 	friend cAutoRecyclableClassRefTokenOperator<const T>;
 	friend cAutoClassWeakRefTokenOperator<arCls>;
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 		, cCPPLifeCycleRecyclableInstance
 		, cVirtualLifeCycleRecyclableInstance
 	>::Type tLifeCycleInstance;
 	friend tLifeCycleInstance;
 
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 			, cCPPLifeCycleManager< arCls >
 			, cVirtualLifeCycleDefaultManager< arCls >
 	>::Type tLifeCycleManager;
@@ -784,13 +781,13 @@ public:
 	using T::operator =;
 protected:
 
-	template<class T>
-	static void LifeCycleStart(T *Object){
+	template<class TObject>
+	static void LifeCycleStart(TObject *Object){
 		Object->RefReset();
 		tLifeCycleInstance::LifeCycleStart(Object);
 	}
-	template<class T>
-	static void LifeCycleStop(T *Object){
+	template<class TObject>
+	static void LifeCycleStop(TObject *Object){
 		Object->RefInvalidate();
 		tLifeCycleInstance::LifeCycleStop(Object);
 	}
@@ -806,13 +803,13 @@ struct cAutoRecyclableClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< 
 	static void Acquire(arCls<T> *Token){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
 	static void Release(arCls<T> *Token){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
 
-	template<class=decltype(new arCls<T>)>
-	static cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator> Create(void)
-	{
-		auto NewObject=new arCls<T>;
-		arCls<T>::LifeCycleStart(NewObject);
-		return cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator>::TakeFromManual(NewObject);
-	}
+	//template<class=decltype(new arCls<T>)>
+	//static cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator> Create(void)
+	//{
+	//	auto NewObject=new arCls<T>;
+	//	arCls<T>::LifeCycleStart(NewObject);
+	//	return cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator>::TakeFromManual(NewObject);
+	//}
 
 };
 //---------------------------------------------------------------------------
@@ -884,9 +881,10 @@ aCls<T>* aClsExtract(aClsRef<T> &Src,uInt32 Tag)
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
+
 template<class T,class...TArgs>
 typename cnVar::TSelect<0,aClsRef<T>
-	, decltype(cAutoClassRefTokenOperator<T>::Create(cnVar::DeclVar<TArgs>()...))
+	, decltype(new aCls<T>(cnVar::DeclVal<TArgs>()...))
 >::Type aClsCreate(TArgs&&...Args)
 {
 	return cAutoClassRefTokenOperator<T>::Create(cnVar::Forward<TArgs>(Args)...);
@@ -916,7 +914,7 @@ template<class T>
 class arClsSharedObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleSharedRecyclableManager< arCls<T> >,
 		cVirtualLifeCycleSharedRecyclableManager< arCls<T> >
 	>::Type TLifeCycleSharedRecyclableManager;
@@ -954,7 +952,7 @@ template<class T>
 class arClsObjectRecycler
 {
 public:
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<T,bcVirtualLifeCycle>::Value,
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleRecyclableManager< arCls<T> >,
 		cVirtualLifeCycleRecyclableManager< arCls<T> >
 	>::Type TLifeCycleRecyclableManager;

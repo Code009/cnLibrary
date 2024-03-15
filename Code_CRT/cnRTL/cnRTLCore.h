@@ -3,8 +3,7 @@
 
 #include <cnRTL/CRTCoreCommon.h>
 
-#include <cnRTL/CRTCoreFundamental.h>
-#include <cnRTL/CRTCoreRuntime.h>
-#include <cnRTL/CRTTemplateKit.h>
+#include <cnRTL/CRTCoreRuntime.hpp>
+#include <cnRTL/CRTCoreTemplateKit.hpp>
 
 #endif

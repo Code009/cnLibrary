@@ -6,12 +6,17 @@
 #define __cnLibrary_cnRTL_CRTCoreRuntime_H__
 
 #include <cnRTL/CRTCoreCommon.h>
+#include <cnSystem/cnDebug.h>
 
 #ifdef __cplusplus
 
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+
+inline void TKRuntime::Debug::AssertionMessage(const char *Message){
+	cnSystem::AssertionMessage(Message);
+}
 
 template<>
 struct TKRuntime::TMathFloat<4>
@@ -92,7 +97,7 @@ struct TKRuntime::TInteger
 
 	static tUInt UnalignRead(const tUInt *Variable){
 		tUInt Ret;
-		memcpy(&Ret,Pointer,IntegerSize);
+		memcpy(&Ret,Variable,IntegerSize);
 		return Ret;
 	}
 	static void UnalignWrite(tUInt *Variable,tUInt Value){
@@ -370,7 +375,7 @@ struct TKRuntime::TAtomicLink
 	}
 };
 
-#ifndef cnLibrary_MANAGED_CRTEXCLUDE
+#ifndef cnLibrary_CRTEXCLUDE_MUTEX
 
 struct TKRuntime::ThreadNotification
 {
@@ -399,7 +404,7 @@ struct TKRuntime::ThreadNotification
 	bool Notified;
 };
 
-#endif // !cnLibrary_MANAGED_CRTEXCLUDE
+#endif // !cnLibrary_CRTEXCLUDE_MUTEX
 
 template<class TElement>
 struct TKRuntime::tVectorOperatorEnumeration

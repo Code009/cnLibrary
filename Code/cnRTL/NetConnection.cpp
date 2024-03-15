@@ -17,9 +17,9 @@ iAddress* cConnection::GetRemoteAddress(void)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bcConnectionQueueProcessor::bcConnectionQueueProcessor(iConnectionQueue *Queue)
-	: fActiveMutex(false)
+	: fConnectionQueue(Queue)
 	, fQueueActive(false)
-	, fConnectionQueue(Queue)
+	, fActiveMutex(false)
 {
 }
 //---------------------------------------------------------------------------
@@ -285,9 +285,6 @@ bool bcConnectionListener::ProcessAcceptTaskQueueProc(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cnLib_INTERFACE_LOCALID_DEFINE(cGATTTunnelConectionDevice);
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 bcBufferedRWQueue::bcBufferedRWQueue()
 {
 }
@@ -363,6 +360,8 @@ void bcBufferedRWQueue::ReadQueueClosed(void)
 void bcBufferedRWQueue::WriteQueueClosed(void)
 {
 }
+//---------------------------------------------------------------------------
+cnLib_INTERFACE_LOCALID_DEFINE(cGATTTunnelConectionDevice);
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cGATTTunnelConectionDevice::cRWQueue::cRWQueue(rPtr<cGATTTunnelConectionDevice> Device)

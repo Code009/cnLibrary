@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2010-12-23                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Atomic_H__
-#define	__cnLibrary_cnTK_Atomic_H__
+#ifndef __cnLibrary_cnTK_Atomic_HPP__
+#define	__cnLibrary_cnTK_Atomic_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -221,7 +221,7 @@ struct TAtomicVariableOperatorByInteger
 template<class TVariable>
 union cAtomicVariable
 {
-	typedef typename typename cnVar::TIntegerOfSize<sizeof(TVariable),false>::Type tInteger;
+	typedef typename cnVar::TIntegerOfSize<sizeof(TVariable),false>::Type tInteger;
 	typedef typename TKRuntime::template TAtomicInteger<tInteger> tAtomicIntegerOperator;
 	typedef typename tAtomicIntegerOperator::tAtomic tAtomic;
 	typedef TVariable tVariable;
@@ -234,7 +234,7 @@ union cAtomicVariable
 
 	tAtomic _atomic_;
 
-	cnLib_CONSTEXPR_FUNC cAtomicVariable()noexcept(true){}
+	cAtomicVariable()noexcept(true){}
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	~cAtomicVariable()=default;
 #endif
@@ -775,7 +775,7 @@ public:
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 	template<class T
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, class=decltype(TRegTokenOperator::Register(DeclVar<T cnLib_UREF>(),nullptr))
+		, class=decltype(TRegTokenOperator::Register(DeclVal<T cnLib_UREF>(),nullptr))
 #endif
 	>
 	cPtrWeakReference(T cnLib_UREF Src)noexcept(true)
@@ -805,7 +805,7 @@ public:
 	template<class T>
 	typename TSelect<0,cPtrWeakReference&
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(TRegTokenOperator::Register(DeclVar<T cnLib_UREF>(),nullptr))
+		, decltype(TRegTokenOperator::Register(DeclVal<T cnLib_UREF>(),nullptr))
 #endif
 	>::Type operator =(T cnLib_UREF Src)noexcept(true){
 		tRegToken OldRegToken=fRegToken.Acquire<<=reinterpret_cast<tRegToken>(this);

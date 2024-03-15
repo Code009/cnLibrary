@@ -10,12 +10,17 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iPOSIXFileName : public iFileName
 {
 public:
-	cnLib_INTERFACE_DEFINE(iPOSIXFileName,iFileName)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
 
 	virtual const uChar8* cnLib_FUNC GetPOSIXFileName(void)=0;
 	virtual uIntn cnLib_FUNC GetPOSIXFileNameLength(void)=0;
@@ -28,6 +33,10 @@ rPtr<iSwapMemory>	cnLib_FUNC CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eF
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

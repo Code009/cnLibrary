@@ -50,7 +50,7 @@ cnLib_INTERFACE_LOCALID_DEFINE(iWPFViewChild);
 cnLib_INTERFACE_LOCALID_DEFINE(cWPFUIView);
 cnLib_INTERFACE_LOCALID_DEFINE(miWPFUISimpleGraph);
 
-#define	cnSystem_INTERFACE_ID_DEFINE(_class_)	cnLib_CONSTVAR iTypeID TInterfaceIDDefine<_class_>::Value=IID_##_class_;
+#define	cnSystem_INTERFACE_ID_DEFINE(_class_)	cnLib_CONSTVAR iTypeID _class_::tInterfaceID::Value=IID_##_class_;
 
 #include "cnWinWPFInterfaceIDList.inc"
 

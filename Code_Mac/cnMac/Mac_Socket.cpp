@@ -41,12 +41,12 @@ cSocketAddress_IPv4::cSocketAddress_IPv4(uInt32 IP,uInt16 Port)
 	cnMemory::ZeroFill(fAddr.sin_zero);
 }
 //---------------------------------------------------------------------------
-const void * cSocketAddress_IPv4::CastInterface(iTypeID ID)const
+void* cSocketAddress_IPv4::CastInterface(iTypeID ID)
 {
 	return ImpCastInterface<iSocketAddress,iIPv4Address>(this,ID);
 }
 //---------------------------------------------------------------------------
-eOrdering cSocketAddress_IPv4::Compare(const iAddress *Dest)const
+eiOrdering cSocketAddress_IPv4::Compare(iAddress *Dest)const
 {
 	return cSocketAddress::Compare(Dest);
 }
@@ -361,11 +361,6 @@ void cSocketConnectionQueue::AcceptProcedure(void)
 	dispatch_suspend(fDispatchSourceAccept);
 
 	AcceptContinue();
-}
-//--------------------------------------------------------------------------
-iReference* cSocketConnectionQueue::AsyncSignalInnerReference(void)
-{
-	return &fInnerReference;
 }
 //--------------------------------------------------------------------------
 iPtr<iConnection> cSocketConnectionQueue::OnAcceptCreateConnection(int Socket,const sockaddr *addr,socklen_t addrlen)

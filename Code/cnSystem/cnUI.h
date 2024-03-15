@@ -10,6 +10,10 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 cnLib_INTENUM_BEGIN(ufInt8,Direction)
@@ -271,7 +275,8 @@ public:
 class cnLib_INTERFACE iUIScreen : public iUIArea
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIScreen,iUIArea)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
 	virtual bool cnLib_FUNC InsertScreenHandler(iUIScreenHandler *Handler,sfInt16 Order=0)=0;
 	virtual bool cnLib_FUNC RemoveScreenHandler(iUIScreenHandler *Handler)=0;
@@ -334,7 +339,8 @@ public:
 class cnLib_INTERFACE iUIView : public iUIArea
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIView,iUIArea)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
 	virtual eUIState cnLib_FUNC GetUIState(void)=0;
 	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)=0;
@@ -384,7 +390,8 @@ public:
 class cnLib_INTERFACE iUIWindow : public iUIArea
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIWindow,iUIArea)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 		
 	virtual eUIState cnLib_FUNC GetUIState(void)=0;
 	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)=0;
@@ -422,7 +429,8 @@ public:
 class cnLib_INTERFACE iPrintPaper : public iUIArea
 {
 public:
-	cnLib_INTERFACE_DEFINE(iPrintPaper,iUIArea)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 		
 	virtual bool cnLib_FUNC InsertPrintPaperHandler(iPrintPaperHandler *Handler,sfInt16 Order=0)=0;
 	virtual bool cnLib_FUNC RemovePrintPaperHandler(iPrintPaperHandler *Handler)=0;
@@ -490,7 +498,8 @@ public:
 class cnLib_INTERFACE iUIKeyControl : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIKeyControl,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual iUIView* cnLib_FUNC GetFocus(void)=0;
 	virtual void cnLib_FUNC SetFocus(bool ActivateWindow)=0;
@@ -548,7 +557,8 @@ cnLib_ENUM_BEGIN(ufInt8,SysMouseCursor)
 class cnLib_INTERFACE iUIMouseControl : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUIMouseControl,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual void cnLib_FUNC MouseUpdateCursor(void)=0;
 
@@ -584,7 +594,8 @@ public:
 class cnLib_INTERFACE iUITouchControl : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iUITouchControl,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual bool cnLib_FUNC InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order=0)=0;
 	virtual bool cnLib_FUNC RemoveTouchHandler(iUITouchHandler *Handler)=0;
@@ -649,6 +660,10 @@ rPtr<iClipboardWriter> cnLib_FUNC QueryClipboardWriter(iUIView *View);
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

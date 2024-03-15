@@ -17,9 +17,9 @@ cCFCGImage::~cCFCGImage()
 	CGImageRelease(fImage);
 }
 //---------------------------------------------------------------------------
-const void* cCFCGImage::CastInterface(iTypeID InterfaceID)const
+void* cCFCGImage::CastInterface(iTypeID InterfaceID)
 {
-	return ImpCastInterface<iCFCGImage>(this,InterfaceID);
+	return cnVar::FindInterface<iCFCGImage>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
 bool cCFCGImage::DrawInContext(CGContextRef Context,const CGRect &Rect)

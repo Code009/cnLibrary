@@ -15,7 +15,8 @@ namespace cnLibrary{
 class cnLib_INTERFACE iWinSocketMulticastAddress : public iSocketAddress
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWinSocketMulticastAddress,iSocketAddress)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iSocketAddress>(this,ID);	}
 
 	virtual uIntn cnLib_FUNC AddMember(SOCKET Socket)=0;
 	virtual uIntn cnLib_FUNC DropMember(SOCKET Socket)=0;

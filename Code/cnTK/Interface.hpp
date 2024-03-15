@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Interface_H__
-#define	__cnLibrary_cnTK_Interface_H__
+#ifndef __cnLibrary_cnTK_Interface_HPP__
+#define	__cnLibrary_cnTK_Interface_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -128,97 +128,97 @@ public:
 };
 //---------------------------------------------------------------------------
 
-template<class T>
-struct TInterfaceIDDefine
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+namespace cnLib_THelper{
+//---------------------------------------------------------------------------
+namespace Var_TH{
+//---------------------------------------------------------------------------
+
+template<class TEnbale,class T>
+struct InterfaceID
 {
-	static iTypeID Value;
 };
 
-#define	cnLib_INTERFACE_ID(_interface_)	typedef TInterfaceIDDefine<_interface_> tInterfaceID;
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 
-#ifndef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
-#define	cnLib_INTERFACE_DEFINE(_interface_,_parent_)	\
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	\
-		if(ID==tInterfaceID::Value)return this;	return _parent_::CastInterface(ID);	\
-	}	cnLib_INTERFACE_ID(_interface_)
+template<class T>
+struct InterfaceID<typename cnVar::TTypeConditional<void,cnVar::TIsSame<decltype(&T::CastInterface),void* (cnLib_FUNC T::*)(iTypeID)noexcept(true)>::Value & sizeof(typename T::tInterfaceID)>::Type,T>
+	: T::tInterfaceID
+{
+	typedef T Type;
+};
 
-#else // cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
 
-#define	cnLib_INTERFACE_DEFINE(_interface_,_parent_)	\
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true){	\
-		if(ID==tInterfaceID::Value)return this;	return _parent_::CastInterface(ID);	\
-	}	cnLib_INTERFACE_ID(_interface_)
+#ifdef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
 
-#endif // cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+template<class TClass,class TMemberClass>
+inline typename cnVar::TTypeConditional<cnMemory::cPlainData<2>,cnVar::TIsSame<TClass,TMemberClass>::Value>::Type InterfaceIDTest(void* (cnLib_FUNC TMemberClass::*)(iTypeID)noexcept(true));
 
-#define	cnLib_INTERFACE_LOCALID_DEFINE(_interface_)	static const iTypeInfo LocalInterfaceInfo_##_interface_={};	iTypeID TInterfaceIDDefine<_interface_>::Value=LocalInterfaceInfo_##_interface_;
+inline cnMemory::cPlainData<1> InterfaceIDTest(...);
+
+template<class T>
+struct InterfaceID<typename cnVar::TTypeConditional<void,sizeof(InterfaceIDTest<T>(&T::CastInterface)) + sizeof(typename T::tInterfaceID)>::Type,T>
+	: T::tInterfaceID
+{
+	typedef T Type;
+};
+
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+#else	
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+template<class T>
+struct InterfaceID<void,T>
+	: T::tTypeID
+{
+	typedef T Type;
+};
+
+#endif // defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+
+#endif	// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+
+#define	cnLib_INTERFACE_LOCALID_DEFINE(_interface_)	static const iTypeInfo LocalInterfaceInfo_##_interface_={};	iTypeID _interface_::tInterfaceID::Value=LocalInterfaceInfo_##_interface_;
+//---------------------------------------------------------------------------
+}	// namespace Var_TH
+//---------------------------------------------------------------------------
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+
 
 template<class T>
 struct TInterfaceID
-	: T::tInterfaceID{};
+	: cnLib_THelper::Var_TH::InterfaceID<void,T>{};
 
 //---------------------------------------------------------------------------
 template<class T>
 inline iTypeID iTypeOf(T *)noexcept(true){
-	return T::tInterfaceID::Value;
+	return TInterfaceID<T>::Value;
 }
 
 //---------------------------------------------------------------------------
-}	// namespace cnLibrary
-//---------------------------------------------------------------------------
-namespace cnLib_THelper{
-namespace Interface{
 
-template<class TIntID>
-struct InterfaceType_FromDefine
-{
-	static cnLib_CONSTVAR bool HasID=false;
-};
-
-template<class T>
-struct InterfaceType_FromDefine< TInterfaceIDDefine<T> >
-{
-	typedef T Type;
-	static cnLib_CONSTVAR bool HasID=true;
-};
-
-template<class T,class=void>
-struct InterfaceType{
-	static cnLib_CONSTVAR bool HasID=false;
-};
-
-template<class T>
-struct InterfaceType<T,typename cnVar::TSelect<!sizeof(T::tInterfaceID::Value),void>::Type>
-	: InterfaceType_FromDefine<typename T::tInterfaceID>{};
-
-
-}	// namespace Interface
-}	// namespace cnLib_THelper
-//---------------------------------------------------------------------------
-namespace cnLibrary{
-//---------------------------------------------------------------------------
-template<class T>
-struct THasInterfaceID
-	: cnVar::TConstantValueBool<cnLib_THelper::Interface::InterfaceType<T>::HasID>{};
-
-template<class T>
-struct TInterfaceType
-	: cnVar::TTypeDef<typename cnLib_THelper::Interface::InterfaceType<T>::Type>{};
-
-//---------------------------------------------------------------------------
 template<class TDest,class TSrc>
-inline typename TInterfaceType<TDest>::Type* iCast(TSrc cnLib_UREF Src)noexcept(true)
+inline typename TInterfaceID<TDest>::Type* iCast(TSrc cnLib_UREF Src)noexcept(true)
 {
 	if(Src==nullptr)
 		return nullptr;
-	return static_cast<typename TInterfaceType<TDest>::Type*>( Src->CastInterface(TInterfaceID<TDest>::Value) );
+	return static_cast<TDest*>( Src->CastInterface(TInterfaceID<TDest>::Value) );
 }
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iReference
 {
 public:
-	cnLib_INTERFACE_ID(iReference)
-
+	struct tInterfaceID{	static iTypeID Value;	};
 	typedef iReference tReferenceInterface;
 
 	// IncreaseReference
@@ -228,6 +228,7 @@ public:
 	//	decrease reference to the object
 	virtual	void cnLib_FUNC DecreaseReference(void)noexcept(true)=0;
 };
+template<> struct TInterfaceID<iReference>:iReference::tInterfaceID{	typedef iReference Type;	};
 //---------------------------------------------------------------------------
 class iObservedReference;
 class cnLib_INTERFACE iReferenceInvalidationNotify
@@ -240,14 +241,14 @@ public:
 class cnLib_INTERFACE iObservedReference : public iReference
 {
 public:
-	cnLib_INTERFACE_ID(iObservedReference)
-
 	typedef iObservedReference tReferenceInterface;
+	struct tInterfaceID{	static iTypeID Value;	};
 
 	virtual	void cnLib_FUNC InvalidationRegisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)=0;
 	virtual	void cnLib_FUNC InvalidationUnregisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)=0;
 	virtual	bool cnLib_FUNC Reference(void)noexcept(true)=0;
 };
+template<> struct TInterfaceID<iObservedReference>:iObservedReference::tInterfaceID{	typedef iObservedReference Type;	};
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
@@ -256,12 +257,12 @@ namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Var_TH{
 //---------------------------------------------------------------------------
-template<class T,class=void>
+template<class TEnable,class T>
 struct ClassReferenceInterface
 	: cnVar::TTypeDef<T>{};
 
 template<class T>
-struct ClassReferenceInterface<T,typename cnVar::TSelect<0,void,typename T::tReferenceInterface>::Type>
+struct ClassReferenceInterface<typename cnVar::TSelect<0,void,typename T::tReferenceInterface>::Type,T>
 	: cnVar::TTypeDef<typename T::tReferenceInterface>{};
 //---------------------------------------------------------------------------
 }	// namespace Var_TH
@@ -272,9 +273,37 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
 //---------------------------------------------------------------------------
+template<class TImplementation>
+void* FindInterface(TImplementation*,iTypeID)noexcept(true)
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+template<class TInterface,class TImplementation>
+void* FindInterface(TImplementation *Implementation,iTypeID ID)noexcept(true)
+{
+	return Implementation->TInterface::CastInterface(ID);
+}
+template<class TInterface,class TNextInterface,class...VT,class TImplementation>
+void* FindInterface(TImplementation *Implementation,iTypeID ID)noexcept(true)
+{
+	void *RetInterface=Implementation->TInterface::CastInterface(ID);
+	if(RetInterface)
+		return RetInterface;
+
+	return FindInterface<TNextInterface,VT...>(Implementation,ID);
+}
+template<class...VT,class TImplementation>
+void* ImplementCastInterface(TImplementation *Implementation,iTypeID ID)noexcept(true)
+{
+	if(ID==TInterfaceID<TImplementation>::Value)
+		return Implementation;
+	return FindInterface<VT...>(Implementation,ID);
+}
+//---------------------------------------------------------------------------
 template<class T>
 struct TClassReferenceInterface
-	: TTypeDef<typename cnLib_THelper::Var_TH::ClassReferenceInterface<T>::Type>{};
+	: TTypeDef<typename cnLib_THelper::Var_TH::ClassReferenceInterface<void,T>::Type>{};
 //---------------------------------------------------------------------------
 template<class TReference>
 struct rRefToken
@@ -301,7 +330,7 @@ struct rRefTokenOperator
 
 	template<class TSrcReference>
 	static typename TTypeConditional<tRefToken,
-		TIsAssignable<TReference*&,TSrcReference*>::Value
+		TIsAssignableFrom<TReference*&,TSrcReference*>::Value
 	>::Type TokenFrom(rRefToken<TSrcReference> Src)noexcept(true){
 		tRefToken RetToke={Src.Pointer};
 		return RetToke;
@@ -338,9 +367,9 @@ public:
 
 	rPtr()noexcept(true){}
 
-	rPtr(const rPtr &Src)noexcept(true) : cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(Src) {}
+	rPtr(const rPtr &Src)noexcept(true) : cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >( static_cast< const cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >&>(Src)) {}
 	rPtr& operator =(const rPtr &Src)noexcept(true){
-		cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::operator =(Src);
+		cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::operator =(static_cast<const cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >&>(Src));
 		return *this;
 	}
 
@@ -357,7 +386,7 @@ public:
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	rPtr(rPtr &&Src)noexcept(true) : cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(static_cast<rPtr&&>(Src)) {}
+	rPtr(rPtr &&Src)noexcept(true) : cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(static_cast<cnVar::cPtrReference< cnVar::rRefTokenOperator<T>&&>(Src)) {}
 
 	rPtr& operator =(rPtr &&Src)noexcept(true){
 		cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::operator =(static_cast<cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >&&>(Src));
@@ -366,32 +395,25 @@ public:
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	
 	// construct with token
-	explicit rPtr(const tRefToken &RefToken)noexcept(true)
-		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(RefToken){}
 
-	
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+	template<class TToken>
+	explicit rPtr(typename cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::template ConstructByToken<TToken> ByToken)noexcept(true)
+		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(ByToken){}
 
-	// move construct with token
-	explicit rPtr(tRefToken &&SrcRefToken)noexcept(true)
-		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(static_cast<tRefToken&&>(RefToken)){}
-
-#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	
 	template<class TSrcRefTokenOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=cnLib_THelper::Var_TH::PointerTokenFromExpression<cnVar::rRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&>::template Test<>::Type
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,cnVar::rRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&>::Type
 #endif
 	>
 	rPtr(const cnVar::cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true)
 		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(cnVar::rRefTokenOperator<T>::TokenFrom(Src.Token())){}
 	
 	template<class TSrcRefTokenOperator>
-	typename cnVar::TSelect<0,rPtr&
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<cnVar::rRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&>::template Test<>::Type
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,rPtr&,
+		cnVar::rRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&
 	>::Type operator =(const cnVar::cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true){
 		cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::operator =(Src);
 		return *this;
@@ -399,9 +421,34 @@ public:
 
 	
 	// make token with pointer
+
+	//rPtr(T *Pointer)noexcept(true)
+//		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::MakeConstructByToken(cnVar::rRefTokenOperator<T>::TokenFrom(Pointer))){}
 	
-	rPtr(T *Pointer)noexcept(true)
-		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(cnVar::rRefTokenOperator<T>::TokenFrom(Pointer)){}
+	// construct by making token
+
+	template<class TSrc
+#if !defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,cnVar::rRefTokenOperator<T>,T cnLib_UREF>::Type
+#endif
+	>
+	rPtr(TSrc cnLib_UREF Src)noexcept(true)
+		: cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >(cnVar::cPtrReference< cnVar::rRefTokenOperator<T> >::MakeConstructByToken(cnVar::rRefTokenOperator<T>::TokenFrom(cnLib_UREFCAST(TSrc)(Src))))
+	{}
+
+	// assign by making token
+	template<class TSrc>
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,rPtr&,cnVar::rRefTokenOperator<T>,TSrc cnLib_UREF>::Type
+		operator =(TSrc cnLib_UREF Src)noexcept(true)
+	{
+		cnVar::rRefToken<T> SwapToken(this->fRefToken);
+
+		this->fRefToken=cnVar::rRefTokenOperator<T>::TokenFrom(cnLib_UREFCAST(TSrc)(Src));
+
+		cnVar::rRefTokenOperator<T>::Acquire(this->fRefToken);
+		cnVar::rRefTokenOperator<T>::Release(SwapToken);
+		return *this;
+	}
 
 
 #endif	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS
@@ -476,7 +523,7 @@ struct iRefTokenOperator
 
 	template<class TSrcInterface>
 	static typename TTypeConditional<tRefToken,
-		TIsAssignable<TInterface*&,TSrcInterface*>::Value
+		TIsAssignableFrom<TInterface*&,TSrcInterface*>::Value
 	>::Type TokenFrom(iRefToken<TSrcInterface> Src)noexcept(true){
 		tRefToken RetToken;
 		RetToken.Pointer=Src.Pointer;
@@ -516,22 +563,14 @@ public:
 
 #else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
 
-	iPtr()noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >() {}
+	iPtr()noexcept(true){}
 
-	iPtr(const iPtr &Src)noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(Src) {}
+	iPtr(const iPtr &Src)noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(static_cast< const cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >&>(Src)) {}
+	iPtr& operator =(const iPtr &Src)noexcept(true){
+		cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::operator =(static_cast< const cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >&>(Src));
+		return *this;
+	}
 
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	iPtr(iPtr &&Src)noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(static_cast<iPtr&&>(Src)) {}
-#endif
-
-	template<class TSrc
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L && !defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)
-		, class=decltype(cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(cnVar::DeclVar<TSrc&&>()))
-#endif
-	>
-	iPtr(TSrc cnLib_UREF Src)noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(cnLib_UREFCAST(TSrc)(Src)){}
-
-	
 #ifndef cnLibrary_CPPEXCLUDE_NULLPTR
 
 	iPtr& operator =(tNullptr)noexcept(true){
@@ -540,27 +579,63 @@ public:
 	}
 #endif
 
-	iPtr& operator =(const iPtr &Src)noexcept(true){
-		cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::operator =(Src);
-		return *this;
-	}
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+	iPtr(iPtr &&Src)noexcept(true) : cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(static_cast<cnVar::cPtrReference< cnVar::iRefTokenOperator<T>&&>(Src)) {}
 
 	iPtr& operator =(iPtr &&Src)noexcept(true){
 		cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::operator =(static_cast<cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >&&>(Src));
 		return *this;
 	}
+#endif
 
-#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+	// construct with token
+
+	template<class TToken>
+	explicit iPtr(typename cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::template ConstructByToken<TToken> ByToken)noexcept(true)
+		: cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(ByToken){}
+
+
+	template<class TSrcRefTokenOperator
+#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,cnVar::iRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&>::Type
+#endif
+	>
+	iPtr(const cnVar::cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true)
+		: cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(cnVar::iRefTokenOperator<T>::TokenFrom(Src.Token())){}
 
 
 	template<class TSrcRefTokenOperator>
-	typename cnVar::TSelect<0,iPtr&
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(TRefTokenOperator::TokenFrom(DeclVar<typename TSrcRefTokenOperator::tRefToken&>()))
-#endif
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,iPtr&,
+		cnVar::iRefTokenOperator<T>,typename TSrcRefTokenOperator::tRefToken&
 	>::Type operator =(const cnVar::cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true){
 		cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::operator =(Src);
+		return *this;
+	}
+
+	
+	// construct by making token
+
+	template<class TSrc
+#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L && !defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,cnVar::iRefTokenOperator<T>,TSrc cnLib_UREF>::Type
+#endif
+	>
+	iPtr(TSrc cnLib_UREF Src)noexcept(true)
+		: cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >(cnVar::cPtrReference< cnVar::iRefTokenOperator<T> >::MakeConstructByToken(cnVar::iRefTokenOperator<T>::TokenFrom(cnLib_UREFCAST(T)(Src))))
+	{}
+
+	// assign by making token
+	template<class TSrc>
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,iPtr&,cnVar::iRefTokenOperator<T>,TSrc cnLib_UREF>::Type
+		operator =(TSrc cnLib_UREF Src)noexcept(true)
+	{
+		cnVar::iRefToken<T> SwapToken(this->fRefToken);
+
+		this->fRefToken=cnVar::iRefTokenOperator<T>::TokenFrom(cnLib_UREFCAST(TSrc)(Src));
+
+		cnVar::iRefTokenOperator<T>::Acquire(this->fRefToken);
+		cnVar::iRefTokenOperator<T>::Release(SwapToken);
 		return *this;
 	}
 
@@ -573,7 +648,7 @@ public:
 //---------------------------------------------------------------------------
 template<class T>
 inline iTypeID iTypeOf(iPtr<T> *)noexcept(true){
-	return T::cnInterfaceID;
+	return TInterfaceID<T>::Value;
 }
 //---------------------------------------------------------------------------
 template<class IDest,class ISrc>

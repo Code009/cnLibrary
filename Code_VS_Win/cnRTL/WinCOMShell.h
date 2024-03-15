@@ -144,7 +144,8 @@ protected:
 class cWinShellFileName : public iFileName
 {
 public:
-	cnLib_INTERFACE_DEFINE(cWinShellFileName,iFileName)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
 
 	cWinShellFileName(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Parent,cShellItemIDList ChildIDList);
 	~cWinShellFileName();

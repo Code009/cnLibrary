@@ -105,7 +105,7 @@ constexpr cnVar::cMetaClassField MakeMetaClassField(const uChar16 *Name,TMember 
 {
 	return cnVar::cMetaClassField{
 		Name,
-		cnVar::TRuntimeInfo<TMember>::Value,
+		cnVar::TRuntimeDataInfo<TMember>::Value,
 		reinterpret_cast<uIntn>(&(static_cast<TClass*>(nullptr)->*Pointer)),
 	};
 
@@ -890,7 +890,6 @@ inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffe
 	if(Count==0)
 		return true;
 	typedef typename TStreamWriteBuffer::tElement tElement;
-	typedef cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
 	cArray<tElement> CurBuffer;
 	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Count)).Length!=0){
 		if(CurBuffer.Length>=Count){

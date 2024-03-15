@@ -1,6 +1,5 @@
 cnSystem_INTERFACE_ID_DEFINE(iCOMInterface)
 
-cnSystem_INTERFACE_ID_DEFINE(iWaitableObject)
 cnSystem_INTERFACE_ID_DEFINE(iWinThread)
 cnSystem_INTERFACE_ID_DEFINE(iWinThreadPool)
 

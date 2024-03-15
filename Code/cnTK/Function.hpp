@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2006-01-17                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Function_H__
-#define	__cnLibrary_cnTK_Function_H__
+#ifndef __cnLibrary_cnTK_Function_HPP__
+#define	__cnLibrary_cnTK_Function_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -559,10 +559,11 @@ public:
 	}
 
 	~cFunctorDuplicationStorage()noexcept(true){
-		if(fFunctor!=nullptr)
+		if(fFunctor!=nullptr){
 			ManualDestruct(*fFunctor);
 			TFunctionStorageOperator::tAllocationOperator::Deallocate(fFunctor,sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value);
 		}
+	}
 
 	operator TFunctor&&()noexcept(true){	return static_cast<TFunctor&&>(*fFunctor);	}
 
@@ -610,10 +611,11 @@ public:
 	}
 
 	~cFunctorDuplicationStorage()noexcept{
-		if(fFunctor!=nullptr)
+		if(fFunctor!=nullptr){
 			ManualDestruct(*fFunctor);
 			TFunctionStorageOperator::tAllocationOperator::Deallocate(fFunctor,sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value);
 		}
+	}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	operator TFunctor&&()noexcept{	return static_cast<TFunctor&&>(*fFunctor);	}

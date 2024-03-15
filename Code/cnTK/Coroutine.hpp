@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2019-05-06                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Coroutine_H__
-#define	__cnLibrary_cnTK_Coroutine_H__
+#ifndef __cnLibrary_cnTK_Coroutine_HPP__
+#define	__cnLibrary_cnTK_Coroutine_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/Atomic.hpp>
@@ -225,7 +225,7 @@ public:
 		cAwaiter(cAwaiter &&Src)noexcept(true):fPromise(static_cast<pPtr&&>(Src.fPromise)){}
 #else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 		cAwaiter(pPtr &p):fPromise(p){}
-		cAwaiter(cAwaiter &Src)noexcept(true):fPromise(Src.fPromise)){}
+		cAwaiter(cAwaiter &Src)noexcept(true):fPromise(Src.fPromise){}
 #endif	//cnLibrary_CPPFEATURE_RVALUE_REFERENCES
 
 
@@ -320,7 +320,7 @@ public:
 		cAwaiter(cAwaiter &&Src)noexcept(true):fPromise(static_cast<pPtr&&>(Src.fPromise)){}
 #else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 		cAwaiter(pPtr &p):fPromise(p){}
-		cAwaiter(cAwaiter &Src)noexcept(true):fPromise(Src.fPromise)){}
+		cAwaiter(cAwaiter &Src)noexcept(true):fPromise(Src.fPromise){}
 #endif	//cnLibrary_CPPFEATURE_RVALUE_REFERENCES
 
 
@@ -425,7 +425,7 @@ public:
 		bool await_ready(void)const noexcept(true){	return false;	}
 		template<class TAwaitCoHandle>
 		void await_suspend(TAwaitCoHandle cnLib_UREF CoHandle)noexcept(true){
-			TCoroutineHandleOperator::Assign(fOwner.fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
+			TCoroutineHandleOperator::Assign(Owner.fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
 
 			Owner.OnPhaseFinish();
 			Owner.Terminate(1);
@@ -442,7 +442,7 @@ public:
 		bool await_ready(void)const noexcept(true){	return false;	}
 		template<class TAwaitCoHandle>
 		void await_suspend(TAwaitCoHandle cnLib_UREF CoHandle)noexcept(true){
-			TCoroutineHandleOperator::Assign(fOwner.fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
+			TCoroutineHandleOperator::Assign(Owner.fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
 
 			Owner.OnPhaseFinish(0);
 		}
@@ -465,7 +465,7 @@ public:
 	cYieldSuspension YieldSuspend(void)noexcept(true){	return *this;	}
 
 	bool Run(iCoroutinePromiseAwaiter *Awaiter)noexcept(true){
-		if(fRunStateFlag.Acquire.CmpStore(PrevState=0,2)==false){
+		if(fRunStateFlag.Acquire.CmpStore(0,2)==false){
 			return false;
 		}
 		fAwaiter=Awaiter;
@@ -509,7 +509,7 @@ public:
 		{	return cnVar::cPtrOwner< cResumablePromiseOwnerTokenOperator<promise_type> >::TakeFromManual(this);	}
 
 		template<class T>
-		bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(T cnLib_UREF Value)
+		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(T cnLib_UREF Value)
 			noexcept(cnLib_NOEXCEPTEXPR(fReturnValue=cnLib_UREFCAST(T)(Value)))
 		{
 			fReturnValue=cnLib_UREFCAST(T)(Value);
@@ -637,8 +637,8 @@ public:
 	public:
 		promise_type* get_return_object()noexcept(true){	return this;	}
 
-		bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(void)noexcept(true){	return this->YieldSuspend();		}
-		bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(int)noexcept(true){	return this->YieldSuspend();		}
+		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(void)noexcept(true){	return this->YieldSuspend();		}
+		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(int)noexcept(true){		return this->YieldSuspend();		}
 
 		void return_void(void)noexcept(true){}
 	};
@@ -762,11 +762,11 @@ struct cVariantCoroutineHandleOperator
 
 
 	static void Reset(tHandle &Handle)noexcept(true){
-		Handle.Replace<iHandle>();
+		Handle.template Replace<iHandle>();
 	}
 	template<class TAwaitCoHandle>
 	static void Assign(tHandle &Handle,TAwaitCoHandle&& Await)noexcept(true){
-		Handle.Replace< cCoHandle<TAwaitCoHandle> >(static_cast<TAwaitCoHandle&&>(Await));
+		Handle.template Replace< cCoHandle<TAwaitCoHandle> >(static_cast<TAwaitCoHandle&&>(Await));
 	}
 	static bool IsAvailable(const tHandle &Handle)noexcept(true){
 		return Handle->IsAvailable();

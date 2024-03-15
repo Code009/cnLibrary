@@ -92,10 +92,12 @@ protected:
 	class cAcceptTask : public iConnectionTask , public cTaskQueue::cTask
 	{
 	public:
+		
 		cAcceptTask()=default;
 		~cAcceptTask()=default;
 		iPtr<bcConnectionListener> Owner;
 
+		using iConnectionTask::CastInterface;
 		//virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
 		virtual bool cnLib_FUNC IsDone(void)override;
 		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
@@ -129,6 +131,7 @@ private:
 
 };
 //---------------------------------------------------------------------------
+
 class bcBufferedRWQueue : public bcRWQueue
 {
 public:
@@ -171,11 +174,11 @@ struct cGATTTunnelConnectionDeviceID
 class cGATTTunnelConectionDevice : public iReference, public iAddress, protected iGATTServiceHandler
 {
 public:
-	cnLib_INTERFACE_DEFINE(cGATTTunnelConectionDevice,iAddress)
-
 	cGATTTunnelConectionDevice(rPtr<iGATTService> Service,iPtr<iGATTCharacteristic> ReadChar,iPtr<iGATTCharacteristic> WriteChar);
 	~cGATTTunnelConectionDevice();
 
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	// iAddress
 
 	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)override;
@@ -320,6 +323,8 @@ protected:
 	class cConnectAsyncTask : public iReference,public iConnectionTask, public cGATTTunnelConectionDevice::iConnectCallback
 	{
 	public:
+		using iConnectionTask::CastInterface;
+
 		virtual bool cnLib_FUNC IsDone(void)override;
 		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
 		

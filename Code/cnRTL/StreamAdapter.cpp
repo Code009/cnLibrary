@@ -7,11 +7,11 @@ using namespace cnRTL;
 //---------------------------------------------------------------------------
 eStreamError cnRTL::GetStreamError(iInterface *Stream)
 {
-	auto ErrorReport=iCast<iStreamErrorReport>(Stream);
-	if(ErrorReport==nullptr){
+	//auto ErrorReport=iCast<iStreamErrorReport>(Stream);
+	//if(ErrorReport==nullptr){
 		return StreamError::Unknown;
-	}
-	return ErrorReport->GetStreamError();
+	//}
+	//return ErrorReport->GetStreamError();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -416,7 +416,7 @@ void bcReadQueueFromStream::NotificationStarted(void)
 {
 	bcReadQueue::NotificationStarted();
 
-	StartRead();
+	OnStartRead();
 }
 //---------------------------------------------------------------------------
 cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)
@@ -456,7 +456,7 @@ void bcReadQueueFromStream::DismissReadBuffer(uIntn Size)
 			fCurReadOffset=0;
 			fReadItemRing.CommitItem<2>();
 			UpdateQueueState(false);
-			StartRead();
+			OnStartRead();
 		}
 	}
 }
@@ -472,7 +472,7 @@ void bcReadQueueFromStream::NotificationClosed(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::StartRead(void)
+void bcReadQueueFromStream::OnStartRead(void)
 {
 	// start read
 	while(fStream->IsEndOfReading()==false){

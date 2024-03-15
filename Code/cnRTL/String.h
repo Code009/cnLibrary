@@ -874,8 +874,8 @@ public:
 			return;
 		}
 		typedef typename cnVar::TFloatOfSize<cnVar::TFloatConversion<T>::MatchSize?cnVar::TFloatConversion<T>::MatchSize:1>::Type TFloat;
-		TFloat FloatValue=cnVar::TFloatOfSize<T>::template Cast<TFloat>(Value);
-		static_assert(cnVar::TFloatConversion<TFloat>::IsMatch);
+		TFloat FloatValue=cnVar::TFloatConversion<T>::template Cast<TFloat>(Value);
+		static_assert(cnVar::TFloatConversion<TFloat>::IsMatch,"mismatch");
 		return SetValue<Radix>(FloatValue);
 	}
 
@@ -1227,7 +1227,7 @@ bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,uf
 	IntConversion.RadixPrefix=false;
 	IntConversion.RadixPrefixUpperCase=false;
 
-	IntConversion.SetValue<Radix>(Value);
+	IntConversion.template SetValue<Radix>(Value);
 	IntConversion.SetPrecision(Precision);
 
 	return WriteFormatItem(WriteBuffer,IntConversion,ConversionMap,Width,false,false);
@@ -1428,11 +1428,11 @@ protected:
 		{
 			// Width
 			switch(Token.WidthArgumentIndex){
-			case Token.ArgIndexDefault:
+			case cFormatStringTokenParameter::ArgIndexDefault:
 				DefaultWidth=true;
 				Width=0;
 				break;
-			case Token.ArgIndexLiteral:
+			case cFormatStringTokenParameter::ArgIndexLiteral:
 				DefaultWidth=false;
 				Width=static_cast<ufInt16>(Token.Width);
 				break;
@@ -1442,7 +1442,7 @@ protected:
 				{
 					cIntegerLoader Loader;
 					Loader.Dest=&Width;
-					if(cnVar::VarPackCallAt(Token.WidthArgumentIndex,Loader,Owner->Args)==false){
+					if(cnVar::VarPackCallAt(Token.WidthArgumentIndex,Loader,Owner->Args.All())==false){
 						// no argument provided, use default
 						DefaultWidth=true;
 					}
@@ -1451,11 +1451,11 @@ protected:
 			}
 			// Precision
 			switch(Token.PrecisionArgumentIndex){
-			case Token.ArgIndexDefault:
+			case cFormatStringTokenParameter::ArgIndexDefault:
 				DefaultPrecision=true;
 				Precision=0;
 				break;
-			case Token.ArgIndexLiteral:
+			case cFormatStringTokenParameter::ArgIndexLiteral:
 				DefaultPrecision=false;
 				Precision=static_cast<ufInt16>(Token.Precision);
 				break;
@@ -1465,7 +1465,7 @@ protected:
 				{
 					cIntegerLoader Loader;
 					Loader.Dest=&Precision;
-					if(cnVar::VarPackCallAt(Token.PrecisionArgumentIndex,Loader,Owner->Args)==false){
+					if(cnVar::VarPackCallAt(Token.PrecisionArgumentIndex,Loader,Owner->Args.All())==false){
 						// no argument provided, use default
 						DefaultPrecision=true;
 					}
@@ -1524,7 +1524,7 @@ protected:
 
 	bool CharacterToStream(const cFormatStringToken<tCharacter> &Token){
 		cWriterCharacter Writer(this,Token);
-		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args);
+		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
 	}
 	
@@ -1553,7 +1553,7 @@ protected:
 
 	bool StringToStream(const cFormatStringToken<tCharacter> &Token){
 		cWriterString Writer(this,Token);
-		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args);
+		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
 	}
 
@@ -1626,7 +1626,7 @@ protected:
 			Writer.Precision=1;
 		}
 		Token.SizeModifier;
-		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args);
+		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
 	}
 	
@@ -1697,7 +1697,7 @@ protected:
 		if(Writer.DefaultPrecision){
 			Writer.Precision=6;
 		}
-		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args);
+		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
 	}
 	
@@ -1721,7 +1721,7 @@ protected:
 	void IntegerFromWrittenLength(const cFormatStringToken<tCharacter> &Token){
 		cReaderInteger Reader;
 		Reader.TotalLengthWritten=WriteBuffer.TotalWritten;
-		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Reader,Args);
+		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Reader,Args.All());
 	}
 	
 };
@@ -2173,7 +2173,7 @@ public:
 			NewPath.AppendChar(SplitterCharacter);
 			uIntn PathOffset=NewPath->Length;
 
-			StringStream::WriteConvertEncoding(NewPath.StreamWriteBuffer(),Converter,Path[i],cnString::GetLength(Path[i]));
+			StringStream::WriteConvertEncoding(NewPath.StreamWriteBuffer(),Converter,Path[i],cnString::FindLength(Path[i]));
 
 			uIntn NewLength=NewPath->Length;
 

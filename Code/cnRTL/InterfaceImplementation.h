@@ -253,11 +253,11 @@ iPtr<iInterface> iAggregateCreate(TAggregable&&...Aggregables)
 template<class TInterfaceImplementation>
 struct iAggregableCreateTemplate
 {
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
 		, impInterfaceAggregable<TInterfaceImplementation,cCPPLifeCycleInstance>
 		, impInterfaceAggregable<TInterfaceImplementation,cVirtualLifeCycleInstance>
 	>::Type TAggregable;
-	typedef typename cnVar::TSelect<cnVar::TClassInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
 		, cCPPLifeCycleManager< impInterfaceAggregable<TInterfaceImplementation,cCPPLifeCycleInstance> >
 		, cVirtualLifeCycleDefaultManager< impInterfaceAggregable<TInterfaceImplementation,cVirtualLifeCycleInstance> >
 	>::Type TLifeCycleManager;
@@ -266,8 +266,8 @@ struct iAggregableCreateTemplate
 template<class TInterfaceImplementation>
 cAggregablePtr<typename iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable> iAggregableCreate(void)
 {
-	typedef iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable TAggregable;
-	typedef iAggregableCreateTemplate<TInterfaceImplementation>::TLifeCycleManager TManager;
+	typedef typename iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable TAggregable;
+	typedef typename iAggregableCreateTemplate<TInterfaceImplementation>::TLifeCycleManager TManager;
 	auto Aggregable=new typename TManager::tLifeCycleObject;
 	TManager::ManageGlobal(Aggregable);
 	Aggregable->LifeCycleStart(Aggregable);
@@ -277,8 +277,8 @@ cAggregablePtr<typename iAggregableCreateTemplate<TInterfaceImplementation>::TAg
 template<class TInterfaceImplementation,class...TArgs>
 cAggregablePtr<typename iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable> iAggregableCreate(TArgs&&...Args)
 {
-	typedef iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable TAggregable;
-	typedef iAggregableCreateTemplate<TInterfaceImplementation>::TLifeCycleManager TManager;
+	typedef typename iAggregableCreateTemplate<TInterfaceImplementation>::TAggregable TAggregable;
+	typedef typename iAggregableCreateTemplate<TInterfaceImplementation>::TLifeCycleManager TManager;
 	auto Aggregable=new typename TManager::tLifeCycleObject(cnVar::Forward<TArgs>(Args)...);
 	TManager::ManageGlobal(Aggregable);
 	Aggregable->LifeCycleStart(Aggregable);

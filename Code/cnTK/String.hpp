@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2005-01-12                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_String_H__
-#define __cnLibrary_cnTK_String_H__
+#ifndef __cnLibrary_cnTK_String_HPP__
+#define __cnLibrary_cnTK_String_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/Interface.hpp>
@@ -346,11 +346,11 @@ struct TStringConvertFloat
 			Exponent=static_cast<sfInt16>(IntDigitCount+ScaleExp);
 
 			if(IntDigitCount>DigitBufferLength){
-				TKRuntime::TMemory<1>::Copy(DigitBuffer,IntDigits+IntDigitIndex,DigitBufferLength);
+				TKRuntime::TMemory<ValueSize/ValueSize>::Copy(DigitBuffer,IntDigits+IntDigitIndex,DigitBufferLength);
 				return DigitBufferLength;
 			}
 
-			TKRuntime::TMemory<1>::Copy(DigitBuffer,IntDigits+IntDigitIndex,IntDigitCount);
+			TKRuntime::TMemory<ValueSize/ValueSize>::Copy(DigitBuffer,IntDigits+IntDigitIndex,IntDigitCount);
 			DigitIndex=IntDigitCount;
 		}
 		else{
@@ -664,12 +664,8 @@ struct StringConvert{
 	static T ConvertIntegerFromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
 	{
 		typedef typename cnVar::TIntegerOfSize<MatchSize,false>::Type tUInt;
-
-		typename cnVar::TIntegerConversion<T>::tMatch IntValue=cnVar::TIntegerConversion<T>::template Cast<typename cnVar::TIntegerConversion<T>::tMatch>(Value);
-		tUInt ConvertValue=static_cast<tUInt>(cnMath::Absolute(IntValue));
-
-		tUInt IntValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(DigitBuffer,DigitBufferIndex);
-		return static_cast<T>(IntValue);
+		tUInt ResultValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(DigitBuffer,DigitCount);
+		return static_cast<T>(ResultValue);
 	}
 
 	template<class T>
@@ -677,8 +673,8 @@ struct StringConvert{
 	{
 		typedef typename cnVar::TFloatConversion<T>::tMatch tFloat;
 
-		tFloat FloatValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(Exponent,DigitBuffer,DigitBufferLength);;
-		return static_cast<T>(FloatValue);
+		tFloat ResultValue=TKRuntime::TStringConvertInteger<MatchSize,Radix>::FromDigits(Exponent,DigitBuffer,DigitCount);
+		return static_cast<T>(ResultValue);
 	}
 };
 
@@ -731,13 +727,13 @@ inline uIntn ConvertFloatToDigits(T Value,sfInt16 &Exponent,uInt8 *DigitBuffer,u
 template<ufInt8 Radix,class T>
 inline T ConvertIntegerFromDigits(const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
 {
-	return cnLib_THelper::String_TH::StringConvert<cnVar::TIntegerConversion<T>::MatchSize,Radix>::template ConvertIntegerFromDigits<T>(DigitBuffer,DigitBufferIndex);
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TIntegerConversion<T>::MatchSize,Radix>::template ConvertIntegerFromDigits<T>(DigitBuffer,DigitCount);
 }
 
 template<ufInt8 Radix,class T>
 inline T ConvertFloatFromDigits(sfInt16 Exponent,const uInt8 *DigitBuffer,uIntn DigitCount)noexcept(true)
 {
-	return cnLib_THelper::String_TH::StringConvert<cnVar::TFloatConversion<T>::MatchSize,Radix>::template ConvertFloatFromDigits<T>(Exponent,DigitBuffer,DigitBufferIndex);
+	return cnLib_THelper::String_TH::StringConvert<cnVar::TFloatConversion<T>::MatchSize,Radix>::template ConvertFloatFromDigits<T>(Exponent,DigitBuffer,DigitCount);
 }
 
 //---------------------------------------------------------------------------
@@ -1408,7 +1404,7 @@ public:
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	// cstr + cStringBuffer&&
 	friend cStringBuffer operator + (const tCharacter *String,cStringBuffer &&Src){
-		Src.Replace(0,0,GetLength(String),String);
+		Src.Replace(0,0,FindLength(String),String);
 		return static_cast<cStringBuffer&&>(Src);
 	}
 #endif 
@@ -1516,7 +1512,7 @@ struct StringTokenOperator_TokenArrayDef
 	: cnVar::TTypeDef< const cArray<typename TStringTokenOperator::tCharacter const> >{};
 
 template<class TStringTokenOperator>
-struct StringTokenOperator_TokenArrayDef<TStringTokenOperator,typename StringTokenOperatorExpression<TStringTokenOperator>::TestRef<>::Type>
+struct StringTokenOperator_TokenArrayDef<TStringTokenOperator,typename StringTokenOperatorExpression<TStringTokenOperator>::template TestRef<>::Type>
 	: cnVar::TTypeDef< const cArray<typename TStringTokenOperator::tCharacter const>& >{};
 
 
@@ -1556,7 +1552,7 @@ protected:
 	template<class T>
 	static typename cnVar::TSelect<0,tStringToken
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(TConstStringTokenOperator::MakeFrom(cnVar::DeclVar<T cnLib_UREF>()))
+		, decltype(TConstStringTokenOperator::MakeFrom(cnVar::DeclVal<T cnLib_UREF>()))
 #endif
 	>::Type MakeFrom(T cnLib_UREF Args)noexcept(true)
 	{
@@ -1709,7 +1705,7 @@ public:
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 	template<class T
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, class=decltype(MakeFrom(cnVar::DeclVar<T cnLib_UREF>()))
+		, class=decltype(MakeFrom(cnVar::DeclVal<T cnLib_UREF>()))
 #endif
 	>
 	cConstString(T cnLib_UREF Src)noexcept(true)
@@ -1724,7 +1720,7 @@ public:
 	template<class T>
 	typename cnVar::TSelect<0,cConstString&
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(MakeFrom(cnVar::DeclVar<T cnLib_UREF>()))
+		, decltype(MakeFrom(cnVar::DeclVal<T cnLib_UREF>()))
 #endif
 	>::Type operator =(T cnLib_UREF Src)noexcept(true)
 	{
@@ -2269,8 +2265,7 @@ protected:
 
 	template<class TSrcAllocationOperator,class TSrcCharacter>
 	tStringToken MakeFromStringBuffer(cStringBuffer<TSrcAllocationOperator,TSrcCharacter> &Storage)noexcept(true){
-		typedef cnDataStruct::cStringStorage<TSrcAllocationOperator,TSrcCharacter> TStringStorage;
-		return TStringTokenOperator::MakeMoveStorage(cnLib_UREFCAST(TStringStorage)(Storage.Storage()));
+		return TStringTokenOperator::MakeMoveStorage(cnLib_UREFCAST(cnLib_MEXP(cnDataStruct::cStringStorage<TSrcAllocationOperator,TSrcCharacter>))(Storage.Storage()));
 	}
 	template<class TSrcAllocationOperator,class TSrcCharacter>
 	void SwapStringBuffer(cStringBuffer<TSrcAllocationOperator,TSrcCharacter> &Storage)noexcept(true){
@@ -2485,7 +2480,7 @@ inline cRefStringArray<TCharacter>* RefEmptyStringArray(void){
 #else
 // cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
-#if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+#if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 template<class TCharacter>
 struct TRefEmptyStringArray
@@ -2500,9 +2495,9 @@ template<class TCharacter>
 inline cRefStringArray<TCharacter>* RefEmptyStringArray(void){
 	return const_cast<cRefStringArray<TCharacter>*>(&TRefEmptyStringArray<TCharacter>::Value);
 }
-// cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+// cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 #else
-// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 template<class TCharacter>
 struct TRefEmptyStringArray
@@ -2528,7 +2523,7 @@ inline cRefStringArray<TCharacter>* RefEmptyStringArray(void){
 	return &TRefEmptyStringArray<TCharacter>::Value;
 }
 
-#endif	// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+#endif	// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 #endif // cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
@@ -2610,7 +2605,7 @@ struct cRefStringArrayTokenOperator
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-#endif // cnLibrary_CPPFEATURELEVEL >= 3
+#endif // cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosCleanup.inc>
 //---------------------------------------------------------------------------

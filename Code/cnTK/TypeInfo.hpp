@@ -2,20 +2,261 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2023-02-25                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_TypeInfo_H__
-#define	__cnLibrary_cnTK_TypeInfo_H__
+#ifndef __cnLibrary_cnTK_TypeInfo_HPP__
+#define	__cnLibrary_cnTK_TypeInfo_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
 #include <cnTK/Numerical.hpp>
+#include <cnTK/Memory.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
+namespace cnLib_THelper{
+namespace Var_TH{
+
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+
+
+template<class TEnable,class T>
+struct CanNew
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct CanNew<decltype(static_cast<void>(new T)),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct CanDelete
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct CanDelete<decltype(delete static_cast<T*>(0)),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorNew
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorNew<decltype(static_cast<void>(TClass::operator new(1))),TClass>
+	: cnVar::TConstantValueTrue{};
+
+template<class TEnable,class TClass>
+struct HasOperatorDelete
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDelete<decltype(TClass::operator delete(0)),TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteSize
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteSize<decltype(TClass::operator delete(0,1)),TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorNewArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorNewArray<decltype(static_cast<void>(TClass::operator new[](1))),TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteArray<decltype(TClass::operator delete[](0)),TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteSizeArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteSizeArray<decltype(TClass::operator delete[](0,1)),TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+#ifndef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+
+template<class TEnable,class T>
+struct CanNew
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct CanNew<typename cnVar::TTypeConditional<void,sizeof(new T)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct CanDelete
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct CanDelete<typename cnVar::TTypeConditional<void,sizeof(static_cast<void>(delete static_cast<T*>(0)),0)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorNew
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorNew<typename cnVar::TTypeConditional<void,sizeof(TClass::operator new(1))>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDelete
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDelete<typename cnVar::TTypeConditional<void,sizeof(TClass::operator delete(0),0)>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteSize
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteSize<typename cnVar::TTypeConditional<void,sizeof(TClass::operator delete(0,1),0)>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorNewArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorNewArray<typename cnVar::TTypeConditional<void,sizeof(TClass::operator new[](1))>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteArray<typename cnVar::TTypeConditional<void,sizeof(static_cast<void>(TClass::operator delete[](0)),0)>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TClass>
+struct HasOperatorDeleteSizeArray
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass>
+struct HasOperatorDeleteSizeArray<typename cnVar::TTypeConditional<void,sizeof(TClass::operator delete[](0,1),0)>::Type,TClass>
+	: cnVar::TConstantValueTrue{};
+
+#endif	// !cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+#endif // defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+}	// namespace Var_TH
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
+//---------------------------------------------------------------------------
+
+#if ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+template<class T>
+struct TCanNew
+	: cnLib_THelper::Var_TH::CanNew<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct TCanDelete
+	: cnLib_THelper::Var_TH::CanDelete<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorNew
+	: cnLib_THelper::Var_TH::HasOperatorNew<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorDelete
+	: cnLib_THelper::Var_TH::HasOperatorDelete<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorDeleteSize
+	: cnLib_THelper::Var_TH::HasOperatorDeleteSize<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorNewArray
+	: cnLib_THelper::Var_TH::HasOperatorNewArray<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorDeleteArray
+	: cnLib_THelper::Var_TH::HasOperatorDeleteArray<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+
+template<class T>
+struct THasOperatorDeleteSizeArray
+	: cnLib_THelper::Var_TH::HasOperatorDeleteSizeArray<typename TTypeRequireDefined<void,T>::Type,T>{};
+
+#if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+
+template<class T>
+static cnLib_CONSTVAR bool CanNew=TCanNew<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool CanDelete=TCanDelete<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorNew=THasOperatorNew<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorDelete=THasOperatorDelete<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorDeleteSize=THasOperatorDeleteSize<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorNewArray=THasOperatorNewArray<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorDeleteArray=THasOperatorDeleteArray<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool HasOperatorDeleteSizeArray=THasOperatorDeleteSizeArray<T>::Value;
+
+#endif // cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+
+#endif // ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
 //---------------------------------------------------------------------------
 struct cTypeIdentity
 {
@@ -314,7 +555,7 @@ template<class T>
 struct TypeOperator_Construct_Class
 {
 	static void Construct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>())))
 	{	return cnVar::ManualConstruct(*static_cast<T*>(p));	}
 };
 
@@ -333,7 +574,7 @@ template<class T>
 struct TypeOperator_Destruct_Class
 {
 	static void Destruct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<T&>().~T()))
+		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>().~T()))
 	{	return cnVar::ManualDestruct(*static_cast<T*>(p));	}
 };
 
@@ -352,7 +593,7 @@ template<class T>
 struct TypeOperator_CopyConstruct_Class
 {
 	static void CopyConstruct(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<const T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<const T&>())))
 	{
 		cnVar::ManualConstruct(*static_cast<T*>(d),*static_cast<const T*>(s));
 	}
@@ -378,7 +619,7 @@ template<class T>
 struct TypeOperator_MoveConstruct_Class
 {
 	static void MoveConstruct(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&&>())))
 	{	cnVar::ManualConstruct(*static_cast<T*>(d),static_cast<T&&>(*static_cast<T*>(s)));	}
 };
 template<uIntn Size>
@@ -403,7 +644,7 @@ template<class T>
 struct TypeOperator_CopyAssign_Class
 {
 	static void CopyAssign(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&>()=cnVar::DeclVar<const T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
 	{
 		*static_cast<T*>(d)=*static_cast<const T*>(s);
 	}
@@ -429,7 +670,7 @@ template<class T>
 struct TypeOperator_MoveAssign_Class
 {
 	static void MoveAssign(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<T&>()=cnVar::DeclVar<T&&>()))
+		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
 	{
 		*static_cast<T*>(d)=static_cast<T&&>(*static_cast<T*>(s));
 	}
@@ -549,7 +790,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_Construct_Class
 {
 	static void Construct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(p)[i]);
@@ -572,7 +813,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_Destruct_Class
 {
 	static void Destruct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<T&>().~T()))
+		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>().~T()))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualDestruct(static_cast<T*>(p)[i]);
@@ -595,7 +836,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_CopyConstruct_Class
 {
 	static void CopyConstruct(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<const T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<const T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<const T*>(s)[i]);
@@ -618,7 +859,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_MoveConstruct_Class
 {
 	static void MoveConstruct(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<T&&>(static_cast<T*>(s)[i]));
@@ -642,7 +883,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_CopyAssign_Class
 {
 	static void CopyAssign(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVar<T&>()=cnVar::DeclVar<const T&>())))
+		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			static_cast<T*>(d)[i]=static_cast<const T*>(s)[i];
@@ -665,7 +906,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_MoveAssign_Class
 {
 	static void MoveAssign(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<T&>()=cnVar::DeclVar<T&&>()))
+		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
 	{
 		for(uIntn i=0;i<Length;i++){
 			static_cast<T*>(d)[i]=static_cast<T&&>(static_cast<T*>(s)[i]);
@@ -760,10 +1001,10 @@ template<class T>
 struct TypeOperator
  	: cnLib_THelper::Var_TH::TypeOperator_New<T,cnVar::THasOperatorNew<T>::Value>
 	, cnLib_THelper::Var_TH::TypeOperator_Delete<T,cnVar::THasOperatorDeleteSize<T>::Value,cnVar::THasOperatorDelete<T>::Value>
-	, cnLib_THelper::Var_TH::TypeOperator_Construct<T,TIsDefaultConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::TypeOperator_Destruct<T,TIsDestructable<T>::Value>
-	, cnLib_THelper::Var_TH::TypeOperator_CopyConstruct<T,TIsCopyConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::TypeOperator_MoveConstruct<T,TIsMoveConstructable<T>::Value>
+	, cnLib_THelper::Var_TH::TypeOperator_Construct<T,TIsDefaultConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::TypeOperator_Destruct<T,TIsDestructible<T>::Value>
+	, cnLib_THelper::Var_TH::TypeOperator_CopyConstruct<T,TIsCopyConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::TypeOperator_MoveConstruct<T,TIsMoveConstructible<T>::Value>
 	, cnLib_THelper::Var_TH::TypeOperator_CopyAssign<T,TIsCopyAssignable<T>::Value>
 	, cnLib_THelper::Var_TH::TypeOperator_MoveAssign<T,TIsMoveAssignable<T>::Value>
 {
@@ -785,11 +1026,11 @@ struct TypeOperator<const volatile void>{};
 template<class T,uIntn Length>
 struct TypeOperator<T [Length]>
  	: cnLib_THelper::Var_TH::ArrayTypeOperator_New<T,Length,cnVar::THasOperatorNew<T>::Value>
-	, cnLib_THelper::Var_TH::ArrayTypeOperator_Delete<T,Length,cnVar::THasOperatorDeleteSize<T>::Value,cnVar::THasOperatorDelete<T>::Value>
-	, cnLib_THelper::Var_TH::ArrayTypeOperator_Construct<T,Length,TIsDefaultConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArrayTypeOperator_Destruct<T,Length,TIsDestructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArrayTypeOperator_CopyConstruct<T,Length,TIsCopyConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArrayTypeOperator_MoveConstruct<T,Length,TIsMoveConstructable<T>::Value>
+	, cnLib_THelper::Var_TH::ArrayTypeOperator_Delete<T,Length,cnVar::THasOperatorDeleteSizeArray<T>::Value,cnVar::THasOperatorDeleteArray<T>::Value>
+	, cnLib_THelper::Var_TH::ArrayTypeOperator_Construct<T,Length,TIsDefaultConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArrayTypeOperator_Destruct<T,Length,TIsDestructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArrayTypeOperator_CopyConstruct<T,Length,TIsCopyConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArrayTypeOperator_MoveConstruct<T,Length,TIsMoveConstructible<T>::Value>
 	, cnLib_THelper::Var_TH::ArrayTypeOperator_CopyAssign<T,Length,TIsCopyAssignable<T>::Value>
 	, cnLib_THelper::Var_TH::ArrayTypeOperator_MoveAssign<T,Length,TIsMoveAssignable<T>::Value>
 {};
@@ -813,10 +1054,10 @@ template<class T>
 struct SafeTypeOperator
  	: cnLib_THelper::Var_TH::TypeOperator_New<T,cnVar::THasOperatorNew<T>::Value>
 	, cnLib_THelper::Var_TH::TypeOperator_Delete<T,cnVar::THasOperatorDeleteSize<T>::Value,cnVar::THasOperatorDelete<T>::Value>
-	, cnLib_THelper::Var_TH::SafeTypeOperator_Construct<T,TIsDefaultConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::SafeTypeOperator_Destruct<T,TIsDestructable<T>::Value>
-	, cnLib_THelper::Var_TH::SafeTypeOperator_CopyConstruct<T,TIsCopyConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::SafeTypeOperator_MoveConstruct<T,TIsMoveConstructable<T>::Value>
+	, cnLib_THelper::Var_TH::SafeTypeOperator_Construct<T,TIsDefaultConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::SafeTypeOperator_Destruct<T,TIsDestructible<T>::Value>
+	, cnLib_THelper::Var_TH::SafeTypeOperator_CopyConstruct<T,TIsCopyConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::SafeTypeOperator_MoveConstruct<T,TIsMoveConstructible<T>::Value>
 	, cnLib_THelper::Var_TH::SafeTypeOperator_CopyAssign<T,TIsCopyAssignable<T>::Value>
 	, cnLib_THelper::Var_TH::SafeTypeOperator_MoveAssign<T,TIsMoveAssignable<T>::Value>
 {
@@ -843,10 +1084,10 @@ template<class T,uIntn Length>
 struct SafeTypeOperator<T [Length]>
  	: cnLib_THelper::Var_TH::ArrayTypeOperator_New<T,Length,cnVar::THasOperatorNew<T>::Value>
 	, cnLib_THelper::Var_TH::ArrayTypeOperator_Delete<T,Length,cnVar::THasOperatorDeleteSize<T>::Value,cnVar::THasOperatorDelete<T>::Value>
-	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_Construct<T,Length,TIsDefaultConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_Destruct<T,Length,TIsDestructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_CopyConstruct<T,Length,TIsCopyConstructable<T>::Value>
-	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_MoveConstruct<T,Length,TIsMoveConstructable<T>::Value>
+	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_Construct<T,Length,TIsDefaultConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_Destruct<T,Length,TIsDestructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_CopyConstruct<T,Length,TIsCopyConstructible<T>::Value>
+	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_MoveConstruct<T,Length,TIsMoveConstructible<T>::Value>
 	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_CopyAssign<T,Length,TIsCopyAssignable<T>::Value>
 	, cnLib_THelper::Var_TH::ArraySafeTypeOperator_MoveAssign<T,Length,TIsMoveAssignable<T>::Value>
 {};
@@ -977,10 +1218,10 @@ struct cRuntimeTypeInfo
 	ertTypeClass TypeClass;
 	bool IsConst					:1;
 	bool IsVolatile					:1;
-	bool IsDefaultConstructable		:1;
-	bool IsDestructable				:1;
-	bool IsCopyConstructable		:1;
-	bool IsMoveConstructable		:1;
+	bool IsDefaultConstructible		:1;
+	bool IsDestructible				:1;
+	bool IsCopyConstructible		:1;
+	bool IsMoveConstructible		:1;
 	bool IsCopyAssignable			:1;
 	bool IsMoveAssignable			:1;
 	bool IsDefaultConstructNoexcept	:1;
@@ -1798,10 +2039,10 @@ const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T>::Value={
 	cnLib_THelper::Var_TH::RuntimeInfo::RuntimeTypeInfoDistinctDef<T>::TypeClass,
 	false,	// const
 	false,	// volatile
-	TIsDefaultConstructable<T>::Value,
-	TIsDestructable<T>::Value,
-	TIsCopyConstructable<T>::Value,
-	TIsMoveConstructable<T>::Value,
+	TIsDefaultConstructible<T>::Value,
+	TIsDestructible<T>::Value,
+	TIsCopyConstructible<T>::Value,
+	TIsMoveConstructible<T>::Value,
 	TIsCopyAssignable<T>::Value,
 	TIsMoveAssignable<T>::Value,
 	TIsDefaultConstructNoexcept<T>::Value,
@@ -1831,8 +2072,8 @@ const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T const>::Value={
 	false,	// volatile
 	false,
 	false,
-	TIsCopyConstructable<T const>::Value,
-	TIsMoveConstructable<T const>::Value,
+	TIsCopyConstructible<T const>::Value,
+	TIsMoveConstructible<T const>::Value,
 	false,
 	false,
 	false,
@@ -1861,10 +2102,10 @@ const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T volatile>::Value={
 	cnLib_THelper::Var_TH::RuntimeInfo::RuntimeTypeInfoDistinctDef<T>::TypeClass,
 	false,	// const
 	false,	// volatile
-	TIsDefaultConstructable<T volatile>::Value,
-	TIsDestructable<T volatile>::Value,
-	TIsCopyConstructable<T volatile>::Value,
-	TIsMoveConstructable<T volatile>::Value,
+	TIsDefaultConstructible<T volatile>::Value,
+	TIsDestructible<T volatile>::Value,
+	TIsCopyConstructible<T volatile>::Value,
+	TIsMoveConstructible<T volatile>::Value,
 	TIsCopyAssignable<T volatile>::Value,
 	TIsMoveAssignable<T volatile>::Value,
 	TIsDefaultConstructNoexcept<T volatile>::Value,
@@ -1894,8 +2135,8 @@ const cnVar::cRuntimeTypeInfo cRuntimeTypeInfoDefinition<T const volatile>::Valu
 	false,	// volatile
 	false,
 	false,
-	TIsCopyConstructable<T const volatile>::Value,
-	TIsMoveConstructable<T const volatile>::Value,
+	TIsCopyConstructible<T const volatile>::Value,
+	TIsMoveConstructible<T const volatile>::Value,
 	false,
 	false,
 	false,

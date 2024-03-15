@@ -2,11 +2,10 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Common_H__
-#define	__cnLibrary_cnTK_Common_H__
+#ifndef __cnLibrary_cnTK_Common_HPP__
+#define	__cnLibrary_cnTK_Common_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/cnPlatform.h>
-#include <cnTK/cnDebug.h>
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
@@ -14,6 +13,7 @@
 
 #if defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)\
 	|| defined(cnLibrary_CPPEXCLUDE_NULLPTR)\
+	|| ( defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION) )
 
 #define	cnLibrary_CPPFEATURELEVEL	1
 
@@ -44,7 +44,7 @@
 #define cnLib_ENUM_END(_name_)					;	typedef _name_ e##_name_
 
 #define cnLib_TYPELESS_ENUM_BEGIN(_name_)		enum class _name_
-#define cnLib_TYPELESS_ENUM_END(_name_)			;	typedef _name_ e##_name_;
+#define cnLib_TYPELESS_ENUM_END(_name_)			;	typedef _name_ e##_name_
 
 // !cnLibrary_CPPEXCLUDE_ENUMCLASS
 #else
@@ -65,20 +65,20 @@
 
 #ifdef cnLibrary_CPPEXCLUDE_NOEXCEPT
 
-#define	noexcept(__condition__)
+#define	noexcept(...)
 
 #endif	// cnLibrary_CPPEXCLUDE_NOEXCEPT
 
 #if cnLibrary_CPPFEATURE_EXCEPTIONS >= 199711L
 #if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-#define	cnLib_NOEXCEPTEXPR(__condition__)	noexcept(__condition__)
+#define	cnLib_NOEXCEPTEXPR(...)	noexcept(__VA_ARGS__)
 #else
-#define	cnLib_NOEXCEPTEXPR(__condition__)	false
+#define	cnLib_NOEXCEPTEXPR(...)	false
 #endif
 // cnLibrary_CPPFEATURE_EXCEPTIONS >= 199711L
 #else
 // cnLibrary_CPPFEATURE_EXCEPTIONS < 199711L
-#define	cnLib_NOEXCEPTEXPR(__condition__)	true
+#define	cnLib_NOEXCEPTEXPR(...)	true
 #endif	// cnLibrary_CPPFEATURE_EXCEPTIONS < 199711L
 
 
@@ -181,6 +181,37 @@ struct TypeMissing;
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+namespace cnMemory{
+cnLib_TYPELESS_ENUM_BEGIN(ByteOrder){
+	LittleEndian,
+		BigEndian,
+}cnLib_TYPELESS_ENUM_END(ByteOrder);
+//---------------------------------------------------------------------------
+}	// namespace cnMemory
+//---------------------------------------------------------------------------
+namespace TKRuntime{
+//---------------------------------------------------------------------------
+
+struct NativeByteOrder;
+//{
+//	static constexpr eByteOrder Value;
+//};
+
+struct Debug
+{
+	static void AssertionMessage(const char *Message);
+};
+
+//---------------------------------------------------------------------------
+}	// namespace TKRuntime
+//---------------------------------------------------------------------------
+#ifdef	cnLib_DEBUG
+#define	cnLib_ASSERT(_e_)		(void)( static_cast<bool>(_e_) || (cnLibrary::TKRuntime::Debug::AssertionMessage("Assertion failed at : \r\n " cnLib_FILE_LINE "\r\n"  #_e_ "\r\n"),true) )
+#define	cnLib_UNEXPECTED_BRANCH	cnLibrary::TKRuntime::Debug::AssertionMessage("Assertion failed at : \r\n " cnLib_FILE_LINE "\r\nUnexpected code branch\r\n")
+#else
+#define	cnLib_ASSERT(_e_)		cnLib_ASSUME(_e_)
+#define	cnLib_UNEXPECTED_BRANCH
+#endif
 
 static cnLib_CONSTVAR uIntn IndexNotFound=~static_cast<uIntn>(0);
 
@@ -231,8 +262,18 @@ const T TConstantValue<T, v>::Value=v;
 template<class T>	struct TTypeDef{	typedef T Type;	};
 
 
-template<class T,bool Condition>	struct TTypeConditional			: TTypeDef<T>{};
-template<class T>					struct TTypeConditional<T,false>{};
+template<class T,int Condition>	struct TTypeConditional			: TTypeDef<T>{};
+template<class T>				struct TTypeConditional<T,false>{};
+
+
+template<class T,class TCheckDefined=T>
+struct TTypeRequireDefined
+	: cnVar::TTypeConditional<T,sizeof(TCheckDefined)>{};
+
+template<class T> struct TTypeRequireDefined<T,void>				{	typedef T Type;	};
+template<class T> struct TTypeRequireDefined<T,const void>			{	typedef T Type;	};
+template<class T> struct TTypeRequireDefined<T,volatile void>		{	typedef T Type;	};
+template<class T> struct TTypeRequireDefined<T,const volatile void>	{	typedef T Type;	};
 
 
 #if cnLibrary_CPPFEATURE_ALIAS_TEMPLATES >= 200704L
@@ -289,14 +330,15 @@ namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Var_TH{
 //---------------------------------------------------------------------------
-template<class T,class=void>	struct IsTypeDefined														: cnVar::TConstantValueFalse{};
-template<class T>				struct IsTypeDefined<T,typename cnVar::TSelect<!sizeof(T),void,int>::Type>	: cnVar::TConstantValueTrue{};
+template<class TEnable,class T>	struct HasTypeDef : cnVar::TConstantValueFalse{};
+template<class T>
+struct HasTypeDef<typename cnVar::TSelect<0,void,typename T::Type>::Type,T>
+	: cnVar::TConstantValueTrue{};
 //---------------------------------------------------------------------------
-template<class T,class=void>	struct HasTypeDef															: cnVar::TConstantValueFalse{};
-template<class T>				struct HasTypeDef<T,typename cnVar::TSelect<0,void,typename T::Type>::Type>	: cnVar::TConstantValueTrue{};
-//---------------------------------------------------------------------------
-template<class T,class=void>	struct HasValueDef															: cnVar::TConstantValueFalse{};
-template<class T>				struct HasValueDef<T,typename cnVar::TSelect<!sizeof(T::Value),void>::Type>	: cnVar::TConstantValueTrue{};
+template<class TEnable,class T>	struct HasValueDef : cnVar::TConstantValueFalse{};
+template<class T>
+struct HasValueDef<typename cnVar::TTypeConditional<void,sizeof(T::Value)>::Type,T>
+	: cnVar::TConstantValueTrue{};
 //---------------------------------------------------------------------------
 }	// namespace Var_TH
 //---------------------------------------------------------------------------
@@ -307,9 +349,8 @@ namespace cnLibrary{
 namespace cnVar{
 //---------------------------------------------------------------------------
 
-template<class T>	struct TIsTypeDefined	: TConstantValueBool<cnLib_THelper::Var_TH::IsTypeDefined<T>::Value>{};
-template<class T>	struct THasTypeDef		: TConstantValueBool<cnLib_THelper::Var_TH::HasTypeDef<T>::Value>{};
-template<class T>	struct THasValueDef		: TConstantValueBool<cnLib_THelper::Var_TH::HasValueDef<T>::Value>{};
+template<class T>	struct THasTypeDef		: TConstantValueBool<cnLib_THelper::Var_TH::HasTypeDef<void,T>::Value>{};
+template<class T>	struct THasValueDef		: TConstantValueBool<cnLib_THelper::Var_TH::HasValueDef<void,T>::Value>{};
 
 //---------------------------------------------------------------------------
 template<class T>	struct TStoreSizeOf							: TConstantValueUIntn<sizeof(T)>{};
@@ -366,6 +407,24 @@ template<>
 struct TIsSigned<bool>
 	: TConstantValueBool< false >{};
 
+
+//---------------------------------------------------------------------------
+#if cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+
+static_assert(sizeof(uIntn)==sizeof(void*),	"incorrect size of uIntn");
+static_assert(sizeof(sIntn)==sizeof(void*),	"incorrect size of sIntn");
+
+static_assert(sizeof(uInt64)*ByteBitCount/8==8,"incorrect size of uInt64");
+static_assert(sizeof(sInt64)*ByteBitCount/8==8,"incorrect size of sInt64");
+static_assert(sizeof(uInt32)*ByteBitCount/8==4,"incorrect size of uInt32");
+static_assert(sizeof(sInt32)*ByteBitCount/8==4,"incorrect size of sInt32");
+static_assert(sizeof(uInt16)*ByteBitCount/8==2,"incorrect size of uInt16");
+static_assert(sizeof(sInt16)*ByteBitCount/8==2,"incorrect size of sInt16");
+static_assert(sizeof(uInt8)*ByteBitCount/8==1,	"incorrect size of uInt8");
+static_assert(sizeof(sInt8)*ByteBitCount/8==1,	"incorrect size of sInt8");
+
+#endif // cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
+//---------------------------------------------------------------------------
 
 template<uIntn Size,bool Signed>	struct TIntegerOfSize{};
 
@@ -460,6 +519,7 @@ template<uIntn Size>	struct TFloatOfSize{};
 
 template<>	struct TFloatOfSize<4>					: TTypeDef<Float32>{};
 template<>	struct TFloatOfSize<8>					: TTypeDef<Float64>{};
+template<>	struct TFloatOfSize<16>					: TTypeDef<Float128>{};
 
 #if	cnLibrary_CPPFEATURE_ALIAS_TEMPLATES >= 200704L
 
@@ -506,8 +566,8 @@ struct TUCharExists
 template<class T>
 static cnLib_CONSTVAR bool IsSigned=TIsSigned<T>::Value;
 
-template<uIntn Size>
-static cnLib_CONSTVAR bool IntegerTypeExists=TIntegerTypeExists<Size>::Value;
+template<uIntn Size,bool Signed>
+static cnLib_CONSTVAR bool IntegerTypeExists=TIntegerTypeExists<Size,Signed>::Value;
 
 template<uIntn Size>
 static cnLib_CONSTVAR bool FloatTypeExists=TFloatTypeExists<Size>::Value;
@@ -519,12 +579,19 @@ static cnLib_CONSTVAR bool UCharExists=TUCharExists<Size>::Value;
 
 
 //---------------------------------------------------------------------------
-template<class T> inline T DeclVar()noexcept(true);
+template<class T> static inline T DeclVal()noexcept(true);
 
 struct cNoInitialization{};
 static cnLib_CONSTVAR cNoInitialization *NoInitialization=0;
 //---------------------------------------------------------------------------
 }	// namespace cnVar
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+inline void* operator new (cnLibrary::tSize,cnLibrary::cnVar::cNoInitialization *Pointer)noexcept(true){	return Pointer;}
+inline void operator delete(void *,cnLibrary::cnVar::cNoInitialization*)noexcept(true){}
+//---------------------------------------------------------------------------
+namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnMemory{
 //---------------------------------------------------------------------------
@@ -772,7 +839,7 @@ namespace cnVar{
 
 template<class TCompare1,class TCompare2=TCompare1>
 struct TDefaultCompareResult
-	: TTypeDef<decltype(cnVar::DeclVar<TCompare1>()<=>cnVar::DeclVar<TCompare2>())>
+	: TTypeDef<decltype(cnVar::DeclVal<TCompare1>()<=>cnVar::DeclVal<TCompare2>())>
 {
 };
 

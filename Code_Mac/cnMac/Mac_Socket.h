@@ -38,12 +38,12 @@ public:
 		cnMemory::Copy(&fAddr,addr,sizeof(TSockAddr));
 	}
 
-	virtual eOrdering cnLib_FUNC Compare(const iAddress *Dest)const override{
+	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)override{
 		if(Dest==nullptr)
-			return Ordering::Different;
+			return iOrdering::Different;
 		auto DestSocketAddress=iCast<iSocketAddress>(Dest);
 		if(DestSocketAddress==nullptr)
-			return Ordering::Different;
+			return iOrdering::Different;
 		return siPOSIX::SocketAddressCompare(&saddr,DestSocketAddress->SockAddr());
 	}
 
@@ -67,11 +67,11 @@ public:
 	using cSocketAddress::cSocketAddress;
 	cSocketAddress_IPv4(uInt32 IP,uInt16 Port);
 
-	virtual const void * cnLib_FUNC CastInterface(iTypeID InterfaceID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
 
 // iAddress
 
-	virtual eOrdering cnLib_FUNC Compare(const iAddress *Dest)const override;
+	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)override;
 // iIPv4Address
 
 	virtual uInt32 cnLib_FUNC IPv4Address(void)override;
@@ -185,8 +185,7 @@ protected:
 	void VirtualStarted(void);
 	void VirtualStopped(void);
 
-	virtual iReference* AsyncSignalInnerReference(void)override;
-	virtual void AsyncSignalClosed(void)override;
+	virtual void AsyncQueueNotify(void)override;
 	virtual iPtr<iConnection> OnAcceptCreateConnection(int Socket,const sockaddr *addr,socklen_t addrlen)override;
 	virtual void OnAcceptWait(void)override;
 private:

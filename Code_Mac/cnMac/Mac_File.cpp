@@ -140,7 +140,7 @@ iPtr<iFileName> cnMac::FileSystemCreateTemporaryFile(const char *FolderName)
 
 	cStringBuffer<char> Name=FolderName;
 	Name+=TempFileTemplate;
-	return iCreate<siPOSIX::cStringFileName>(cString<char>(cnVar::MoveCast(Name)));
+	return iCreate<siPOSIX::cStringFileName>(siPOSIX::cStringFileName::cStringPath(cnVar::MoveCast(Name)));
 }
 //---------------------------------------------------------------------------
 iPtr<iFileStream>	siPOSIX::POSIXInterface::FSOpenFileStream(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)

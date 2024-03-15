@@ -8,13 +8,18 @@
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 //- FileTime ----------------------------------------------------------------
 class cnLib_INTERFACE iFileTime : public iTimepoint
 {
 public:
-	cnLib_INTERFACE_DEFINE(iFileTime,iTimepoint)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual FILETIME cnLib_FUNC GetFileTime(void)=0;
 	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)=0;
@@ -23,7 +28,6 @@ public:
 class cnLib_INTERFACE iWaitableObject : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWaitableObject,iInterface)
 
 	virtual HANDLE cnLib_FUNC GetWaitHandle(void)=0;
 };
@@ -31,7 +35,8 @@ public:
 class cnLib_INTERFACE iWinThread : public iWaitableObject
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWinThread,iWaitableObject)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual DWORD cnLib_FUNC GetThreadID(void)=0;
 };
@@ -45,9 +50,10 @@ public:
 class cnLib_INTERFACE iWinThreadPool : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWinThreadPool,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback);
+	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)=0;
 };
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,6 +67,10 @@ iPtr<iThreadPool>			cnLib_FUNC CreateThreadPool(void);
 }	// namespace cnWindows
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

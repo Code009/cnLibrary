@@ -12,6 +12,10 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iAddress : public iInterface
@@ -116,7 +120,8 @@ public:
 class cnLib_INTERFACE iConnection : public iAddressBinding
 {
 public:
-	cnLib_INTERFACE_DEFINE(iConnection,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)=0;
 };
@@ -131,8 +136,6 @@ cnLib_ENUM_BEGIN(ufInt8,ConnectError)
 class iConnectErrorReport : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iConnectErrorReport,iInterface)
-
 	virtual eConnectError cnLib_FUNC GetConnectError(void)=0;
 };
 //---------------------------------------------------------------------------
@@ -170,6 +173,8 @@ public:
 class cnLib_INTERFACE iConnectionQueue : public iAddressBinding, public iAsyncNotification
 {
 public:
+	using iAddressBinding::CastInterface;
+
 	virtual iPtr<iConnection> cnLib_FUNC FetchConnection(void)=0;
 };
 //---------------------------------------------------------------------------
@@ -210,9 +215,10 @@ public:
 	virtual iPtr<iMultipointQueue>	cnLib_FUNC OpenQueue(iAddress *LocalAddress)=0;
 };
 //---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
 }	// namespace cnLibrary
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

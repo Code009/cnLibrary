@@ -400,7 +400,8 @@ bool cExclusiveFlag::Acquire(void)
 		// is running
 		return false;
 	default:
-		cnLib_SWITCH_UNEXPECTED;
+		cnLib_UNEXPECTED_BRANCH;
+		cnLib_SWITCH_FALLTHROUGH;
 	case rfPending:
 		// already requested to run
 		return false;
@@ -413,7 +414,8 @@ bool cExclusiveFlag::Release(void)
 	auto NextRunFlag=RunFlag.Release-=1;
 	switch(NextRunFlag){
 	default:
-		cnLib_SWITCH_UNEXPECTED;
+		cnLib_UNEXPECTED_BRANCH;
+		cnLib_SWITCH_FALLTHROUGH;
 	case rfIdle:
 		// successfully stoped
 		return true;

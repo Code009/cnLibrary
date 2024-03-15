@@ -15,7 +15,8 @@ namespace cnLibrary{
 class cnLib_INTERFACE iWin32FileName : public iFileName
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWin32FileName,iFileName)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
 
 	virtual const wchar_t*	cnLib_FUNC GetFileName(void)=0;
 	virtual uIntn			cnLib_FUNC GetFileNameLength(void)=0;
@@ -25,7 +26,8 @@ public:
 class cnLib_INTERFACE iWinFileHandle : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWinFileHandle,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual HANDLE cnLib_FUNC GetFileHandle(void)=0;
 };
@@ -41,7 +43,7 @@ cnLib_ENUM_BEGIN(ufInt16,SystemFile)
 }cnLib_ENUM_END(SystemFile);
 //---------------------------------------------------------------------------
 iPtr<iWin32FileName> cnLib_FUNC CreateFileName(const wchar_t *FileName);
-iPtr<iWin32FileName> cnLib_FUNC CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix=nullptr);
+iPtr<iWin32FileName> cnLib_FUNC CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix=0);
 iPtr<iWin32FileName> cnLib_FUNC GetSystemFileName(eSystemFile File);
 
 //---------------------------------------------------------------------------

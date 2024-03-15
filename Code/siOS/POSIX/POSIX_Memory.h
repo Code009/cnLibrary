@@ -6,6 +6,7 @@
 #define __cnLib_siOS_POSIX_POSIX_Memory_H__
 
 #include <siOS/POSIX/POSIXHeader.h>
+#include <cnSystem/cnMemory.h>
 
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus

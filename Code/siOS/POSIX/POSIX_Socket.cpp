@@ -4,6 +4,8 @@ using namespace cnLibrary;
 using namespace cnRTL;
 using namespace siPOSIX;
 
+
+
 //---------------------------------------------------------------------------
 void siPOSIX::SetupSocket(int s)
 {
@@ -23,14 +25,14 @@ void siPOSIX::SetupSocket(int s)
 	}
 }
 //---------------------------------------------------------------------------
-eOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2)
+eiOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2)
 {
 	if(addr1->sa_family!=addr2->sa_family)
-		return Ordering::Different;
+		return iOrdering::Different;
 
 	switch(addr1->sa_family){
 	default:
-		return Ordering::Different;
+		return iOrdering::Different;
 	case AF_INET:
 		{
 			auto *V4Addr1=reinterpret_cast<const sockaddr_in*>(addr1);
@@ -38,16 +40,16 @@ eOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *ad
 			uInt32 ip1=cnMemory::SwapBigEndian(V4Addr1->sin_addr.s_addr);
 			uInt32 ip2=cnMemory::SwapBigEndian(V4Addr2->sin_addr.s_addr);
 			if(ip1<ip2)
-				return Ordering::Less;
+				return iOrdering::Less;
 			if(ip1>ip2)
-				return Ordering::Greater;
+				return iOrdering::Greater;
 			uInt16 port1=cnMemory::SwapBigEndian(V4Addr1->sin_port);
 			uInt16 port2=cnMemory::SwapBigEndian(V4Addr2->sin_port);
 			if(port1<port2)
-				return Ordering::Less;
+				return iOrdering::Less;
 			if(port1>port2)
-				return Ordering::Greater;
-			return Ordering::Equal;
+				return iOrdering::Greater;
+			return iOrdering::Equal;
 		}
 	case AF_INET6:
 		{
@@ -59,17 +61,17 @@ eOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *ad
 				uIntn v1=cnMemory::SwapBigEndian(ip1[i-1]);
 				uIntn v2=cnMemory::SwapBigEndian(ip2[i-1]);
 				if(v1<v2)
-					return Ordering::Less;
+					return iOrdering::Less;
 				if(v1>v2)
-					return Ordering::Greater;
+					return iOrdering::Greater;
 			}
 			uInt16 port1=cnMemory::SwapBigEndian(V6Addr1->sin6_port);
 			uInt16 port2=cnMemory::SwapBigEndian(V6Addr2->sin6_port);
 			if(port1<port2)
-				return Ordering::Less;
+				return iOrdering::Less;
 			if(port1>port2)
-				return Ordering::Greater;
-			return Ordering::Equal;
+				return iOrdering::Greater;
+			return iOrdering::Equal;
 		}
 	}
 }
@@ -135,6 +137,7 @@ bool cSocketAddressBuffer::SetAddressFamily(sa_family_t sa_family)
 	return true;
 }
 
+#if 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 const uIntn bcStreamSocketEndpoint::ReadBufferMinSize=128;
@@ -150,7 +153,7 @@ bcStreamSocketEndpoint::~bcStreamSocketEndpoint()
 	close(fSocket);
 }
 //---------------------------------------------------------------------------
-const void* bcStreamSocketEndpoint::CastInterface(iTypeID IID)const
+void* bcStreamSocketEndpoint::CastInterface(iTypeID IID)
 {
 	return ImpCastInterface<iConnection,iEndpoint>(this,IID);
 }
@@ -337,7 +340,7 @@ bcDatagramSocketEndpoint::~bcDatagramSocketEndpoint()
 	close(fSocket);
 }
 //---------------------------------------------------------------------------
-const void* bcDatagramSocketEndpoint::CastInterface(iTypeID IID)const
+void* bcDatagramSocketEndpoint::CastInterface(iTypeID IID)
 {
 	return ImpCastInterface<iConnection,iEndpoint>(this,IID);
 }
@@ -385,15 +388,13 @@ cMemory bcDatagramSocketEndpoint::ReserveWriteBuffer(uIntn Size)
 	return fWriteBuffer;
 }
 //---------------------------------------------------------------------------
-uIntn bcDatagramSocketEndpoint::CommitWriteBuffer(uIntn Size)
+void bcDatagramSocketEndpoint::CommitWriteBuffer(uIntn Size)
 {
 	if(fWriteDataSize!=IndexNotFound){
 		fWriteDataSize=Size;
 		// continue write to socket
 		SendBufferWriteToSocket();
-		return Size;
 	}
-	return 0;
 }
 //---------------------------------------------------------------------------
 void bcDatagramSocketEndpoint::SendBufferWriteToSocket(void)
@@ -472,11 +473,9 @@ cConstMemory bcDatagramSocketEndpoint::GatherReadBuffer(uIntn QuerySize)
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-uIntn bcDatagramSocketEndpoint::DismissReadBuffer(uIntn Size)
+void bcDatagramSocketEndpoint::DismissReadBuffer(uIntn Size)
 {
-	uIntn Dismissed=fReadDataSize;
 	fReadDataSize=IndexNotFound;
-	return Dismissed;
 }
 //---------------------------------------------------------------------------
 void bcDatagramSocketEndpoint::WriteQueueClosed(void)
@@ -539,12 +538,9 @@ iPtr<iConnection> bcSocketConnectionQueue::FetchConnection(void)
 	return Connection;
 }
 //---------------------------------------------------------------------------
-bcSocketConnectionQueue::Availability bcSocketConnectionQueue::AsyncSignalAvailable(void)
+void bcSocketConnectionQueue::AsyncQueueNotify(void)
 {
-	if(fAcceptAvailable){
-		return Availability::Available;
-	}
-	return Availability::Empty;
+	bcConnectionQueue::AsyncQueueNotify();
 }
 //---------------------------------------------------------------------------
 void bcSocketConnectionQueue::AcceptContinue(void)
@@ -773,4 +769,6 @@ void cnLib_FUNC cSocketDatagramPort::PausePush(void)
 }
 //--------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+#endif // 0
+
 #endif // 0

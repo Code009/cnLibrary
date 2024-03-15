@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_TypeTraits_H__
-#define	__cnLibrary_cnTK_TypeTraits_H__
+#ifndef __cnLibrary_cnTK_TypeTraits_HPP__
+#define	__cnLibrary_cnTK_TypeTraits_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 /*-------------------------------------------------------------------------*/
@@ -12,9 +12,87 @@
 #include <cnTK/TKMacrosDeclare.inc>
 
 //---------------------------------------------------------------------------
+namespace cnLib_THelper{
+namespace Var_TH{
+
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+
+template<class TEnable,class T>	struct IsTypeDefined : cnVar::TConstantValueFalse{};
+template<class T>
+struct IsTypeDefined<decltype(UnusedParameter(cnVar::DeclVal<T>())),T>
+	: cnVar::TConstantValueTrue{};
+
+template<>	struct IsTypeDefined<void,void> : cnVar::TConstantValueTrue{};
+
+
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+#ifndef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+template<class TEnable,class T>	struct IsTypeDefined : cnVar::TConstantValueFalse{};
+template<class T>
+struct IsTypeDefined<typename cnVar::TTypeConditional<void,sizeof(T)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+template<>	struct IsTypeDefined<void,void> : cnVar::TConstantValueTrue{};
+#endif	// !cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+#endif // defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+
+template<class TEnable,class T>
+struct IsClass
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsClass<typename cnVar::TSelect<0,void,int T::*>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+}	// namespace Var_TH
+}	// namespace cnLib_THelper
+	//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
+//---------------------------------------------------------------------------
+
+#if ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+template<class T>	struct TIsTypeDefined					: cnLib_THelper::Var_TH::IsTypeDefined<void,T>{};
+template<class T>	struct TIsTypeDefined<const T>			: cnLib_THelper::Var_TH::IsTypeDefined<void,T>{};
+template<class T>	struct TIsTypeDefined<volatile T>		: cnLib_THelper::Var_TH::IsTypeDefined<void,T>{};
+template<class T>	struct TIsTypeDefined<const volatile T>	: cnLib_THelper::Var_TH::IsTypeDefined<void,T>{};
+
+#if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+// TIsTypeDefined
+//	 test if type is defined, not incompleted type
+template<class T>
+static cnLib_CONSTVAR bool IsTypeDefined=TIsTypeDefined<T>::Value;
+
+#endif // cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+#endif // ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+
+// TIsClass
+//	check if a type is use defined type. class or struct or union
+template<class T>
+struct TIsClass
+	: TConstantValueBool<cnLib_THelper::Var_TH::IsClass<void,T>::Value>{};
+
+
+#if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+// IsClass
+//	 test if type is user defined class
+template<class T>
+static cnLib_CONSTVAR bool IsClass=TIsClass<T>::Value;
+
+#endif // cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
 //---------------------------------------------------------------------------
 
 template<class T>	struct TIsVoid						: TConstantValueFalse{};
@@ -122,354 +200,54 @@ template<class T>	struct TIsReference<T&&>	: TConstantValueTrue{};
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
+#ifndef cnLibrary_CPPDEFINED_TYPE_TRAITS
+
+//---------------------------------------------------------------------------
 namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Var_TH{
 //---------------------------------------------------------------------------
 
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 
-template<class T,class=void>
-struct IsClass
+// use decltype expression to implement type traits
+
+template<class TEnable,class TClass,class TBase>
+struct ClassIsInheritFrom
 	: cnVar::TConstantValueFalse{};
 
-template<class T>
-struct IsClass<T,typename cnVar::TSelect<0,void,int T::*>::Type>
+template<class TClass,class TBase>
+struct ClassIsInheritFrom<decltype(static_cast<void>(static_cast<TBase>(cnVar::DeclVal<TClass*>()))),TClass,TBase>
+	: cnVar::TConstantValueTrue{};
+
+
+
+template<class TEnable,class T>
+struct IsAbstract
 	: cnVar::TConstantValueTrue{};
 
 template<class T>
-struct IsNumerical_Expression
-{
-	template<int=sizeof(cnVar::DeclVar<T>()*1)>
-	struct Test
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(cnVar::DeclVar<T>()&1)>
-	struct Integer
-	{
-		typedef void Type;
-	};
-
-};
+struct IsAbstract<decltype(UnusedParameter<T>(cnVar::DeclVal<T>())),T>
+	: cnVar::TConstantValueFalse{};
 
 
-template<class T,class=void>
+
+template<class TEnable,class T>
 struct IsNumerical
 	: cnVar::TConstantValueFalse{};
 
 template<class T>
-struct IsNumerical<T,typename IsNumerical_Expression<T>::template Test<>::Type>
+struct IsNumerical<decltype(static_cast<void>(cnVar::DeclVal<T>()*1)),T>
 	: cnVar::TConstantValueTrue{};
 
 
-
-template<class T,class=void>
+template<class TEnable,class T>
 struct IsInteger
 	: cnVar::TConstantValueFalse{};
 
 template<class T>
-struct IsInteger<T,typename IsNumerical_Expression<T>::template Integer<>::Type>
+struct IsInteger<decltype(static_cast<void>(cnVar::DeclVal<T>()&1)),T>
 	: cnVar::TConstantValueTrue{};
-
-
-
-template<class T,class TDef>
-struct RequireDefined
-	: cnVar::TSelect<cnVar::TStoreSizeOf<T>::Value&&0,cnVar::TTypeDef<TDef> >::Type{};
-
-
-template<class T,class TCompare>
-struct IsComparable_Expression
-{
-	template<int=sizeof((cnVar::DeclVar<T&>() < cnVar::DeclVar<TCompare&>()),0)>
-	struct Less
-	{
-		typedef void Type;
-	};
-};
-
-template<class T,class TCompare,class=typename RequireDefined<typename RequireDefined<T,TCompare>::Type,void>::Type>
-struct IsComparable_Less
-	: cnVar::TConstantValueFalse{};
-
-template<class T,class TCompare>
-struct IsComparable_Less<T,TCompare,typename IsComparable_Expression<T,TCompare>::template Less<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class TConvertFrom,class TConvertTo>
-struct IsConvertible_Expression
-{
-	template<int=sizeof((static_cast<TConvertTo>(cnVar::DeclVar<TConvertFrom>())),0)>
-	struct Test
-	{
-		typedef void Type;
-	};
-};
-
-
-template<class TConvertFrom,class TConvertTo,class=typename RequireDefined<typename RequireDefined<TConvertFrom,TConvertTo>::Type,void>::Type>
-struct IsConvertible
-	: cnVar::TConstantValueFalse{};
-
-template<class TConvertFrom,class TConvertTo>
-struct IsConvertible<TConvertFrom,TConvertTo,typename IsConvertible_Expression<TConvertFrom,TConvertTo>::template Test<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class TConvertFrom,class TConvertTo>
-struct IsReinterpretable_Distinct
-	: cnVar::TConstantValueBool<sizeof(TConvertFrom)==sizeof(TConvertTo) && IsConvertible<TConvertFrom*,TConvertTo*>::Value>{};
-
-template<class TConvertFrom>	struct IsReinterpretable_Distinct<TConvertFrom,void>: cnVar::TConstantValueTrue{};
-template<class TConvertTo>		struct IsReinterpretable_Distinct<void,TConvertTo>	: cnVar::TConstantValueFalse{};
-template<>						struct IsReinterpretable_Distinct<void,void>		: cnVar::TConstantValueTrue{};
-
-
-template<class TConvertFrom,class TConvertTo>
-struct IsReinterpretable : IsReinterpretable_Distinct<
-	typename cnVar::TRemoveCV<TConvertFrom>::Type,
-	typename cnVar::TRemoveCV<TConvertTo>::Type
->{};
-
-template<class T>
-struct IsInstantiable_Expression
-{
-	template<int=sizeof(cnVar::DeclVar<T>())>
-	struct Test
-	{
-		typedef void Type;
-	};
-};
-
-
-template<class T,class=typename RequireDefined<T,void>::Type>
-struct IsInstantiable
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsInstantiable<T,typename IsInstantiable_Expression<T>::template Test<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
-template<class T,class...TArgs>
-struct IsConstructableBy_Expression
-{
-	template<int=sizeof(T(cnVar::DeclVar<TArgs>()...))>
-	struct Test
-	{
-		typedef void Type;
-	};
-};
-
-template<class T,class TEnable,class...TArgs>
-struct IsConstructableBy
-	: cnVar::TConstantValueFalse{};
-
-template<class T,class...TArgs>
-struct IsConstructableBy<T,typename IsConstructableBy_Expression<T,TArgs...>::template Test<>::Type,TArgs...>
-	: cnVar::TConstantValueTrue{};
-
-// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-#else
-// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-
-template<class T,class TArg>
-struct IsConstructableBy_Expression
-{
-	template<int=sizeof(T(cnVar::DeclVar<TArg>()))>
-	struct Test
-	{
-		typedef void Type;
-	};
-};
-
-template<class T,class TEnable,class TArg>
-struct IsConstructableBy
-	: cnVar::TConstantValueFalse{};
-
-template<class T,class TArg>
-struct IsConstructableBy<T,typename IsConstructableBy_Expression<T,TArg>::template Test<>::Type,TArg>
-	: cnVar::TConstantValueTrue{};
-
-
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-
-template<class T>
-struct IsConstructable_Expression
-{
-	template<int=sizeof(T(),0)>
-	struct Default
-	{
-		typedef void Type;
-	};
-
-	template<int=sizeof(T(cnVar::DeclVar<const T&>()))>
-	struct Copy
-	{
-		typedef void Type;
-	};
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	template<int=sizeof(T(cnVar::DeclVar<T&&>()))>
-	struct Move
-	{
-		typedef void Type;
-	};
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-};
-
-template<class T,class=void>
-struct IsDefaultConstructable
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsDefaultConstructable<T,typename IsConstructable_Expression<T>::template Default<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-template<class T,class=void>
-struct IsCopyConstructable
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsCopyConstructable<T,typename IsConstructable_Expression<T>::template Copy<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class T,class=void>
-struct IsMoveConstructable
-	: cnVar::TConstantValueFalse{};
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-template<class T>
-struct IsMoveConstructable<T,typename IsConstructable_Expression<T>::template Move<>::Type>
-	: cnVar::TConstantValueTrue{};
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-
-template<class T>
-struct IsDestructable_Expression
-{
-	template<int=sizeof((cnVar::DeclVar<T&>().~T()),0)>
-	struct Test
-	{
-		typedef void Type;
-	};
-
-};
-
-template<class T,class=void>
-struct IsDestructable
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsDestructable<T,typename IsDestructable_Expression<T>::template Test<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-template<>
-struct IsDestructable<void,void>
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsAssignable_Expression
-{
-	template<class TSrc>
-	struct By
-	{
-		template<int=sizeof((cnVar::DeclVar<T&>()=cnVar::DeclVar<TSrc>()),0)>
-		struct Test
-		{
-			typedef void Type;
-		};
-	};
-
-	template<int=sizeof((cnVar::DeclVar<T&>()=cnVar::DeclVar<const T&>()),0)>
-	struct Copy
-	{
-		typedef void Type;
-	};
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-	template<int=sizeof((cnVar::DeclVar<T&>()=cnVar::DeclVar<T&&>()),0)>
-	struct Move
-	{
-		typedef void Type;
-	};
-
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-};
-
-template<class TDest,class TSrc,class=void>
-struct IsAssignable
-	: cnVar::TConstantValueFalse{};
-
-template<class TDest,class TSrc>
-struct IsAssignable<TDest,TSrc,typename IsAssignable_Expression<TDest>::template By<TSrc>::template Test<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class T,class=void>
-struct IsCopyAssignable
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct IsCopyAssignable<T,typename IsAssignable_Expression<T>::template Copy<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class T,class=void>
-struct IsMoveAssignable
-	: cnVar::TConstantValueFalse{};
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-template<class T>
-struct IsMoveAssignable<T,typename IsAssignable_Expression<T>::template Move<>::Type>
-	: cnVar::TConstantValueTrue{};
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-
-template<class T>
-struct CanAllocation_Expression
-{
-	template<int=sizeof(new T)>
-	struct New
-	{
-		typedef void Type;
-	};
-
-	template<int=sizeof((delete cnVar::DeclVar<T*>()),0)>
-	struct Delete
-	{
-		typedef void Type;
-	};
-
-};
-
-
-template<class T,class=void>
-struct CanNew
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct CanNew<T,typename CanAllocation_Expression<T>::template New<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class T,class=void>
-struct CanDelete
-	: cnVar::TConstantValueFalse{};
-
-template<class T>
-struct CanDelete<T,typename CanAllocation_Expression<T>::template Delete<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
 
 
 template<class TT>	union IsTrivial_TU{
@@ -478,38 +256,287 @@ template<class TT>	union IsTrivial_TU{
 	~IsTrivial_TU()noexcept(true){}
 };
 
-template<class T,class=void>
-struct IsTrivial_Union
+template<class TEnable,class T>
+struct IsTrivial
 	: cnVar::TConstantValueFalse{};
 
 template<class T>
-struct IsTrivial_Union<T,typename IsConstructable_Expression< IsTrivial_TU<T> >::template Default<>::Type>
+struct IsTrivial<decltype(UnusedParameter(IsTrivial_TU<T>())),T>
 	: cnVar::TConstantValueTrue{};
 
 
-template<class T>
-struct IsTrivial_NotVoid
-	: cnVar::TSelect<cnLib_THelper::Var_TH::IsInstantiable<T>::Value
-		, cnVar::TConstantValueFalse
-		, IsTrivial_Union<T>
-	>::Type{};
+template<class TEnable,class TConvertFrom,class TConvertTo>
+struct IsConvertible
+	: cnVar::TConstantValueFalse{};
 
-template<class T>
-struct IsTrivial
-	: cnVar::TSelect<cnVar::TIsVoid<T>::Value
-		, IsTrivial_NotVoid<T>
-		, cnVar::TConstantValueTrue
-	>::Type{};
+template<class TConvertFrom,class TConvertTo>
+struct IsConvertible<decltype(static_cast<void>(static_cast<TConvertTo>(cnVar::DeclVal<TConvertFrom>())))
+	,TConvertFrom,TConvertTo> : cnVar::TConstantValueTrue{};
 
-template<class T>
-struct IsTrivial<T&>
+
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class TEnable,class T,class...TArgs>
+struct IsConstructibleBy
+	: cnVar::TConstantValueFalse{};
+
+
+template<class T,class TArg0,class TArg1,class...TArgs>
+struct IsConstructibleBy<decltype(T(cnVar::DeclVal<TArg0>(),cnVar::DeclVal<TArg1>(),cnVar::DeclVal<TArgs>()...))
+	,T,TArg0,TArg1,TArgs...>	: cnVar::TConstantValueTrue{};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class TEnable,class T,class TArg>
+struct IsConstructibleBy
+	: cnVar::TConstantValueFalse{};
+
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class T,class TArg>
+struct IsConstructibleBy<decltype(UnusedParameter<T>(cnVar::DeclVal<TArg>()))
+	,T,TArg> : cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class TDest,class TSrc>
+struct IsAssignableFrom
+	: cnVar::TConstantValueFalse{};
+
+template<class TDest,class TSrc>
+struct IsAssignableFrom<decltype(static_cast<void>(cnVar::DeclVal<TDest&>()=cnVar::DeclVal<TSrc>())),TDest,TSrc>
 	: cnVar::TConstantValueTrue{};
+
+template<class TEnable,class T>
+struct IsDestructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsDestructible<decltype(static_cast<void>(cnVar::DeclVal<T&>().~T())),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsDefaultConstructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsDefaultConstructible<decltype(static_cast<void>(T())),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsCopyConstructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsCopyConstructible<decltype(static_cast<void>(T(cnVar::DeclVal<const T&>()))),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsMoveConstructible
+	: cnVar::TConstantValueFalse{};
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 template<class T>
-struct IsTrivial<T&&>
+struct IsMoveConstructible<decltype(static_cast<void>(T(cnVar::DeclVal<T&&>()))),T>
 	: cnVar::TConstantValueTrue{};
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+template<class TEnable,class T>
+struct IsCopyAssignable
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsCopyAssignable<decltype(static_cast<void>(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())),T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsMoveAssignable
+	: cnVar::TConstantValueFalse{};
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+template<class T>
+struct IsMoveAssignable<decltype(static_cast<void>(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>())),T>
+	: cnVar::TConstantValueTrue{};
+#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+#ifndef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+// use sizeof expression to implement type traits
+
+template<class TEnable,class TClass,class TBase>
+struct ClassIsInheritFrom
+	: cnVar::TConstantValueFalse{};
+
+template<class TClass,class TBase>
+struct ClassIsInheritFrom<typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<TBase*&>()=cnVar::DeclVal<TClass*>())>::Type,TClass,TBase>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsAbstract
+	: cnVar::TConstantValueTrue{};
+
+template<class T>
+struct IsAbstract<typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<T>())>::Type,T>
+	: cnVar::TConstantValueFalse{};
+
+
+
+template<class TEnable,class T>
+struct IsNumerical
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsNumerical<typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<T>()*1)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsInteger
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsInteger<typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<T>()&1)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TT>	union IsTrivial_TU{
+	int v;
+	TT t; 
+	~IsTrivial_TU()noexcept(true){}
+};
+
+template<class TEnable,class T>
+struct IsTrivial
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsTrivial<typename cnVar::TSelect<!sizeof(cnVar::DeclVal<IsTrivial_TU<T>&>()=IsTrivial_TU<T>()),void>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+
+template<class TEnable,class TConvertFrom,class TConvertTo>
+struct IsConvertible
+	: cnVar::TConstantValueFalse{};
+
+template<class TConvertFrom,class TConvertTo>
+struct IsConvertible<typename cnVar::TTypeConditional<void,sizeof(static_cast<TConvertTo>(cnVar::DeclVal<TConvertFrom>()))>::Type
+	,TConvertFrom,TConvertTo> : cnVar::TConstantValueTrue{};
+
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class TEnable,class T,class...TArgs>
+struct IsConstructibleBy
+	: cnVar::TConstantValueFalse{};
+
+template<class T,class TArg0,class TArg1,class...TArgs>
+struct IsConstructibleBy<typename cnVar::TTypeConditional<void,sizeof(T(cnVar::DeclVal<TArg0>(),cnVar::DeclVal<TArg1>(),cnVar::DeclVal<TArgs>()...))>::Type
+	,T,TArg0,TArg1,TArgs...>	: cnVar::TConstantValueTrue{};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class TEnable,class T,class TArg>
+struct IsConstructibleBy
+	: cnVar::TConstantValueFalse{};
+
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class T,class TArg>
+struct IsConstructibleBy<typename cnVar::TTypeConditional<void,sizeof(static_cast<T>(cnVar::DeclVal<TArg>()))>::Type
+	,T,TArg> : cnVar::TConstantValueTrue{};
+
+template<class TEnable,class TDest,class TSrc>
+struct IsAssignableFrom
+	: cnVar::TConstantValueFalse{};
+
+template<class TDest,class TSrc>
+struct IsAssignableFrom<typename cnVar::TTypeConditional<void,sizeof(static_cast<void>(cnVar::DeclVal<TDest&>()=cnVar::DeclVal<TSrc>()),0)>::Type,TDest,TSrc>
+	: cnVar::TConstantValueTrue{};
+
+
+
+template<class TEnable,class T>
+struct IsDestructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsDestructible<typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<T&>().~T(),0)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsDefaultConstructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsDefaultConstructible<typename cnVar::TTypeConditional<void,sizeof(T())>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsCopyConstructible
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsCopyConstructible<typename cnVar::TTypeConditional<void,sizeof(T(cnVar::DeclVal<const T&>()))>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsMoveConstructible
+	: cnVar::TConstantValueFalse{};
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+template<class T>
+struct IsMoveConstructible<typename cnVar::TTypeConditional<void,sizeof(T(cnVar::DeclVal<T&&>()))>::Type,T>
+	: cnVar::TConstantValueTrue{};
+#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+template<class TEnable,class T>
+struct IsCopyAssignable
+	: cnVar::TConstantValueFalse{};
+
+template<class T>
+struct IsCopyAssignable<typename cnVar::TTypeConditional<void,sizeof(static_cast<void>(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>()),0)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+
+
+template<class TEnable,class T>
+struct IsMoveAssignable
+	: cnVar::TConstantValueFalse{};
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+template<class T>
+struct IsMoveAssignable<typename cnVar::TTypeConditional<void,sizeof(static_cast<void>(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()),0)>::Type,T>
+	: cnVar::TConstantValueTrue{};
+#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+
+
+#endif	// !cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+#endif // defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
 
 //---------------------------------------------------------------------------
 }	// namespace Var_TH
@@ -521,114 +548,126 @@ namespace cnLibrary{
 namespace cnVar{
 //---------------------------------------------------------------------------
 
-// TIsClass
-//	check if a type is use defined type. class or struct or union
+#if ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+
+template<class TClass,class TBase>
+struct TClassIsInheritFrom
+	: cnLib_THelper::Var_TH::ClassIsInheritFrom<typename TTypeRequireDefined<void,TClass>::Type,TClass,TBase>{};
+
+
 template<class T>
-struct TIsClass
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsClass<T>::Value>{};
+struct TIsAbstract
+	: cnLib_THelper::Var_TH::IsAbstract<typename TTypeRequireDefined<void,T>::Type,T>{};
 
 template<class T>
 struct TIsInteger
-	: TConstantValueBool<!cnLib_THelper::Var_TH::IsClass<T>::Value && cnLib_THelper::Var_TH::IsInteger<T>::Value>{};
+	: TConstantValueBool<!cnLib_THelper::Var_TH::IsClass<typename TTypeRequireDefined<void,T>::Type,T>::Value && cnLib_THelper::Var_TH::IsInteger<void,T>::Value>{};
 
 template<class T>
 struct TIsFloat
-	: TConstantValueBool<!cnLib_THelper::Var_TH::IsClass<T>::Value && cnLib_THelper::Var_TH::IsNumerical<T>::Value && !cnLib_THelper::Var_TH::IsInteger<T>::Value>{};
+	: TConstantValueBool<!cnLib_THelper::Var_TH::IsClass<typename TTypeRequireDefined<void,T>::Type,T>::Value && cnLib_THelper::Var_TH::IsNumerical<void,T>::Value && !cnLib_THelper::Var_TH::IsInteger<void,T>::Value>{};
 
-
-template<class T>
-struct TIsComparable
-{
-	
-	template<class TCompare>
-	struct Less
-		: TConstantValueBool<cnLib_THelper::Var_TH::IsComparable_Less<T,TCompare>::Value>{};
-};
-
-template<class TConvertFrom,class TConvertTo>
-struct TIsConvertible
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsConvertible<TConvertFrom,TConvertTo>::Value>{};
-
-
-template<class TConvertFrom,class TConvertTo>
-struct TIsReinterpretable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsReinterpretable<TConvertFrom,TConvertTo>::Value>{};
-
-template<class T>
-struct TIsInstantiable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsInstantiable<T>::Value>{};
 
 template<class T>
 struct TIsTrivial
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsTrivial<T>::Value>{};
+	: cnVar::TSelect<TIsAbstract<T>::Value
+	, cnLib_THelper::Var_TH::IsTrivial<typename TTypeRequireDefined<void,T>::Type,T>
+	, cnVar::TConstantValueFalse
+	>::Type{};
+
+template<>	struct TIsTrivial<void>					: cnVar::TConstantValueTrue{};
+template<>	struct TIsTrivial<const void>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsTrivial<volatile void>		: cnVar::TConstantValueTrue{};
+template<>	struct TIsTrivial<const volatile void>	: cnVar::TConstantValueTrue{};
+
+template<class T>	struct TIsTrivial<T&>	: cnVar::TConstantValueTrue{};
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+template<class T>	struct TIsTrivial<T&&>	: cnVar::TConstantValueTrue{};
+#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+template<class TConvertFrom,class TConvertTo>
+struct TIsConvertible
+	: cnLib_THelper::Var_TH::IsConvertible<typename TTypeRequireDefined<void,typename TTypeRequireDefined<TConvertFrom,TConvertTo>::Type>::Type
+	,TConvertFrom,TConvertTo>{};
+
+
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 template<class TDest,class...TSrc>
-struct TIsConstuctableBy
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsConstructableBy<TDest,void,TSrc...>::Value>{};
+struct TIsConstructibleBy
+	: cnLib_THelper::Var_TH::IsConstructibleBy<void,TDest,TSrc...>{};
 
-	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 #else
-	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 template<class TDest,class TSrc>
-struct TIsConstuctableBy
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsConstructableBy<TDest,void,TSrc>::Value>{};
+struct TIsConstructibleBy
+	: cnLib_THelper::Var_TH::IsConstructibleBy<void,TDest,TSrc>{};
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
-template<class T>
-struct TIsDefaultConstructable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsDefaultConstructable<T>::Value>{};
-
-template<class T>
-struct TIsCopyConstructable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsCopyConstructable<T>::Value>{};
-
-
-template<class T>
-struct TIsMoveConstructable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsMoveConstructable<T>::Value>{};
-
-
-template<class T>
-struct TIsDestructable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsDestructable<T>::Value>{};
-
-
 template<class TDest,class TSrc>
-struct TIsAssignable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsAssignable<TDest,TSrc>::Value>{};
+struct TIsAssignableFrom
+	: cnLib_THelper::Var_TH::IsAssignableFrom<void,TDest,TSrc>{};
+
+
+template<class T>
+struct TIsDestructible
+	: cnLib_THelper::Var_TH::IsDestructible<void,T>{};
+
+template<class T>
+struct TIsDefaultConstructible
+	: cnLib_THelper::Var_TH::IsDefaultConstructible<void,T>{};
+
+template<class T>
+struct TIsCopyConstructible
+	: cnLib_THelper::Var_TH::IsCopyConstructible<void,T>{};
+
+
+template<class T>
+struct TIsMoveConstructible
+	: cnLib_THelper::Var_TH::IsMoveConstructible<void,T>{};
+
+
+
 
 template<class T>
 struct TIsCopyAssignable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsCopyAssignable<T>::Value>{};
+	: cnLib_THelper::Var_TH::IsCopyAssignable<void,T>{};
 
 
 template<class T>
 struct TIsMoveAssignable
-	: TConstantValueBool<cnLib_THelper::Var_TH::IsMoveAssignable<T>::Value>{};
-
-template<class T>
-struct TCanNew
-	: TConstantValueBool<cnLib_THelper::Var_TH::CanNew<T>::Value>{};
+	: cnLib_THelper::Var_TH::IsMoveAssignable<void,T>{};
 
 
+#endif	// ( !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L) || ! !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
 
-
-template<class T>
-struct TCanDelete
-	: TConstantValueBool<cnLib_THelper::Var_TH::CanDelete<T>::Value>{};
-
+//---------------------------------------------------------------------------
+}	// namespace cnVar
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#endif // !cnLibrary_CPPDEFINED_TYPE_TRAITS
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnVar{
 
 #if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
 
+template<class TClass,class TBase>
+static cnLib_CONSTVAR bool ClassIsInheritFrom=TClassIsInheritFrom<TClass,TBase>::Value;
 
-// IsClass
-//	 test if type is user defined class
+// IsInstantiable
+//	 test if type is abstract
 template<class T>
-static cnLib_CONSTVAR bool IsClass=TIsClass<T>::Value;
+static cnLib_CONSTVAR bool IsAbstract=TIsAbstract<T>::Value;
 
 // IsInteger
 //	 test if type is trivial integer type
@@ -640,42 +679,44 @@ static cnLib_CONSTVAR bool IsInteger=TIsInteger<T>::Value;
 template<class T>
 static cnLib_CONSTVAR bool IsFloat=TIsFloat<T>::Value;
 
-// IsConvertible
-template<class TConvertFrom,class TConvertTo>
-static cnLib_CONSTVAR bool IsConvertible=TIsConvertible<TConvertFrom,TConvertTo>::Value;
-
-// IsInstantiable
-//	 test if type is instantiable
-template<class T>
-static cnLib_CONSTVAR bool IsInstantiable=TIsInstantiable<T>::Value;
 // IsTrivial
 //	 test if type is trivial
 template<class T>
 static cnLib_CONSTVAR bool IsTrivial=TIsTrivial<T>::Value;
 
+// IsConvertible
+template<class TConvertFrom,class TConvertTo>
+static cnLib_CONSTVAR bool IsConvertible=TIsConvertible<TConvertFrom,TConvertTo>::Value;
 
-template<class T>
-static cnLib_CONSTVAR bool IsDefaultConstructable=TIsDefaultConstructable<T>::Value;
+
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 template<class TDest,class...TSrc>
-static cnLib_CONSTVAR bool IsConstuctableBy=TIsConstuctableBy<TDest,TSrc...>::Value;
+static cnLib_CONSTVAR bool IsConstructibleBy=TIsConstructibleBy<TDest,TSrc...>::Value;
+
+#else
+
+template<class TDest,class TSrc>
+static cnLib_CONSTVAR bool IsConstuctibleBy=TIsConstuctibleBy<TDest,TSrc>::Value;
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
+template<class TDest,class TSrc>
+static cnLib_CONSTVAR bool IsAssignableFrom=TIsAssignableFrom<TDest,TSrc>::Value;
+
 
 template<class T>
-static cnLib_CONSTVAR bool IsCopyConstructable=TIsCopyConstructable<T>::Value;
+static cnLib_CONSTVAR bool IsDestructible=TIsDestructible<T>::Value;
 
 template<class T>
-static cnLib_CONSTVAR bool IsMoveConstructable=TIsMoveConstructable<T>::Value;
+static cnLib_CONSTVAR bool IsDefaultConstructible=TIsDefaultConstructible<T>::Value;
 
 template<class T>
-static cnLib_CONSTVAR bool IsDestructable=TIsDestructable<T>::Value;
+static cnLib_CONSTVAR bool IsCopyConstructible=TIsCopyConstructible<T>::Value;
 
-template<class TDest,class...TSrc>
-static cnLib_CONSTVAR bool IsAssignable=TIsAssignable<TDest,TSrc...>::Value;
+template<class T>
+static cnLib_CONSTVAR bool IsMoveConstructible=TIsMoveConstructible<T>::Value;
 
 
 template<class T>
@@ -685,11 +726,6 @@ template<class T>
 static cnLib_CONSTVAR bool IsMoveAssignable=TIsMoveAssignable<T>::Value;
 
 
-template<class T>
-static cnLib_CONSTVAR bool CanNew=TCanNew<T>::Value;
-
-template<class T>
-static cnLib_CONSTVAR bool CanDelete=TCanDelete<T>::Value;
 
 #endif // cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
 
@@ -714,170 +750,93 @@ namespace cnLib_THelper{
 namespace Var_TH{
 //---------------------------------------------------------------------------
 
+template<class TConvertFrom,class TConvertTo>
+struct IsReinterpretable
+	: cnVar::TConstantValueBool<sizeof(TConvertFrom)==sizeof(TConvertTo) && cnVar::TIsConvertible<TConvertFrom*,TConvertTo*>::Value>{};
+
+template<class TConvertTo>		struct IsReinterpretable<void,TConvertTo>	: cnVar::TConstantValueFalse{};
+template<class TConvertFrom>	struct IsReinterpretable<TConvertFrom,void>	: cnVar::TConstantValueTrue{};
+template<>						struct IsReinterpretable<void,void>			: cnVar::TConstantValueTrue{};
 
 
-template<class TClass,class TBase>
-struct ClassInheritFrom_Expression
-{
-	template<int=sizeof(static_cast<TBase*>(cnVar::DeclVar<TClass*>()))>
-	struct Test
-	{
-		typedef void Type;
-	};
 
-};
-
-
-template<class TClass,class TBase,class=typename RequireDefined<TClass,void>::Type>
-struct ClassInheritFrom
+template<class TEnable,class T>
+struct DefaultConstructIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass,class TBase>
-struct ClassInheritFrom<TClass,TBase,typename ClassInheritFrom_Expression<TClass,TBase>::template Test<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-//---------------------------------------------------------------------------
-
-
-template<class TClass>
-struct ClassAllocation_Expression
-{
-	template<int=sizeof(TClass::operator new(1))>
-	struct New
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(TClass::operator delete(0),0)>
-	struct Delete
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(TClass::operator delete(0,1),0)>
-	struct DeleteSize
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(TClass::operator new[](1))>
-	struct NewArray
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(TClass::operator delete[](0),0)>
-	struct DeleteArray
-	{
-		typedef void Type;
-	};
-	
-	template<int=sizeof(TClass::operator delete[](0,1),0)>
-	struct DeleteSizeArray
-	{
-		typedef void Type;
-	};
-};
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorNew
+template<class TEnable,class T>
+struct DestructIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorNew<TClass,typename ClassAllocation_Expression<TClass>::template New<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorDelete
+template<class TEnable,class T>
+struct CopyConstructIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorDelete<TClass,typename ClassAllocation_Expression<TClass>::template Delete<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorDeleteSize
+template<class TEnable,class T>
+struct CopyAssignIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorDeleteSize<TClass,typename ClassAllocation_Expression<TClass>::template DeleteSize<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorNewArray
+template<class TEnable,class T>
+struct MoveConstructIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorNewArray<TClass,typename ClassAllocation_Expression<TClass>::template NewArray<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorDeleteArray
+template<class TEnable,class T>
+struct MoveAssignIsNoexcept
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorDeleteArray<TClass,typename ClassAllocation_Expression<TClass>::template DeleteArray<>::Type>
-	: cnVar::TConstantValueTrue{};
-
-
-template<class TClass,class=typename RequireDefined<TClass,void>::Type>
-struct HasOperatorDeleteSizeArray
+template<>
+struct DefaultConstructIsNoexcept<void,void>
 	: cnVar::TConstantValueFalse{};
 
-template<class TClass>
-struct HasOperatorDeleteSizeArray<TClass,typename ClassAllocation_Expression<TClass>::template DeleteSizeArray<>::Type>
-	: cnVar::TConstantValueTrue{};
+template<>
+struct DestructIsNoexcept<void,void>
+	: cnVar::TConstantValueFalse{};
 
+template<>
+struct CopyConstructIsNoexcept<void,void>
+	: cnVar::TConstantValueFalse{};
 
-struct SpecialMemberIsNoexceptFalse
-{
-	template<class T>	struct DefaultConstruct : cnVar::TConstantValueFalse{};
-	template<class T>	struct Destruct : cnVar::TConstantValueFalse{};
-	template<class T>	struct CopyConstruct : cnVar::TConstantValueFalse{};
-	template<class T>	struct CopyAssign : cnVar::TConstantValueFalse{};
-	template<class T>	struct MoveConstruct : cnVar::TConstantValueFalse{};
-	template<class T>	struct MoveAssign : cnVar::TConstantValueFalse{};
+template<>
+struct CopyAssignIsNoexcept<void,void>
+	: cnVar::TConstantValueFalse{};
 
-};
+template<>
+struct MoveConstructIsNoexcept<void,void>
+	: cnVar::TConstantValueFalse{};
+
+template<>
+struct MoveAssignIsNoexcept<void,void>
+	: cnVar::TConstantValueFalse{};
+
 
 #ifndef cnLibrary_CPPEXCLUDE_NOEXCEPT
 
-template<bool Value>
-struct SpecialMemberIsNoexcept
-{
-	template<class T>	struct DefaultConstruct : cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type())>{};
-	template<class T>	struct Destruct : cnVar::TConstantValueBool<noexcept(cnVar::DeclVar<T&>().~T())>{};
-	template<class T>	struct CopyConstruct : cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type(cnVar::DeclVar<const T&>()))>{};
-	template<class T>	struct CopyAssign : cnVar::TConstantValueBool<noexcept(cnVar::DeclVar<T&>()=cnVar::DeclVar<const T&>())>{};
+template<class T>
+struct DefaultConstructIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsDefaultConstructible<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type())>{};
+
+template<class T>
+struct DestructIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsDestructible<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(cnVar::DeclVal<T&>().~T())>{};
+template<class T>
+struct CopyConstructIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsCopyConstructible<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type(cnVar::DeclVal<const T&>()))>{};
+template<class T>
+struct CopyAssignIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsCopyAssignable<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())>{};
+
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	template<class T>	struct MoveConstruct : cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type(cnVar::DeclVar<T&&>()))>{};
-	template<class T>	struct MoveAssign : cnVar::TConstantValueBool<noexcept(cnVar::DeclVar<T&>()=cnVar::DeclVar<T&&>())>{};
-#else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
-	template<class T>	struct MoveConstruct : cnVar::TConstantValueFalse{};
-	template<class T>	struct MoveAssign : cnVar::TConstantValueFalse{};
+template<class T>
+struct MoveConstructIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsMoveConstructible<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(typename cnVar::TRemoveVolatile<T>::Type(cnVar::DeclVal<T&&>()))>{};
+template<class T>
+struct MoveAssignIsNoexcept<typename cnVar::TTypeConditional<void,cnVar::TIsMoveAssignable<T>::Value>::Type,T>
+	: cnVar::TConstantValueBool<noexcept(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>())>{};
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES
 
-};
-template<>
-struct SpecialMemberIsNoexcept<false>
-	: SpecialMemberIsNoexceptFalse{};
+#endif	// !cnLibrary_CPPEXCLUDE_NOEXCEPT
 
-// !cnLibrary_CPPEXCLUDE_NOEXCEPT
 
-#else
-// cnLibrary_CPPEXCLUDE_NOEXCEPT
-template<bool Value>
-struct SpecialMemberIsNoexcept
-	: SpecialMemberIsNoexceptFalse{};
-#endif
 
 //---------------------------------------------------------------------------
 }	// namespace Var_TH
@@ -887,76 +846,64 @@ struct SpecialMemberIsNoexcept
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
+//---------------------------------------------------------------------------
 
 
-template<class TClass,class TBase>
-struct TClassInheritFrom
-	: TConstantValueBool<cnLib_THelper::Var_TH::ClassInheritFrom<TClass,TBase>::Value>{};
+template<class TConvertFrom,class TConvertTo>
+struct TIsReinterpretable
+	: cnLib_THelper::Var_TH::IsReinterpretable<typename TRemoveCV<typename TTypeRequireDefined<TConvertFrom>::Type>::Type
+		,typename TRemoveCV<typename TTypeRequireDefined<TConvertTo>::Type>::Type>{};
 
-
-template<class T>
-struct THasOperatorNew
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorNew<T>::Value>{};
-
-
-template<class T>
-struct THasOperatorDelete
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorDelete<T>::Value>{};
-
-
-template<class T>
-struct THasOperatorDeleteSize
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorDeleteSize<T>::Value>{};
-
-
-template<class T>
-struct THasOperatorNewArray
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorNewArray<T>::Value>{};
-
-
-template<class T>
-struct THasOperatorDeleteArray
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorDeleteArray<T>::Value>{};
-
-
-template<class T>
-struct THasOperatorDeleteSizeArray
-	: TConstantValueBool<cnLib_THelper::Var_TH::HasOperatorDeleteSizeArray<T>::Value>{};
 
 
 template<class T>
 struct TIsDefaultConstructNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsDefaultConstructable<T>::Value>::template DefaultConstruct<T>{};
+	: cnLib_THelper::Var_TH::DefaultConstructIsNoexcept<void,T>{};
 
 template<class T>
 struct TIsDestructNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsDestructable<T>::Value>::template Destruct<T>{};
+	: cnLib_THelper::Var_TH::DestructIsNoexcept<void,T>{};
 
 template<class T>
 struct TIsCopyConstructNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsCopyConstructable<T>::Value>::template CopyConstruct<T>{};
+	: cnLib_THelper::Var_TH::CopyConstructIsNoexcept<void,T>{};
 
 template<class T>
 struct TIsCopyAssignNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsCopyAssignable<T>::Value>::template CopyAssign<T>{};
+	: cnLib_THelper::Var_TH::CopyAssignIsNoexcept<void,T>{};
 
 template<class T>
 struct TIsMoveConstructNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsMoveConstructable<T>::Value>::template MoveConstruct<T>{};
+	: cnLib_THelper::Var_TH::MoveConstructIsNoexcept<void,T>{};
 template<class T>
 struct TIsMoveAssignNoexcept
-	: cnLib_THelper::Var_TH::SpecialMemberIsNoexcept<TIsMoveAssignable<T>::Value>::template MoveAssign<T>{};
+	: cnLib_THelper::Var_TH::MoveAssignIsNoexcept<void,T>{};
 
 
 #if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
-template<class T>
-static cnLib_CONSTVAR bool HasOperatorNew=THasOperatorNew<T>::Value;
+
+// IsReinterpretable
+template<class TConvertFrom,class TConvertTo>
+static cnLib_CONSTVAR bool IsReinterpretable=TIsReinterpretable<TConvertFrom,TConvertTo>::Value;
+
 
 template<class T>
-static cnLib_CONSTVAR bool HasOperatorDelete=THasOperatorDelete<T>::Value;
+static cnLib_CONSTVAR bool IsDefaultConstructNoexcept=TIsDefaultConstructNoexcept<T>::Value;
 
 template<class T>
-static cnLib_CONSTVAR bool HasOperatorDeleteSize=THasOperatorDeleteSize<T>::Value;
+static cnLib_CONSTVAR bool IsDestructNoexcept=TIsDestructNoexcept<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool IsCopyConstructNoexcept=TIsCopyConstructNoexcept<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool IsCopyAssignNoexcept=TIsCopyAssignNoexcept<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool IsMoveConstructNoexcept=TIsMoveConstructNoexcept<T>::Value;
+
+template<class T>
+static cnLib_CONSTVAR bool IsMoveAssignNoexcept=TIsMoveAssignNoexcept<T>::Value;
 
 #endif	// cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
 
@@ -1060,320 +1007,16 @@ inline const TRet& ReturnCast(const T& Var)noexcept(true)
 
 template<class TDest,class TSrc>
 inline bool TryCastTo(TDest &Dest,const TSrc &Src)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::Call(Dest,Src))))
-{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::Call(Dest,Src);	}
+{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::Call(Dest,Src);	}
 
 
 template<class TDest,class TSrc>
 inline TDest TryCast(const TSrc &Src)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src))))
-{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src);	}
+{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src);	}
 
 template<class TDest,class TSrc>
 inline TDest TryCast(const TSrc &Src,typename TTypeDef<TDest>::Type const &Default)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default))))
-{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default);	}
-
-//---------------------------------------------------------------------------
-}	// namespace cnVar
-//---------------------------------------------------------------------------
-}	// namespace cnLibrary
-//---------------------------------------------------------------------------
-namespace cnLib_THelper{
-//---------------------------------------------------------------------------
-namespace Var_TH{
-//---------------------------------------------------------------------------
-namespace IntegerConversion{
-//---------------------------------------------------------------------------
-
-cnVar::TIntegerOfSize<sizeof(long double),true>::Type		TestMatch(long double);
-cnVar::TIntegerOfSize<sizeof(double),true>::Type			TestMatch(double);
-cnVar::TIntegerOfSize<sizeof(float),true>::Type			TestMatch(float);
-
-unsigned long long	TestMatch(unsigned long long);
-signed long long	TestMatch(signed long long);
-unsigned long		TestMatch(unsigned long);
-signed long			TestMatch(signed long);
-unsigned int		TestMatch(unsigned int);
-signed int			TestMatch(signed int);
-unsigned short		TestMatch(unsigned short);
-signed short		TestMatch(signed short);
-unsigned char		TestMatch(unsigned char);
-signed char			TestMatch(signed char);
-
-uInt8	TestMatch(uInt8);
-sInt8	TestMatch(sInt8);
-uInt16	TestMatch(uInt16);
-sInt16	TestMatch(sInt16);
-uInt32	TestMatch(uInt32);
-sInt32	TestMatch(sInt32);
-uInt64	TestMatch(uInt64);
-sInt64	TestMatch(sInt64);
-
-sInt32	TestMatch(Float32);
-sInt64	TestMatch(Float64);
-
-
-template<class T>
-struct MatchType_Expression
-{
-	template<int=sizeof(TestMatch(cnVar::DeclVar<T>()))>
-	struct Test
-	{
-		typedef void Type;
-	};
-
-};
-
-
-template<class T,class TCondition=void>
-struct MatchTypeDef
-	: cnVar::TTypeDef<void>{};
-
-template<class T>
-struct MatchTypeDef<T,typename MatchType_Expression<T>::template Test<>::Type>
-	: cnVar::TIntegerOfSize<sizeof(TestMatch(cnVar::DeclVar<T>())),cnVar::TIsSigned<typename cnVar::TRemoveReference<T>::Type>::Value>{};
-
-
-template<class T,class TMatch>
-struct Decl
-{
-	typedef TMatch tMatch;
-	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(TMatch);
-	static cnLib_CONSTVAR bool IsSigned=cnVar::TIsSigned<TMatch>::Value;
-	static cnLib_CONSTVAR bool IsConvertible=true;
-	static cnLib_CONSTVAR bool IsMatch=false;
-
-	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(static_cast<TMatch>(Value))))
-	{	return static_cast<TInt>(static_cast<TMatch>(Value));	}
-
-	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(static_cast<TMatch>(*static_cast<T*>(Value)))))
-	{	return static_cast<TInt>(static_cast<TMatch>(*static_cast<T*>(Value)));	}
-};
-
-template<class T>
-struct Decl<T,T>
-{
-	typedef T tMatch;
-	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(T);
-	static cnLib_CONSTVAR bool IsSigned=cnVar::TIsSigned<T>::Value;
-	static cnLib_CONSTVAR bool IsConvertible=true;
-	static cnLib_CONSTVAR bool IsMatch=true;
-
-	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(Value)))
-	{	return static_cast<TInt>(Value);	}
-
-	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(*static_cast<T*>(Value))))
-	{	return static_cast<TInt>(*static_cast<T*>(Value));	}
-};
-
-
-
-template<class T,class TDistinct>
-struct DeclUnconvertible
-{
-	static cnLib_CONSTVAR ufInt8 MatchSize=0;
-	static cnLib_CONSTVAR bool IsSigned=false;
-	static cnLib_CONSTVAR bool IsConvertible=false;
-	static cnLib_CONSTVAR bool IsMatch=false;
-
-	template<class TInt>
-	static TInt Cast(T)noexcept(true){
-		return 0;
-	}
-
-	template<class TInt>
-	static TInt rtCast(void*)noexcept(true){
-		return 0;
-	}
-};
-
-template<class T,class TDistinct>
-struct DeclUnconvertible<T,TDistinct*>
-{
-	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(void*);
-	static cnLib_CONSTVAR bool IsSigned=false;
-	static cnLib_CONSTVAR bool IsConvertible=true;
-	static cnLib_CONSTVAR bool IsMatch=false;
-
-	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(reinterpret_cast<uIntn>(Value))))
-	{	return static_cast<TInt>(reinterpret_cast<uIntn>(Value));	}
-
-	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(*static_cast<const uIntn*>(Value))))
-	{	return static_cast<TInt>(*static_cast<const uIntn*>(Value));	}
-};
-
-
-
-template<class T,bool Convertible>
-struct DeclNoMatch
-	: Decl<T,sInt64>{};
-
-template<class T>
-struct DeclNoMatch<T,false>
-	: DeclUnconvertible<T,typename cnVar::TRemoveCV<T>::Type>{};
-
-template<class T>
-struct Decl<T,void>	// fail to find exact match
-	: DeclNoMatch<T,cnVar::TIsConvertible<T&,sInt64>::Value>{};
-
-//---------------------------------------------------------------------------
-}	// namespace IntegerConversion
-//---------------------------------------------------------------------------
-namespace FloatConversion{
-//---------------------------------------------------------------------------
-
-template<uIntn Size>	struct FloatForIntegerSize{};
-
-template<>	struct FloatForIntegerSize<1>	: cnVar::TTypeDef<Float32>{};
-template<>	struct FloatForIntegerSize<2>	: cnVar::TTypeDef<Float32>{};
-template<>	struct FloatForIntegerSize<4>	: cnVar::TTypeDef<Float64>{};
-template<>	struct FloatForIntegerSize<8>	: cnVar::TTypeDef<Float64>{};
-template<>	struct FloatForIntegerSize<16>	: cnVar::TTypeDef<Float64>{};
-
-long double		TestMatch(long double);
-double			TestMatch(double);
-float			TestMatch(float);
-
-FloatForIntegerSize<sizeof(unsigned long long)>::Type	TestMatch(unsigned long long);
-FloatForIntegerSize<sizeof(signed long long)>::Type		TestMatch(signed long long);
-FloatForIntegerSize<sizeof(unsigned long)>::Type		TestMatch(unsigned long);
-FloatForIntegerSize<sizeof(signed long)>::Type			TestMatch(signed long);
-FloatForIntegerSize<sizeof(unsigned int)>::Type			TestMatch(unsigned int);
-FloatForIntegerSize<sizeof(signed int)>::Type			TestMatch(signed int);
-FloatForIntegerSize<sizeof(unsigned short)>::Type		TestMatch(unsigned short);
-FloatForIntegerSize<sizeof(signed short)>::Type			TestMatch(signed short);
-FloatForIntegerSize<sizeof(unsigned char)>::Type		TestMatch(unsigned char);
-FloatForIntegerSize<sizeof(signed char)>::Type			TestMatch(signed char);
-
-FloatForIntegerSize<sizeof(uInt8)>::Type	TestMatch(uInt8);
-FloatForIntegerSize<sizeof(sInt8)>::Type	TestMatch(sInt8);
-FloatForIntegerSize<sizeof(uInt16)>::Type	TestMatch(uInt16);
-FloatForIntegerSize<sizeof(sInt16)>::Type	TestMatch(sInt16);
-FloatForIntegerSize<sizeof(uInt32)>::Type	TestMatch(uInt32);
-FloatForIntegerSize<sizeof(sInt32)>::Type	TestMatch(sInt32);
-FloatForIntegerSize<sizeof(uInt64)>::Type	TestMatch(uInt64);
-FloatForIntegerSize<sizeof(sInt64)>::Type	TestMatch(sInt64);
-
-Float32	TestMatch(Float32);
-Float64	TestMatch(Float64);
-
-
-template<class T>
-struct MatchType_Expression
-{
-	template<int=sizeof(TestMatch(cnVar::DeclVar<T>()))>
-	struct Test
-	{
-		typedef void Type;
-	};
-
-};
-
-
-template<class T,class TCondition=void>
-struct MatchTypeDef
-	: cnVar::TTypeDef<void>{};
-
-template<class T>
-struct MatchTypeDef<T,typename MatchType_Expression<T>::template Test<>::Type>
-	: cnVar::TFloatOfSize<sizeof(TestMatch(cnVar::DeclVar<T>()))>{};
-
-template<class T,class TMatch>
-struct Decl
-{
-	typedef TMatch tMatch;
-	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(TMatch);
-	static cnLib_CONSTVAR bool IsConvertible=true;
-	static cnLib_CONSTVAR bool IsMatch=false;
-
-	template<class TFloat>
-	static TFloat Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(static_cast<TMatch>(Value))))
-	{	return static_cast<TFloat>(static_cast<TMatch>(Value));	}
-
-	template<class TFloat>
-	static TFloat rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(static_cast<TMatch>(*static_cast<T*>(Value)))))
-	{	return static_cast<TFloat>(static_cast<TMatch>(*static_cast<T*>(Value)));	}
-};
-
-
-template<class T>
-struct Decl<T,T>
-{
-	typedef T tMatch;
-	static cnLib_CONSTVAR ufInt8 MatchSize=sizeof(T);
-	static cnLib_CONSTVAR bool IsConvertible=true;
-	static cnLib_CONSTVAR bool IsMatch=true;
-
-	template<class TFloat>
-	static TFloat Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(Value)))
-	{	return static_cast<TFloat>(Value);	}
-
-	template<class TFloat>
-	static TFloat rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(*static_cast<T*>(Value))))
-	{	return static_cast<TFloat>(*static_cast<T*>(Value));	}
-};
-
-
-
-
-template<class T,class TDistinct>
-struct DeclUnconvertible
-{
-	static cnLib_CONSTVAR ufInt8 MatchSize=0;
-	static cnLib_CONSTVAR bool IsConvertible=false;
-	static cnLib_CONSTVAR bool IsMatch=false;
-
-	template<class TFloat>
-	static TFloat Cast(T)noexcept(true){
-		return 0.f;
-	}
-
-	template<class TFloat>
-	static TFloat rtCast(void*)noexcept(true){
-		return 0.f;
-	}
-};
-
-template<class T,bool Convertible>
-struct DeclNoMatch
-	: Decl<T,Float64>{};
-
-template<class T>
-struct DeclNoMatch<T,false>
-	: DeclUnconvertible<T,typename cnVar::TRemoveCV<T>::Type>{};
-
-template<class T>
-struct Decl<T,void>	// fail to find exact match
-	: DeclNoMatch<T,cnVar::TIsConvertible<T&,sInt64>::Value>{};
-
-//---------------------------------------------------------------------------
-}	// namespace FloatConversion
-//---------------------------------------------------------------------------
-}	// namespace Var_TH
-//---------------------------------------------------------------------------
-}	// namespace cnLib_THelper
-//---------------------------------------------------------------------------
-namespace cnLibrary{
-//---------------------------------------------------------------------------
-namespace cnVar{
-//---------------------------------------------------------------------------
-
-template<class T>
-struct TIntegerConversion
-	: cnLib_THelper::Var_TH::IntegerConversion::Decl<T
-		,typename cnLib_THelper::Var_TH::IntegerConversion::MatchTypeDef<T>::Type
-	>{};
-
-
-template<class T>
-struct TFloatConversion
-	: cnLib_THelper::Var_TH::FloatConversion::Decl<T
-		,typename cnLib_THelper::Var_TH::FloatConversion::MatchTypeDef<T>::Type
-	>{};
+{	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default);	}
 
 //---------------------------------------------------------------------------
 }	// namespace cnVar

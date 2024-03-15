@@ -18,6 +18,268 @@ namespace cnLibrary{
 namespace TKRuntime{
 //---------------------------------------------------------------------------
 
+template<cnMemory::eByteOrder ByteOrder,uIntn IntegerSize,uIntn ComponentSize>
+struct TIntegerComponent;
+//{
+//	template<ufInt8 Index>
+//	static tComponentUInt Get(tUInt Value)noexcept;
+//};
+
+//---------------------------------------------------------------------------
+}	// namespace TKRuntime
+//---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+
+template<cnMemory::eByteOrder ByteOrder,uIntn IntegerSize,uIntn ComponentSize>
+struct TIntegerComponent
+{
+	static cnLib_CONSTVAR uIntn Length=(IntegerSize-1)/ComponentSize+1;
+
+	typedef typename cnVar::TIntegerOfSize<ComponentSize,false>::Type tComponentUInt;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
+
+	template<ufInt8 Index>
+	static tComponentUInt Get(tUInt Value)noexcept(true){
+		cnLib_STATIC_ASSERT(Index<Length,"Index too large");
+		Value>>=Index*ComponentSize*ByteBitCount;
+		return static_cast<tComponentUInt>(Value);
+	}
+
+	template<ufInt8 Index>
+	static tUInt Set(tUInt Value,tComponentUInt Component)noexcept(true){
+		cnLib_STATIC_ASSERT(Index<Length,"Index too large");
+		tUInt ComponentMask=static_cast<tUInt>(Component)<<Index*ComponentSize*ByteBitCount;
+		Value&=~(static_cast<tUInt>(~static_cast<tComponentUInt>(0))<<Index*ComponentSize*ByteBitCount);
+		return Value|ComponentMask;
+	}
+
+};
+
+template<uIntn IntegerSize>
+struct TInteger2x
+{
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize/2,false>::Type tUIntH;
+	typedef typename TKRuntime::TIntegerComponent<cnVar::TSelect<1,tUInt,TKRuntime::NativeByteOrder>::Type::Value,IntegerSize,IntegerSize/2> tIntegerComponent;
+
+	static tUInt ReverseBytes(tUInt Value)noexcept(true){
+		tUIntH v0=tIntegerComponent::template Get<0>(Value);
+		tUIntH v1=tIntegerComponent::template Get<1>(Value);
+		
+		v0=TKRuntime::TInteger<IntegerSize/2>::ReverseBytes(v0);
+		v1=TKRuntime::TInteger<IntegerSize/2>::ReverseBytes(v1);
+
+		tUInt RetVal=tIntegerComponent::template Set<0>(0,v0);		
+		return tIntegerComponent::template Set<1>(RetVal,v1);
+	}
+
+	static sfInt8 Compare(tUInt Src1,tUInt Src2)noexcept(true){
+		tUIntH v1=tIntegerComponent::template Get<1>(Src1);
+		tUIntH v2=tIntegerComponent::template Get<1>(Src2);
+		
+		if(v1==v2){
+			v1=tIntegerComponent::template Get<0>(Src1);
+			v2=tIntegerComponent::template Get<0>(Src2);
+			return TKRuntime::TInteger<IntegerSize/2>::Compare(v1,v2);
+		}
+		return v1<v2?-1:1;
+	}
+
+	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept(true){
+		tUInt RetVal;
+		tUIntH vh,vl,vlh;
+		if(Count<IntegerSize/2*ByteBitCount){
+			vh=tIntegerComponent::template Get<1>(ValueHigh);
+			vl=tIntegerComponent::template Get<0>(ValueHigh);
+			vlh=tIntegerComponent::template Get<1>(ValueLow);
+		}
+		else{
+			vh=tIntegerComponent::template Get<0>(ValueHigh);
+			vl=tIntegerComponent::template Get<1>(ValueLow);
+			vlh=tIntegerComponent::template Get<0>(ValueLow);
+		}
+		vh=TKRuntime::TInteger<IntegerSize/2>::ShiftLeftInto(vh,vl,Count);
+		vl=TKRuntime::TInteger<IntegerSize/2>::ShiftLeftInto(vl,vlh,Count);
+
+		RetVal=tIntegerComponent::template Set<1>(0,vh);
+		RetVal=tIntegerComponent::template Set<0>(RetVal,vl);
+		return RetVal;
+	}
+
+	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept(true){
+		tUInt RetVal;
+		tUIntH vh,vl,vhl;
+		if(Count<IntegerSize/2*ByteBitCount){
+			vhl=tIntegerComponent::template Get<0>(ValueHigh);
+			vh=tIntegerComponent::template Get<1>(ValueLow);
+			vl=tIntegerComponent::template Get<0>(ValueLow);
+		}
+		else{
+			vhl=tIntegerComponent::template Get<1>(ValueHigh);
+			vh=tIntegerComponent::template Get<0>(ValueHigh);
+			vl=tIntegerComponent::template Get<1>(ValueLow);
+		}
+		vl=TKRuntime::TInteger<IntegerSize/2>::ShiftRightInto(vl,vh,Count);
+		vh=TKRuntime::TInteger<IntegerSize/2>::ShiftRightInto(vh,vhl,Count);
+
+		RetVal=tIntegerComponent::template Set<1>(0,vh);
+		RetVal=tIntegerComponent::template Set<0>(RetVal,vl);
+		return RetVal;
+	}
+
+	static bool BitScanL(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		tUIntH vl=tIntegerComponent::template Get<0>(Src);
+		tUIntH vh=tIntegerComponent::template Get<1>(Src);
+		
+		if(TKRuntime::TInteger<IntegerSize/2>::BitScanL(BitIndex,vl)){
+			return true;
+		}
+
+		if(TKRuntime::TInteger<IntegerSize/2>::BitScanL(BitIndex,vh)){
+			BitIndex+=IntegerSize/2*ByteBitCount;
+			return true;
+		}
+		return false;
+	}
+
+	static bool BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		tUIntH vl=tIntegerComponent::template Get<0>(Src);
+		tUIntH vh=tIntegerComponent::template Get<1>(Src);
+
+		if(TKRuntime::TInteger<IntegerSize/2>::BitScanL(BitIndex,vh)){
+			BitIndex+=IntegerSize/2*ByteBitCount;
+			return true;
+		}
+
+		return TKRuntime::TInteger<IntegerSize/2>::BitScanL(BitIndex,vl);
+	}
+
+	static bool BitTest(tUInt Src,ufInt8 BitIndex)noexcept(true){
+		tUIntH v;
+		if(BitIndex<IntegerSize/2*ByteBitCount){
+			v=tIntegerComponent::template Get<0>(Src);
+		}
+		else{
+			v=tIntegerComponent::template Get<1>(Src);
+		}
+		BitIndex%=IntegerSize/2*ByteBitCount;
+		return TKRuntime::TInteger<IntegerSize/2>::BitTest(v,BitIndex);
+	}
+
+	static bool BitSet(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
+		bool Bit;
+		if(BitIndex<IntegerSize/2*ByteBitCount){
+			tUIntH v=tIntegerComponent::template Get<0>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitSet(v,BitIndex);
+			Dest=tIntegerComponent::template Set<0>(Dest,v);
+
+		}
+		else{
+			tUIntH v=tIntegerComponent::template Get<1>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitSet(v,BitIndex);
+			Dest=tIntegerComponent::template Set<1>(Dest,v);
+		}
+		return Bit;
+	}
+
+	static bool BitReset(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
+		bool Bit;
+		if(BitIndex<IntegerSize/2*ByteBitCount){
+			tUIntH v=tIntegerComponent::template Get<0>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitReset(v,BitIndex);
+			Dest=tIntegerComponent::template Set<0>(Dest,v);
+		
+		}
+		else{
+			tUIntH v=tIntegerComponent::template Get<1>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitReset(v,BitIndex);
+			Dest=tIntegerComponent::template Set<1>(Dest,v);
+		}
+		return Bit;
+	}
+	static bool BitComplement(tUInt Dest,ufInt8 BitIndex)noexcept(true){
+		bool Bit;
+		if(BitIndex<IntegerSize/2*ByteBitCount){
+			tUIntH v=tIntegerComponent::template Get<0>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitComplement(v,BitIndex);
+			Dest=tIntegerComponent::template Set<0>(Dest,v);
+
+		}
+		else{
+			tUIntH v=tIntegerComponent::template Get<1>(Dest);
+			BitIndex%=IntegerSize/2*ByteBitCount;
+			Bit=TKRuntime::TInteger<IntegerSize/2>::BitComplement(v,BitIndex);
+			Dest=tIntegerComponent::template Set<1>(Dest,v);
+		}
+		return Bit;
+	}
+
+	static tUInt RotateLeft(tUInt Src,ufInt8 Count)noexcept(true){
+		tUIntH vl=tIntegerComponent::template Get<0>(Src);
+		tUIntH vh=tIntegerComponent::template Get<1>(Src);
+
+		if(Count>=IntegerSize/2*ByteBitCount){
+			Count-=IntegerSize/2*ByteBitCount;
+			tUIntH t=vl;
+			vl=vh;
+			vh=t;
+		}
+
+		tUIntH h=TKRuntime::TInteger<IntegerSize/2>::ShiftLeftInto(vh,vl,Count);
+		tUIntH l=TKRuntime::TInteger<IntegerSize/2>::ShiftLeftInto(vl,vh,Count);
+		tUInt RetVal=tIntegerComponent::template Set<1>(0,h);
+		return tIntegerComponent::template Set<0>(RetVal,l);
+	}
+	static tUInt RotateRight(tUInt Src,ufInt8 Count)noexcept(true){
+		tUIntH vl=tIntegerComponent::template Get<0>(Src);
+		tUIntH vh=tIntegerComponent::template Get<1>(Src);
+
+		if(Count>=IntegerSize/2*ByteBitCount){
+			Count-=IntegerSize/2*ByteBitCount;
+			tUIntH t=vl;
+			vl=vh;
+			vh=t;
+		}
+
+		tUIntH l=TKRuntime::TInteger<IntegerSize/2>::ShiftRightInto(vl,vh,Count);
+		tUIntH h=TKRuntime::TInteger<IntegerSize/2>::ShiftRightInto(vh,vl,Count);
+		tUInt RetVal=tIntegerComponent::template Set<1>(0,h);
+		return tIntegerComponent::template Set<0>(RetVal,l);
+	}
+
+};
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
+//---------------------------------------------------------------------------
+namespace cnMemory{
+//---------------------------------------------------------------------------
+template<class TComponent,ufInt8 Index,class TInteger>
+inline TComponent IntegerGetComponent(TInteger Integer)noexcept(true)
+{
+	return static_cast<TComponent>(
+		TKRuntime::TIntegerComponent<cnVar::TSelect<1,TInteger,TKRuntime::NativeByteOrder>::Type::Value,sizeof(TInteger),sizeof(TComponent)>::template Get<Index>(static_cast<typename cnVar::TIntegerOfSize<sizeof(TInteger),false>::Type>(Integer))
+	);
+}
+
+template<class TComponent,ufInt8 Index,class TInteger>
+inline TInteger IntegerSetComponent(TInteger Integer,TComponent Component)noexcept(true)
+{
+	return static_cast<TInteger>(TKRuntime::TIntegerComponent<cnVar::TSelect<1,TInteger,TKRuntime::NativeByteOrder>::Type::Value,sizeof(TInteger),sizeof(TComponent)>::template Set<Index>(
+		static_cast<typename cnVar::TIntegerOfSize<sizeof(TInteger),false>::Type>(Integer),static_cast<typename cnVar::TIntegerOfSize<sizeof(TComponent),false>::Type>(Component))
+	);
+}
+//---------------------------------------------------------------------------
+}	// namespace cnMemory
+//---------------------------------------------------------------------------
+namespace TKRuntime{
+//---------------------------------------------------------------------------
+
 template<uIntn IntSize>
 struct TMultiprecisionInteger;
 
@@ -39,9 +301,9 @@ struct TMultiprecisionInteger;
 
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
-	//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 }	// namespace cnLibrary
-	//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 namespace cnLib_THelper{
 namespace CPPRT_TH{
 
@@ -315,7 +577,7 @@ struct TMultiprecisionInteger_MulDiv<IntSize,false>
 		ufInt8 dScale=hiBitCount-dvScale;
 		// Dividend[1:2]
 		if(dScale!=0){
-			dt=TKRuntime::TIneger<IntSize>::ShiftLeftInto(Dividend_Hi,Dividend_Lo,dScale);
+			dt=TKRuntime::TInteger<IntSize>::ShiftLeftInto(Dividend_Hi,Dividend_Lo,dScale);
 		}
 		else{
 			dt=Dividend_Hi;
@@ -341,9 +603,8 @@ struct TMultiprecisionInteger_MulDiv<IntSize,false>
 			qh--;
 		}
 
-
 		// Dividend[0:1] / Divisor
-		dt=TKRuntime::TIneger<IntSize>::ShiftLeftInto(dh,dl,hiBitCount+dScale);
+		dt=TKRuntime::TInteger<IntSize>::ShiftLeftInto(dh,dl,hiBitCount+dScale);
 		q=dt/dv;
 
 		// Remainder
@@ -452,7 +713,7 @@ namespace cnMath{
 // [in]Addend
 // return: carry sign
 template<class T>
-inline bool MPUAdd(T &Result,cnVar::TypeDef<T> Augend,cnVar::TypeDef<T> Addend,bool Carry=false)
+inline bool MPUAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend,bool Carry=false)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -471,7 +732,7 @@ inline bool MPUAdd(T &Result,cnVar::TypeDef<T> Augend,cnVar::TypeDef<T> Addend,b
 // [in]Addend
 // return: carry sign
 template<class T>
-inline bool MPSAdd(T &Result,cnVar::TypeDef<T> Augend,cnVar::TypeDef<T> Addend)
+inline bool MPSAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -490,7 +751,7 @@ inline bool MPSAdd(T &Result,cnVar::TypeDef<T> Augend,cnVar::TypeDef<T> Addend)
 // [in]Subtrahend
 // return: carry sign
 template<class T>
-inline bool MPUSub(T &Result,cnVar::TypeDef<T> Minuend,cnVar::TypeDef<T> Subtrahend,bool Carry=false)
+inline bool MPUSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -510,7 +771,7 @@ inline bool MPUSub(T &Result,cnVar::TypeDef<T> Minuend,cnVar::TypeDef<T> Subtrah
 // [in]Subtrahend
 // return: carry sign
 template<class T>
-inline bool MPSSub(T &Result,cnVar::TypeDef<T> Minuend,cnVar::TypeDef<T> Subtrahend,bool Carry=false)
+inline bool MPSSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -529,7 +790,7 @@ inline bool MPSSub(T &Result,cnVar::TypeDef<T> Minuend,cnVar::TypeDef<T> Subtrah
 // [in]Multiplier
 // return: low part of result
 template<class T>
-inline T MPUMul(T &ResultHigh,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T> Multiplier)
+inline T MPUMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -549,7 +810,7 @@ inline T MPUMul(T &ResultHigh,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T> M
 // [in]Multiplier
 // return: low part of result, unsigned
 template<class T>
-inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHigh,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T> Multiplier)
+inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -566,7 +827,7 @@ inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHig
 // [in]Multiplier
 // return: high part of result
 template<class T>
-inline T MPUMulH(T Multiplicand,cnVar::TypeDef<T> Multiplier)
+inline T MPUMulH(T Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -586,7 +847,7 @@ inline T MPUMulH(T Multiplicand,cnVar::TypeDef<T> Multiplier)
 // [in]Divisor
 //	return: quotient
 template<class T>
-inline T MPUDiv(T &Remainder,cnVar::TypeDef<T> Dividend_Lo,cnVar::TypeDef<T> Dividend_Hi,cnVar::TypeDef<T> Divisor)
+inline T MPUDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -610,7 +871,7 @@ inline T MPUDiv(T &Remainder,cnVar::TypeDef<T> Dividend_Lo,cnVar::TypeDef<T> Div
 // [in]Divisor
 //	return: quotient
 template<class T>
-inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Type Dividend_Lo,cnVar::TypeDef<T> Dividend_Hi,cnVar::TypeDef<T> Divisor)
+inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -635,7 +896,7 @@ inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Ty
 // [in]Divisor
 // return: quotient
 template<class T>
-inline T MPUMulDiv(T &Remainder,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T> Multiplier,cnVar::TypeDef<T> Divisor)
+inline T MPUMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -660,7 +921,7 @@ inline T MPUMulDiv(T &Remainder,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T>
 // [in]Divisor
 // return: quotient
 template<class T>
-inline T MPSMulDiv(T &Remainder,cnVar::TypeDef<T> Multiplicand,cnVar::TypeDef<T> Multiplier,cnVar::TypeDef<T> Divisor)
+inline T MPSMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)
 {
 	cnLib_ASSERT(Divisor!=0);
 

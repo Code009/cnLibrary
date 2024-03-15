@@ -21,8 +21,8 @@ iPtr<iUIView> DNetCreateUIView(void);
 class cnLib_INTERFACE iWPFViewChild : public iInterface
 {
 public:
-	cnLib_INTERFACE_ID(iWPFViewChild)
 
+	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override;
 
 	virtual cGCRef& WPFChildGetElementHandle(void)=0;

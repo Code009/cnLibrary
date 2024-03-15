@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_DataStruct_H__
-#define	__cnLibrary_cnTK_DataStruct_H__
+#ifndef __cnLibrary_cnTK_DataStruct_HPP__
+#define	__cnLibrary_cnTK_DataStruct_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -376,40 +376,12 @@ public:
 		return ReplaceAt(static_cast<uIntn>(Index),ReplaceLength,ReplacementLength);
 	}
 
-	cnLib_DEPRECATED tPointer AppendItems(uIntn Count);
-	cnLib_DEPRECATED tPointer AppendItems(tConstPointer Data,uIntn Count);
 
-	cnLib_DEPRECATED tPointer InsertItemsAt(uIntn Index,uIntn Count);
-	cnLib_DEPRECATED tPointer InsertItems(tPointer Iterator,uIntn Count);
-	cnLib_DEPRECATED tPointer InsertItemsAt(uIntn Index,tConstPointer Data,uIntn Count);
-	cnLib_DEPRECATED tPointer InsertItems(tPointer Iterator,tConstPointer Data,uIntn Count);
 	template<class TIndex,class...VT>
 	cnLib_DEPRECATED typename cnVar::TTypeConditional<tPointer,
 		cnVar::TIsConvertible<TIndex,uIntn>::Value
 	>::Type Insert(TIndex Index,VT cnLib_UREF...Args){
 		return InsertAt(static_cast<uIntn>(Index),cnLib_UREFCAST(VT)(Args)...);
-	}
-	// InsertItems
-	//	Add data items to the specifed position of the list, default construct
-	// Iterator		iterator of item to insert before
-	// Count		number of data in array to insert
-	// return iterator of newly inserted item
-	template<class TIndex>
-	cnLib_DEPRECATED typename cnVar::TTypeConditional<tPointer,
-		cnVar::TIsConvertible<TIndex,uIntn>::Value
-	>::Type InsertItems(TIndex Index,uIntn Count){
-		return InsertItemsAt(static_cast<uIntn>(Index),Count);
-	}
-	// InsertItems
-	//	Add data items to the specifed position of the list, default construct
-	// Index		index to insert
-	// Count		number of data in array to insert
-	// return true if added, false if out of range
-	template<class TIndex>
-	cnLib_DEPRECATED typename cnVar::TTypeConditional<tPointer,
-		cnVar::TIsConvertible<TIndex,uIntn>::Value
-	>::Type InsertItems(TIndex Index,tConstPointer Data,uIntn Count){
-		return InsertItemsAt(static_cast<uIntn>(Index),Data,Count);
 	}
 
 	// Remove
@@ -855,7 +827,7 @@ public:
 	typedef cArrayAllocation<TKeyAllocationOperator,TKey> tKeyArrayAllocation;
 	typedef cArrayAllocation<TValueAllocationOperator,TValue> tValueArrayAllocation;
 	typedef cMultiArrayAllocation<tKeyArrayAllocation,tValueArrayAllocation> tArrayAllocation;
-	typedef cMultiArrayMemoryFunction<tKeyArrayAllocation,tValueArrayAllocation> TMAMFunc;
+	typedef cMultiArrayMemoryFunction<typename cnVar::cVarPack<TKey*,TValue*>::tAllAccessor,tKeyArrayAllocation,tValueArrayAllocation> TMAMFunc;
 	typedef cMultiArrayStorage<tKeyArrayAllocation,tValueArrayAllocation> tMultiArrayStorage;
 
 	typedef cSeqMapIterator<tKey,tValue> tIterator;
@@ -970,13 +942,13 @@ public:
     //	Get item pointer to the value list
     // return the pointer to values
 	tValue* GetValues(void)const noexcept(true){
-		return *+fArray.Pointer;
+		return cnVar::VarPackAt<1>(fArray.Pointer);
 	}
 	// GetKeys
     //	Get item pointer to the key list
     // return the pointer to keys
 	tKey* GetKeys(void)const noexcept(true){
-		return *fArray.Pointer;
+		return cnVar::VarPackAt<0>(fArray.Pointer);
 	}
 
 	tIterator begin(void)const noexcept(true){	return Pair(GetKeys(),GetValues());	}
@@ -1045,7 +1017,7 @@ public:
 			fArray.ReplaceWithUninitialized(Index,0,1);
 			// initialize key data and value
 
-			TMAMFunc::ConstructElement(fArray.Pointer,Index,cnLib_UREFCAST(T)(Key));
+			TMAMFunc::ConstructElement(fArray.Pointer.All(),Index,cnLib_UREFCAST(T)(Key));
 		}
 		return GetPairAt(Index);
 	}
@@ -1067,7 +1039,7 @@ public:
 			fArray.ReplaceWithUninitialized(Index,0,1);
 			// initialize key data and value
 
-			TMAMFunc::ConstructElement(fArray.Pointer,Index,cnLib_UREFCAST(TK)(Key),tValue(cnLib_UREFCAST(TV)(ValueArgs)...));
+			TMAMFunc::ConstructElement(fArray.Pointer.All(),Index,cnLib_UREFCAST(TK)(Key),tValue(cnLib_UREFCAST(TV)(ValueArgs)...));
 			Exists=false;
 		}
 		return GetPairAt(Index);
@@ -1097,7 +1069,7 @@ public:
 		// insert space
 		fArray.ReplaceWithUninitialized(Index,0,1);
 		// initialize key data and value
-		TMAMFunc::ConstructElement(fArray.Pointer,Index,cnLib_UREFCAST(TK)(Key),tValue(cnLib_UREFCAST(TV)(ValueArgs)...));
+		TMAMFunc::ConstructElement(fArray.Pointer.All(),Index,cnLib_UREFCAST(TK)(Key),tValue(cnLib_UREFCAST(TV)(ValueArgs)...));
 		return true;
 	}
 
@@ -1120,7 +1092,7 @@ public:
 			// insert space
 			fArray.ReplaceWithUninitialized(Index,0,1);
 			// initialize key data and value
-			TMAMFunc::ConstructElement(fArray.Pointer,Index,cnLib_UREFCAST(TK)(Key),cnLib_UREFCAST(TV)(Value));
+			TMAMFunc::ConstructElement(fArray.Pointer.All(),Index,cnLib_UREFCAST(TK)(Key),cnLib_UREFCAST(TV)(Value));
 			return true;
 		}
 	}
@@ -1188,7 +1160,7 @@ protected:
 	template<class T>
 	bool SearchKey(uIntn &Result,const T &Key)const noexcept(true){
 		cComparisonFunctor<T> Comparison={Key};
-		return cnMemory::ViewBinarySearch(Result,*fArray.Pointer,fArray.Length,Comparison);
+		return cnMemory::ViewBinarySearch(Result,cnVar::VarPackAt<0>(fArray.Pointer),fArray.Length,Comparison);
 	}
 };
 
@@ -1466,7 +1438,7 @@ public:
 		fArray.ReplaceWithUninitialized(Index,ReplaceCount,ReplacementCount);
 		// initialize key data and value
 		if(ReplacementCount!=0){
-			TMAMFunc::Construct(fArray.Pointer,Index,Index+ReplacementCount);
+			TMAMFunc::Construct(fArray.Pointer.All(),Index,Index+ReplacementCount);
 		}
 
 		return at(Index);
@@ -1497,7 +1469,7 @@ public:
 			Index=fArray.Length;
 		fArray.ReplaceWithUninitialized(Index,ReplaceCount,ReplacementCount);
 		if(ReplacementCount!=0){
-			TMAMFunc::CopyConstruct(fArray.Pointer,Index,ReplacementItems,0,ReplacementCount);
+			TMAMFunc::CopyConstruct(fArray.Pointer.All(),Index,ReplacementItems,0,ReplacementCount);
 		}
 		return at(Index);
 	}
@@ -1524,7 +1496,7 @@ public:
 		}
 		auto AppendIndex=AppendUninitialized(Count);
 		// default construct
-		TMAMFunc::Construct(fArray.Pointer,AppendIndex,fArray.Length);
+		TMAMFunc::Construct(fArray.Pointer.All(),AppendIndex,fArray.Length);
 		return at(AppendIndex);
 	}
 
@@ -1534,7 +1506,7 @@ public:
 		}
 		auto AppendIndex=AppendUninitialized(Count);
 		// copy construct
-		TMAMFunc::CopyConstruct(fArray.Pointer,AppendIndex,Items,0,Count);
+		TMAMFunc::CopyConstruct(fArray.Pointer.All(),AppendIndex,Items,0,Count);
 		return at(AppendIndex);
 	}
 
@@ -1546,7 +1518,7 @@ public:
 	tPointer AppendMake(VT cnLib_UREF...Args)noexcept(true){
 		auto AppendIndex=AppendUninitialized(1);
 		// default construct
-		TMAMFunc::ConstructElement(fArray.Pointer,AppendIndex,cnLib_UREFCAST(VT)(Args)...);
+		TMAMFunc::ConstructElement(fArray.Pointer.All(),AppendIndex,cnLib_UREFCAST(VT)(Args)...);
 		return at(AppendIndex);
 	}
 
@@ -1562,7 +1534,7 @@ public:
 			Index=fArray.Length;
 		fArray.ReplaceWithUninitialized(Index,0,Count);
 		// default construct
-		TMAMFunc::Construct(fArray.Pointer,Index,Index+Count);
+		TMAMFunc::Construct(fArray.Pointer.All(),Index,Index+Count);
 		return at(Index);
 	}
 	// Insert
@@ -1585,7 +1557,7 @@ public:
 			Index=fArray.Length;
 		fArray.ReplaceWithUninitialized(Index,0,Count);
 		// manually copy construct
-		TMAMFunc::CopyConstruct(fArray.Pointer,Index,Items,0,Count);
+		TMAMFunc::CopyConstruct(fArray.Pointer.All(),Index,Items,0,Count);
 		return at(Index);
 	}
 
@@ -1610,7 +1582,7 @@ public:
 			Index=fArray.Length;
 		fArray.ReplaceWithUninitialized(Index,0,1);
 		// default construct
-		TMAMFunc::ConstructElement(fArray.Pointer,Index,cnLib_UREFCAST(VT)(Args)...);
+		TMAMFunc::ConstructElement(fArray.Pointer.All(),Index,cnLib_UREFCAST(VT)(Args)...);
 		return at(Index);
 	}
 	// InsertMake

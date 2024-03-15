@@ -197,11 +197,11 @@ class cWPFUIView
 {
 	friend mcWPFView;
 public:
-	cnLib_INTERFACE_ID(cWPFUIView)
-	
+
 	cWPFUIView(cDNetUIThread *UIThread,mcConstructParameter &Parameter);
 	~cWPFUIView();
 
+	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override;
 
 	// iCLIObject

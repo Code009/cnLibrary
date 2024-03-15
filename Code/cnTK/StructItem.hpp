@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2021-09-24                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_StructItem_H__
-#define	__cnLibrary_cnTK_StructItem_H__
+#ifndef __cnLibrary_cnTK_StructItem_HPP__
+#define	__cnLibrary_cnTK_StructItem_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -220,25 +220,21 @@ struct cSingleLinkItemOperator
 {
 	typedef TSingleLinkItem tItem;
 
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-
+#if defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+	
 	enum{
-		LinkInstanceOffset=(&static_cast<TSingleLinkItem*>(nullptr)->Next-static_cast<decltype(&static_cast<TSingleLinkItem*>(nullptr)->Next)>(nullptr))
-				*sizeof(static_cast<TSingleLinkItem*>(nullptr)->Next),
-		LinkInstanceEndOffset=LinkInstanceOffset+sizeof(static_cast<TSingleLinkItem*>(nullptr)->Next),
+		LinkInstanceOffset=cnLib_MEMBER_OFFSET(TSingleLinkItem,Next),
+		LinkInstanceEndOffset=cnLib_MEMBER_OFFSET(TSingleLinkItem,Next)+sizeof(static_cast<TSingleLinkItem*>(nullptr)->Next),
 	};
 
-
-// cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-#else
-// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+#else	// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
 
 	enum{
 		LinkInstanceOffset=0,
 		LinkInstanceEndOffset=sizeof(TSingleLinkItem),
 	};
 
-#endif	// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+#endif
 
 	typedef cnMemory::cPlainAlignedData<LinkInstanceEndOffset-LinkInstanceOffset,TSingleLinkItem> tLinkInstance;
 	
@@ -375,22 +371,26 @@ struct cDualLinkItemOperator : cSingleLinkItemOperator<TDualLinkItem>
 {
 	typedef TDualLinkItem tItem;
 
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#if defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 
 	enum{
 		LinkInstanceOffset=cnMath::TMin<uIntn
-			,(&static_cast<TDualLinkItem*>(nullptr)->Next-static_cast<decltype(&static_cast<TDualLinkItem*>(nullptr)->Next)>(nullptr))
-				*sizeof(static_cast<TDualLinkItem*>(nullptr)->Next)
-			,(&static_cast<TDualLinkItem*>(nullptr)->Prev-static_cast<decltype(&static_cast<TDualLinkItem*>(nullptr)->Prev)>(nullptr))
-				*sizeof(static_cast<TDualLinkItem*>(nullptr)->Prev)
+			, cnLib_MEMBER_OFFSET(TDualLinkItem,Next)
+			, cnLib_MEMBER_OFFSET(TDualLinkItem,Prev)
 		>::Value,
 		LinkInstanceEndOffset=cnMath::TMax<uIntn
-			,(&static_cast<TDualLinkItem*>(nullptr)->Next-static_cast<decltype(&static_cast<TDualLinkItem*>(nullptr)->Next)>(nullptr))
-				*sizeof(static_cast<TDualLinkItem*>(nullptr)->Next)+sizeof(static_cast<TDualLinkItem*>(nullptr)->Next)
-			,(&static_cast<TDualLinkItem*>(nullptr)->Prev-static_cast<decltype(&static_cast<TDualLinkItem*>(nullptr)->Prev)>(nullptr))
-				*sizeof(static_cast<TDualLinkItem*>(nullptr)->Prev)+sizeof(static_cast<TDualLinkItem*>(nullptr)->Prev)
+			, cnLib_MEMBER_OFFSET(TDualLinkItem,Next)+sizeof(static_cast<TDualLinkItem*>(nullptr)->Next)
+			, cnLib_MEMBER_OFFSET(TDualLinkItem,Prev)+sizeof(static_cast<TDualLinkItem*>(nullptr)->Prev)
 		>::Value,
 	};
+#else	// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+	enum{
+		LinkInstanceOffset=0,
+		LinkInstanceEndOffset=sizeof(TDualLinkItem),
+	};
+
+#endif
 
 	typedef cnMemory::cPlainAlignedData<LinkInstanceEndOffset-LinkInstanceOffset,TDualLinkItem> tLinkInstance;
 	
@@ -405,7 +405,6 @@ struct cDualLinkItemOperator : cSingleLinkItemOperator<TDualLinkItem>
 		);
 	}
 
-#endif	// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
 
 	static tItem* GetPrev(tItem *Item)noexcept(true){
 		return static_cast<tItem*>(Item->Prev);
@@ -565,38 +564,31 @@ struct cBinaryTreeNodeOperator
 {
 	typedef TBinaryTreeNode tNode;
 
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-
+#if defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 	enum{
 		LinkInstanceOffset=cnMath::TMin<uIntn
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Parent-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Parent)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Parent)
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Child-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Child)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Child)
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Branch-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Branch)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Branch)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Parent)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Child)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Branch)
 		>::Value,
 		LinkInstanceEndOffset=cnMath::TMax<uIntn
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Parent-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Parent)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Parent)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Parent)
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Child-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Child)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Child)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Child)
-			,(&static_cast<TBinaryTreeNode*>(nullptr)->Branch-static_cast<decltype(&static_cast<TBinaryTreeNode*>(nullptr)->Branch)>(nullptr))
-				*sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Branch)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Branch)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Parent)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Parent)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Child)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Child)
+			, cnLib_MEMBER_OFFSET(TBinaryTreeNode,Branch)+sizeof(static_cast<TBinaryTreeNode*>(nullptr)->Branch)
 		>::Value,
 	};
 
-
-// cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+// defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 #else
-// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
 
 	enum{
 		LinkInstanceOffset=0,
 		LinkInstanceEndOffset=sizeof(TBinaryTreeNode),
 	};
 
-#endif	// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+#endif	// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
 
 	typedef cnMemory::cPlainAlignedData<LinkInstanceEndOffset-LinkInstanceOffset,TBinaryTreeNode> tLinkInstance;
 
@@ -662,35 +654,34 @@ struct cColorBinaryTreeNodeOperator : cBinaryTreeNodeOperator<TColorBinaryTreeNo
 {
 	typedef TColorBinaryTreeNode tNode;
 
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-
+#if defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 	enum{
 		LinkInstanceOffset=cnMath::TMin<uIntn
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Parent-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Child-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Child)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Child)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Branch-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Color-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Color)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Color)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Parent)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Child)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Branch)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Color)
 		>::Value,
 		LinkInstanceEndOffset=cnMath::TMax<uIntn
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Parent-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Child-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Child)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Child)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Child)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Branch-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)
-			,(&static_cast<TColorBinaryTreeNode*>(nullptr)->Color-static_cast<decltype(&static_cast<TColorBinaryTreeNode*>(nullptr)->Color)>(nullptr))
-				*sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Color)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Color)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Parent)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Parent)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Child)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Child)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Branch)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Branch)
+			, cnLib_MEMBER_OFFSET(TColorBinaryTreeNode,Color)+sizeof(static_cast<TColorBinaryTreeNode*>(nullptr)->Color)
 		>::Value,
 	};
 
+// defined(cnLib_MEMBER_OFFSET) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+	enum{
+		LinkInstanceOffset=0,
+		LinkInstanceEndOffset=sizeof(TColorBinaryTreeNode),
+	};
+
+#endif	// !defined(cnLib_MEMBER_OFFSET) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
 	typedef cnMemory::cPlainAlignedData<LinkInstanceEndOffset-LinkInstanceOffset,TColorBinaryTreeNode> tLinkInstance;
-
-#endif	// cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-
 
 	static tNode* LinkNode(tLinkInstance &Link)noexcept(true){
 		return reinterpret_cast<tNode*>(

@@ -21,7 +21,7 @@ static constexpr int SocketInvalid=-1;
 //---------------------------------------------------------------------------
 void SetupSocket(int s);
 //---------------------------------------------------------------------------
-eOrdering SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2);
+eiOrdering SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2);
 //---------------------------------------------------------------------------
 class cSocketAddressBuffer
 {
@@ -50,7 +50,7 @@ public:
 	bcStreamSocketEndpoint(int Socket);
 	~bcStreamSocketEndpoint();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID IID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 	virtual void cnLib_FUNC Close(void)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
@@ -73,12 +73,12 @@ protected:
 	// iWriteQueue
 
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)override;
-	virtual uIntn cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
 
 	// iReadQueue
 
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn QuerySize)override;
-	virtual uIntn cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
 
 // bcRWQueue
 
@@ -112,7 +112,7 @@ public:
 	bcDatagramSocketEndpoint(int Socket);
 	~bcDatagramSocketEndpoint();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID IID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)override;
 
 	virtual void cnLib_FUNC Close(void)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
@@ -134,12 +134,12 @@ protected:
 	// iWriteQueue
 
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)override;
-	virtual uIntn cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
 
 	// iReadQueue
 
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-	virtual uIntn cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
 
 	// bcRWQueue
 	virtual void WriteQueueClosed(void)override;
@@ -182,7 +182,7 @@ protected:
 	virtual iPtr<iConnection> OnAcceptCreateConnection(int Socket,const sockaddr *addr,socklen_t addrlen)=0;
 	virtual void OnAcceptWait(void)=0;
 
-	virtual Availability AsyncSignalAvailable(void)override;
+	virtual void AsyncQueueNotify(void)override;
 
 private:
 	bool fAcceptAvailable;

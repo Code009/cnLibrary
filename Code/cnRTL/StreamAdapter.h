@@ -150,7 +150,7 @@ private:
 	uIntn fReadBufferSize;
 	uIntn fCurReadOffset;
 
-	void StartRead(void);
+	void OnStartRead(void);
 	class cTaskProcedure : public iProcedure
 	{
 	public:

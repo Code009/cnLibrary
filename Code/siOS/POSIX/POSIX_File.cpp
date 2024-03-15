@@ -6,6 +6,9 @@ using namespace cnRTL;
 using namespace siPOSIX;
 
 
+#if 0
+
+
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 int siPOSIX::ConvertOpenFileFlags(eFileAccess AccessMode,eFileCreate CreateFlag)
@@ -495,3 +498,4 @@ iPtr<iFileName> siPOSIX::FileSystemCreateTemporaryFile(const char *FolderName)
 }
 //---------------------------------------------------------------------------
 
+#endif // 0

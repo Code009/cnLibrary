@@ -34,7 +34,8 @@ namespace cnLibrary{
 class cnLib_INTERFACE iCOMInterface : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iCOMInterface,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
 	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)=0;
 };
@@ -48,7 +49,8 @@ public:
 class cnLib_INTERFACE iWaveFormat : public iInterface
 {
 public:
-	cnLib_INTERFACE_DEFINE(iWaveFormat,iInterface)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual const WAVEFORMATEX*	cnLib_FUNC GetFormat(void)=0;
 };

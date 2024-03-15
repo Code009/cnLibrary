@@ -14,7 +14,7 @@ static void timespec_addns(timespec &ts,uint64 Nanoseconds)
 	ts.tv_nsec=Nanoseconds%Time_1s;
 }*/
 //---------------------------------------------------------------------------
-void siPOSIX::iTimepoint2timespec(timespec &ts,const iTimepoint *Time,uInt64 Delay)
+void siPOSIX::iTimepoint2timespec(timespec &ts,iTimepoint *Time,uInt64 Delay)
 {
 	// absolute time
 	sInt64 UnixTimeNS=Time->SystemTime();
@@ -61,22 +61,6 @@ bool c_pthread_mutex::TryAcquire(void){	return trylock();	}
 void c_pthread_mutex::Release(void){	return unlock();	}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cMutexLock::Acquire(void)
-{
-	return fMutex.lock();
-}
-//---------------------------------------------------------------------------
-bool cMutexLock::TryAcquire(void)
-{
-	return fMutex.trylock();
-}
-//---------------------------------------------------------------------------
-void cMutexLock::Release(void)
-{
-	return fMutex.unlock();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 c_pthread_rwlock::c_pthread_rwlock(pthread_rwlockattr_t *attr)
 {
 	pthread_rwlock_init(&f_lock,attr);
@@ -117,36 +101,13 @@ void c_pthread_rwlock::unlock(void)
 	pthread_rwlock_unlock(&f_lock);
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cSharedMutex::Acquire(void)
-{
-	return fRWLock.wrlock();
-}
-//---------------------------------------------------------------------------
-bool cSharedMutex::TryAcquire(void)
-{
-	return fRWLock.trywrlock();
-}
-//---------------------------------------------------------------------------
-void cSharedMutex::Release(void)
-{
-	return fRWLock.unlock();
-}
-//---------------------------------------------------------------------------
-void cSharedMutex::AcquireShared(void)
-{
-	return fRWLock.rdlock();
-}
-//---------------------------------------------------------------------------
-bool cSharedMutex::TryAcquireShared(void)
-{
-	return fRWLock.tryrdlock();
-}
-//---------------------------------------------------------------------------
-void cSharedMutex::ReleaseShared(void)
-{
-	return fRWLock.unlock();
-}
+void c_pthread_rwlock::Acquire(void){	return wrlock();	}
+bool c_pthread_rwlock::TryAcquire(void){	return trywrlock();	}
+void c_pthread_rwlock::Release(void){	return unlock();	}
+
+void c_pthread_rwlock::AcquireShared(void){	return rdlock();	}
+bool c_pthread_rwlock::TryAcquireShared(void){	return tryrdlock();	}
+void c_pthread_rwlock::ReleaseShared(void){	return unlock();	}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 c_pthread_cond::c_pthread_cond(pthread_condattr_t *attr)
@@ -201,8 +162,8 @@ bool c_pthread_key::setspecific(void *v)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThreadLocalVariable::cThreadLocalVariable(void (cnLib_FUNC *Destructor)(void*))
-	: fTS(Destructor)
+cThreadLocalVariable::cThreadLocalVariable()
+	: fTS(PThreadKeyDestructor)
 {
 }
 //---------------------------------------------------------------------------
@@ -210,14 +171,90 @@ cThreadLocalVariable::~cThreadLocalVariable()
 {
 }
 //---------------------------------------------------------------------------
-void* cThreadLocalVariable::Get(void)
+void cThreadLocalVariable::Clear(void)noexcept(true)
 {
-	return fTS.getspecific();
+	void *pData=fTS.getspecific();
+	if(pData==nullptr){
+		return;
+	}
+	cThreadData *ThreadData=static_cast<cThreadData*>(pData);
+	if(ThreadData->Reference!=nullptr){
+		ThreadData->Reference->DecreaseReference();
+	}
+	ThreadData->Object=nullptr;
+	ThreadData->Reference=nullptr;
+	ThreadData->NotifyProc=nullptr;
 }
 //---------------------------------------------------------------------------
-bool cnLib_FUNC cThreadLocalVariable::Set(void *Data)
+void* cThreadLocalVariable::Get(void)noexcept(true)
 {
-	return fTS.setspecific(Data);
+	void *ThreadData=fTS.getspecific();
+	if(ThreadData==nullptr)
+		return nullptr;
+	return static_cast<cThreadData*>(ThreadData)->Object;
+}
+//---------------------------------------------------------------------------
+void cThreadLocalVariable::Set(iReference *Reference,void *Value)noexcept(true)
+{
+	void *pData=fTS.getspecific();
+	cThreadData *ThreadData;
+	if(pData==nullptr){
+		if(Reference==nullptr && Value==nullptr){
+			return;
+		}
+		ThreadData=new cThreadData;
+		ThreadData->Reference=nullptr;
+		ThreadData->Object=nullptr;
+		ThreadData->NotifyProc=nullptr;
+		fTS.setspecific(ThreadData);
+	}
+	else{
+		ThreadData=static_cast<cThreadData*>(pData);
+		if(ThreadData->Reference!=nullptr){
+			ThreadData->Reference->DecreaseReference();
+		}
+	}
+	ThreadData->Object=Value;
+	ThreadData->Reference=Reference;
+	if(Reference!=nullptr){
+		Reference->IncreaseReference();
+	}
+}
+//---------------------------------------------------------------------------
+void cThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept(true)
+{
+	void *pData=fTS.getspecific();
+	cThreadData *ThreadData;
+	if(pData==nullptr){
+		if(NotifyProc==nullptr){
+			return;
+		}
+		ThreadData=new cThreadData;
+		ThreadData->Reference=nullptr;
+		ThreadData->Object=nullptr;
+		ThreadData->NotifyProc=nullptr;
+		fTS.setspecific(ThreadData);
+	}
+	else{
+		ThreadData=static_cast<cThreadData*>(pData);
+	}
+	ThreadData->NotifyProc=NotifyProc;
+}
+//---------------------------------------------------------------------------
+void cThreadLocalVariable::PThreadKeyDestructor(void *pThreadData)
+{
+	if(pThreadData==nullptr)
+		return;
+	auto ThreadData=static_cast<cThreadData*>(pThreadData);
+	if(ThreadData->NotifyProc!=nullptr){
+		ThreadData->NotifyProc->Execute(rPtr<iReference>::TakeFromManual(ThreadData->Reference),ThreadData->Object);
+	}
+	else{
+		if(ThreadData->Reference!=nullptr){
+			ThreadData->Reference->DecreaseReference();
+		}
+	}
+	delete ThreadData;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

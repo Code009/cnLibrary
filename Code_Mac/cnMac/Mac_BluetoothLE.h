@@ -10,299 +10,6 @@
 #ifdef	__cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
-namespace cnRTL{
-
-
-class bcBufferedRWQueue : public bcRWQueue
-{
-public:
-	bcBufferedRWQueue();
-	~bcBufferedRWQueue();
-
-	void PutReadData(const void *Data,uIntn Size);
-	cMemory QueryReadDataBuffer(uIntn QuerySize);
-	uIntn AdvanceReadDataBuffer(uIntn Size);
-
-	cConstMemory QueryWriteData(void);
-	uIntn AdvanceWriteData(uIntn Size);
-	bool IsWriteDataEnded(void);
-
-protected:
-
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-	virtual uIntn cnLib_FUNC DismissReadBuffer(uIntn Size)override;
-	virtual void ReadQueueClosed(void)override;
-
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)override;
-	virtual uIntn cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
-	virtual void WriteQueueClosed(void)override;
-
-	virtual void ReadBufferNotify(void)=0;
-	virtual void WriteDataNotify(void)=0;
-
-private:
-	cnRTL::cAsyncLoopbackStreamBuffer fReadDataQueue;
-	cnRTL::cAsyncLoopbackStreamBuffer fWriteDataQueue;
-};
-
-}	// namespace cnRTL
-//---------------------------------------------------------------------------
-namespace cnMac{
-//---------------------------------------------------------------------------
-class cGATTTunnelConectionDevice : public iReference, public iAddress, protected iGATTServiceHandler
-{
-public:
-	cnLibOC_INTERFACE_DEFINE(cGATTTunnelConectionDevice,iAddress)
-
-	cGATTTunnelConectionDevice(iPtr<iGATTService> Service,iPtr<iGATTCharacteristic> ReadChar,iPtr<iGATTCharacteristic> WriteChar);
-	~cGATTTunnelConectionDevice();
-
-	// iAddress
-
-	virtual eOrdering cnLib_FUNC Compare(const iAddress *_Nullable Dest)const override;
-
-	iGATTService*_Nullable GetService(void)const;
-	iGATTCharacteristic*_Nullable GetReadCharacteristic(void)const;
-	iGATTCharacteristic*_Nullable GetWriteCharacteristic(void)const;
-
-	class cRWQueue : public cnRTL::bcBufferedRWQueue, public cnRTL::cDualReference
-	{
-	public:
-		cRWQueue(rPtr<cGATTTunnelConectionDevice> Device);
-		~cRWQueue();
-
-		cGATTTunnelConectionDevice*_Nonnull GetDevice(void)const;
-
-		using bcBufferedRWQueue::WriteQueueSetEndMode;
-
-	protected:
-		void VirtualStarted(void);
-		void VirtualStopped(void);
-
-
-		rPtr<cGATTTunnelConectionDevice> fDevice;
-		//void BLEWriteProcedure(void);
-
-		virtual iReference*_Nonnull RWQueueInnerReference(void)override;
-		virtual void ReadBufferNotify(void)override;
-		virtual void WriteDataNotify(void)override;
-	};
-	class iConnectCallback
-	{
-	public:
-		virtual void TunnelDeviceOnConnectDone(rPtr<cRWQueue> RWQueue)=0;
-		//virtual void TunnelDeviceOnConnectFailed(void)=0;
-	};
-	bool Connect(iConnectCallback *_Nonnull Callback);
-protected:
-	iPtr<iGATTService> fService;
-	iPtr<iGATTCharacteristic> fReadChar;
-	iPtr<iGATTCharacteristic> fWriteChar;
-	iPtr<iGATTDescriptor> fReadNotifyDescriptor;
-
-	siPOSIX::c_pthread_mutex fConnectProcedureMutex;
-	class cConnectProcedure
-	{
-	public:
-		operator bool ()const;
-
-		void Start(iConnectCallback *_Nonnull Callback);
-
-	protected:
-	}fConnectProcedure;
-
-	virtual void cnLib_FUNC GATTServiceStateChanged(void)override;
-	virtual void cnLib_FUNC GATTServiceCharacteristListChanged(void)override;
-
-	cnRTL::rInnerPtr<cRWQueue> fRWQueue;
-	void RWQueueNotifyWrite(void);
-
-	// connect procedure
-	enum{
-		csIdle,
-		csWaitConnectPerpheral,
-		csCheckService,
-		csWaitNotifyDescriptor,
-		csWaitRegisterNotify,
-		csConnected,
-	}fConnectState;
-	iConnectCallback *_Nullable fConnectCallback=nullptr;
-
-	void UpdateFunctionState(void);
-	void ConnectProcSucceed(void);
-	void ConnectProcFailed(void);
-
-	class cReadCharHandler : public iGATTCharacteristHandler
-	{
-	public:
-		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristDescriptorListChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristValueNotify(void)override;
-	}fReadCharHandler;
-	class cWriteCharHandler : public iGATTCharacteristHandler
-	{
-	public:
-		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristDescriptorListChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristValueNotify(void)override;
-	}fWriteCharHandler;
-
-	void ReadCharValueNotify(void);
-};
-//---------------------------------------------------------------------------
-class cGATTTunnelConectionConnector : public iConnectionConnector
-{
-public:
-	cGATTTunnelConectionConnector(iTypeID ConnectionIID);
-	~cGATTTunnelConectionConnector();
-
-	virtual iAddress*_Nullable		cnLib_FUNC GetLocalAddress(void)override;
-	virtual iPtr<iConnection>		cnLib_FUNC Connect(iAddress *_Nullable RemoteAddress)override;
-	virtual iPtr<iConnectionTask>	cnLib_FUNC ConnectAsync(iAddress *_Nullable RemoteAddress)override;
-
-protected:
-	iTypeID fConnectionIID;
-
-
-	class cEndpoint : public iConnection, public iEndpoint
-	{
-	public:
-		cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue);
-		~cEndpoint();
-
-		virtual const void*_Nullable cnLib_FUNC CastInterface(iTypeID IID)const override;
-
-		// iConnection
-
-		virtual iAddress*_Nullable cnLib_FUNC GetLocalAddress(void)override;
-		virtual iAddress*_Nullable cnLib_FUNC GetRemoteAddress(void)override;
-
-		// iEndpoint
-
-		virtual void cnLib_FUNC Close(void)override;
-		virtual iReadQueue*_Nonnull cnLib_FUNC GetReadQueue(void)override;
-		virtual iWriteQueue*_Nonnull cnLib_FUNC GetWriteQueue(void)override;
-		virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
-
-	protected:
-		rPtr<cGATTTunnelConectionDevice::cRWQueue> fRWQueue;
-	};
-
-	static iPtr<iConnection> CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue);
-	class cConnectSyncObject : public cnRTL::cThreadOneTimeNotifier, public cGATTTunnelConectionDevice::iConnectCallback
-	{
-	public:
-		iTypeID ConnectionIID;
-		iPtr<iConnection> Connection;
-	protected:
-		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)override;
-
-	};
-	class cConnectAsyncTask : public iReference,public iConnectionTask, public cGATTTunnelConectionDevice::iConnectCallback
-	{
-	public:
-		virtual bool cnLib_FUNC IsDone(void)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *_Nonnull NotifyProcedure)override;
-		
-		virtual void cnLib_FUNC Cancel(void)override;
-		virtual iConnection*_Nullable cnLib_FUNC GetConnection(void)override;
-
-		//eStreamError cnLib_FUNC GetStreamError(void)override;
-		//StreamError AcceptErrorCode;
-
-		iTypeID ConnectionIID;
-		cnRTL::cAsyncTaskState TaskState;
-
-		void ConnectStart(void);
-		void ConnectCancel(void);
-	protected:
-		iPtr<iConnection> fConnection;
-
-		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)override;
-
-	};
-};
-//---------------------------------------------------------------------------
-class cGATTTunnelConectionObserver : public iGATTTunnelConnectionDeviceObserver, public cnRTL::bcAsyncSignal, public cnRTL::cDualReference, protected iAsyncNotificationCallback
-{
-public:
-	cGATTTunnelConectionObserver(iGATTPeripheralObserver *Observer);
-	~cGATTTunnelConectionObserver();
-
-	cnRTL::cSeqList<cGATTTunnelConnectionDeviceID> DeviceIDs;
-
-	virtual bool cnLib_FUNC StartNotify(iReference *_Nullable Reference,iAsyncNotificationCallback *_Nonnull Callback)override;
-	virtual void cnLib_FUNC StopNotify(void)override;
-	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)override;
-	virtual rPtr<iGATTTunnelConnectionEnumerator> cnLib_FUNC EnumAllDevices(void)override;
-	virtual rPtr<iGATTTunnelConnectionEnumerator> cnLib_FUNC FetchDeviceChanges(void)override;
-	virtual void cnLib_FUNC DiscardChanges(void)override;
-
-protected:
-	void VirtualStarted(void);
-	void VirtualStopped(void);
-
-	virtual iReference*_Nonnull AsyncSignalInnerReference(void)override;
-	virtual void AsyncSignalStarted(void)override;
-	virtual void AsyncSignalStopped(void)override;
-	virtual Availability AsyncSignalAvailable(void)override;
-	virtual void AsyncSignalNotify(void)override;
-	virtual void AsyncSignalClosed(void)override;
-
-	rPtr<iGATTPeripheralObserver> fObserver;
-	iAsyncNotificationCallback *fCallback;
-	rPtr<iReference> fCallbackReference;
-
-	bool fPeripheralObserverError;
-	bool fPeripheralObserverNotified;
-
-	// iAsyncNotificationCallback
-
-	virtual void cnLib_FUNC AsyncStarted(void)override;
-	virtual void cnLib_FUNC AsyncStopped(void)override;
-	virtual void cnLib_FUNC AsyncNotify(void)override;
-
-	struct cDeviceItem : cnRTL::cRTLAllocator
-	{
-		cDeviceItem *_Nullable Next;
-		iPtr<cGATTTunnelConectionDevice> Device;
-	};
-	cnRTL::cGlobalLinkItemRecycler<cDeviceItem> fDeviceItemRecycler;
-	cnRTL::cAtomicQueueS<cDeviceItem> fDeviceQueue;
-
-	virtual void cnLib_FUNC GATTPeripheralListChanged(void)override;
-};
-//---------------------------------------------------------------------------
-class cGATTTunnelConectionProtocol : public iGATTTunnelConnectionProtocol
-{
-public:
-	cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central,rPtr<iGATTPeripheralDevice> Device);
-	~cGATTTunnelConectionProtocol();
-
-	// iConnectionProtocol
-
-	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateStreamConnector(iAddress *_Nullable LocalAddress,iAddress *_Nullable RemoteAddress)override;
-	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateStreamListener(iAddress *_Nullable LocalAddress)override;
-	virtual iPtr<iConnectionQueue>		cnLib_FUNC CreateStreamConnectionQueue(iAddress *_Nullable LocalAddress)override;
-
-	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateEndpointConnector(iAddress *_Nullable LocalAddress,iAddress *_Nullable RemoteAddress)override;
-	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateEndpointListener(iAddress *_Nullable LocalAddress)override;
-	virtual iPtr<iConnectionQueue>		cnLib_FUNC CreateEndpointConnectionQueue(iAddress *_Nullable LocalAddress)override;
-
-	// iGATTTunnelConnectionProtocol
-
-	virtual iPtr<iGATTTunnelConnectionBrowser> cnLib_FUNC CreateBrowser(const cGATTTunnelConnectionDeviceID *_Nonnull ServiceIDs,uIntn ServiceCount)override;
-
-protected:
-
-	rPtr<iGATTPeripheralCentral> fCentral;
-	rPtr<iGATTPeripheralDevice> fDevice;
-
-	iPtr<cGATTTunnelConectionConnector> fEndpointConnector;
-	iPtr<cGATTTunnelConectionConnector> fStreamConnector;
-};
-//---------------------------------------------------------------------------
-}	// namespace cnMac
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
@@ -358,6 +65,7 @@ public:
 
 	cBLEPeripheral*_Nonnull GetHostPeripheral(void);
 
+	virtual cGATTUUID cnLib_FUNC GetUUID(void)override;
 	virtual iDispatch*_Nonnull cnLib_FUNC GetHandlerDispatch(void)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTCharacteristHandler *_Nullable Handler)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTCharacteristHandler *_Nullable Handler)override;
@@ -365,7 +73,8 @@ public:
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)override;
 	virtual iGATTService*_Nonnull cnLib_FUNC GetService(void)override;
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC PersistDescriptor(const cGATTUUID &ID)override;
-	virtual void cnLib_FUNC SetScanForDescriptors(bool AllowScan)override;
+	virtual iPtr<iGATTDescriptorAsyncFunction> cnLib_FUNC QueryDescriptors(void)override;
+	//virtual void cnLib_FUNC ClearDescriptorCache(void)=0;
 
 	virtual rPtr< iArrayReference<const void> > cnLib_FUNC GetValue(void)override;
 
@@ -387,6 +96,9 @@ public:
 
 	cBLEPeripheral*_Nonnull GetHostPeripheral(void);
 
+	void SetScanForCharacters(bool AllowScan);
+
+	virtual cGATTUUID cnLib_FUNC GetUUID(void)override;
 	virtual iDispatch*_Nonnull cnLib_FUNC GetHandlerDispatch(void)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTServiceHandler *_Nullable Handler)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *_Nullable Handler)override;
@@ -394,9 +106,8 @@ public:
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)override;
 	virtual iGATTPeripheral*_Nonnull cnLib_FUNC GetPeripheral(void)override;
 	virtual rPtr<iGATTCharacteristic> cnLib_FUNC PersistCharacteristic(const cGATTUUID &ID)override;
-	virtual rPtr< iArrayReference< rPtr<iGATTCharacteristic> > > cnLib_FUNC QueryCharacteristics(void)override;
+	virtual iPtr<iGATTCharacteristicAsyncFunction> cnLib_FUNC QueryCharacteristics(void)override;
 
-	virtual void cnLib_FUNC SetScanForCharacters(bool AllowScan)override;
 protected:
 	rPtr<cBLEPeripheral> fPeripheral;
 };
@@ -409,23 +120,30 @@ public:
 
 	void InitializePeripheral(cBLEPeripheralCentral *Central,CBPeripheral *Peripheral);
 
-	virtual void cnLib_FUNC IncReference(void)override;
-	virtual void cnLib_FUNC DecReference(void)override;
+	virtual void cnLib_FUNC IncreaseReference(void)override;
+	virtual void cnLib_FUNC DecreaseReference(void)override;
+
+	rPtr<iGATTService> PersistService(const cGATTUUID &ID);
+
+	void SetScanForServices(bool AllowScan);
+
+	bool IsConnecting(void);
+	void Connect(void);
+	void Disconnect(void);
 
 	virtual iDispatch*_Nonnull cnLib_FUNC GetHandlerDispatch(void)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralHandler *_Nullable Handler)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralHandler *_Nullable Handler)override;
 
+	virtual iAddress*_Nonnull cnLib_FUNC GetPeripheralAddress(void)override;
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)override;
 	virtual iGATTPeripheralCentral*_Nonnull cnLib_FUNC GetPeripheralCentral(void)override;
-	virtual rPtr<iGATTService> cnLib_FUNC PersistService(const cGATTUUID &ID)override;
-	virtual rPtr< iArrayReference< rPtr<iGATTService> > > cnLib_FUNC QueryServices(void)override;
+	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)override;
+	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cGATTUUID &ID)override;
+	virtual iPtr<iGATTServiceAsyncFunction> cnLib_FUNC QueryServices(void)override;
+	//virtual void cnLib_FUNC ClearServiceCache(void)=0;
 
-	virtual void cnLib_FUNC SetScanForServices(bool AllowScan)override;
-
-	virtual bool cnLib_FUNC IsConnecting(void)override;
-	virtual void cnLib_FUNC Connect(void)override;
-	virtual void cnLib_FUNC Disconnect(void)override;
+	virtual iPtr<iAsyncTask> cnLib_FUNC Activate(void)override;
 
 
 	// CentralManager delegate
@@ -458,15 +176,18 @@ public:
 	iDispatch*_Nullable GetDispatch(void);
 	bool SetupCentralManager(iDispatch *_Nonnull Dispatch,NSDictionary *_Nullable Options);
 
-	virtual void cnLib_FUNC IncReference(void)override;
-	virtual void cnLib_FUNC DecReference(void)override;
+
+	virtual void cnLib_FUNC IncreaseReference(void)override;
+	virtual void cnLib_FUNC DecreaseReference(void)override;
 
 	virtual iDispatch*_Nullable cnLib_FUNC GetHandlerDispatch(void)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralCentralHandler *_Nullable Handler)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralCentralHandler *_Nullable Handler)override;
 
-	virtual rPtr<iGATTPeripheral> cnLib_FUNC PersistPeripheral(void)override;
-	virtual rPtr<iGATTPeripheralQuery> cnLib_FUNC CreatePeripheralQuery(const cGATTUUID *Service,uIntn ServiceCount)override;
+	virtual rPtr<iGATTAdvertisementObserver> cnLib_FUNC CreateAdvertisementObserver(void)override;
+
+	virtual rPtr<iGATTPeripheral> cnLib_FUNC AccessPeripheral(iAddress *_Nullable Address)override;
+	virtual rPtr<iGATTPeripheralObserver> cnLib_FUNC CreatePeripheralObserver(const cGATTUUID *_Nonnull Service,uIntn ServiceCount)override;
 	virtual bool cnLib_FUNC ResetPeripheralCache(void)override;
 
 	virtual bool cnLib_FUNC IsEnabled(void)override;

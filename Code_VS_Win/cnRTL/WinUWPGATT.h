@@ -21,7 +21,8 @@ class cGATTPeripheralCentral;
 class cBluetoothAddress : public iAddress
 {
 public:
-	cnLib_INTERFACE_DEFINE(cBluetoothAddress,iAddress)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)override;
 

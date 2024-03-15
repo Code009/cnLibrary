@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2021-09-05                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_AtomicLinkStruct_H__
-#define	__cnLibrary_cnTK_AtomicLinkStruct_H__
+#ifndef __cnLibrary_cnTK_AtomicLinkStruct_HPP__
+#define	__cnLibrary_cnTK_AtomicLinkStruct_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/Numerical.hpp>

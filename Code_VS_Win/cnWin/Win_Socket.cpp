@@ -1,5 +1,5 @@
 ﻿#include <cnRTL\WinSDKHeader.h>
-#define INITGUID
+//#define INITGUID
 #include <Mswsock.h>
 #include <ws2bth.h>
 #include <WS2tcpip.h>

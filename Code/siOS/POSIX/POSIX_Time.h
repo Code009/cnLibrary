@@ -7,8 +7,8 @@
 
 #include <time.h>
 
+#include <cnRTL/cnRTLCore.h>
 #include <cnSystem/cnData.h>
-#include <cnRTL/Interface.h>
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus
 //---------------------------------------------------------------------------
@@ -34,7 +34,6 @@ public:
 	static void NanoSecondsTotimespec(timespec &tv,sint64 Seconds);
 	static void timespecFromTime(timespec &tv,const iTimepoint *RefTime);
 };
-#endif	//_POSIX_C_SOURCE >=200112L
 //---------------------------------------------------------------------------
 class cTimeNow : public iTimepoint
 {
@@ -42,10 +41,11 @@ public:
 	cTimeNow();
 	~cTimeNow();
 
-	virtual sint64 cnLib_FUNC SystemTime(void)const override;
-	virtual sint64 cnLib_FUNC SinceTime(const iTimepoint *Time)const override;
+	virtual sInt64 cnLib_FUNC SystemTime(void)override;
+	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)override;
 
 };
+#endif	//_POSIX_C_SOURCE >=200112L
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 }	// namespace siPOSIX

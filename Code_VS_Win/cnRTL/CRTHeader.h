@@ -13,7 +13,6 @@
 #endif	// _MSC_VER < 1900
 //	_MSC_VER : 1900			Visual C++ 2015 (14.0)	Toolset v140
 
-#include <type_traits>
 #include <functional>
 #include <iterator>
 #include <algorithm>
@@ -21,7 +20,7 @@
 
 #if _MANAGED
 
-#define	cnLibrary_MANAGED_CRTEXCLUDE
+#define	cnLibrary_CRTEXCLUDE_MUTEX
 
 // _MANAGED
 #else

@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2015-12-03                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Vector_H__
-#define __cnLibrary_cnTK_Vector_H__
+#ifndef __cnLibrary_cnTK_Vector_HPP__
+#define __cnLibrary_cnTK_Vector_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -667,7 +667,7 @@ inline cVector<TElement,ColCount> operator * (
 	const cVector<TElement,ColCount> &v,
 	const cMatrixR<TElement,RowCount,ColCount> &M
 )noexcept(true){
-	cVector<ColCount> Result;
+	cVector<TElement,ColCount> Result;
 	Result.template MatrixMultiplyL<RowCount>(v,M);
 	return Result;
 }

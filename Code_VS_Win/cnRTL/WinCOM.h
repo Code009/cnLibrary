@@ -282,7 +282,7 @@ struct cCOMInnerOwnerTokenOperator
 
 	template<class TSrc>
 	static typename cnVar::TTypeConditional<TOwnerToken,
-		cnVar::TIsAssignable<T*&,TSrc*>::Value
+		cnVar::TIsAssignableFrom<T*&,TSrc*>::Value
 	>::Type TokenFrom(cCOMInnerOwnerToken<TSrc> SrcToken){
 		TOwnerToken RetToken;
 		RetToken.Pointer=SrcToken.Pointer;

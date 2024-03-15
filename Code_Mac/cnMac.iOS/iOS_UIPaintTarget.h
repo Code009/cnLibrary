@@ -67,10 +67,10 @@ struct cOpenGLESRenderBuffer
 class cOpenGLESViewLayer : public iOpenGLViewContent, public iUIViewCALayer
 {
 public:
-	cOpenGLESViewLayer();
+	cOpenGLESViewLayer(iOpenGLViewPainter *Painter);
 	~cOpenGLESViewLayer();
 
-	virtual const void* cnLib_FUNC CastInterface(iTypeID IID)const override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)override;
 
 	CALayer* GetLayer(void);
 
@@ -93,12 +93,11 @@ public:
 	virtual bool cnLib_FUNC SetView(iUIView *View)override;
 	virtual bool cnLib_FUNC GetVisible(void)override;
 	virtual bool cnLib_FUNC SetVisible(bool Visible)override;
-	virtual sfInt16 cnLib_FUNC GetZIndex(void)override;
-	virtual bool cnLib_FUNC SetZIndex(sfInt16 ZIndex)override;
+	virtual Float32 cnLib_FUNC GetZPosition(void)override;
+	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)override;
 
 // iOpenGLViewContent
 
-	virtual void cnLib_FUNC SetPainter(iOpenGLViewPainter *Painter)override;
 	virtual cUIPoint cnLib_FUNC GetPaintSize(void)override;
 	virtual iOpenGLContext* cnLib_FUNC GetOpenGLContext(void)override;
 	virtual void cnLib_FUNC SetRender(void)override;

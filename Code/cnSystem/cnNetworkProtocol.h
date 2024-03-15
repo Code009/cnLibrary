@@ -13,12 +13,16 @@
 /*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
-namespace cnLibrary{
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
 //---------------------------------------------------------------------------
+namespace cnLibrary{
 class cnLib_INTERFACE iIPv4Address : public iAddress
 {
 public:
-	cnLib_INTERFACE_DEFINE(iIPv4Address,iAddress)
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual uInt32 cnLib_FUNC IPv4Address(void)=0;
 	virtual uInt16 cnLib_FUNC IPv4Port(void)=0;
@@ -258,6 +262,10 @@ namespace cnSystem{
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+	//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

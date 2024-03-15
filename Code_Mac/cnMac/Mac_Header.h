@@ -16,12 +16,12 @@
 namespace cnLibrary{
 namespace cnMac{
 //---------------------------------------------------------------------------
-using cnRTL::autoPtr;
+using cnRTL::aPtr;
 
-using cnRTL::rClsRef;
-using cnRTL::rClsPtr;
-using cnRTL::rClsConstRef;
-using cnRTL::rClsCreate;
+using cnRTL::aClsRef;
+using cnRTL::aCls;
+using cnRTL::aClsConstRef;
+using cnRTL::aClsCreate;
 
 using cnRTL::cfPtr;
 #ifdef	__OBJC__

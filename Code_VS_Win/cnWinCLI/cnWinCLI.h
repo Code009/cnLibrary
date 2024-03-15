@@ -15,9 +15,6 @@
 
 #include <cnTK\cnTK.h>
 
-#undef noexcept
-
-
 #if _MANAGED
 
 #ifdef interface

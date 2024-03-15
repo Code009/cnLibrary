@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Pointer_H__
-#define	__cnLibrary_cnTK_Pointer_H__
+#ifndef __cnLibrary_cnTK_Pointer_HPP__
+#define	__cnLibrary_cnTK_Pointer_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -107,15 +107,42 @@ namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Var_TH{
 //---------------------------------------------------------------------------
-template<class TTokenOperator,class TSrc>
-struct PointerTokenFromExpression
+
+template<class TEnable,class T,class TTokenOperator,class TSrc>
+struct TypeIfPointerTokenFrom
 {
-	template<int=sizeof(TTokenOperator::TokenFrom(cnVar::DeclVar<TSrc>()))>
-	struct Test
-	{
-		typedef void Type;
-	};
 };
+
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+
+template<class T,class TTokenOperator,class TSrc>
+struct TypeIfPointerTokenFrom<decltype(static_cast<void>(TTokenOperator::TokenFrom(cnVar::DeclVal<TSrc>()))),
+	T,TTokenOperator,TSrc>
+{
+	typedef T Type;
+};
+
+#elif !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
+
+template<class T,class TTokenOperator,class TSrc>
+struct TypeIfPointerTokenFrom<typename cnVar::TSelect<!sizeof(TTokenOperator::TokenFrom(cnVar::DeclVal<TSrc>())),void>::Type,
+	T,TTokenOperator,TSrc>
+{
+	typedef T Type;
+};
+
+#else
+
+template<class T,class TTokenOperator,class TSrc>
+struct TypeIfPointerTokenFrom<void,
+	T,TTokenOperator,TSrc>
+{
+	typedef T Type;
+};
+
+
+#endif	// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
 //---------------------------------------------------------------------------
 }	// namespace Var_TH
 //---------------------------------------------------------------------------
@@ -177,10 +204,10 @@ public:
 		fOwnerToken=TOwnerTokenOperator::TokenNull();
 	}
 
+
 	template<class TSrcPtr>
-	static typename TSelect<0,cPtrOwner
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TOwnerTokenOperator,TSrcPtr*>::template Test<>::Type
-	>::Type TakeFromManual(TSrcPtr *Pointer)noexcept(true)
+	static typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner,TOwnerTokenOperator,TSrcPtr*>::Type
+		TakeFromManual(TSrcPtr *Pointer)noexcept(true)
 	{
 		return cPtrOwner(TOwnerTokenOperator::TokenFrom(Pointer));
 	}
@@ -224,7 +251,7 @@ public:
 	
 	template<class TSrcOwnerTokenOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=cnLib_THelper::Var_TH::PointerTokenFromExpression<TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::template Test<>::Type
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::Type
 #endif
 	>
 	cPtrOwner(cPtrOwner<TSrcOwnerTokenOperator> &&Src)noexcept(true)
@@ -236,8 +263,8 @@ public:
 	// move assign with token from cPtrOwner
 	
 	template<class TSrcOwnerTokenOperator>
-	typename TSelect<0,cPtrOwner&
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::template Test<>::Type
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner&,
+		TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&
 	>::Type operator =(cPtrOwner<TSrcOwnerTokenOperator> &&Src)noexcept(true){
 		tOwnerToken SwapToken(static_cast<tOwnerToken&&>(Src.Token()));
 		Src.Token()=TSrcOwnerTokenOperator::TokenNull();
@@ -295,7 +322,7 @@ public:
 	
 	template<class TSrcOwnerTokenOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=cnLib_THelper::Var_TH::PointerTokenFromExpression<TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::template Test<>::Type
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::Type
 #endif
 	>
 	cPtrOwner(cPtrOwner<TSrcOwnerTokenOperator> &Src)noexcept(true)
@@ -307,10 +334,10 @@ public:
 	// move assign with token from cPtrOwner
 	
 	template<class TSrcOwnerTokenOperator>
-	typename TSelect<0,cPtrOwner&
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::template Test<>::Type
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner&,
+		TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&
 	>::Type operator =(cPtrOwner<TSrcOwnerTokenOperator> &Src)noexcept(true){
-		tOwnerToken SwapToken(SrcToken);
+		tOwnerToken SwapToken(Src.Token);
 		Src.Token()=TOwnerTokenOperator::TokenNull();
 
 		TOwnerTokenOperator::Release(fOwnerToken);
@@ -337,7 +364,7 @@ protected:
 	explicit cPtrOwner(ConstructByToken<const tOwnerToken &> ByToken)noexcept(true)
 		: fOwnerToken(ByToken.Value)
 	{
-		TOwnerTokenOperator::Acquire(fRefToken);
+		TOwnerTokenOperator::Acquire(fOwnerToken);
 	}
 
 };
@@ -442,9 +469,9 @@ protected:
 public:
 
 	template<class TSrcPtr>
-	static typename TSelect<0,cPtrReference
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,TSrcPtr*>::template Test<>::Type
-	>::Type TakeFromManual(TSrcPtr *Pointer)noexcept(true)
+	
+	static typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrReference,TRefTokenOperator,TSrcPtr*>::Type
+		TakeFromManual(TSrcPtr *Pointer)noexcept(true)
 	{
 		return cPtrReference(MakeConstructByToken(TRefTokenOperator::TokenFrom(Pointer)));
 	}
@@ -510,7 +537,7 @@ public:
 
 	template<class TSrcRefTokenOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&>::template Test<>::Type
+		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&>::Type
 #endif
 	>
 	cPtrReference(const cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true)
@@ -523,8 +550,8 @@ public:
 	// assign with token from cPtrReference
 	
 	template<class TSrcRefTokenOperator>
-	typename TSelect<0,cPtrReference&
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&>::template Test<>::Type
+	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrReference&,
+		TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&
 	>::Type operator =(const cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true){
 		tRefToken SwapToken(fRefToken);
 
@@ -538,35 +565,13 @@ public:
 protected:
 	tRefToken fRefToken;
 
-
-	// make token with pointer
-	template<class TSrc>
-	static typename TSelect<0,tRefToken
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,TSrc*>::template Test<>::Type
-	>::Type MakeRefToken(TSrc *Pointer)noexcept(true){
-		return TRefTokenOperator::TokenFrom(Pointer);
-	}
-
-	template<class TSrcRefTokenOperator>
-	static typename TSelect<0,tRefToken
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,typename TSrcRefTokenOperator::tPtr*>::template Test<>::Type
-	>::Type MakeRefToken(const cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true){
-		return TRefTokenOperator::TokenFrom(Src.Pointer());
-	}
-
-	template<class T>
-	static typename TSelect<0,tRefToken
-		, typename cnLib_THelper::Var_TH::PointerTokenFromExpression<TRefTokenOperator,T cnLib_UREF>::template Test<>::Type
-	>::Type MakeRefToken(T cnLib_UREF Src)noexcept(true){
-		return TRefTokenOperator::TokenFrom(cnLib_UREFCAST(T)(Src));
-	}
 public:
 
 	// construct by making token
 
 	template<class T
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L && !defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)
-		, class=decltype(MakeRefToken(DeclVar<T cnLib_UREF>()))
+		, class=decltype(TRefTokenOperator::TokenFrom(DeclVal<T cnLib_UREF>()))
 #endif
 	>
 	cPtrReference(T cnLib_UREF Src)noexcept(true)
@@ -579,13 +584,13 @@ public:
 	template<class T>
 	typename TSelect<0,cPtrReference&
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(MakeRefToken(DeclVar<T cnLib_UREF>()))
+		, decltype(TRefTokenOperator::TokenFrom(DeclVal<T cnLib_UREF>()))
 #endif
 	>::Type operator =(T cnLib_UREF Src)noexcept(true)
 	{
 		tRefToken SwapToken(fRefToken);
 
-		fRefToken=MakeRefToken(cnLib_UREFCAST(T)(Src));
+		fRefToken=TRefTokenOperator::TokenFrom(cnLib_UREFCAST(T)(Src));
 
 		TRefTokenOperator::Acquire(fRefToken);
 		TRefTokenOperator::Release(SwapToken);

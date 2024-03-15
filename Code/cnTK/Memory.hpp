@@ -2,8 +2,8 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2018-08-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnTK_Memory_H__
-#define	__cnLibrary_cnTK_Memory_H__
+#ifndef __cnLibrary_cnTK_Memory_HPP__
+#define	__cnLibrary_cnTK_Memory_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
@@ -18,6 +18,13 @@ namespace cnLibrary{
 namespace TKRuntime{
 //---------------------------------------------------------------------------
 
+template<uIntn ElementSize>	
+struct TIntegerMemory;
+//{
+//	static T UnalignRead(const T *Variable)noexcept;
+//	static void UnalignWrite(T *Variable,T Value)noexcept;
+//	static sfInt8 BytesCompare(T Src1,T Src2)noexcept;
+//};
 
 template<uIntn ElementSize>	
 struct TMemory;
@@ -34,6 +41,33 @@ struct TMemory;
 //---------------------------------------------------------------------------
 namespace CPPRuntime{
 //---------------------------------------------------------------------------
+
+template<uIntn ElementSize>	
+struct TIntegerMemory
+{
+	typedef typename cnVar::TIntegerOfSize<ElementSize,false>::Type tUInt;
+
+	static tUInt UnalignRead(const tUInt *Variable)noexcept(true){
+		tUInt RetInt;
+		for(uIntn i=0;i<ElementSize;i++){
+			reinterpret_cast<uInt8*>(&RetInt)[i]=reinterpret_cast<const uInt8*>(Variable)[i];
+		}
+		return RetInt;
+	}
+	static void UnalignWrite(tUInt *Variable,tUInt Value)noexcept(true){
+		for(uIntn i=0;i<ElementSize;i++){
+			reinterpret_cast<uInt8*>(Variable)[i]=reinterpret_cast<const uInt8*>(&Value)[i];
+		}
+	}
+	static sfInt8 BytesCompare(tUInt Src1,tUInt Src2)noexcept(true){
+		for(uIntn i=0;i<ElementSize;i++){
+			if(!(static_cast<const uInt8*>(Src1)[i]==static_cast<const uInt8*>(Src2)[i])){
+				return static_cast<const uInt8*>(Src1)[i]<static_cast<const uInt8*>(Src2)[i]?-1:1;
+			}
+		}
+		return true;
+	}
+};
 
 template<uIntn ElementSize>
 struct TMemory
@@ -65,14 +99,13 @@ struct TMemory
 		}
 	}
 	static void ZeroFill(void *Dest,uIntn Length)noexcept(true){
-		uIntn FillLength=Length*Scale;
-		for(uIntn i=0;i<CopyLength;i++){
+		for(uIntn i=0;i<Length;i++){
 			static_cast<tUInt*>(Dest)[i]=static_cast<tUInt>(0);
 		}
 	}
 	static bool Equal(const void *Src1,const void *Src2,uIntn Length)noexcept(true){
 		for(uIntn i=0;i<Length;i++){
-			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Array2)[i])){
+			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Src2)[i])){
 				return false;
 			}
 		}
@@ -80,8 +113,8 @@ struct TMemory
 	}
 	static sfInt8 Compare(const void *Src1,const void *Src2,uIntn Length)noexcept(true){
 		for(uIntn i=0;i<Length;i++){
-			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Array2)[i])){
-			return static_cast<const tUInt*>(Src1)[i]<static_cast<const tUInt*>(Array2)[i]?-1:1;
+			if(!(static_cast<const tUInt*>(Src1)[i]==static_cast<const tUInt*>(Src2)[i])){
+				return static_cast<const tUInt*>(Src1)[i]<static_cast<const tUInt*>(Src2)[i]?-1:1;
 			}
 		}
 		return true;
@@ -93,7 +126,6 @@ struct TMemory
 //---------------------------------------------------------------------------
 namespace cnMemory{
 //---------------------------------------------------------------------------
-
 
 // ViewBinarySearch
 //	Search in ordered array
@@ -157,11 +189,15 @@ inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TCompar
 		ResultIndex=LeftBound;
         return true;
 	}
+
 	// not found
-    if(CompareResult<0)		// Array[LeftBound]<CompareValue
+    if(CompareResult<0){		// Array[LeftBound]<CompareValue
         ResultIndex=LeftBound+1;		// position to the right
-    else
+	}
+    else{
         ResultIndex=LeftBound;			// position to the left
+	}
+
 	return false;
 }
 
@@ -277,9 +313,6 @@ struct cPlainAlignedData<0,TAlignment>;
 }	// namespace cnMemory
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
-//---------------------------------------------------------------------------
-inline void* operator new (cnLibrary::tSize,cnLibrary::cnVar::cNoInitialization *Pointer)noexcept(true){	return Pointer;}
-inline void operator delete(void *,cnLibrary::cnVar::cNoInitialization*)noexcept(true){}
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
@@ -466,7 +499,7 @@ public:
 	}
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-	void Destruct(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<TObject&>().~TObject()))
+	void Destruct(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TObject&>().~TObject()))
 	{
 		ManualDestruct(*reinterpret_cast<TObject*>(this));
 	}
@@ -575,7 +608,7 @@ const T* StaticInitializedConstSinglton(void)noexcept(true){
 #else
 // cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
-#if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+#if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L && !defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 static cnLib_CONSTVAR bool StaticInitializedConstSingltonDefinitionGenuine=true;
 
@@ -601,7 +634,7 @@ const T* StaticInitializedConstSinglton(void)noexcept(true){
 	return &cStaticInitializedConstSinglton<T>::gInstance;
 }
 
-#else	// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+#else	// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L || defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 static cnLib_CONSTVAR bool StaticInitializedConstSingltonDefinitionGenuine=false;
 
@@ -620,7 +653,7 @@ const T* StaticInitializedConstSinglton(void)noexcept(true){
 	return StaticInitializedSinglton<const T>();
 }
 
-#endif	// cnLibrary_CPPFEATURE_CONSTEXPR , defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITALIZATION)
+#endif	// cnLibrary_CPPFEATURE_CONSTEXPR , defined(cnLibrary_CPPEXCLUDE_CONSTEXPR_STATIC_INITIALIZATION)
 
 #endif	// cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
@@ -702,7 +735,7 @@ public:
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class TDest>
-	void DestructAs(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVar<TDest&>().~TDest()))
+	void DestructAs(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TDest&>().~TDest()))
 	{
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
 		ManualDestruct(*reinterpret_cast<TDest*>(this));

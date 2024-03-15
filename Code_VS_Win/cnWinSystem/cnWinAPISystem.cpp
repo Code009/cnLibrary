@@ -32,6 +32,12 @@ iDependentRegistration* cnSystem::GetSystemDependentRegistration(void)
 	return &gSystemDependentRegistration;
 }
 
+void cnSystem::AssertionMessage(const char *Message)
+{
+	if(::MessageBoxA(nullptr,Message,"assert",MB_ICONERROR|MB_YESNO)==IDYES){
+		__debugbreak();
+	}
+}
 //- Default Heap ------------------------------------------------------------
 
 void* cnSystem::DefaultHeap::Alloc(uIntn Alignment,uIntn Size)
