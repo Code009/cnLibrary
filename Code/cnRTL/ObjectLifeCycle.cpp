@@ -6,19 +6,19 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void bcVirtualLifeCycle::VirtualDelete(void)noexcept(true)
+{
+	LifeCycleManager->Dispose(this);
+}
+//---------------------------------------------------------------------------
 void bcVirtualLifeCycle::bcManager::Manage(bcVirtualLifeCycle *Object)noexcept(true)
 {
 	Object->LifeCycleManager=this;
 }
 //---------------------------------------------------------------------------
-void bcVirtualLifeCycle::bcManager::NotifyObjectStart(bcVirtualLifeCycle *Object)noexcept(true)
+void cCPPLifeCycleRecyclableInstance::bcManager::Manage(cCPPLifeCycleRecyclableInstance *Object)noexcept(true)
 {
-	Object->LifeCycleManager->ObjectStart(Object);
-}
-//---------------------------------------------------------------------------
-void bcVirtualLifeCycle::VirtualDelete(void)noexcept(true)
-{
-	LifeCycleManager->ObjectFinished(this);
+	Object->LifeCycleManager=this;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

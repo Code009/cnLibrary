@@ -10,6 +10,10 @@
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iWinSocketMulticastAddress : public iSocketAddress
@@ -27,6 +31,10 @@ namespace cnWindows{
 }	// namespace cnWindows
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

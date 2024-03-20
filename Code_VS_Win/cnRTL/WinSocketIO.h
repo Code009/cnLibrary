@@ -486,10 +486,11 @@ public:
 template<class TSocketIOHandle>
 class cNT6ThreadPoolRecyclableIOHandleManager
 	: public bcNTSocketOverlappedIORecyclableHandleManager
-	, public cCPPLifeCycleRecyclableInstance::bcManager< impReferenceCreateLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> >
+	, public bcCPPLifeCycleRecyclableManager< impReferenceLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> >
 {
 public:
-	typedef impReferenceCreateLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> TLifeCycleObject;
+	typedef impReferenceLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> tLifeCycleObject;
+	typedef typename tLifeCycleObject::template tActivation<tLifeCycleObject> tLifeCycleActivation;
 
 	cNT6ThreadPoolRecyclableIOHandleManager(){}
 	~cNT6ThreadPoolRecyclableIOHandleManager(){
@@ -497,17 +498,17 @@ public:
 	}
 
 
-	virtual void ObjectStart(void*)noexcept(true) override{
+	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		DisconnectAndRecycleSocket(static_cast<TLifeCycleObject*>(Object));
-		rDecReference(this,'lcle');
+	virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true) override{
+		DisconnectAndRecycleSocket(static_cast<tLifeCycleObject*>(Object));
 	}
-	void DisconnectAndRecycleSocket(TLifeCycleObject *SocketIO){
+	void DisconnectAndRecycleSocket(tLifeCycleObject *SocketIO){
 		if(SocketIO->Handle==INVALID_SOCKET){
 			// cannot recycle
 			delete SocketIO;
+			rDecReference(this,'lcle');
 			return;
 		}
 		if(SocketIO->Connected){
@@ -516,17 +517,20 @@ public:
 		}
 		else{
 			// recycle socket now
-			this->RecycleObject(SocketIO);
+			bcCPPLifeCycleRecyclableManager<tLifeCycleObject>::Dispose(SocketIO);
+			rDecReference(this,'lcle');
 		}
 	}
 
 	virtual void SocketDisconnected(bcNTSocketOverlappedIOHandle *Object)override{
-		auto LCObject=static_cast<TLifeCycleObject*>(Object);
+		auto LCObject=static_cast<tLifeCycleObject*>(Object);
 		LCObject->Connected=false;
-		this->RecycleObject(LCObject);
+		bcCPPLifeCycleRecyclableManager<tLifeCycleObject>::Dispose(LCObject);
+		rDecReference(this,'lcle');
 	}
 	virtual void SocketDisconnectError(bcNTSocketOverlappedIOHandle *SocketIO)override{
-		delete static_cast<TLifeCycleObject*>(SocketIO);
+		delete static_cast<tLifeCycleObject*>(SocketIO);
+		rDecReference(this,'lcle');
 	}
 };
 //---------------------------------------------------------------------------
@@ -541,7 +545,7 @@ public:
 	rPtr<THandle> operator ()(void){	Query();	}
 	rPtr<THandle> Query(void){
 		auto Object=fManager->Query();
-		Object->LifeCycleStart(Object);
+		tManager::tLifeCycleActivation::Start(Object);
 		return rPtr<THandle>::TakeFromManual(Object);
 	}
 private:

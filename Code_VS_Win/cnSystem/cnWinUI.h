@@ -18,8 +18,10 @@
 #include <cnSystem\cnConsole.h>
 
 #ifdef __cplusplus
-
-
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
 #define	cnLib_CONSTVAR	constexpr
@@ -290,6 +292,10 @@ rPtr<iDXGIViewContent> cnLib_FUNC CreateDXGIViewContent(iDXGIPainter *Painter);
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #undef cnLib_CONSTVAR
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

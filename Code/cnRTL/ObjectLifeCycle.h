@@ -19,48 +19,104 @@
 #define	cnRTL_CONSTVAR	const
 #endif // cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
 
+//---------------------------------------------------------------------------
+namespace cnLib_THelper{
+namespace RTL_TH{
+namespace LifeCycle{
+
+
+template<class TEnable,class T,class TDefaultActivation>
+struct SelectActivation
+	: cnVar::TTypeDef< TDefaultActivation >{};
+template<class T,class TDefaultActivation>
+struct SelectActivation<typename cnVar::TTypeRequireDefined<void,typename T::template tActivation<T> >::Type,T,TDefaultActivation>
+	: cnVar::TTypeDef< typename T::template tActivation<T> >{};
+
+}	// namespace LifeCycle
+}	// namespace RTL_TH
+}	// namespace cnLib_THelper
 
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
+// 			CPP						VirutalLifeCycle
+//			new							new
+//			| <-------Take				|	<-----Take
+//			|			|				|			|
+//Start----------------	|		----------------	|
+//			|			|			VirtualStart	|
+//			|			|				|			|
+//Stop-----------------	|		----------------	|
+//			|			|				|			|
+//			|			|			VirtualStop		|
+//			|			|				|			|
+//			|			|			VirtualDelete	|
+//			|------->Recycle			|-------->Recycle
+//			|							|
+//		  delete					  delete
 //---------------------------------------------------------------------------
 //TLifeCycleInstance
 //{
-//	// LifeCycleStart
-//	//	call the function to start the object's life cycle
-//	static void LifeCycleStart(TLifeCycleObject *Object)noexcept;
-//	// LifeCycleStop
-//	//	call the function to stop the object's life cycle
-//	static void LifeCycleStop(TLifeCycleObject *Object)noexcept;
+//	template<TLifeCycleObject>
+//	TLifeCycleActivation
+//	{
+//		// Start
+//		//	call the function to start the object's life cycle
+//		static void Start(TLifeCycleObject *Object)noexcept;
+//		// Stop
+//		//	call the function to stop the object's life cycle
+//		static void Stop(TLifeCycleObject *Object)noexcept;
+//	};
 //};
+//---------------------------------------------------------------------------
+//TLifeCycleManager
+//{
+//	typedef tLifeCycleObject;
+//	typedef tLifeCycleActivation;
+//	// Manage
+//	//	call the function to start manage the object's life cycle
+//	void Manage(tLifeCycleObject *Object)noexcept;
+//};
+//---------------------------------------------------------------------------
+//TLifeCycleSharedManager
+//{
+//	typedef tLifeCycleObject;
+//	typedef tLifeCycleActivation;
+//	// Manage
+//	//	call the function to start manage the object's life cycle
+//	static void ManageShared(tLifeCycleObject *Object)noexcept;
+//};
+//---------------------------------------------------------------------------
+template<class T,class TDefaultActivation>
+struct TSelectActivation
+	: cnLib_THelper::RTL_TH::LifeCycle::SelectActivation<void,T,TDefaultActivation>
+{
+};
 //---------------------------------------------------------------------------
 struct cCPPLifeCycleInstance
 {
-	template<class TLifeCycleObject>	static void LifeCycleStart(TLifeCycleObject*)noexcept(true){}
-	template<class TLifeCycleObject>	static void LifeCycleStop(TLifeCycleObject *Object)noexcept(true){	delete Object;	}
+	template<class TLifeCycleObject>
+	struct tActivation
+	{
+		static void Start(TLifeCycleObject*)noexcept(true){}
+		static void Stop(TLifeCycleObject *Object)noexcept(true){	delete Object;	}
+	};
 };
 //---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cCPPLifeCycleManager
+template<class T>
+class cCPPLifeCycleSharedManager
 {
 public:
-	typedef TLifeCycleObject tLifeCycleObject;
+	typedef T tLifeCycleObject;
+	typedef typename TSelectActivation< T,cCPPLifeCycleInstance::tActivation<T> >::Type tLifeCycleActivation;
 
-	static void ManageGlobal(void*)noexcept(true){}
-};
-//---------------------------------------------------------------------------
-class iLifeCycleManager
-{
-public:
-	virtual void ObjectStart(void *Object)noexcept(true)=0;
-	virtual void ObjectFinished(void *Object)noexcept(true)=0;
+	static void ManageShared(tLifeCycleObject*)noexcept(true){}
 };
 //---------------------------------------------------------------------------
 class bcVirtualLifeCycle
 {
 protected:
-
 
 	// VirtualStarted
 	//	will be called by final implementation when the life cycle of the object ended.
@@ -68,157 +124,189 @@ protected:
 	void VirtualStarted(void)noexcept(true){}
 	// VirtualStopped
 	//	will be called by final implementation when the life cycle of the object ended.
-	//	default implementation is calling LifeCycleFinish to finalize the object
+	//	default implementation is calling VirtualDelete to finalize the object
 	void VirtualStopped(void)noexcept(true){	VirtualDelete();	}
 
 	void VirtualDelete(void)noexcept(true);
 
-private:
-	iLifeCycleManager *LifeCycleManager=nullptr;
 public:
 
-	class bcManager : public iLifeCycleManager
+	template<class TLifeCycleObject>
+	struct cActivation
 	{
-	public:
-		static void NotifyObjectStart(bcVirtualLifeCycle *Object)noexcept(true);
-		void Manage(bcVirtualLifeCycle *Object)noexcept(true);
-
+		static void Start(TLifeCycleObject *Object)noexcept(true){	Object->VirtualStarted();	}
+		static void Stop(TLifeCycleObject *Object)noexcept(true){	Object->VirtualStopped();	}
 	};
 
+
+	class bcManager
+	{
+	public:
+		void Manage(bcVirtualLifeCycle *Object)noexcept(true);
+		
+		virtual void Dispose(bcVirtualLifeCycle *Object)noexcept(true)=0;
+	};
+
+private:
+	bcManager *LifeCycleManager=nullptr;
 };
 //---------------------------------------------------------------------------
 struct cVirtualLifeCycleInstance
 {
 	template<class TLifeCycleObject>
-	static void LifeCycleStart(TLifeCycleObject *Object)noexcept(true){
-		bcVirtualLifeCycle::bcManager::NotifyObjectStart(Object);
-		Object->VirtualStarted();
+	struct tActivation
+		: bcVirtualLifeCycle::cActivation<TLifeCycleObject>{};
+
+};
+//---------------------------------------------------------------------------
+template<class T>
+class cVirtualLifeCycleSharedManager : public bcVirtualLifeCycle::bcManager
+{
+public:
+	typedef T tLifeCycleObject;
+	typedef typename TSelectActivation< T,bcVirtualLifeCycle::cActivation<T> >::Type tLifeCycleActivation;
+
+	static_assert(cnVar::TIsConvertible<T*,bcVirtualLifeCycle*>::Value,"Incorrect Instance");
+
+	static cVirtualLifeCycleSharedManager* GetSharedManager(void){
+		return cnVar::StaticInitializedSinglton<cVirtualLifeCycleSharedManager>();
 	}
-	template<class TLifeCycleObject>
-	static void LifeCycleStop(TLifeCycleObject *Object)noexcept(true){
-		Object->VirtualStopped();
+
+	static void ManageShared(tLifeCycleObject *Object)noexcept(true){
+		auto Manager=GetSharedManager();
+		Manager->Manage(Object);
+	}
+
+	virtual void Dispose(bcVirtualLifeCycle *Object)noexcept(true) override{
+		delete static_cast<tLifeCycleObject*>(Object);
 	}
 };
 //---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cVirtualLifeCycleDefaultManager : public bcVirtualLifeCycle::bcManager
+struct cCPPLifeCycleRecyclableInstance
+{
+	template<class TLifeCycleObject>
+	struct tActivation
+	{
+		static void Start(TLifeCycleObject*)noexcept(true){}
+		static void Stop(TLifeCycleObject *Object)noexcept(true){	Object->cCPPLifeCycleRecyclableInstance::LifeCycleManager->Dispose(Object);	}
+	};	
+
+	class bcManager
+	{
+	public:
+		void Manage(cCPPLifeCycleRecyclableInstance *Object)noexcept(true);
+
+		virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true)=0;
+	};
+
+	cCPPLifeCycleRecyclableInstance *Next;
+	bcManager *LifeCycleManager;
+};
+//---------------------------------------------------------------------------
+template<class T>
+struct cRecyclableObjectAllocator
+{
+	static T* New(void)noexcept(cnLib_NOEXCEPTEXPR(new T)){	return new T;	}
+	static void Delete(T *p)noexcept(cnLib_NOEXCEPTEXPR(delete p)){	delete p;	}
+};
+//---------------------------------------------------------------------------
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class bcCPPLifeCycleRecyclableManager : public cCPPLifeCycleRecyclableInstance::bcManager, public TRecyclableObjectAllocator
+{
+public:
+	typedef TLifeCycleObject tLifeCycleObject;
+	typedef typename tLifeCycleObject::template tActivation<tLifeCycleObject> tLifeCycleActivation;
+
+	static_assert(cnVar::TIsConvertible<TLifeCycleObject*,cCPPLifeCycleRecyclableInstance*>::Value,"Incorrect Instance");
+
+	void Manage(tLifeCycleObject *Object)noexcept(true){	return bcManager::Manage(Object);	}
+
+	virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true) override{
+		fRecycleStack.Push(static_cast<tLifeCycleObject*>(Object));
+	}
+
+	struct cSingleLinkItemOperator
+	{
+		typedef tLifeCycleObject tItem;
+
+		typedef cnMemory::cPlainAlignedData<sizeof(void*),cCPPLifeCycleRecyclableInstance> tLinkInstance;
+
+		static tLifeCycleObject* LinkNode(tLinkInstance &Link)noexcept(true){
+			return static_cast<tLifeCycleObject*>(reinterpret_cast<cCPPLifeCycleRecyclableInstance*>(&Link));
+		}
+		static const tLifeCycleObject* LinkNode(const tLinkInstance &Link)noexcept(true){
+			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<cCPPLifeCycleRecyclableInstance*>(&Link));
+		}
+
+		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
+			return static_cast<tLifeCycleObject*>(Item->cCPPLifeCycleRecyclableInstance::Next);
+		}
+		static void SetNext(tLifeCycleObject *Item,tLifeCycleObject *Next)noexcept(true){
+			Item->cCPPLifeCycleRecyclableInstance::Next=Next;
+		}
+	};
+
+	tLifeCycleObject* Fetch(void)noexcept(true){
+		auto LCObject=fRecycleStack.Pop();
+		if(LCObject==nullptr){
+			return nullptr;
+		}
+		Restore(LCObject);
+		return LCObject;
+	}
+
+	tLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new tLifeCycleObject)){
+		auto LCObject=fRecycleStack.Pop();
+		if(LCObject==nullptr){
+			LCObject=TRecyclableObjectAllocator::New();
+			LCObject=new tLifeCycleObject;
+			Manage(LCObject);
+		}
+		Restore(LCObject);
+		return LCObject;
+	}
+
+	virtual void Restore(tLifeCycleObject*)noexcept(true){}
+
+protected:
+
+	tLifeCycleObject* FetchObjects(void){
+		return fRecycleStack.Swap(nullptr);
+	}
+
+	void DeleteObjects(void)noexcept(true){
+		auto ItemsToDelete=fRecycleStack.Swap(nullptr);
+		while(ItemsToDelete!=nullptr){
+			auto DeleteObject=ItemsToDelete;
+			ItemsToDelete=cSingleLinkItemOperator::GetNext(ItemsToDelete);
+
+			TRecyclableObjectAllocator::Delete(DeleteObject);
+			delete DeleteObject;
+		}
+	}
+
+private:
+	cnAsync::cAtomicStack<cSingleLinkItemOperator> fRecycleStack;
+};
+//---------------------------------------------------------------------------
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class cCPPLifeCycleRecyclableSharedManager : public bcCPPLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>
 {
 public:
 	typedef TLifeCycleObject tLifeCycleObject;
 
-	static void ManageGlobal(bcVirtualLifeCycle *Object)noexcept(true){
-		auto Manager=cnVar::StaticInitializedSinglton< cVirtualLifeCycleDefaultManager<TLifeCycleObject> >();
-		Manager->Manage(Object);
-	}
-
-	virtual void ObjectStart(void*)noexcept(true) override{}
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		delete static_cast<TLifeCycleObject*>(static_cast<bcVirtualLifeCycle*>(Object));
-	}
-};
-//---------------------------------------------------------------------------
-class cCPPLifeCycleRecyclableInstance
-{
-private:
-	cCPPLifeCycleRecyclableInstance *LifeCycleNext;
-	iLifeCycleManager *LifeCycleManager;
-
-	struct cSingleLinkItemOperator
-	{
-		typedef cCPPLifeCycleRecyclableInstance tItem;
-
-		typedef cnMemory::cPlainAlignedData<sizeof(void*),cCPPLifeCycleRecyclableInstance> tLinkInstance;
-	
-		static tItem* LinkNode(tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<tItem*>(&Link);
-		}
-		static const tItem* LinkNode(const tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<const tItem*>(&Link);
-		}
-
-		static tItem* GetNext(const tItem *Item)noexcept(true){
-			return static_cast<tItem*>(Item->LifeCycleNext);
-		}
-		static void SetNext(tItem *Item,tItem *Next)noexcept(true){
-			Item->LifeCycleNext=Next;
-		}
-	};
-
-public:
-	template<class TLifeCycleObject>
-	static void LifeCycleStart(TLifeCycleObject *Object)noexcept(true){
-		cnLib_ASSERT(Object->LifeCycleManager!=nullptr);
-		Object->LifeCycleManager->ObjectStart(Object);
-	}
-	template<class TLifeCycleObject>
-	static void LifeCycleStop(TLifeCycleObject *Object)noexcept(true){
-		Object->LifeCycleManager->ObjectFinished(Object);
-	}
-
-	template<class TLifeCycleObject>
-	class bcManager : public iLifeCycleManager
-	{
-	public:
-
-		static_assert(cnVar::TIsConvertible<TLifeCycleObject*,cCPPLifeCycleRecyclableInstance*>::Value,"Incorrect Instance");
-
-		void Manage(TLifeCycleObject *Object)noexcept(true){	Object->LifeCycleManager=this;	}
-
-		TLifeCycleObject* Fetch(void)noexcept(true){
-			return static_cast<TLifeCycleObject*>(fRecycleStack.Pop());
-		}
-
-		TLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new TLifeCycleObject)){
-			auto LCObject=Fetch();
-			if(LCObject==nullptr){
-				LCObject=new TLifeCycleObject;
-				Manage(LCObject);
-			}
-			return LCObject;
-		}
-	protected:
-		static TLifeCycleObject* NextObject(TLifeCycleObject *Object){
-			return static_cast<TLifeCycleObject*>(Object->cCPPLifeCycleRecyclableInstance::LifeCycleNext);
-		}
-
-		void RecycleObject(void *Object)noexcept(true){
-			auto LCObject=static_cast<TLifeCycleObject*>(Object);
-			fRecycleStack.Push(LCObject);
-		}
-
-		TLifeCycleObject* FetchObjects(void)noexcept(true){
-			return static_cast<TLifeCycleObject*>(fRecycleStack.Swap(nullptr));
-		}
-	
-		void DeleteObjects(void)noexcept(true){
-			auto ItemsToDelete=static_cast<TLifeCycleObject*>(fRecycleStack.Swap(nullptr));
-			while(ItemsToDelete!=nullptr){
-				auto DeleteObject=ItemsToDelete;
-				ItemsToDelete=NextObject(ItemsToDelete);
-
-				delete DeleteObject;
-			}
-		}
-	private:
-		cnAsync::cAtomicStack<cSingleLinkItemOperator> fRecycleStack;
-	};
-};
-//---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cCPPLifeCycleSharedRecyclableManager : public cCPPLifeCycleRecyclableInstance::bcManager<TLifeCycleObject>
-{
-public:
-	cnRTL_CONSTEXPR_FUNC cCPPLifeCycleSharedRecyclableManager()noexcept(true)
+	cnRTL_CONSTEXPR_FUNC cCPPLifeCycleRecyclableSharedManager()noexcept(true)
 		: fRefCount(0){}
 	
-	static void LifeCycleManageDefault(TLifeCycleObject *Object)noexcept(true){
+	static cCPPLifeCycleRecyclableSharedManager* GetSharedManager(void){
+		return cnVar::StaticInitializedSinglton<cCPPLifeCycleRecyclableSharedManager>();
+	}
+
+	static void ManageShared(tLifeCycleObject *Object)noexcept(true){
 		auto Manager=GetSharedManager();
 		Manager->Manage(Object);
 	}
 	
-	static cCPPLifeCycleSharedRecyclableManager* GetSharedManager(void){
-		return cnVar::StaticInitializedSinglton<cCPPLifeCycleSharedRecyclableManager>();
-	}
 
 	void IncreaseReference(void)noexcept(true){
 		fRefCount.Free++;
@@ -229,23 +317,23 @@ public:
 		}
 	}
 
-	virtual void ObjectStart(void*)noexcept(true) override{
+	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
 
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		this->RecycleObject(Object);
+	virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true) override{
+		bcCPPLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
 		rDecReference(this,'lcle');
 	}
-
 private:
 	cAtomicVar<uIntn> fRefCount;
 };
 //---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cCPPLifeCycleRecyclableManager : public iReference, public cCPPLifeCycleRecyclableInstance::bcManager<TLifeCycleObject>
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class cCPPLifeCycleRecyclableManager : public iReference, public bcCPPLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>
 {
 public:
+	typedef TLifeCycleObject tLifeCycleObject;
 
 	cCPPLifeCycleRecyclableManager()noexcept(true){}
 	~cCPPLifeCycleRecyclableManager()noexcept(true){
@@ -253,116 +341,118 @@ public:
 	}
 
 
-	virtual void ObjectStart(void*)noexcept(true) override{
+	virtual void Restore(TLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
 
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		this->RecycleObject(Object);
+	virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true) override{
+		bcCPPLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
 		rDecReference(this,'lcle');
 	}
 };
 //---------------------------------------------------------------------------
-class cVirtualLifeCycleRecyclableInstance
+struct cVirtualLifeCycleRecyclableInstance
 {
-private:
 	cVirtualLifeCycleRecyclableInstance *LifeCycleNext;
-	
-	struct cSingleLinkItemOperator
-	{
-		typedef cVirtualLifeCycleRecyclableInstance tItem;
-
-		typedef cnMemory::cPlainAlignedData<sizeof(void*),cVirtualLifeCycleRecyclableInstance> tLinkInstance;
-	
-		static tItem* LinkNode(tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<tItem*>(&Link);
-		}
-		static const tItem* LinkNode(const tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<const tItem*>(&Link);
-		}
-
-		static tItem* GetNext(const tItem *Item)noexcept(true){
-			return static_cast<tItem*>(Item->LifeCycleNext);
-		}
-		static void SetNext(tItem *Item,tItem *Next)noexcept(true){
-			Item->LifeCycleNext=Next;
-		}
-	};
-
-public:
-	
-	template<class TLifeCycleObject>
-	static void LifeCycleStart(TLifeCycleObject *Object)noexcept(true){
-		bcVirtualLifeCycle::bcManager::NotifyObjectStart(Object);
-		Object->VirtualStarted();
-	}
-	template<class TLifeCycleObject>
-	static void LifeCycleStop(TLifeCycleObject *Object)noexcept(true){
-		Object->VirtualStopped();
-	}
 
 	template<class TLifeCycleObject>
-	class bcManager : public bcVirtualLifeCycle::bcManager
-	{
-	public:
-		typedef TLifeCycleObject tLifeCycleObject;
-
-		TLifeCycleObject* Fetch(void)noexcept(true){
-			return static_cast<TLifeCycleObject*>(fRecycleStack.Pop());
-		}
-
-		TLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new TLifeCycleObject)){
-			auto LCObject=Fetch();
-			if(LCObject==nullptr){
-				LCObject=new TLifeCycleObject;
-				bcVirtualLifeCycle::bcManager::Manage(LCObject);
-			}
-			return LCObject;
-		}
-	protected:
-		static TLifeCycleObject* NextObject(TLifeCycleObject *Object){
-			return static_cast<TLifeCycleObject*>(Object->cVirtualLifeCycleRecyclableInstance::LifeCycleNext);
-		}
-
-		void RecycleObject(void *Object)noexcept(true){
-			auto LCObject=static_cast<TLifeCycleObject*>(Object);
-			fRecycleStack.Push(LCObject);
-		}
-
-		TLifeCycleObject* FetchObjects(void)noexcept(true){
-			return static_cast<TLifeCycleObject*>(fRecycleStack.Swap(nullptr));
-		}
-	
-		void DeleteObjects(void)noexcept(true){
-			auto ItemsToDelete=static_cast<TLifeCycleObject*>(fRecycleStack.Swap(nullptr));
-			while(ItemsToDelete!=nullptr){
-				auto DeleteObject=ItemsToDelete;
-				ItemsToDelete=NextObject(ItemsToDelete);
-
-				delete DeleteObject;
-			}
-		}
-	private:
-		cnAsync::cAtomicStack<cSingleLinkItemOperator> fRecycleStack;
-	};
-
+	struct tActivation
+		: bcVirtualLifeCycle::cActivation<TLifeCycleObject>{};	
 };
 //---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cVirtualLifeCycleSharedRecyclableManager : public cVirtualLifeCycleRecyclableInstance::bcManager<TLifeCycleObject>
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class bcVirtualLifeCycleRecyclableManager : public bcVirtualLifeCycle::bcManager
 {
 public:
-	cnRTL_CONSTEXPR_FUNC cVirtualLifeCycleSharedRecyclableManager()noexcept(true)
+	typedef TLifeCycleObject tLifeCycleObject;
+	typedef typename tLifeCycleObject::template tActivation<tLifeCycleObject> tLifeCycleActivation;
+
+	static_assert(cnVar::TIsConvertible<TLifeCycleObject*,cVirtualLifeCycleRecyclableInstance*>::Value,"Incorrect Instance");
+	static_assert(cnVar::TIsConvertible<TLifeCycleObject*,bcVirtualLifeCycle*>::Value,"Incorrect Instance");
+
+
+	void Manage(tLifeCycleObject *Object)noexcept(true){	return bcManager::Manage(Object);	}
+
+	virtual void Dispose(bcVirtualLifeCycle *Object)noexcept(true) override{
+		fRecycleStack.Push(static_cast<tLifeCycleObject*>(Object));
+	}
+
+	struct cSingleLinkItemOperator
+	{
+		typedef tLifeCycleObject tItem;
+		typedef cnMemory::cPlainAlignedData<sizeof(void*),cVirtualLifeCycleRecyclableInstance> tLinkInstance;
+
+		static tLifeCycleObject* LinkNode(tLinkInstance &Link)noexcept(true){
+			return static_cast<tLifeCycleObject*>(reinterpret_cast<cVirtualLifeCycleRecyclableInstance*>(&Link));
+		}
+		static const tLifeCycleObject* LinkNode(const tLinkInstance &Link)noexcept(true){
+			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<cVirtualLifeCycleRecyclableInstance*>(&Link));
+		}
+
+		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
+			return static_cast<tLifeCycleObject*>(Item->cVirtualLifeCycleRecyclableInstance::Next);
+		}
+		static void SetNext(tLifeCycleObject *Item,tLifeCycleObject *Next)noexcept(true){
+			Item->cVirtualLifeCycleRecyclableInstance::Next=Next;
+		}
+	};
+
+
+	tLifeCycleObject* Fetch(void)noexcept(true){
+		auto LCObject=fRecycleStack.Pop();
+		if(LCObject==nullptr){
+			return nullptr;
+		}
+		Restore(LCObject);
+		return LCObject;
+	}
+
+	tLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new tLifeCycleObject)){
+		auto LCObject=fRecycleStack.Pop();
+		if(LCObject==nullptr){
+			LCObject=TRecyclableObjectAllocator::New();
+			bcVirtualLifeCycle::bcManager::Manage(LCObject);
+		}
+		Restore(LCObject);
+		return LCObject;
+	}
+
+	virtual void Restore(tLifeCycleObject *Object)noexcept(true){}
+protected:
+
+	TLifeCycleObject* FetchObjects(void){
+		return fRecycleStack.Swap(nullptr);
+	}
+
+	void DeleteObjects(void)noexcept(true){
+		auto ItemsToDelete=fRecycleStack.Swap(nullptr);
+		while(ItemsToDelete!=nullptr){
+			auto DeleteObject=ItemsToDelete;
+			ItemsToDelete=cSingleLinkItemOperator::GetNext(ItemsToDelete);
+
+			TRecyclableObjectAllocator::Delete(DeleteObject);
+		}
+	}
+private:
+	cnAsync::cAtomicStack<cSingleLinkItemOperator> fRecycleStack;
+};
+//---------------------------------------------------------------------------
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class cVirtualLifeCycleRecyclableSharedManager : public bcVirtualLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>
+{
+public:
+	typedef TLifeCycleObject tLifeCycleObject;
+
+	cnRTL_CONSTEXPR_FUNC cVirtualLifeCycleRecyclableSharedManager()noexcept(true)
 		: fRefCount(0){}
 
-	
-	static void LifeCycleManageDefault(TLifeCycleObject *Object)noexcept(true){
+	static cVirtualLifeCycleRecyclableSharedManager* GetSharedManager(void){
+		return cnVar::StaticInitializedSinglton<cVirtualLifeCycleRecyclableSharedManager>();
+	}
+
+	static void ManageShared(tLifeCycleObject *Object)noexcept(true){
 		auto Manager=GetSharedManager();
 		Manager->Manage(Object);
-	}
-	
-	static cVirtualLifeCycleSharedRecyclableManager* GetSharedManager(void){
-		return cnVar::StaticInitializedSinglton<cVirtualLifeCycleSharedRecyclableManager>();
 	}
 
 	void IncreaseReference(void)noexcept(true){
@@ -374,36 +464,37 @@ public:
 		}
 	}
 
-	virtual void ObjectStart(void*)noexcept(true) override{
+	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
 
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		this->RecycleObject(Object);
+	virtual void Dispose(bcVirtualLifeCycle *Object)noexcept(true) override{
+		bcVirtualLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
 		rDecReference(this,'lcle');
 	}
-
 private:
 	cAtomicVar<uIntn> fRefCount;
 };
 //---------------------------------------------------------------------------
-template<class TLifeCycleObject>
-class cVirtualLifeCycleRecyclableManager : public iReference, public cVirtualLifeCycleRecyclableInstance::bcManager<TLifeCycleObject>
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+class cVirtualLifeCycleRecyclableManager : public iReference, public bcVirtualLifeCycleRecyclableManager<TLifeCycleObject,TRecyclableObjectAllocator>
 {
 public:
+	typedef TLifeCycleObject tLifeCycleObject;
 
+	cVirtualLifeCycleRecyclableManager()noexcept(true){}
 	~cVirtualLifeCycleRecyclableManager()noexcept(true){
 		this->DeleteObjects();
 	}
 
 	// iVirtualLifeCycleManager
 
-	virtual void ObjectStart(void*)noexcept(true) override{
+	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
 
-	virtual void ObjectFinished(void *Object)noexcept(true) override{
-		this->RecycleObject(Object);
+	virtual void Dispose(bcVirtualLifeCycle *Object)noexcept(true) override{
+		bcVirtualLifeCycleRecyclableManager<tLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
 		rDecReference(this,'lcle');
 	}
 };

@@ -28,6 +28,11 @@ struct IUnknown;
 #include <cnSystem\cnWinUI.h>
 
 #ifdef __cplusplus
+
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
@@ -82,6 +87,11 @@ rPtr<iCOMApartmentThreading> cnLib_FUNC COMApartmentThreadingQuery(iDispatch *Di
 }	// namespace cnWindows
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+	//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
+	
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

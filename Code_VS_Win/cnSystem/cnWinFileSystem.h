@@ -9,6 +9,11 @@
 
 
 #ifdef __cplusplus
+
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#define	override
+#endif
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //- file name ---------------------------------------------------------------
@@ -54,6 +59,10 @@ iPtr<iEndpoint> cnLib_FUNC OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAcc
 }	// namespace cnWindows
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
+//---------------------------------------------------------------------------
+#ifdef	cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
+#undef	override
+#endif
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/

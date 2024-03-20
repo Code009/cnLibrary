@@ -217,7 +217,7 @@ struct ClassIsInheritFrom
 	: cnVar::TConstantValueFalse{};
 
 template<class TClass,class TBase>
-struct ClassIsInheritFrom<decltype(static_cast<void>(static_cast<TBase>(cnVar::DeclVal<TClass*>()))),TClass,TBase>
+struct ClassIsInheritFrom<decltype(static_cast<void>(static_cast<TBase*>(cnVar::DeclVal<TClass*>()))),TClass,TBase>
 	: cnVar::TConstantValueTrue{};
 
 
