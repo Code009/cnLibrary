@@ -26,13 +26,13 @@ namespace cnRTL{
 class cAsyncExecutionThreadSwitch
 {
 public:
-	cAsyncExecutionThreadSwitch(iPtr<iAsyncExecution> Execution)
+	cAsyncExecutionThreadSwitch(iPtr<iAsyncExecution> Execution)noexcept(true)
 		: fExecution(cnVar::MoveCast(Execution)){}
 	~cAsyncExecutionThreadSwitch(){}
 
 	bool await_ready(void)const noexcept(true){	return fExecution==nullptr;		}
 	template<class TCoHandle>
-	void await_suspend(TCoHandle&& CoHandle){
+	void await_suspend(TCoHandle&& CoHandle)noexcept(true){
 		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
 		fExecution->Execute(nullptr,&fExecuteProcedure);
 	}
@@ -43,7 +43,7 @@ private:
 
 	class cExecuteProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncExecutionThreadSwitch::fExecuteProcedure);
 			cCoroutineHandleOperator::Resume(Host->fCoHandle);
 		}
@@ -51,7 +51,7 @@ private:
 
 };
 //---------------------------------------------------------------------------
-inline cAsyncExecutionThreadSwitch ExecutionThreadSwitch(iPtr<iAsyncExecution> Execution)
+inline cAsyncExecutionThreadSwitch ExecutionThreadSwitch(iPtr<iAsyncExecution> Execution)noexcept(true)
 {
 	return cAsyncExecutionThreadSwitch(cnVar::MoveCast(Execution));
 }
@@ -60,16 +60,16 @@ class bcExclusiveProcedure
 {
 protected:
 	cExclusiveFlag fExclusiveFlag;
-	void ProcedureThreadRunLoop(void);
+	void ProcedureThreadRunLoop(void)noexcept(true);
 
 	// HostProcedure
 	// return true to continue
-	virtual bool Procedure(void)=0;
+	virtual bool Procedure(void)noexcept(true)=0;
 
-	bcExclusiveProcedure();
-	~bcExclusiveProcedure();
+	bcExclusiveProcedure()noexcept(true);
+	~bcExclusiveProcedure()noexcept(true);
 public:
-	void Run(void);
+	void Run(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcAsyncExclusiveProcedure : public bcExclusiveProcedure
@@ -77,27 +77,27 @@ class bcAsyncExclusiveProcedure : public bcExclusiveProcedure
 private:
 	class cProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void);
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fProcedure;
 protected:
-	bcAsyncExclusiveProcedure();
-	~bcAsyncExclusiveProcedure();
+	bcAsyncExclusiveProcedure()noexcept(true);
+	~bcAsyncExclusiveProcedure()noexcept(true);
 public:
-	operator iProcedure*();
+	operator iProcedure*()noexcept(true);
 
-	void RunAsync(iAsyncProcedure *AsyncProc);
-	void RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count);
+	void RunAsync(iAsyncProcedure *AsyncProc)noexcept(true);
+	void RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cCancellationFlag
 {
 public:
-	void Reset(void);
-	bool Complete(void);
-	bool Cancel(void);
+	void Reset(void)noexcept(true);
+	bool Complete(void)noexcept(true);
+	bool Cancel(void)noexcept(true);
 
-	bool IsCancelled(void)const;
+	bool IsCancelled(void)const noexcept(true);
 private:
 	enum eFlag{
 		cfNormal,cfCompleted,cfCancelled
@@ -110,12 +110,12 @@ template<class TFunc,class TFuntion>
 class cFunctorRefInterface;
 
 template<class TFunc,class TRet,class...TArgs>
-class cFunctorRefInterface<TFunc,TRet (TArgs...)> : public iReference, public iFunction<TRet (TArgs...)>
+class cFunctorRefInterface<TFunc,TRet (TArgs...)noexcept(true)> : public iReference, public iFunction<TRet (TArgs...)noexcept(true)>
 {
 public:
 	TFunc Func;
-	cFunctorRefInterface(TFunc &&pf):Func(static_cast<TFunc&&>(pf)){}
-	virtual TRet cnLib_FUNC Execute(TArgs...Args)override{
+	cFunctorRefInterface(TFunc &&pf)noexcept(true):Func(static_cast<TFunc&&>(pf)){}
+	virtual TRet cnLib_FUNC Execute(TArgs...Args)noexcept(true)override{
 		return Func(static_cast<TArgs&&>(Args)...);
 	}
 };
@@ -124,21 +124,21 @@ template<class TFunc>
 class cDispatchFunctor
 {
 public:
-	rPtr< cFunctorRefInterface<TFunc,void (void)> > Function;
+	rPtr< cFunctorRefInterface<TFunc,void (void)noexcept(true)> > Function;
 	iPtr<iDispatch> Dispatch;
 
-	void operator() (void){
+	void operator() (void)noexcept(true){
 		Dispatch->ExecuteAsync(Function,Function);
 	}
 };
 template<class TFunc>
-inline cDispatchFunctor<TFunc> DispatchFunctor(iDispatch *Dispatch,TFunc&& Func){
+inline cDispatchFunctor<TFunc> DispatchFunctor(iDispatch *Dispatch,TFunc&& Func)noexcept(true){
 	cDispatchFunctor<TFunc> Functor={rCreate< cFunctorRefInterface<TFunc,void(void)> >(static_cast<TFunc&&>(Func)),Dispatch};
 	return Functor;
 }
 
 template<class TFunc>
-inline void DispatchFunctionExecuteAsync(iDispatch *Dispatch,TFunc&& Func){
+inline void DispatchFunctionExecuteAsync(iDispatch *Dispatch,TFunc&& Func)noexcept(true){
 	auto Function=rCreate< cFunctorRefInterface<TFunc,void(void)> >(static_cast<TFunc&&>(Func));
 	Dispatch->ExecuteAsync(Function,Function);
 }

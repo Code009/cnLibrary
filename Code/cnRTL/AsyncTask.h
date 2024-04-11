@@ -33,11 +33,11 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 class cWaitForTaskProcedure : public cThreadOneTimeNotifier, public iProcedure
 {
-	virtual void cnLib_FUNC Execute(void)override;
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-void WaitForTask(TAsyncTaskPtr&& Task)
+inline void WaitForTask(TAsyncTaskPtr&& Task)noexcept(true)
 {
 	cWaitForTaskProcedure Notifier;
 	if(Task->SetNotify(&Notifier)==false){
@@ -51,13 +51,13 @@ template<class TAsyncTaskPtr>
 class cAsyncTaskAwaiter : private iProcedure
 {
 public:
-	cAsyncTaskAwaiter(TAsyncTaskPtr &&Task)
+	cAsyncTaskAwaiter(TAsyncTaskPtr &&Task)noexcept(true)
 		: fTask(static_cast<TAsyncTaskPtr&&>(Task)){}
-	~cAsyncTaskAwaiter(){}
+	~cAsyncTaskAwaiter()noexcept(true){}
 
 	bool await_ready(void)const noexcept(true){	return fTask->IsDone();		}
 	template<class TCoHandle>
-	bool await_suspend(TCoHandle&& CoHandle){
+	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
 		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
 		return fTask->SetNotify(this);
 	}
@@ -65,13 +65,13 @@ public:
 private:
 	TAsyncTaskPtr fTask;
 	cCoroutineHandleOperator::tHandle fCoHandle;
-	virtual void cnLib_FUNC Execute(void)override{
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 		cCoroutineHandleOperator::Resume(fCoHandle);
 	}
 };
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-cAsyncTaskAwaiter<TAsyncTaskPtr> TaskAwaiter(TAsyncTaskPtr&& Task)
+inline cAsyncTaskAwaiter<TAsyncTaskPtr> TaskAwaiter(TAsyncTaskPtr&& Task)noexcept(true)
 {
 	return cAsyncTaskAwaiter<TAsyncTaskPtr>(static_cast<TAsyncTaskPtr&&>(Task));
 }
@@ -80,7 +80,7 @@ template<class TAsyncTaskPtr>
 class cAsyncTaskExecutionAwaiter
 {
 public:
-	cAsyncTaskExecutionAwaiter(TAsyncTaskPtr &&Task,iPtr<iAsyncExecution> ResumeExecution)
+	cAsyncTaskExecutionAwaiter(TAsyncTaskPtr &&Task,iPtr<iAsyncExecution> ResumeExecution)noexcept(true)
 		: fTask(static_cast<TAsyncTaskPtr&&>(Task))
 		, fResumeExecution(cnVar::MoveCast(ResumeExecution)){}
 	~cAsyncTaskExecutionAwaiter(){}
@@ -99,7 +99,7 @@ private:
 
 	class cTaskNotifyProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTaskExecutionAwaiter::fTaskNotifyProcedure);
 			if(Host->fResumeExecution!=nullptr){
 				Host->fResumeExecution->Execute(nullptr,&Host->fDispatchResumeProcedure);
@@ -112,7 +112,7 @@ private:
 
 	class cDispatchResumeProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTaskExecutionAwaiter::fDispatchResumeProcedure);
 			cCoroutineHandleOperator::Resume(Host->fCoHandle);
 		}
@@ -121,13 +121,13 @@ private:
 };
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-inline cAsyncTaskExecutionAwaiter<TAsyncTaskPtr> TaskAwaiter(TAsyncTaskPtr&& Task,iAsyncExecution *ResumeExecution)
+inline cAsyncTaskExecutionAwaiter<TAsyncTaskPtr> TaskAwaiter(TAsyncTaskPtr&& Task,iAsyncExecution *ResumeExecution)noexcept(true)
 {
 	return cAsyncTaskExecutionAwaiter<TAsyncTaskPtr>(static_cast<TAsyncTaskPtr&&>(Task),ResumeExecution);
 }
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-inline cAsyncTaskExecutionAwaiter<TAsyncTaskPtr> TaskUIDispatchAwaiter(TAsyncTaskPtr&& Task,bool HighPriority=false)
+inline cAsyncTaskExecutionAwaiter<TAsyncTaskPtr> TaskUIDispatchAwaiter(TAsyncTaskPtr&& Task,bool HighPriority=false)noexcept(true)
 {
 	auto AwaitUIDispatch=cnSystem::CurrentUIThread::GetDispatch(HighPriority);
 	return cAsyncTaskExecutionAwaiter<TAsyncTaskPtr>(static_cast<TAsyncTaskPtr&&>(Task),AwaitUIDispatch);
@@ -136,14 +136,14 @@ inline cAsyncTaskExecutionAwaiter<TAsyncTaskPtr> TaskUIDispatchAwaiter(TAsyncTas
 class cAsyncTaskState
 {
 public:
-	cAsyncTaskState();
-	~cAsyncTaskState();
+	cAsyncTaskState()noexcept(true);
+	~cAsyncTaskState()noexcept(true);
 
-	void Reset(void);
-	void SetDone(void);
+	void Reset(void)noexcept(true);
+	void SetDone(void)noexcept(true);
 
-	bool IsDone(void)const;
-	bool SetNotify(iProcedure *NotifyProcedure);
+	bool IsDone(void)const noexcept(true);
+	bool SetNotify(iProcedure *NotifyProcedure)noexcept(true);
 
 protected:
 
@@ -154,11 +154,11 @@ protected:
 class cAsyncTask : public iAsyncTask
 {
 public:
-	cAsyncTask();
-	~cAsyncTask();
+	cAsyncTask()noexcept(true);
+	~cAsyncTask()noexcept(true);
 
-	virtual bool cnLib_FUNC IsDone(void)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
+	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
 
 protected:
 	cAsyncTaskState fTaskState;
@@ -167,33 +167,33 @@ protected:
 class cManualAsyncTask : public cAsyncTask
 {
 public:
-	cManualAsyncTask();
-	~cManualAsyncTask();
+	cManualAsyncTask()noexcept(true);
+	~cManualAsyncTask()noexcept(true);
 
-	void Reset(void);
-	void SetDone(void);
+	void Reset(void)noexcept(true);
+	void SetDone(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cDelayTask : public cAsyncTask, public iReference
 {
 public:
-	cDelayTask();
-	~cDelayTask();
+	cDelayTask()noexcept(true);
+	~cDelayTask()noexcept(true);
 
-	void SetTimer(uInt64 NS);
+	void SetTimer(uInt64 NS)noexcept(true);
 protected:
-	void TimerHit(void);
+	void TimerHit(void)noexcept(true);
 
 	rPtr<iAsyncTimer> fTimer;
 	class cTimerHitProcedure : public iProcedure
 	{
 	public:
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fTimerProc;
 
 };
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> DelayTask(uInt64 NS);
+iPtr<iAsyncTask> DelayTask(uInt64 NS)noexcept(true);
 //---------------------------------------------------------------------------
 class cAsyncTaskCoroutine : public iPtr<iAsyncTask>
 {
@@ -201,8 +201,8 @@ public:
 	class impAsyncTask : public iAsyncTask, public cnAsync::iCoroutinePromiseAwaiter
 	{
 	public:
-		virtual bool cnLib_FUNC IsDone(void)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
+		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
+		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
 
 		cAsyncTaskState State;
 
@@ -210,14 +210,14 @@ public:
 
 		cCoroutine<void>::pPtr Promise;
 
-		impAsyncTask(cCoroutine<void>::pPtr &&Promise);
+		impAsyncTask(cCoroutine<void>::pPtr &&Promise)noexcept(true);
 	};
 
 	cAsyncTaskCoroutine(const cAsyncTaskCoroutine&)=delete;
 	cAsyncTaskCoroutine &operator=(const cAsyncTaskCoroutine&)=delete;
-	cAsyncTaskCoroutine(cAsyncTaskCoroutine &&Src);
-	cAsyncTaskCoroutine &operator=(cAsyncTaskCoroutine &&Src);
-	~cAsyncTaskCoroutine();
+	cAsyncTaskCoroutine(cAsyncTaskCoroutine &&Src)noexcept(true);
+	cAsyncTaskCoroutine &operator=(cAsyncTaskCoroutine &&Src)noexcept(true);
+	~cAsyncTaskCoroutine()noexcept(true);
 
 
 	// construct by promise
@@ -233,10 +233,10 @@ public:
 	class impAsyncFunction : public iAsyncFunction<TResultInterface>, public cnAsync::iCoroutinePromiseAwaiter
 	{
 	public:
-		virtual bool cnLib_FUNC IsDone(void)override{	return State.IsDone();		}
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override{	return State.SetNotify(NotifyProcedure);	}
-		virtual void cnLib_FUNC Cancel(void)override{		}
-		virtual TResultInterface cnLib_FUNC GetResult(void)override{	return Promise->fReturnValue;	}
+		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override{	return State.IsDone();		}
+		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override{	return State.SetNotify(NotifyProcedure);	}
+		virtual void cnLib_FUNC Cancel(void)noexcept(true)override{		}
+		virtual TResultInterface cnLib_FUNC GetResult(void)noexcept(true)override{	return Promise->fReturnValue;	}
 
 		cAsyncTaskState State;
 
@@ -244,32 +244,32 @@ public:
 
 		typename cCoroutine<TResult>::pPtr Promise;
 
-		impAsyncFunction(cCoroutine<void>::pPtr &&Promise);
+		impAsyncFunction(cCoroutine<void>::pPtr &&Promise)noexcept(true);
 	};
 
 	cAsyncFunctionCoroutine(cCoroutine<void> &&Src)noexcept(true):iPtr< iAsyncFunction<TResultInterface> >(iCreate<impAsyncFunction>(Src.TakePromise())){}
 
 	cAsyncFunctionCoroutine(const cAsyncFunctionCoroutine&)=delete;
 	cAsyncFunctionCoroutine &operator=(const cAsyncFunctionCoroutine&)=delete;
-	cAsyncFunctionCoroutine(cAsyncFunctionCoroutine &&Src):iPtr< iAsyncFunction<TResultInterface> >(cnVar::MoveCast(Src)){}
-	cAsyncFunctionCoroutine &operator=(cAsyncFunctionCoroutine &&Src){	*this=cnVar::MoveCast(Src);	return *this;	}
-	~cAsyncFunctionCoroutine(){}
+	cAsyncFunctionCoroutine(cAsyncFunctionCoroutine &&Src)noexcept(true):iPtr< iAsyncFunction<TResultInterface> >(cnVar::MoveCast(Src)){}
+	cAsyncFunctionCoroutine &operator=(cAsyncFunctionCoroutine &&Src)noexcept(true){	*this=cnVar::MoveCast(Src);	return *this;	}
+	~cAsyncFunctionCoroutine()noexcept(true){}
 };
 //---------------------------------------------------------------------------
 class cTaskQueue
 {
 public:
-	cTaskQueue();
-	~cTaskQueue();
+	cTaskQueue()noexcept(true);
+	~cTaskQueue()noexcept(true);
 
 	class cTask : public iReference
 	{
 	public:
 		cTask *Next;
-		cTask();
-		~cTask();
+		cTask()noexcept(true);
+		~cTask()noexcept(true);
 
-		bool IsCancelled(void)const;
+		bool IsCancelled(void)const noexcept(true);
 	protected:
 		cAsyncTaskState fTaskState;
 	private:
@@ -280,13 +280,13 @@ public:
 		cCancellationFlag fCancelFlag;
 	};
 
-	bool IsEmpty(void)const;
-	void EnqueueTask(cTask *Task);
-	rPtr<cTask> DequeueTask(void);
-	void CancelTask(cTask *Task);
-	void CompleteTask(rPtr<cTask> Task);
+	bool IsEmpty(void)const noexcept(true);
+	void EnqueueTask(cTask *Task)noexcept(true);
+	rPtr<cTask> DequeueTask(void)noexcept(true);
+	void CancelTask(cTask *Task)noexcept(true);
+	void CompleteTask(rPtr<cTask> Task)noexcept(true);
 
-	void CreateTaskCompletionWork(iReference *ThreadReference,iThreadPool *ThreadPool);
+	void CreateTaskCompletionWork(iReference *ThreadReference,iThreadPool *ThreadPool)noexcept(true);
 
 private:
 	// pending queue
@@ -296,47 +296,47 @@ private:
 	// Completion queue
 
 	cAtomicQueueSO<cTask> fTaskCompleteQueue;
-	void UpdateCompleteTaskQueue(void);
+	void UpdateCompleteTaskQueue(void)noexcept(true);
 	class cCompleteTaskProcedure : public bcAsyncExclusiveProcedure
 	{
-		virtual bool Procedure(void)override;
+		virtual bool Procedure(void)noexcept(true)override;
 	}fCompleteTaskProcedure;
 	rPtr<iAsyncProcedure> fCompleteTaskProcWork;
-	bool CompleteTaskProcedure(void);
+	bool CompleteTaskProcedure(void)noexcept(true);
 
-	void (cTaskQueue::*fCompleteTaskProc)(void);
-	void CompleteTaskProc_Run(void);
-	void CompleteTaskProc_Async(void);
+	void (cTaskQueue::*fCompleteTaskProc)(void)noexcept(true);
+	void CompleteTaskProc_Run(void)noexcept(true);
+	void CompleteTaskProc_Async(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcNotificationCycle
 {
 public:
-	bcNotificationCycle();
-	~bcNotificationCycle();
+	bcNotificationCycle()noexcept(true);
+	~bcNotificationCycle()noexcept(true);
 
-	bool PrepareStartNotify(void);
-	void CancelStartNotify(void);
-	void ConfirmStartNotify(void);
-	bool StopNotify(void);
-	bool CloseNotify(void);
+	bool PrepareStartNotify(void)noexcept(true);
+	void CancelStartNotify(void)noexcept(true);
+	void ConfirmStartNotify(void)noexcept(true);
+	bool StopNotify(void)noexcept(true);
+	bool CloseNotify(void)noexcept(true);
 
-	bool IsNotificationClosed(void)const;
-	bool IsNotificationStarted(void)const;
-	bool IsNotificationEnded(void)const;
+	bool IsNotificationClosed(void)const noexcept(true);
+	bool IsNotificationStarted(void)const noexcept(true);
+	bool IsNotificationEnded(void)const noexcept(true);
 
-	bool RunNotifyCycle(void);
+	bool RunNotifyCycle(void)noexcept(true);
 
 	enum class CycleState{
 		Normal,Ended,Terminated
 	};
 protected:
-	virtual iReference* NotificationInnerReference(void)=0;
-	virtual void NotificationStarted(void)=0;
-	virtual void NotificationStopped(void)=0;
-	virtual void NotificationClosed(void)=0;
-	virtual CycleState NotificationCheckState(void)=0;
-	virtual void NotificationProcedure(void)=0;
+	virtual iReference* NotificationInnerReference(void)noexcept(true)=0;
+	virtual void NotificationStarted(void)noexcept(true)=0;
+	virtual void NotificationStopped(void)noexcept(true)=0;
+	virtual void NotificationClosed(void)noexcept(true)=0;
+	virtual CycleState NotificationCheckState(void)noexcept(true)=0;
+	virtual void NotificationProcedure(void)noexcept(true)=0;
 private:
 
 	cAtomicVar<ufInt8> fNotificationCloseState;
@@ -344,8 +344,8 @@ private:
 	bool fNotificationStarted		:1;
 	bool fNotificationIsEnded		:1;
 
-	bool RunNotifyCycle_Running(void);
-	bool RunNotifyCycle_Idle(void);
+	bool RunNotifyCycle_Running(void)noexcept(true);
+	bool RunNotifyCycle_Idle(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #if 0
@@ -429,48 +429,48 @@ private:
 class bcAsyncNotificationProcessor :  protected iAsyncNotificationCallback
 {
 public:
-	bcAsyncNotificationProcessor(iAsyncNotification *Notification=nullptr);
-	~bcAsyncNotificationProcessor();
+	bcAsyncNotificationProcessor(iAsyncNotification *Notification=nullptr)noexcept(true);
+	~bcAsyncNotificationProcessor()noexcept(true);
 
-	iAsyncNotification* GetAsyncNotification(void)const;
-	bool SetAsyncNotification(iAsyncNotification *Queue);
+	iAsyncNotification* GetAsyncNotification(void)const noexcept(true);
+	bool SetAsyncNotification(iAsyncNotification *Queue)noexcept(true);
 
-	bool IsActive(void)const;
+	bool IsActive(void)const noexcept(true);
 
-	bool Start(iReference *Reference=nullptr);
-	void Stop(void);
+	bool Start(iReference *Reference=nullptr)noexcept(true);
+	void Stop(void)noexcept(true);
 protected:
 
 	rPtr<iAsyncNotification> fAsyncNotification;
 	bool fNotificationActive;
 	cAtomicVar<bool> fActiveMutex;
-	virtual void cnLib_FUNC AsyncStarted(void)override;
-	virtual void cnLib_FUNC AsyncStopped(void)override;
+	virtual void cnLib_FUNC AsyncStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC AsyncStopped(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class bcAsyncQueue : public bcNotificationCycle
 {
 public:
-	bcAsyncQueue();
-	~bcAsyncQueue();
+	bcAsyncQueue()noexcept(true);
+	~bcAsyncQueue()noexcept(true);
 
-	void NotifyQueue(bool IdleNotify);
-	void CloseQueue(void);
+	void NotifyQueue(bool IdleNotify)noexcept(true);
+	void CloseQueue(void)noexcept(true);
 
 protected:
 
-	void CreateQueueWork(iAsyncExecution *AsyncExecution,bool DisableUpdateThreadLoop);
-	void UpdateQueueState(bool AsyncNotify);
+	void CreateQueueWork(iAsyncExecution *AsyncExecution,bool RestrictInExecution)noexcept(true);
+	void UpdateQueueState(bool AsyncNotify)noexcept(true);
 
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	virtual void NotificationClosed(void)override;
-	virtual CycleState NotificationCheckState(void)override;
-	virtual void NotificationProcedure(void)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	virtual void NotificationClosed(void)noexcept(true)override;
+	virtual CycleState NotificationCheckState(void)noexcept(true)override;
+	virtual void NotificationProcedure(void)noexcept(true)override;
 
-	virtual void AsyncQueueNotify(void)=0;
+	virtual void AsyncQueueNotify(void)noexcept(true)=0;
 
-	void AsyncQueueSetAvailable(bool AsyncNotify);
+	void AsyncQueueSetAvailable(bool AsyncNotify)noexcept(true);
 
 private:
 
@@ -479,34 +479,34 @@ private:
 
 	class cAsyncQueueStateProcedure : public bcAsyncExclusiveProcedure
 	{
-		virtual bool Procedure(void)override;
+		virtual bool Procedure(void)noexcept(true)override;
 	}fAsyncQueueStateProcedure;
 	rPtr<iAsyncProcedure> fAsyncQueueProcWork;
 
-	void (bcAsyncQueue::*fAsyncQueueUpdateStateProc)(bool AsyncNotify);
-	void AsyncQueueUpdateStateProc_Run(bool AsyncNotify);
-	void AsyncQueueUpdateStateProc_Async(bool AsyncNotify);
-	void AsyncQueueUpdateStateProc_DisableUpdateThreadLoop(bool AsyncNotify);
+	void (bcAsyncQueue::*fAsyncQueueUpdateStateProc)(bool AsyncNotify)noexcept(true);
+	void AsyncQueueUpdateStateProc_Run(bool AsyncNotify)noexcept(true);
+	void AsyncQueueUpdateStateProc_Async(bool AsyncNotify)noexcept(true);
+	void AsyncQueueUpdateStateProc_RestrictInAsyncExecution(bool AsyncNotify)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcAsyncNotification : public iAsyncNotification, protected bcAsyncQueue
 {
 public:
-	bcAsyncNotification();
-	~bcAsyncNotification();
+	bcAsyncNotification()noexcept(true);
+	~bcAsyncNotification()noexcept(true);
 
-	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)override;
-	virtual void cnLib_FUNC StopNotify(void)override;
-	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)override;
-	virtual bool cnLib_FUNC IsClosed(void)override;
+	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)override;
+	virtual void cnLib_FUNC StopNotify(void)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)noexcept(true)override;
+	virtual bool cnLib_FUNC IsClosed(void)noexcept(true)override;
 
 protected:
 	iAsyncNotificationCallback *fAsyncNotificationCallback;
 	rPtr<iReference> fAsyncNotificationReference;
 
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	virtual void AsyncQueueNotify(void)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	virtual void AsyncQueueNotify(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL

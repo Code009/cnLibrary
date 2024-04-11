@@ -25,33 +25,33 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-eStreamError GetStreamError(iInterface *Stream);
+eStreamError GetStreamError(iInterface *Stream)noexcept(true);
 //---------------------------------------------------------------------------
 class cStreamFromEndpoint : public bcStream, public cDualReference, private iReadQueueCallback, private iWriteQueueCallback
 {
 public:
-	cStreamFromEndpoint();
-	~cStreamFromEndpoint();
+	cStreamFromEndpoint()noexcept(true);
+	~cStreamFromEndpoint()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
-	bool Connect(iEndpoint *Endpoint);
+	bool Connect(iEndpoint *Endpoint)noexcept(true);
 protected:
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 
 	iPtr<iEndpoint> fEndpoint;
 
 	// read task process
 
-	virtual void StreamProcessReadTask(void)override;
-	virtual void StreamProcessReadEnd(void)override;
+	virtual void StreamProcessReadTask(void)noexcept(true)override;
+	virtual void StreamProcessReadEnd(void)noexcept(true)override;
 	iPtr<cReadTask> fReadTask;
 
 	// write task process
 
-	virtual void StreamProcessWriteTask(void)override;
-	virtual void StreamProcessWriteSetEnd(void)override;
-	virtual void StreamProcessWriteEnd(void)override;
+	virtual void StreamProcessWriteTask(void)noexcept(true)override;
+	virtual void StreamProcessWriteSetEnd(void)noexcept(true)override;
+	virtual void StreamProcessWriteEnd(void)noexcept(true)override;
 	rPtr<cWriteTask> fWriteTask;
 
 
@@ -59,17 +59,17 @@ protected:
 
 	iWriteQueue *fWriteQueue=nullptr;
 	
-	virtual void cnLib_FUNC WriteStarted(void)override;
-	virtual void cnLib_FUNC WriteStopped(void)override;
-	virtual void cnLib_FUNC WriteNotify(void)override;
+	virtual void cnLib_FUNC WriteStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteNotify(void)noexcept(true)override;
 
 	// Read Queue
 
 	iReadQueue *fReadQueue=nullptr;
 
-	virtual void cnLib_FUNC ReadStarted(void)override;
-	virtual void cnLib_FUNC ReadStopped(void)override;
-	virtual void cnLib_FUNC ReadNotify(void)override;
+	virtual void cnLib_FUNC ReadStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadNotify(void)noexcept(true)override;
 
 	bool fReadActive=false;
 	bool fWriteActive=false;
@@ -78,62 +78,62 @@ protected:
 class cPacketStreamFromEndpoint : public bcStream, public cDualReference, private iReadQueueCallback, private iWriteQueueCallback
 {
 public:
-	cPacketStreamFromEndpoint();
-	~cPacketStreamFromEndpoint();
+	cPacketStreamFromEndpoint()noexcept(true);
+	~cPacketStreamFromEndpoint()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
-	bool Connect(iEndpoint *Endpoint);
+	bool Connect(iEndpoint *Endpoint)noexcept(true);
 protected:
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 	
 	iPtr<iEndpoint> fEndpoint;
 
 	// read task process
 
-	virtual void StreamProcessReadTask(void)override;
-	virtual void StreamProcessReadEnd(void)override;
+	virtual void StreamProcessReadTask(void)noexcept(true)override;
+	virtual void StreamProcessReadEnd(void)noexcept(true)override;
 
 	// write task process
 
-	virtual void StreamProcessWriteTask(void)override;
-	virtual void StreamProcessWriteSetEnd(void)override;
-	virtual void StreamProcessWriteEnd(void)override;
+	virtual void StreamProcessWriteTask(void)noexcept(true)override;
+	virtual void StreamProcessWriteSetEnd(void)noexcept(true)override;
+	virtual void StreamProcessWriteEnd(void)noexcept(true)override;
 
 	// Write Queue
 
 	iWriteQueue *fWriteQueue=nullptr;
 	
-	virtual void cnLib_FUNC WriteStarted(void)override;
-	virtual void cnLib_FUNC WriteStopped(void)override;
-	virtual void cnLib_FUNC WriteNotify(void)override;
+	virtual void cnLib_FUNC WriteStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteNotify(void)noexcept(true)override;
 
 	// Read Queue
 
 	iReadQueue *fReadQueue=nullptr;
 
-	virtual void cnLib_FUNC ReadStarted(void)override;
-	virtual void cnLib_FUNC ReadStopped(void)override;
-	virtual void cnLib_FUNC ReadNotify(void)override;
+	virtual void cnLib_FUNC ReadStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadNotify(void)noexcept(true)override;
 
 	bool fReadActive=false;
 	bool fWriteActive=false;
 };
 //---------------------------------------------------------------------------
-iPtr<iStream> CreateStreamFromEndpoint(iEndpoint *Endpoint,bool KeepBoundary);
+iPtr<iStream> CreateStreamFromEndpoint(iEndpoint *Endpoint,bool KeepBoundary)noexcept(true);
 //---------------------------------------------------------------------------
 class bcReadQueueFromStream : public bcReadQueue
 {
 public:
-	bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferSize);
-	~bcReadQueueFromStream();
+	bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferSize)noexcept(true);
+	~bcReadQueueFromStream()noexcept(true);
 
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 
 protected:
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationClosed(void)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationClosed(void)noexcept(true)override;
 
 private:
 	iStream *fStream;
@@ -150,28 +150,28 @@ private:
 	uIntn fReadBufferSize;
 	uIntn fCurReadOffset;
 
-	void OnStartRead(void);
+	void OnStartRead(void)noexcept(true);
 	class cTaskProcedure : public iProcedure
 	{
 	public:
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	public:
 	}fTaskProcedure;
-	void ProcessTask(void);
+	void ProcessTask(void)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class bcWriteQueueFromStream : public bcWriteQueue
 {
 public:
-	bcWriteQueueFromStream(iStream *Stream);
-	~bcWriteQueueFromStream();
+	bcWriteQueueFromStream(iStream *Stream)noexcept(true);
+	~bcWriteQueueFromStream()noexcept(true);
 
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)override;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
 protected:
-	virtual void NotificationClosed(void)override;
+	virtual void NotificationClosed(void)noexcept(true)override;
 private:
 	iStream *fStream;
 
@@ -186,37 +186,38 @@ private:
 	}fWriteItem[2];
 	static constexpr uIntn SourceBufferTotalSize=65536;
 
-	void SendWriteBuffer(cWriteItem &Item);
+	void SendWriteBuffer(cWriteItem &Item)noexcept(true);
 
 	class cTaskProcedure : public iProcedure
 	{
 	public:
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	public:
 	}fTaskProcedure;
-	void ProcessTask(void);
+	void ProcessTask(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cEndpointFromStream : public iEndpoint, public iReference, public cDualReference
 {
 public:
-	cEndpointFromStream(rPtr<iReference> StreamReference,iStream *Stream,uIntn ReadBufferSize=0x10000,iThreadPool *ThreadPool=nullptr);
-	~cEndpointFromStream();
+	cEndpointFromStream(rPtr<iReference> StreamReference,iStream *Stream,uIntn ReadBufferSize=0x10000,iThreadPool *ThreadPool=nullptr)noexcept(true);
+	~cEndpointFromStream()noexcept(true);
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
-	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
+	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 protected:
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
 	rPtr<iReference> fStreamReference;
 
 	class cReadQueue : public bcReadQueueFromStream
 	{
-		cEndpointFromStream* GetHost(void);
+		cEndpointFromStream* GetHost(void)noexcept(true);
 	public:
-		cReadQueue(iStream *Stream,uIntn PacketBufferSize,iThreadPool *ThreadPool);
+		cReadQueue(iStream *Stream,uIntn PacketBufferSize,iThreadPool *ThreadPool)noexcept(true);
 		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 
@@ -226,14 +227,14 @@ protected:
 		using bcReadQueueFromStream::ReadQueueReportEnded;
 		using bcReadQueueFromStream::ReadQueueReportTerminated;
 	protected:
-		virtual iReference* NotificationInnerReference(void)override;
+		virtual iReference* NotificationInnerReference(void)noexcept(true)override;
 	}fReadQueue;
 
 	class cWriteQueue : public bcWriteQueueFromStream
 	{
-		cEndpointFromStream* GetHost(void);
+		cEndpointFromStream* GetHost(void)noexcept(true);
 	public:
-		cWriteQueue(iStream *Stream,iThreadPool *ThreadPool);
+		cWriteQueue(iStream *Stream,iThreadPool *ThreadPool)noexcept(true);
 		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 
@@ -245,36 +246,44 @@ protected:
 		using bcWriteQueueFromStream::WriteQueueSetEndMode;
 		
 	protected:
-		virtual iReference* NotificationInnerReference(void)override;
-		virtual void NotificationClosed(void)override;
+		virtual iReference* NotificationInnerReference(void)noexcept(true)override;
+		virtual void NotificationClosed(void)noexcept(true)override;
 	}fWriteQueue;
 
-	void WriteQueueTerminated(void);
+	void WriteQueueTerminated(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-iPtr<iEndpoint> CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBufferSize=0x10000,iThreadPool *ThreadPool=nullptr);
-//iPtr<iEndpoint> CreateEndpointFromSteam(bcAggregable *StreamAggregable,iStream *Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool);
+iPtr<iEndpoint> CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBufferSize=0x10000,iThreadPool *ThreadPool=nullptr)noexcept(true);
+//iPtr<iEndpoint> CreateEndpointFromSteam(bcAggregable *StreamAggregable,iStream *Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)noexcept(true);
 //---------------------------------------------------------------------------
-class cConnectionQueueFromListener : public bcConnectionQueue, public cDualReference
+class cConnectionListenerFromAsyncListener : public bcConnectionListener, public cDualReference
 {
 public:
-	cConnectionQueueFromListener(iConnectionListener *Listener);
-	~cConnectionQueueFromListener();
 
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
-	virtual iPtr<iConnection> cnLib_FUNC FetchConnection(void)override;
+	class cnLib_INTERFACE iAsyncListener : public iReference
+	{
+	public:
+		virtual iAddress* GetLocalAddress(void)noexcept(true)=0;
+		virtual iPtr<iConnectionTask> AcceptAsync(void)noexcept(true)=0;
+	};
+	cConnectionListenerFromAsyncListener(iAsyncListener *Listener)noexcept(true);
+	~cConnectionListenerFromAsyncListener()noexcept(true);
+
+	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+	virtual iPtr<iConnection> cnLib_FUNC FetchConnection(void)noexcept(true)override;
 protected:
 
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
-	virtual iReference* NotificationInnerReference(void)override;
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	virtual void NotificationClosed(void)override;
-	virtual CycleState NotificationCheckState(void)override;
+	virtual iReference* NotificationInnerReference(void)noexcept(true)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	virtual void NotificationClosed(void)noexcept(true)override;
+	virtual CycleState NotificationCheckState(void)noexcept(true)override;
 
 private:
-	iPtr<iConnectionListener> fListener;
+	rPtr<iAsyncListener> fListener;
 	static constexpr uIntn TaskRingSizeBit=2;
 	static constexpr uIntn TaskRingSize=1<<TaskRingSizeBit;
 
@@ -289,58 +298,37 @@ private:
 	public:
 		iPtr<iConnectionTask> AcceptTask;
 		uIntn TaskIndex;
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fAcceptTasks[TaskRingSize];
 
-	void QueueTask(void);
-	void TaskCompletionProcess(void);
-};
-//---------------------------------------------------------------------------
-class cConnectionListenerFromQueue : public bcConnectionListener, protected bcConnectionQueueProcessor, public cDualReference
-{
-public:
-	cConnectionListenerFromQueue(iConnectionQueue *ConnectionQueue);
-	~cConnectionListenerFromQueue();
-
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
-protected:
-	void VirtualStarted(void);
-	void VirtualStopped(void);
-
-	virtual void ConnectionProcessTask(void)override;
-	virtual void ConnectionProcessEnd(void)override;
-
-
-	virtual void cnLib_FUNC AsyncNotify(void)override;
-
-private:
-	iPtr<iConnection> fCurrentConnection;
+	void QueueTask(void)noexcept(true);
+	void TaskCompletionProcess(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cMultipointQueueFromStream : public bcMultipointQueue, public cDualReference
 {
 public:
-	cMultipointQueueFromStream(iMultipointStream *Stream);
-	~cMultipointQueueFromStream();
+	cMultipointQueueFromStream(iMultipointStream *Stream)noexcept(true);
+	~cMultipointQueueFromStream()noexcept(true);
 
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
+	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
 
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(iPtr<iAddress> &Address)override;
-	virtual void cnLib_FUNC DismissReadBuffer(bool Dismiss)override;
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)override;
-	virtual bool cnLib_FUNC CommitWriteBuffer(iAddress *Address,uIntn Length)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(iPtr<iAddress> &Address)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(bool Dismiss)noexcept(true)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)override;
+	virtual bool cnLib_FUNC CommitWriteBuffer(iAddress *Address,uIntn Length)noexcept(true)override;
 protected:
 
-	void VirtualStarted(void);
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
-	virtual iReference* MultipointQueueInnerReference(void)override;
+	virtual iReference* MultipointQueueInnerReference(void)noexcept(true)override;
 
-	virtual void MultipointQueueStarted(void)override;
-	//virtual void MultipointQueueStopped(void)override;
-	//virtual void MultipointQueueClosed(void)override;
-	//virtual void MultipointQueueReadNotify(void)override;
-	//virtual void MultipointQueueWriteNotify(void)override;
+	virtual void MultipointQueueStarted(void)noexcept(true)override;
+	//virtual void MultipointQueueStopped(void)noexcept(true)override;
+	//virtual void MultipointQueueClosed(void)noexcept(true)override;
+	//virtual void MultipointQueueReadNotify(void)noexcept(true)override;
+	//virtual void MultipointQueueWriteNotify(void)noexcept(true)override;
 
 private:
 // datagram stream
@@ -363,10 +351,10 @@ private:
 
 	class cIOProcedure : public bcAsyncExclusiveProcedure
 	{
-		virtual bool Procedure(void)override;
+		virtual bool Procedure(void)noexcept(true)override;
 	}fIOProcedure;
 	rPtr<iAsyncProcedure> fIOWork;
-	bool IOProcedure(void);
+	bool IOProcedure(void)noexcept(true);
 
 // datagram send
 
@@ -381,12 +369,12 @@ private:
 			sIdle,sSend,sCompleted
 		}State;
 
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fSendItem[fSendItemCount];
 
 	uIntn fCurSendItemIndex;
-	void SendItemSetNotify(cSendItem &Item);
-	void SendItemCompletionNotify(cSendItem *Item);
+	void SendItemSetNotify(cSendItem &Item)noexcept(true);
+	void SendItemCompletionNotify(cSendItem *Item)noexcept(true);
 
 // datagram receive
 
@@ -402,11 +390,11 @@ private:
 			sIdle,sRecv,sPush
 		}State;
 
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fReceiveItem[fReceiveItemCount];
 	uIntn fCurReceiveItemIndex;
-	void ReceiveItemSetNotify(cReceiveItem &Item);
-	void ReceiveItemCompletionNotify(cReceiveItem *Item);
+	void ReceiveItemSetNotify(cReceiveItem &Item)noexcept(true);
+	void ReceiveItemCompletionNotify(cReceiveItem *Item)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL

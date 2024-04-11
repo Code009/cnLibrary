@@ -23,18 +23,18 @@ struct cHStringReference
 	HSTRING_HEADER Header;
 	HSTRING Handle;
 
-	operator HSTRING();
+	operator HSTRING()noexcept(true);
 
 	cHStringReference()=default;
 	cHStringReference(const cHStringReference&)=delete;
 
 	template<uIntn Length>
-	HRESULT Create(const wchar_t (&String)[Length]){
+	HRESULT Create(const wchar_t (&String)[Length])noexcept(true){
 		return ::WindowsCreateStringReference(String,Length-1,&Header,&Handle);
 	}
 
-	HRESULT Create(const wchar_t *String,uIntn Length);
-	HRESULT Create(const wchar_t *String);
+	HRESULT Create(const wchar_t *String,uIntn Length)noexcept(true);
+	HRESULT Create(const wchar_t *String)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct cHStringHandleReferenceOperator
@@ -42,17 +42,17 @@ struct cHStringHandleReferenceOperator
 	typedef wchar_t tCharacter;
 	typedef HSTRING tStringToken;
 
-	static const wchar_t* GetPointer(HSTRING StrRef){
+	static const wchar_t* GetPointer(HSTRING StrRef)noexcept(true){
 		UINT32 Length;
 		return WindowsGetStringRawBuffer(StrRef,&Length);
 	}
-	static uIntn GetLength(const HSTRING &StrRef){
+	static uIntn GetLength(const HSTRING &StrRef)noexcept(true){
 		UINT32 Length;
 		WindowsGetStringRawBuffer(StrRef,&Length);
 		return Length;
 	}
 
-	static cArray<const wchar_t> GetArray(HSTRING StrRef){
+	static cArray<const wchar_t> GetArray(HSTRING StrRef)noexcept(true){
 		UINT32 Length;
 		cArray<const wchar_t> Array;
 		Array.Pointer=WindowsGetStringRawBuffer(StrRef,&Length);
@@ -60,32 +60,32 @@ struct cHStringHandleReferenceOperator
 		return Array;
 	}
 
-	static HSTRING Duplicate(HSTRING StrRef){
+	static HSTRING Duplicate(HSTRING StrRef)noexcept(true){
 		HSTRING Handle;
 		if(SUCCEEDED(WindowsDuplicateString(StrRef,&Handle))){
 			return Handle;
 		}
 		return nullptr;
 	}
-	static HSTRING Move(HSTRING &&StrRef){
+	static HSTRING Move(HSTRING &&StrRef)noexcept(true){
 		HSTRING Handle=StrRef;
 		StrRef=nullptr;
 		return Handle;
 	}
 
 
-	static void Discard(HSTRING &StrRef){
+	static void Discard(HSTRING &StrRef)noexcept(true){
 		WindowsDeleteString(StrRef);
 	}
 
-	static HSTRING MakeFrom(void){
+	static HSTRING MakeFrom(void)noexcept(true){
 		return nullptr;
 	}
-	static HSTRING MakeFrom(HSTRING StringHandle){
+	static HSTRING MakeFrom(HSTRING StringHandle)noexcept(true){
 		return StringHandle;
 	}
 
-	static HSTRING MakeStringCopy(const tCharacter *String,uIntn Length){
+	static HSTRING MakeStringCopy(const tCharacter *String,uIntn Length)noexcept(true){
 		HSTRING Handle;
 		if(SUCCEEDED(WindowsCreateString(String,static_cast<UINT32>(Length),&Handle))){
 			return Handle;
@@ -95,7 +95,7 @@ struct cHStringHandleReferenceOperator
 
 
 
-	static HSTRING MakeConstant(const cArrayConstant<wchar_t> &Array){
+	static HSTRING MakeConstant(const cArrayConstant<wchar_t> &Array)noexcept(true){
 		return MakeStringCopy(Array.Pointer,Array.Length);
 	}
 
@@ -109,9 +109,9 @@ public:
 
 	using TStringRef::TStringRef;
 
-	operator HSTRING()const{	return this->fStringToken;		}
+	operator HSTRING()const noexcept(true){	return this->fStringToken;		}
 
-	HSTRING* operator &(){
+	HSTRING* operator &()noexcept(true){
 		if(this->fStringToken!=nullptr){
 			WindowsDeleteString(this->fStringToken);
 			this->fStringToken=nullptr;
@@ -121,13 +121,70 @@ public:
 	}
 };
 //---------------------------------------------------------------------------
-cStringBuffer<uChar16> CreateStringFromHandle(HSTRING String);
-cStringBuffer<wchar_t> CreateWStringFromHandle(HSTRING String);
+cStringBuffer<uChar16> CreateStringFromHandle(HSTRING String)noexcept(true);
+cStringBuffer<wchar_t> CreateWStringFromHandle(HSTRING String)noexcept(true);
 //---------------------------------------------------------------------------
 #if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0x50000
 //---------------------------------------------------------------------------
-uInt8* GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer);
-cConstMemory GetBufferData(ABI::Windows::Storage::Streams::IBuffer *Buffer);
+uInt8* GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept(true);
+cConstMemory GetBufferData(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept(true);
+COMPtr<ABI::Windows::Storage::Streams::IBuffer> MakeBufferFromData(const void *Data,uIntn Size)noexcept(true);
+//---------------------------------------------------------------------------
+template<class T>
+class cCOMWeakReference : public IWeakReference
+{
+public:
+	COMPtr<T> fFakeWeakRef;
+	IUnknown* COMUnknown()noexcept(true){	return this;	}
+
+	bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		if(riid==__uuidof(IWeakReference)){
+			*ppvObject=static_cast<IWeakReference*>(this);
+			return true;
+		}
+		return false;
+	}
+
+    virtual HRESULT STDMETHODCALLTYPE Resolve( 
+        /* [in] */ __RPC__in REFIID riid,
+        /* [iid_is][out] */ __RPC__deref_out IInspectable **objectReference)override
+	{
+		auto Unknow=fFakeWeakRef->COMUnknown();
+		return Unknow->QueryInterface(riid,reinterpret_cast<void**>(objectReference));
+	}
+};
+//---------------------------------------------------------------------------
+class cUWPMemoryBuffer : public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess, public IWeakReferenceSource
+{
+public:
+	using ABI::Windows::Storage::Streams::IBuffer::AddRef;
+	using ABI::Windows::Storage::Streams::IBuffer::Release;
+	cMemoryBuffer Data;
+
+	IUnknown* COMUnknown()noexcept(true){	return static_cast<ABI::Windows::Storage::Streams::IBuffer*>(this);	}
+
+	bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true);
+
+	virtual HRESULT STDMETHODCALLTYPE GetWeakReference( /* [retval][out] */ __RPC__deref_out_opt IWeakReference **weakReference)noexcept(true)override;
+
+	virtual HRESULT STDMETHODCALLTYPE GetIids( 
+        /* [out] */ __RPC__out ULONG *iidCount,
+        /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids)noexcept(true)override;
+        
+	virtual HRESULT STDMETHODCALLTYPE GetRuntimeClassName( 
+        /* [out] */ __RPC__deref_out_opt HSTRING *className)noexcept(true)override;
+        
+	virtual HRESULT STDMETHODCALLTYPE GetTrustLevel( 
+        /* [out] */ __RPC__out TrustLevel *trustLevel)noexcept(true)override;
+
+	// IBuffer
+	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Capacity(/* [out][retval] */ __RPC__out UINT32 *value)noexcept(true)override;
+	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Length(/* [out][retval] */ __RPC__out UINT32 *value)noexcept(true)override;
+	virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Length(/* [in] */ UINT32 value)noexcept(true)override;
+
+	// IBufferByteAccess
+	virtual HRESULT STDMETHODCALLTYPE Buffer(byte **value)noexcept(true)override;
+};
 //---------------------------------------------------------------------------
 #endif	// WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0xA0000
 //---------------------------------------------------------------------------
@@ -138,7 +195,7 @@ template<class T>
 struct TWindowsAsyncOperationResult<T *>
 {
 	typedef T RetType;
-	static T* Out(RetType & Ret){
+	static T* Out(RetType & Ret)noexcept(true){
 		return &Ret;
 	}
 };
@@ -147,7 +204,7 @@ template<class T>
 struct TWindowsAsyncOperationResult<T **>
 {
 	typedef COMPtr<T> RetType;
-	static T** Out(RetType & Ret){
+	static T** Out(RetType & Ret)noexcept(true){
 		return COMRetPtrT(Ret);
 	}
 };
@@ -158,10 +215,10 @@ class cAsyncOperationAwaiter
 	typedef typename TCOMFunctionInfo<decltype(&ABI::Windows::Foundation::IAsyncOperation<T>::GetResults)>::template Arguments<0>::Type TResuleOutParam;
 	typedef typename TWindowsAsyncOperationResult<TResuleOutParam>::RetType TResult;
 public:
-	cAsyncOperationAwaiter(ABI::Windows::Foundation::IAsyncOperation<T> *Task):fTask(Task){}
-	~cAsyncOperationAwaiter(){}
+	cAsyncOperationAwaiter(ABI::Windows::Foundation::IAsyncOperation<T> *Task)noexcept(true):fTask(Task){}
+	~cAsyncOperationAwaiter()noexcept(true){}
 
-	bool await_ready(void)const{
+	bool await_ready(void)const noexcept(true){
 		COMPtr<ABI::Windows::Foundation::IAsyncInfo> AsyncInfo;
 		fTask->QueryInterface(COMRetPtrT(AsyncInfo));
 		if(AsyncInfo==nullptr)
@@ -174,7 +231,7 @@ public:
 		return Status==ABI::Windows::Foundation::AsyncStatus::Completed;
 	}
 	template<class TCoHandle>
-	bool await_suspend(TCoHandle&& CoHandle){
+	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
 		fHandler=COMCreate<cCompletionHandler>();
 
 		cCoroutineHandleOperator::Assign(fHandler->CoHandle,static_cast<TCoHandle&&>(CoHandle));
@@ -184,7 +241,7 @@ public:
 		}
 		return true;
 	}
-	TResult await_resume(void){
+	TResult await_resume(void)noexcept(true){
 		TResult Result;
 		fTask->GetResults(TWindowsAsyncOperationResult<TResuleOutParam>::Out(Result));
 		return Result;
@@ -196,13 +253,13 @@ private:
 	{
 	public:
 		cCoroutineHandleOperator::tHandle CoHandle;
-        virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *,ABI::Windows::Foundation::AsyncStatus)override{
+        virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *,ABI::Windows::Foundation::AsyncStatus)noexcept(true)override{
 			cCoroutineHandleOperator::Resume(CoHandle);
 			return S_OK;
 		}
 
-		IUnknown* COMUnknown(void){	return this;	}
-		bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject){
+		IUnknown* COMUnknown(void)noexcept(true){	return this;	}
+		bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
 			if(riid==__uuidof(ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>)){
 				*ppvObject=this;
 				return true;
@@ -215,48 +272,33 @@ private:
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline cAsyncOperationAwaiter<T> AsyncOperationAwaiter(ABI::Windows::Foundation::IAsyncOperation<T> *Task)
+inline cAsyncOperationAwaiter<T> AsyncOperationAwaiter(ABI::Windows::Foundation::IAsyncOperation<T> *Task)noexcept(true)
 {
 	return cAsyncOperationAwaiter<T>(Task);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline cAsyncOperationAwaiter<T> AsyncOperationAwaiter(const COMPtr< ABI::Windows::Foundation::IAsyncOperation<T> > &Task)
+inline cAsyncOperationAwaiter<T> AsyncOperationAwaiter(const COMPtr< ABI::Windows::Foundation::IAsyncOperation<T> > &Task)noexcept(true)
 {
 	return cAsyncOperationAwaiter<T>(Task);
 }
 //---------------------------------------------------------------------------
-#if 0
-class cMemoryStreamBuffer : public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess
+template<class TImplement,class TEventInvokeFunctionPtr,class TSenderDecl,class...TArgsDecl>
+class cTypedEventHandlerImplementation;
+
+template<class TImplement,class TClass,class TSender,class...TArgs,class TSenderDecl,class...TArgsDecl>
+class cTypedEventHandlerImplementation<TImplement,void (TClass::*)(TSender,TArgs...)noexcept(true),TSenderDecl,TArgsDecl...> : public TImplement, public ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>
 {
 public:
-
-	// IBuffer
-	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Capacity(/* [out][retval] */ __RPC__out UINT32 *value)override;
-	virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Length(/* [out][retval] */ __RPC__out UINT32 *value)override;                        
-	virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Length(/* [in] */ UINT32 value)override;
-
-	// IBufferByteAccess
-	virtual HRESULT STDMETHODCALLTYPE Buffer(byte **value)override;
-};
-#endif // 0
-//---------------------------------------------------------------------------
-template<class TImplement,class TSender,class TEventInvokeFunctionPtr>
-class cEventImplementTypedEventHandler;
-
-template<class TImplement,class TSender,class TClass,class TSenderArg,class...TArgs>
-class cEventImplementTypedEventHandler<TImplement,TSender,void (TClass::*)(TSenderArg,TArgs...)> : public TClass, public ABI::Windows::Foundation::ITypedEventHandler<TSender*,TArgs...>
-{
-public:
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)override{
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
 		if(riid==__uuidof(IUnknown)){
 			this->EventIncReference();
 			*ppvObject=static_cast<IUnknown*>(this);
 			return S_OK;
 		}
-		if(riid==__uuidof(ABI::Windows::Foundation::ITypedEventHandler<TSender*,TArgs...>)){
+		if(riid==__uuidof(ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>)){
 			this->EventIncReference();
-			*ppvObject=static_cast<ABI::Windows::Foundation::ITypedEventHandler<TSender*,TArgs...>*>(this);
+			*ppvObject=static_cast<ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>*>(this);
 			return S_OK;
 		}
 		*ppvObject=nullptr;
@@ -264,31 +306,65 @@ public:
 	}
 
 
-	virtual ULONG STDMETHODCALLTYPE AddRef(void)override{
+	virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true)override{
 		this->EventIncReference();
 		return 0;
 	}
-	virtual ULONG STDMETHODCALLTYPE Release(void)override{
+	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
 		this->EventDecReference();
 		return 0;
 	}
-	virtual HRESULT STDMETHODCALLTYPE Invoke(TSenderArg sender,TArgs...args)override{
+	virtual HRESULT STDMETHODCALLTYPE Invoke(TSender sender,TArgs...args)noexcept(true)override{
 		this->EventInvoke(sender,args...);
 		return S_OK;
 	}
 };
 //---------------------------------------------------------------------------
-template<class TImplement,class TSender>
-using cTypedEventHandler=cEventImplementTypedEventHandler<TImplement,TSender,decltype(&TImplement::EventInvoke)>;
+template<class TImplement,class TSenderDecl,class...TArgsDecl>
+using cTypedEventHandler=cTypedEventHandlerImplementation<TImplement,decltype(&TImplement::EventInvoke),TSenderDecl,TArgsDecl...>;
+//---------------------------------------------------------------------------
+template<class TImplement,class TResult>
+class cAsyncOperationCompletedHandler : public TImplement, public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>
+{
+public:
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
+		if(riid==__uuidof(IUnknown)){
+			this->EventIncReference();
+			*ppvObject=static_cast<IUnknown*>(this);
+			return S_OK;
+		}
+		if(riid==__uuidof(ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>)){
+			this->EventIncReference();
+			*ppvObject=static_cast<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>*>(this);
+			return S_OK;
+		}
+		*ppvObject=nullptr;
+		return E_NOINTERFACE;
+	}
+
+
+	virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true)override{
+		this->EventIncReference();
+		return 0;
+	}
+	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
+		this->EventDecReference();
+		return 0;
+	}
+	virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<TResult> *AsyncOp,ABI::Windows::Foundation::AsyncStatus Status)noexcept(true)override{
+		this->EventInvoke(AsyncOp,Status);
+		return S_OK;
+	}
+};
 //---------------------------------------------------------------------------
 template<class TInterface,class TUWPResult>
 class cInterfaceFromAsyncOperation : public TInterface, protected ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>
 {
 public:
-	cInterfaceFromAsyncOperation(){}
-	~cInterfaceFromAsyncOperation(){}
+	cInterfaceFromAsyncOperation()noexcept(true){}
+	~cInterfaceFromAsyncOperation()noexcept(true){}
 		
-	bool SetupAsyncOp(COMPtr< ABI::Windows::Foundation::IAsyncOperation<TUWPResult*> > AsyncOp){
+	bool SetupAsyncOp(COMPtr< ABI::Windows::Foundation::IAsyncOperation<TUWPResult*> > AsyncOp)noexcept(true){
 		if(fAsyncOp!=nullptr){
 			return false;
 		}
@@ -302,7 +378,7 @@ public:
 		return true;
 	}
 	
-	void CancelAsyncOp(void){
+	void CancelAsyncOp(void)noexcept(true){
 		IAsyncInfo *AsyncInfo;
 		fAsyncOp->QueryInterface(&AsyncInfo);
 		if(AsyncInfo!=nullptr){
@@ -317,7 +393,7 @@ protected:
 	cAsyncTaskState fTaskState;
 
 
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)override{
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
 		if(riid==__uuidof(IUnknown)){
 			iIncReference(this,'evet');
 			*ppvObject=static_cast<IUnknown*>(this);
@@ -332,12 +408,12 @@ protected:
 		return E_NOINTERFACE;
 	}
 
-	virtual ULONG STDMETHODCALLTYPE AddRef(void)override{
+	virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true)override{
 		iIncReference(this,'evet');
 		return 0;
 	}
 
-	virtual ULONG STDMETHODCALLTYPE Release(void)override{
+	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
 		iDecReference(this,'evet');
 		return 0;
 	}

@@ -78,6 +78,8 @@
 // c++11 lambda ( add support for stateless lambda )
 #if _MSC_VER >= 1700
 
+#define	cnLibrary_CPPFEATURE_LAMBDAS	200907L
+
 // _MSC_VER >= 1700
 #else
 // _MSC_VER < 1700
@@ -351,14 +353,14 @@
 #if _MANAGED
 
 #define	cnLibrary_CPPEXCLUDE_ALIGNMENT
-#define	cnLibrary_CPPEXCLUDE_NOEXCEPT
+//#define	cnLibrary_CPPEXCLUDE_NOEXCEPT
 
 #ifdef cnLibrary_CPPFEATURE_EXCEPTIONS
 #undef	cnLibrary_CPPFEATURE_EXCEPTIONS
 #endif // cnLibrary_CPPFEATURE_EXCEPTIONS
-#ifdef cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
-#undef	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
-#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+//#ifdef cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+//#undef	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
+//#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE
 
 
 #endif // _MANAGED

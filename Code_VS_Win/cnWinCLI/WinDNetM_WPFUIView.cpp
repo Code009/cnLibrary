@@ -9,7 +9,7 @@ using namespace DNet;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iUIView> cnWin::DNetCreateUIView(void)
+iPtr<iUIView> cnWin::DNetCreateUIView(void)noexcept
 {
 	auto DispatchFrame=mcDNetUIThreadDispatcher::mCurrentUIDispatcher();
 	if(DispatchFrame==nullptr)
@@ -22,84 +22,84 @@ iPtr<iUIView> cnWin::DNetCreateUIView(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFKeyEventArgs::mcWPFKeyEventArgs(System::Windows::Input::KeyEventArgs^ e)
+mcWPFKeyEventArgs::mcWPFKeyEventArgs(System::Windows::Input::KeyEventArgs^ e)noexcept
 	: Handle(e)
 {
 }
 //---------------------------------------------------------------------------
-mcWPFKeyEventArgs::mcWPFKeyEventArgs(mcWPFKeyEventArgs &&Src)=default;
+mcWPFKeyEventArgs::mcWPFKeyEventArgs(mcWPFKeyEventArgs &&Src)noexcept=default;
 //---------------------------------------------------------------------------
-mcWPFKeyEventArgs::~mcWPFKeyEventArgs()
+mcWPFKeyEventArgs::~mcWPFKeyEventArgs()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void mcWPFKeyEventArgs::mCancelEvent(void)
+void mcWPFKeyEventArgs::mCancelEvent(void)noexcept
 {
 	auto Args=Handle.Get();
 	Args->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFKeyEventArgs::mIsCancelled(void)
+bool mcWPFKeyEventArgs::mIsCancelled(void)noexcept
 {
 	auto Args=Handle.Get();
 	return Args->Handled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFMouseEventArgs::mcWPFMouseEventArgs(System::Windows::Input::MouseEventArgs^ e)
+mcWPFMouseEventArgs::mcWPFMouseEventArgs(System::Windows::Input::MouseEventArgs^ e)noexcept
 	: Handle(e)
 {
 }
 //---------------------------------------------------------------------------
-mcWPFMouseEventArgs::mcWPFMouseEventArgs(mcWPFMouseEventArgs &&Src)=default;
+mcWPFMouseEventArgs::mcWPFMouseEventArgs(mcWPFMouseEventArgs &&Src)noexcept=default;
 //---------------------------------------------------------------------------
-mcWPFMouseEventArgs::~mcWPFMouseEventArgs()
+mcWPFMouseEventArgs::~mcWPFMouseEventArgs()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void mcWPFMouseEventArgs::mCancelEvent(void)
+void mcWPFMouseEventArgs::mCancelEvent(void)noexcept
 {
 	auto Args=Handle.Get();
 	Args->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFMouseEventArgs::mIsCancelled(void)
+bool mcWPFMouseEventArgs::mIsCancelled(void)noexcept
 {
 	auto Args=Handle.Get();
 	return Args->Handled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFTouchEventArgs::mcWPFTouchEventArgs(System::Windows::Input::TouchEventArgs^ e)
+mcWPFTouchEventArgs::mcWPFTouchEventArgs(System::Windows::Input::TouchEventArgs^ e)noexcept
 	: Handle(e)
 {
 }
 //---------------------------------------------------------------------------
-mcWPFTouchEventArgs::mcWPFTouchEventArgs(mcWPFTouchEventArgs &&Src)=default;
+mcWPFTouchEventArgs::mcWPFTouchEventArgs(mcWPFTouchEventArgs &&Src)noexcept=default;
 //---------------------------------------------------------------------------
-mcWPFTouchEventArgs::~mcWPFTouchEventArgs()
+mcWPFTouchEventArgs::~mcWPFTouchEventArgs()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* mcWPFTouchEventArgs::mGetTouchID(void)
+void* mcWPFTouchEventArgs::mGetTouchID(void)noexcept
 {
 	auto Args=Handle.Get();
 	return reinterpret_cast<void*>(static_cast<uIntn>(Args->TouchDevice->Id));
 }
 //---------------------------------------------------------------------------
-void mcWPFTouchEventArgs::mCancelEvent(void)
+void mcWPFTouchEventArgs::mCancelEvent(void)noexcept
 {
 	auto Args=Handle.Get();
 	Args->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mIsCancelled(void)
+bool mcWPFTouchEventArgs::mIsCancelled(void)noexcept
 {
 	auto Args=Handle.Get();
 	return Args->Handled;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mGetPosition(cGCRef &UIElementHandle,cUIPoint &Position)
+bool mcWPFTouchEventArgs::mGetPosition(cGCRef &UIElementHandle,cUIPoint &Position)noexcept
 {
 	System::Object^ RelativeObject=UIElementHandle;
 	auto ViewVisual=dynamic_cast<IWPFUIViewVisual^>(RelativeObject);
@@ -113,7 +113,7 @@ bool mcWPFTouchEventArgs::mGetPosition(cGCRef &UIElementHandle,cUIPoint &Positio
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)
+bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
 	if(RelativeElement==nullptr)
@@ -126,7 +126,7 @@ bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cU
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mGetPosition(IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)
+bool mcWPFTouchEventArgs::mGetPosition(IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)noexcept
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(ViewVisual->Visual);
 	if(RelativeElement==nullptr)
@@ -200,14 +200,14 @@ void rcWPFVisualRootAsWindow::CPPClear(void)
 	CPP=nullptr;
 }
 //---------------------------------------------------------------------------
-mcWPFVisual::mcWPFVisual(System::Windows::Media::Visual^ v)
+mcWPFVisual::mcWPFVisual(System::Windows::Media::Visual^ v)noexcept
 	: Handle(v)
 {
 }
 //---------------------------------------------------------------------------
-mcWPFVisual::mcWPFVisual(mcWPFVisual &&Src)=default;
+mcWPFVisual::mcWPFVisual(mcWPFVisual &&Src)noexcept=default;
 //---------------------------------------------------------------------------
-mcWPFVisual::~mcWPFVisual()
+mcWPFVisual::~mcWPFVisual()noexcept
 {
 }
 //---------------------------------------------------------------------------
@@ -349,24 +349,24 @@ void rcUIElementAsWPFViewParent::ParentRemoveViewChild(IWPFView^)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcUIElementAsWPFViewParent::mcUIElementAsWPFViewParent(rcUIElementAsWPFViewParent ^Parent,IWPFView ^Child)
+mcUIElementAsWPFViewParent::mcUIElementAsWPFViewParent(rcUIElementAsWPFViewParent ^Parent,IWPFView ^Child)noexcept
 	: fWPF(Parent)
 	, fViewState(UIState::Null)
 {
 	fChildSet.Insert(Child->ChildInterface);
 }
 //---------------------------------------------------------------------------
-mcUIElementAsWPFViewParent::~mcUIElementAsWPFViewParent()
+mcUIElementAsWPFViewParent::~mcUIElementAsWPFViewParent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rcUIElementAsWPFViewParent^ mcUIElementAsWPFViewParent::GetWPF(void)const
+rcUIElementAsWPFViewParent^ mcUIElementAsWPFViewParent::GetWPF(void)const noexcept
 {
 	return fWPF;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFView::mcWPFView(mcConstructParameter &Parameter)
+mcWPFView::mcWPFView(mcConstructParameter &Parameter)noexcept
 	: fWPFContent(gcnew System::Windows::Media::DrawingGroup())
 	, fWPFView(cnVar::MoveCast(Parameter.WPFView))
 	, fRectWPF{0,0,0,0}
@@ -379,13 +379,13 @@ mcWPFView::mcWPFView(mcConstructParameter &Parameter)
 	WPF->CPPAttach(this);
 }
 //---------------------------------------------------------------------------
-mcWPFView::~mcWPFView()
+mcWPFView::~mcWPFView()noexcept
 {
 	auto WPF=fWPFView.Get();
 	WPF->CPPDetach(this);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::CleanupWPF(void)
+void mcWPFView::CleanupWPF(void)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	for(auto &SubviewPair : fSubviewMap){
@@ -408,19 +408,19 @@ void mcWPFView::CleanupWPF(void)
 	WPFView->DispatcherFinishCleanup();
 }
 //---------------------------------------------------------------------------
-void mcWPFView::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)
+void mcWPFView::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(Notify,&mcWPFView::fDispatcherFinishNotify);
 	return Host->DispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::DispatcherFinishNotify(bool Shutdown)
+void mcWPFView::DispatcherFinishNotify(bool Shutdown)noexcept
 {
 	CleanupWPF();
 	nDispatchFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mSetSize(cUIPoint Size)
+bool mcWPFView::mSetSize(cUIPoint Size)noexcept
 {
 	System::Windows::Rect NewRect;
 	NewRect.X=fRectWPF.Pos.x;
@@ -430,7 +430,7 @@ bool mcWPFView::mSetSize(cUIPoint Size)
 	return mArrange(NewRect);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mTranslatePointTo(cGCRef &UIElementHandle,cUIPoint &Position)
+bool mcWPFView::mTranslatePointTo(cGCRef &UIElementHandle,cUIPoint &Position)noexcept
 {
 	System::Windows::Point TranslatePoint;
 	TranslatePoint.X=Position.x/fLayoutScale;
@@ -443,7 +443,7 @@ bool mcWPFView::mTranslatePointTo(cGCRef &UIElementHandle,cUIPoint &Position)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mTranslateWPFPointTo(System::Object ^Relative,System::Windows::Point %Point)
+bool mcWPFView::mTranslateWPFPointTo(System::Object ^Relative,System::Windows::Point %Point)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFParent=WPFView->GetParent();
@@ -465,7 +465,7 @@ bool mcWPFView::mTranslateWPFPointTo(System::Object ^Relative,System::Windows::P
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mTranslateWPFPointFrom(System::Object ^Relative,System::Windows::Point %Point)
+bool mcWPFView::mTranslateWPFPointFrom(System::Object ^Relative,System::Windows::Point %Point)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFParent=WPFView->GetParent();
@@ -487,7 +487,7 @@ bool mcWPFView::mTranslateWPFPointFrom(System::Object ^Relative,System::Windows:
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mSetPosition(cGCRef &UIElementHandle,cUIPoint Position)
+bool mcWPFView::mSetPosition(cGCRef &UIElementHandle,cUIPoint Position)noexcept
 {
 	Position.x=System::Math::Round(Position.x,System::MidpointRounding::AwayFromZero);
 	Position.y=System::Math::Round(Position.y,System::MidpointRounding::AwayFromZero);
@@ -505,7 +505,7 @@ bool mcWPFView::mSetPosition(cGCRef &UIElementHandle,cUIPoint Position)
 	return mArrange(NewRect);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mSetRectangle(cGCRef &UIElementHandle,cUIPoint Position,cUIPoint Size)
+bool mcWPFView::mSetRectangle(cGCRef &UIElementHandle,cUIPoint Position,cUIPoint Size)noexcept
 {
 	System::Windows::Rect NewRect;
 
@@ -536,7 +536,7 @@ bool mcWPFView::mSetRectangle(cGCRef &UIElementHandle,cUIPoint Position,cUIPoint
 	return mArrange(NewRect);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mArrange(System::Windows::Rect Rect)
+bool mcWPFView::mArrange(System::Windows::Rect Rect)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -552,7 +552,7 @@ bool mcWPFView::mArrange(System::Windows::Rect Rect)
 	}
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mGetVisible(void)
+bool mcWPFView::mGetVisible(void)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -561,7 +561,7 @@ bool mcWPFView::mGetVisible(void)
 	return WPFElement->Visibility==System::Windows::Visibility::Visible;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mSetVisible(bool Visible)
+bool mcWPFView::mSetVisible(bool Visible)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -571,7 +571,7 @@ bool mcWPFView::mSetVisible(bool Visible)
 	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFView::mSetArrangement(void)
+void mcWPFView::mSetArrangement(void)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -580,7 +580,7 @@ void mcWPFView::mSetArrangement(void)
 	WPFElement->InvalidateArrange();
 }
 //---------------------------------------------------------------------------
-void mcWPFView::mArrangeLayout(void)
+void mcWPFView::mArrangeLayout(void)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -589,7 +589,7 @@ void mcWPFView::mArrangeLayout(void)
 	WPFElement->UpdateLayout();
 }
 //---------------------------------------------------------------------------
-void mcWPFView::mRenderContent(cGCHandle const**Drawings,uIntn DrawingCount)
+void mcWPFView::mRenderContent(cGCHandle const**Drawings,uIntn DrawingCount)noexcept
 {
 	//auto WPFView=fManaged->WPFView.Get();
 	//WPFView->InvalidateVisual();
@@ -604,7 +604,7 @@ void mcWPFView::mRenderContent(cGCHandle const**Drawings,uIntn DrawingCount)
 	delete Context;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mInsertView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle,Float32 ZPosition)
+bool mcWPFView::mInsertView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle,Float32 ZPosition)noexcept
 {
 	auto WPFSubView=WPFViewHandle.Cast<IWPFView>();
 	if(WPFSubView==nullptr)
@@ -612,7 +612,7 @@ bool mcWPFView::mInsertView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle,F
 	return mInsertView(Subview,WPFSubView,ZPosition);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mRemoveView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle)
+bool mcWPFView::mRemoveView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle)noexcept
 {
 	auto WPFSubView=WPFViewHandle.Cast<IWPFView>();
 	if(WPFSubView==nullptr)
@@ -620,7 +620,7 @@ bool mcWPFView::mRemoveView(iWPFViewChild *Subview,const cGCRef &WPFViewHandle)
 	return mRemoveView(Subview,WPFSubView);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mInsertView(iWPFViewChild *Subview,IWPFView ^WPFSubview,Float32 ZPosition)
+bool mcWPFView::mInsertView(iWPFViewChild *Subview,IWPFView ^WPFSubview,Float32 ZPosition)noexcept
 {
 	auto pSetItem=fSubviewMap.GetPair(Subview);
 	if(pSetItem!=fSubviewMap.end()){
@@ -657,7 +657,7 @@ bool mcWPFView::mInsertView(iWPFViewChild *Subview,IWPFView ^WPFSubview,Float32 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::mRemoveView(iWPFViewChild *Subview,IWPFView ^WPFSubview)
+bool mcWPFView::mRemoveView(iWPFViewChild *Subview,IWPFView ^WPFSubview)noexcept
 {
 	auto SubviewElement=WPFSubview->Element;
 	if(SubviewElement==nullptr)
@@ -682,12 +682,12 @@ bool mcWPFView::mRemoveView(iWPFViewChild *Subview,IWPFView ^WPFSubview)
 	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFParentRemoveChild(IWPFView ^Subview)
+void mcWPFView::WPFParentRemoveChild(IWPFView ^Subview)noexcept
 {
 	mRemoveView(Subview->ChildInterface,Subview);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::mSetFocus(bool ActivateWindow)
+void mcWPFView::mSetFocus(bool ActivateWindow)noexcept
 {
 	auto WPFView=fWPFView.Get();
 	auto WPFElement=WPFView->Element;
@@ -697,7 +697,7 @@ void mcWPFView::mSetFocus(bool ActivateWindow)
 	WPFElement->Focus();
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::WPFViewParentAcquire(IWPFViewParent ^Parent)
+bool mcWPFView::WPFViewParentAcquire(IWPFViewParent ^Parent)noexcept
 {
 	if(fParent!=nullptr)
 		return false;
@@ -707,7 +707,7 @@ bool mcWPFView::WPFViewParentAcquire(IWPFViewParent ^Parent)
 	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewParentRelease(IWPFViewParent ^Parent)
+void mcWPFView::WPFViewParentRelease(IWPFViewParent ^Parent)noexcept
 {
 	if(fParent!=Parent->Interface)
 		return;
@@ -716,12 +716,12 @@ void mcWPFView::WPFViewParentRelease(IWPFViewParent ^Parent)
 	fWPFViewParent.Set(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewIsVisibleChanged(System::Windows::DependencyPropertyChangedEventArgs %e)
+void mcWPFView::WPFViewIsVisibleChanged(System::Windows::DependencyPropertyChangedEventArgs %e)noexcept
 {
 	WPFNotifyVisible(static_cast<System::Boolean>(e.NewValue));
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnVisualParentChanged(System::Windows::DependencyObject ^VisualParent)
+void mcWPFView::WPFViewOnVisualParentChanged(System::Windows::DependencyObject ^VisualParent)noexcept
 {
 	auto WPF=fWPFView.Get();
 	auto ElementAsParent=fWPFElementParent.Get();
@@ -757,19 +757,19 @@ void mcWPFView::WPFViewOnVisualParentChanged(System::Windows::DependencyObject ^
 	WPFChildTreeNotifyScale();
 }
 //---------------------------------------------------------------------------
-System::Windows::Media::Visual^ mcWPFView::WPFViewGetVisualChild(int index)
+System::Windows::Media::Visual^ mcWPFView::WPFViewGetVisualChild(int index)noexcept
 {
 	auto &Item=fSubviewZOrderSet[index];
 	IWPFView^ WPFSubView=Item->Value.WPFHandle;
 	return WPFSubView->Element;
 }
 //---------------------------------------------------------------------------
-int mcWPFView::WPFViewGetVisualChildrenCount(void)
+int mcWPFView::WPFViewGetVisualChildrenCount(void)noexcept
 {
 	return static_cast<int>(fSubviewZOrderSet.GetCount());
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewArrangeCore(System::Windows::Rect finalRect)
+void mcWPFView::WPFViewArrangeCore(System::Windows::Rect finalRect)noexcept
 {
 	bool Moved=(fRectWPF.Pos.x!=static_cast<Float32>(finalRect.X)) || fRectWPF.Pos.y!=static_cast<Float32>(finalRect.Y);
 	bool Sized=(fRectWPF.Size.x!=static_cast<Float32>(finalRect.Width)) || fRectWPF.Size.y!=static_cast<Float32>(finalRect.Height);
@@ -785,12 +785,12 @@ void mcWPFView::WPFViewArrangeCore(System::Windows::Rect finalRect)
 	WPFUIViewNotifyArrange(Moved,Sized);
 }
 //---------------------------------------------------------------------------
-System::Windows::Size mcWPFView::WPFViewMeasureCore(System::Windows::Size availableSize)
+System::Windows::Size mcWPFView::WPFViewMeasureCore(System::Windows::Size availableSize)noexcept
 {
 	return System::Windows::Size(fRectWPF.Size.x,fRectWPF.Size.y);
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::WPFViewHitTestCore(System::Windows::Media::IntersectionDetail %HitDetail,System::Windows::Media::GeometryHitTestParameters ^ hitTestParameters)
+bool mcWPFView::WPFViewHitTestCore(System::Windows::Media::IntersectionDetail %HitDetail,System::Windows::Media::GeometryHitTestParameters ^ hitTestParameters)noexcept
 {
 	System::Windows::Media::Geometry ^HitArea=hitTestParameters->HitGeometry;
 
@@ -821,7 +821,7 @@ bool mcWPFView::WPFViewHitTestCore(System::Windows::Media::IntersectionDetail %H
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFView::WPFViewHitTestCore(System::Windows::Point %HitPoint)
+bool mcWPFView::WPFViewHitTestCore(System::Windows::Point %HitPoint)noexcept
 {
 	if(HitPoint.X>=0 && HitPoint.X<=fRectWPF.Size.x){
 		if(HitPoint.Y>=0 && HitPoint.Y<=fRectWPF.Size.y){
@@ -832,27 +832,27 @@ bool mcWPFView::WPFViewHitTestCore(System::Windows::Point %HitPoint)
 	return false;
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnRender(System::Windows::Media::DrawingContext^ drawingContext)
+void mcWPFView::WPFViewOnRender(System::Windows::Media::DrawingContext^ drawingContext)noexcept
 {
 	auto WPFContent=fWPFContent.Get();
 	drawingContext->DrawDrawing(WPFContent);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnIsKeyboardFocusedChanged(System::Windows::DependencyPropertyChangedEventArgs %e)
+void mcWPFView::WPFViewOnIsKeyboardFocusedChanged(System::Windows::DependencyPropertyChangedEventArgs %e)noexcept
 {
 	bool Focused=*static_cast<System::Boolean^>(e.NewValue);
 
 	return WPFUIViewOnIsKeyboardFocusedChanged(Focused);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnIsKeyboardFocusWithinChanged(System::Windows::DependencyPropertyChangedEventArgs %e)
+void mcWPFView::WPFViewOnIsKeyboardFocusWithinChanged(System::Windows::DependencyPropertyChangedEventArgs %e)noexcept
 {
 	bool Focused=*static_cast<System::Boolean^>(e.NewValue);
 
 	return WPFUIViewOnIsKeyboardFocusWithinChanged(Focused);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnKeyDown(System::Windows::Input::KeyEventArgs^ e)
+void mcWPFView::WPFViewOnKeyDown(System::Windows::Input::KeyEventArgs^ e)noexcept
 {
 	mcWPFKeyEventArgs EventArgs(e);
 
@@ -867,7 +867,7 @@ void mcWPFView::WPFViewOnKeyDown(System::Windows::Input::KeyEventArgs^ e)
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnKeyUp(System::Windows::Input::KeyEventArgs^ e)
+void mcWPFView::WPFViewOnKeyUp(System::Windows::Input::KeyEventArgs^ e)noexcept
 {
 	mcWPFKeyEventArgs EventArgs(e);
 
@@ -880,7 +880,7 @@ void mcWPFView::WPFViewOnKeyUp(System::Windows::Input::KeyEventArgs^ e)
 	}
 }
 //---------------------------------------------------------------------------
-eMouseButton mcWPFView::ToMouseButton(System::Windows::Input::MouseButton Button)
+eMouseButton mcWPFView::ToMouseButton(System::Windows::Input::MouseButton Button)noexcept
 {
 	switch(Button){
 	case System::Windows::Input::MouseButton::Left:
@@ -893,28 +893,28 @@ eMouseButton mcWPFView::ToMouseButton(System::Windows::Input::MouseButton Button
 	return MouseButton::None;
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnIsMouseDirectlyOverChanged(System::Windows::DependencyPropertyChangedEventArgs %e)
+void mcWPFView::WPFViewOnIsMouseDirectlyOverChanged(System::Windows::DependencyPropertyChangedEventArgs %e)noexcept
 {
 	bool InRange=*static_cast<System::Boolean^>(e.NewValue);
 	
 	WPFUIViewOnIsMouseDirectlyOverChanged(InRange);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseEnter(System::Windows::Input::MouseEventArgs^ e)
+void mcWPFView::WPFViewOnMouseEnter(System::Windows::Input::MouseEventArgs^ e)noexcept
 {
 	mcWPFMouseEventArgs MouseEventArgs(e);
 
 	WPFUIViewOnMouseEnter(MouseEventArgs);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseLeave(System::Windows::Input::MouseEventArgs^ e)
+void mcWPFView::WPFViewOnMouseLeave(System::Windows::Input::MouseEventArgs^ e)noexcept
 {
 	mcWPFMouseEventArgs MouseEventArgs(e);
 
 	WPFUIViewOnMouseLeave(MouseEventArgs);
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseMove(System::Windows::Input::MouseEventArgs^ e)
+void mcWPFView::WPFViewOnMouseMove(System::Windows::Input::MouseEventArgs^ e)noexcept
 {
 	if(e->StylusDevice!=nullptr){
 		// input from touch
@@ -930,7 +930,7 @@ void mcWPFView::WPFViewOnMouseMove(System::Windows::Input::MouseEventArgs^ e)
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseDown(System::Windows::Input::MouseButtonEventArgs^ e)
+void mcWPFView::WPFViewOnMouseDown(System::Windows::Input::MouseButtonEventArgs^ e)noexcept
 {
 	if(e->StylusDevice!=nullptr){
 		// input from touch
@@ -949,7 +949,7 @@ void mcWPFView::WPFViewOnMouseDown(System::Windows::Input::MouseButtonEventArgs^
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseUp(System::Windows::Input::MouseButtonEventArgs^ e)
+void mcWPFView::WPFViewOnMouseUp(System::Windows::Input::MouseButtonEventArgs^ e)noexcept
 {
 	if(e->StylusDevice!=nullptr){
 		// input from touch
@@ -969,7 +969,7 @@ void mcWPFView::WPFViewOnMouseUp(System::Windows::Input::MouseButtonEventArgs^ e
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnMouseWheel(System::Windows::Input::MouseWheelEventArgs^ e)
+void mcWPFView::WPFViewOnMouseWheel(System::Windows::Input::MouseWheelEventArgs^ e)noexcept
 {
 	if(e->StylusDevice!=nullptr){
 		// input from touch
@@ -986,7 +986,7 @@ void mcWPFView::WPFViewOnMouseWheel(System::Windows::Input::MouseWheelEventArgs^
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnTouchDown(System::Windows::Input::TouchEventArgs^ e)
+void mcWPFView::WPFViewOnTouchDown(System::Windows::Input::TouchEventArgs^ e)noexcept
 {
 	mcWPFTouchEventArgs TouchEventArgs(e);
 	WPFUIViewOnTouchDownFilter(TouchEventArgs);
@@ -996,7 +996,7 @@ void mcWPFView::WPFViewOnTouchDown(System::Windows::Input::TouchEventArgs^ e)
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnTouchUp(System::Windows::Input::TouchEventArgs^ e)
+void mcWPFView::WPFViewOnTouchUp(System::Windows::Input::TouchEventArgs^ e)noexcept
 {
 	mcWPFTouchEventArgs TouchEventArgs(e);
 	WPFUIViewOnTouchUpFilter(TouchEventArgs);
@@ -1006,7 +1006,7 @@ void mcWPFView::WPFViewOnTouchUp(System::Windows::Input::TouchEventArgs^ e)
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFView::WPFViewOnTouchMove(System::Windows::Input::TouchEventArgs^ e)
+void mcWPFView::WPFViewOnTouchMove(System::Windows::Input::TouchEventArgs^ e)noexcept
 {
 	mcWPFTouchEventArgs TouchEventArgs(e);
 	WPFUIViewOnTouchMoveFilter(TouchEventArgs);

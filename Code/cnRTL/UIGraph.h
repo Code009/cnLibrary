@@ -34,12 +34,12 @@ namespace cnLibrary{
 
 namespace cnRTL{
 
-cnRTL_CONSTEXPR_FUNC cUIColor UIColorFromUInt32(uInt32 Value){
+cnRTL_CONSTEXPR_FUNC cUIColor UIColorFromUInt32(uInt32 Value)noexcept(true){
 	return {(Value&0xFF)/255.f,((Value>>8)&0xFF)/255.f,((Value>>16)&0xFF)/255.f,((Value>>24)&0xFF)/255.f};
 }
 
 #if cnLibrary_CPPFEATURE_USER_DEFINED_LITERALS >= 200809L
-cnRTL_CONSTEXPR_FUNC cUIColor operator ""_cUIColor(unsigned long long int Value){
+cnRTL_CONSTEXPR_FUNC cUIColor operator ""_cUIColor(unsigned long long int Value)noexcept(true){
 	return UIColorFromUInt32(static_cast<uInt32>(Value));
 }
 #endif
@@ -48,12 +48,12 @@ cnRTL_CONSTEXPR_FUNC cUIColor operator ""_cUIColor(unsigned long long int Value)
 class cUIFontInfo : public iUIFont
 {
 public:
-	void SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle=UIFontStyle::Normal,Float32 Weight=0);
+	void SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle=UIFontStyle::Normal,Float32 Weight=0)noexcept(true);
 
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)override;
-	virtual eUIFontStyle cnLib_FUNC GetStyle(void)override;
+	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)override;
+	virtual eUIFontStyle cnLib_FUNC GetStyle(void)noexcept(true)override;
 
-	virtual Float32 cnLib_FUNC GetWeight(void)override;
+	virtual Float32 cnLib_FUNC GetWeight(void)noexcept(true)override;
 
 private:
 	cString<uChar16> fName;
@@ -64,10 +64,10 @@ private:
 //---------------------------------------------------------------------------
 struct cSortableUIPoint : cUIPoint
 {
-	bool operator ==(const cUIPoint &Src)const;
-	bool operator !=(const cUIPoint &Src)const;
+	bool operator ==(const cUIPoint &Src)const noexcept(true);
+	bool operator !=(const cUIPoint &Src)const noexcept(true);
 
-	sfInt8 Compare(const cUIPoint &Cmp)const;
+	sfInt8 Compare(const cUIPoint &Cmp)const noexcept(true);
 	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cUIPoint &,Compare)
 };
 //---------------------------------------------------------------------------
@@ -214,42 +214,42 @@ cColorVectorFillValue<TElement> ColorVectorFillValue(TElement Value)
 
 //---------------------------------------------------------------------------
 template<class TElement>
-cVector<uInt8,4> RGBAColorVectorTo8(cVector<TElement,4> &Color);
+cVector<uInt8,4> RGBAColorVectorTo8(cVector<TElement,4> &Color)noexcept(true);
 //---------------------------------------------------------------------------
 template<class TChannel,uIntn ChannelCount>
 class iBitmapSampler : public iReference
 {
 public:
-	virtual void Start(cUIPoint Size)=0;
-	virtual void Close(void)=0;
-	virtual cVector<TChannel,ChannelCount> Pixel(void)=0;
+	virtual void Start(cUIPoint Size)noexcept(true)=0;
+	virtual void Close(void)noexcept(true)=0;
+	virtual cVector<TChannel,ChannelCount> Pixel(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TChannel,uIntn ChannelCount>
 class iBitmapPixelProcessor : public iReference
 {
 public:
-	virtual void Start(cUIPoint Size)=0;
-	virtual void Close(void)=0;
-	virtual cVector<TChannel,ChannelCount> Pixel(cVector<TChannel,ChannelCount> Dest)=0;
+	virtual void Start(cUIPoint Size)noexcept(true)=0;
+	virtual void Close(void)noexcept(true)=0;
+	virtual cVector<TChannel,ChannelCount> Pixel(cVector<TChannel,ChannelCount> Dest)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TChannel,uIntn ChannelCount>
 class iBitmapNormSampler : public iReference
 {
 public:
-	virtual void Start(cUIPoint Size)=0;
-	virtual void Close(void)=0;
-	virtual cIntegerVector<TChannel,ChannelCount> Pixel(void)=0;
+	virtual void Start(cUIPoint Size)noexcept(true)=0;
+	virtual void Close(void)noexcept(true)=0;
+	virtual cIntegerVector<TChannel,ChannelCount> Pixel(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TChannel,uIntn ChannelCount>
 class iBitmapNormPixelProcessor : public iReference
 {
 public:
-	virtual void Start(cUIPoint Size)=0;
-	virtual void Close(void)=0;
-	virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)=0;
+	virtual void Start(cUIPoint Size)noexcept(true)=0;
+	virtual void Close(void)noexcept(true)=0;
+	virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TChannel,uIntn ChannelCount>
@@ -257,19 +257,19 @@ class cBitmapNormRenderPipeline : public iBitmapNormSampler<TChannel,ChannelCoun
 {
 public:
 	typedef cIntegerVector<TChannel,ChannelCount> cPixel;
-	virtual void Start(cUIPoint Size)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{
 		SourceSampler->Start(Size);
 		for(auto &Processor : PixelProcessors){
 			Processor->Start(Size);
 		}
 	}
-	virtual void Close(void)override{
+	virtual void Close(void)noexcept(true)override{
 		SourceSampler->Close();
 		for(auto &Processor : PixelProcessors){
 			Processor->Close();
 		}
 	}
-	virtual cPixel Pixel(void)override{
+	virtual cPixel Pixel(void)noexcept(true)override{
 		auto Dest=SourceSampler->Pixel();
 		for(auto &Processor : PixelProcessors){
 			Dest=Processor->Pixel(Dest);
@@ -287,13 +287,13 @@ class cBitmapNormSampleBlendingProcessor : public iBitmapNormPixelProcessor<TCha
 {
 public:
 	typedef cIntegerVector<TChannel,ChannelCount> cPixel;
-	virtual void Start(cUIPoint Size)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{
 		SourceSampler->Start(Size);
 	}
-	virtual void Close(void)override{
+	virtual void Close(void)noexcept(true)override{
 		SourceSampler->Close();
 	}
-	virtual cPixel Pixel(cPixel Dest)override{
+	virtual cPixel Pixel(cPixel Dest)noexcept(true)override{
 		auto SrcPixel=SourceSampler->Pixel();
 		return PixelProcessor(Dest,SrcPixel);
 	}
@@ -305,15 +305,15 @@ template<class TChannel,uIntn ChannelCount>
 class cBitmapNormPixelProcessor_Noop : public iBitmapNormPixelProcessor<TChannel,ChannelCount>
 {
 public:
-	virtual void Start(cUIPoint Size)override{}
-	virtual void Close(void)override{}
-	virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{}
+	virtual void Close(void)noexcept(true)override{}
+	virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)noexcept(true)override{
 		return Dest;
 	}
 };
 //---------------------------------------------------------------------------
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapNormPixelProcess_Copy(cIntegerVector<T,Count>,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapNormPixelProcess_Copy(cIntegerVector<T,Count>,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Src;	}
 
 template<class TChannel,uIntn ChannelCount>	using cBitmapNormSampleBlendingProcessor_Copy
@@ -322,15 +322,15 @@ template<class TChannel,uIntn ChannelCount>	using cBitmapNormSampleBlendingProce
 //---------------------------------------------------------------------------
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapNormPixelProcess_Or(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapNormPixelProcess_Or(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest | Src;	}
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapNormPixelProcess_And(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapNormPixelProcess_And(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest & Src;	}
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapNormPixelProcess_Xor(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapNormPixelProcess_Xor(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest ^ Src;	}
 
 template<class TChannel,uIntn ChannelCount>	using cBitmapNormSampleBlendingProcessor_Or
@@ -348,15 +348,15 @@ class cBitmapSourceNormSampler : public iBitmapNormSampler<TChannel,ChannelCount
 public:
 	static cnRTL_CONSTVAR bool ChannelIsSigned=cnVar::TIsSigned<TChannel>::Value;
 
-	cBitmapSourceNormSampler();
-	~cBitmapSourceNormSampler();
+	cBitmapSourceNormSampler()noexcept(true);
+	~cBitmapSourceNormSampler()noexcept(true);
 
 	iPtr<iBitmapDataSource> Source;
 	cFunction<iPtr<iBitmapDataSource> (cUIPoint Size)> QuerySource;
 
 	rPtr< iBitmapNormPixelProcessor<TChannel,ChannelCount> > ColorConverter;
 
-	virtual void Start(cUIPoint Size)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{
 		fSampleColorConverter=ColorConverter;
 		if(fSampleColorConverter==nullptr){
 			fSampleColorConverter=&fNullPixelProcessor;
@@ -553,13 +553,13 @@ public:
 		}
 	}
 
-	virtual void Close(void)override{
+	virtual void Close(void)noexcept(true)override{
 		if(fSourcePixelData!=nullptr){
 			fSource->ReleasePixels();
 		}
 	}
 
-	virtual cIntegerVector<TChannel,ChannelCount> Pixel(void)override{
+	virtual cIntegerVector<TChannel,ChannelCount> Pixel(void)noexcept(true)override{
 		auto SamplePixel=fPixelSampler(fSourceScanLine);
 		SamplePixel=fSampleColorConverter->Pixel(SamplePixel);
 
@@ -577,9 +577,9 @@ public:
 	class cNullPixelProcessor : public iBitmapNormPixelProcessor<TChannel,ChannelCount>
 	{
 	public:
-		virtual void Start(cUIPoint Size)override{}
-		virtual void Close(void)override{}
-		virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)override{
+		virtual void Start(cUIPoint Size)noexcept(true)override{}
+		virtual void Close(void)noexcept(true)override{}
+		virtual cIntegerVector<TChannel,ChannelCount> Pixel(cIntegerVector<TChannel,ChannelCount> Dest)noexcept(true)override{
 			return Dest;
 		}
 	};
@@ -602,13 +602,13 @@ protected:
 
 	cnRTL::cReferenceStaticImplementT<cBitmapNormPixelProcessor_Noop<TChannel,ChannelCount> > fNullPixelProcessor;
 
-	void SetupZeroSampler(void){
+	void SetupZeroSampler(void)noexcept(true){
 		fPixelSampler=[this](const void*){
 			return VectorZeroValue;
 		};
 	}
 
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchUNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchUNormT(const void *PixelData)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TIsSigned<TChannel>::Value){
 			typedef typename cnVar::TIntegerOfSize<sizeof(TChannel),false>::Type TUNormInt;
 			auto UNorm=IntegerVectorMake<ChannelCount>(static_cast<const TUNormInt*>(PixelData));
@@ -620,7 +620,7 @@ protected:
 		}
 	}
 
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchAlignedUNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchAlignedUNormT(const void *PixelData)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TIsSigned<TChannel>::Value){
 			typedef typename cnVar::TIntegerOfSize<sizeof(TChannel),false>::Type TUNormInt;
 			auto UNorm=IntegerVectorMake<ChannelCount>(static_cast<const TUNormInt*>(PixelData));
@@ -632,7 +632,7 @@ protected:
 		}
 	}
 
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchSNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchSNormT(const void *PixelData)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TIsSigned<TChannel>::Value){
 			return IntegerVectorMake<ChannelCount>(static_cast<const TChannel*>(PixelData));
 		}
@@ -644,7 +644,7 @@ protected:
 		}
 	}
 
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchAlignedSNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchAlignedSNormT(const void *PixelData)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TIsSigned<TChannel>::Value){
 			return IntegerVectorMake<ChannelCount>(static_cast<const TChannel*>(PixelData));
 		}
@@ -657,7 +657,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchFloatT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchFloatT(const void *PixelData)noexcept(true){
 		auto PixelValue=VectorMake<ChannelCount>(static_cast<const TSourceChannel*>(PixelData));
 		PixelValue.Max(VectorFillValue(1.f));
 		if cnRTL_IFCONSTEXPR(ChannelIsSigned){
@@ -672,7 +672,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchSIntT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_MatchSIntT(const void *PixelData)noexcept(true){
 		auto PixelValue=VectorMake<ChannelCount>(static_cast<const TSourceChannel*>(PixelData));
 		if cnRTL_IFCONSTEXPR(ChannelIsSigned){
 			PixelValue.Max(VectorFillValue(1.f));
@@ -687,7 +687,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_UNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_UNormT(const void *PixelData)noexcept(true){
 		auto pPixel=static_cast<const TSourceChannel*>(PixelData);
 
 		cIntegerVector<TChannel,ChannelCount> RetPixel;
@@ -698,7 +698,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_SNormT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_SNormT(const void *PixelData)noexcept(true){
 		auto pPixel=static_cast<const TSourceChannel*>(PixelData);
 
 		cIntegerVector<TChannel,ChannelCount> RetPixel;
@@ -709,7 +709,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_FloatT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_FloatT(const void *PixelData)noexcept(true){
 		auto pPixel=static_cast<const TSourceChannel*>(PixelData);
 
 		TSourceChannel NormFactor=static_cast<TSourceChannel>(cnVar::TIntegerValue<TChannel>::Max);
@@ -721,7 +721,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_SIntT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_SIntT(const void *PixelData)noexcept(true){
 		auto pPixel=static_cast<const TSourceChannel*>(PixelData);
 
 		cIntegerVector<TChannel,ChannelCount> RetPixel;
@@ -737,7 +737,7 @@ protected:
 	}
 
 	template<class TSourceChannel>
-	cIntegerVector<TChannel,ChannelCount> PixelSampler_UIntT(const void *PixelData){
+	cIntegerVector<TChannel,ChannelCount> PixelSampler_UIntT(const void *PixelData)noexcept(true){
 		auto pPixel=static_cast<const TSourceChannel*>(PixelData);
 
 		cIntegerVector<TChannel,ChannelCount> RetPixel;
@@ -758,12 +758,12 @@ protected:
 class cBitmapSourceRGBASampler1 : public iBitmapSampler<uInt8,4>
 {
 public:
-	cBitmapSourceRGBASampler1();
-	~cBitmapSourceRGBASampler1();
+	cBitmapSourceRGBASampler1()noexcept(true);
+	~cBitmapSourceRGBASampler1()noexcept(true);
 
-	virtual void Start(cUIPoint Size)override;
-	virtual void Close(void)override;
-	virtual cVector<uInt8,4> Pixel(void)override;
+	virtual void Start(cUIPoint Size)noexcept(true)override;
+	virtual void Close(void)noexcept(true)override;
+	virtual cVector<uInt8,4> Pixel(void)noexcept(true)override;
 
 	iPtr<iBitmapDataSource> Source;
 	cFunction<iPtr<iBitmapDataSource> (cUIPoint Size)> QuerySource;
@@ -782,126 +782,126 @@ private:
 		ufInt8 ChannelCount;
 		ufInt8 ReadChannelCount;
 
-		virtual ~cSampling();
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y);
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y);
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y);
+		virtual ~cSampling()noexcept(true);
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true);
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true);
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true);
 	};
 
 	cnVar::cPolymorphicInterface<cSampling> fSampler;
 
-	void SetupSampling8(const cBitmapPixelFormat &PixelFormat);
-	void SetupSampling16(const cBitmapPixelFormat &PixelFormat);
-	void SetupSampling32(const cBitmapPixelFormat &PixelFormat);
+	void SetupSampling8(const cBitmapPixelFormat &PixelFormat)noexcept(true);
+	void SetupSampling16(const cBitmapPixelFormat &PixelFormat)noexcept(true);
+	void SetupSampling32(const cBitmapPixelFormat &PixelFormat)noexcept(true);
 
 	class cSamplingRGBAUNorm8x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 
 
 	class cSamplingRGBAUNorm16x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 
 
 	class cSamplingRGBAFloat32x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 };
 //---------------------------------------------------------------------------
@@ -910,19 +910,19 @@ class cBitmapRenderPipeline : public iBitmapSampler<TChannel,ChannelCount>
 {
 public:
 	typedef cIntegerVector<TChannel,ChannelCount> cPixel;
-	virtual void Start(cUIPoint Size)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{
 		SourceSampler->Start(Size);
 		for(auto &Processor : PixelProcessors){
 			Processor->Start(Size);
 		}
 	}
-	virtual void Close(void)override{
+	virtual void Close(void)noexcept(true)override{
 		SourceSampler->Close();
 		for(auto &Processor : PixelProcessors){
 			Processor->Close();
 		}
 	}
-	virtual cPixel Pixel(void)override{
+	virtual cPixel Pixel(void)noexcept(true)override{
 		auto Dest=SourceSampler->Pixel();
 		for(auto &Processor : PixelProcessors){
 			Dest=Processor->Pixel(Dest);
@@ -939,9 +939,9 @@ template<class TChannel,uIntn ChannelCount>
 class cBitmapPixelProcessor_Noop : public iBitmapPixelProcessor<TChannel,ChannelCount>
 {
 public:
-	virtual void Start(cUIPoint Size)override{}
-	virtual void Close(void)override{}
-	virtual cVector<TChannel,ChannelCount> Pixel(cVector<TChannel,ChannelCount> Dest)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{}
+	virtual void Close(void)noexcept(true)override{}
+	virtual cVector<TChannel,ChannelCount> Pixel(cVector<TChannel,ChannelCount> Dest)noexcept(true)override{
 		return Dest;
 	}
 };
@@ -951,13 +951,13 @@ class cBitmapSampleBlendingProcessor : public iBitmapPixelProcessor<TChannel,Cha
 {
 public:
 	typedef cVector<TChannel,ChannelCount> cPixel;
-	virtual void Start(cUIPoint Size)override{
+	virtual void Start(cUIPoint Size)noexcept(true)override{
 		SourceSampler->Start(Size);
 	}
-	virtual void Close(void)override{
+	virtual void Close(void)noexcept(true)override{
 		SourceSampler->Close();
 	}
-	virtual cPixel Pixel(cPixel Dest)override{
+	virtual cPixel Pixel(cPixel Dest)noexcept(true)override{
 		auto SrcPixel=SourceSampler->Pixel();
 		return PixelProcessor(Dest,SrcPixel);
 	}
@@ -966,7 +966,7 @@ public:
 };
 //---------------------------------------------------------------------------
 template<class T,uIntn Count>
-inline cVector<T,Count> BitmapPixelProcess_Copy(cVector<T,Count>,cVector<T,Count> Src)
+inline cVector<T,Count> BitmapPixelProcess_Copy(cVector<T,Count>,cVector<T,Count> Src)noexcept(true)
 {	return Src;	}
 
 template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor_Copy
@@ -975,15 +975,15 @@ template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor
 //---------------------------------------------------------------------------
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapPixelProcess_Or(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapPixelProcess_Or(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest | Src;	}
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapPixelProcess_And(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapPixelProcess_And(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest & Src;	}
 
 template<class T,uIntn Count>
-inline cIntegerVector<T,Count> BitmapPixelProcess_Xor(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)
+inline cIntegerVector<T,Count> BitmapPixelProcess_Xor(cIntegerVector<T,Count> Dest,cIntegerVector<T,Count> Src)noexcept(true)
 {	return Dest ^ Src;	}
 
 template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor_Or
@@ -996,10 +996,10 @@ template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor
 //---------------------------------------------------------------------------
 
 template<class T,uIntn Count>
-inline cVector<T,Count> BitmapPixelProcess_Add(cVector<T,Count> Dest,cVector<T,Count> Src)
+inline cVector<T,Count> BitmapPixelProcess_Add(cVector<T,Count> Dest,cVector<T,Count> Src)noexcept(true)
 {	return Dest + Src;	}
 template<class T,uIntn Count>
-inline cVector<T,Count> BitmapPixelProcess_Mul(cVector<T,Count> Dest,cVector<T,Count> Src)
+inline cVector<T,Count> BitmapPixelProcess_Mul(cVector<T,Count> Dest,cVector<T,Count> Src)noexcept(true)
 {	return Dest * Src;	}
 
 template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor_Add
@@ -1010,7 +1010,7 @@ template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingProcessor
 //---------------------------------------------------------------------------
 
 template<class T,uIntn Count>
-inline cVector<T,Count> BitmapPixelProcessAlphaLast_Alpha(cVector<T,Count> Dest,cVector<T,Count> Src)
+inline cVector<T,Count> BitmapPixelProcessAlphaLast_Alpha(cVector<T,Count> Dest,cVector<T,Count> Src)noexcept(true)
 {
 	T SrcAlpha=Src[Count-1];
 	T DestAlpha=Dest[Count-1];
@@ -1034,32 +1034,32 @@ template<class TChannel,uIntn ChannelCount>	using cBitmapSampleBlendingAlphaLast
 class iBitmapRGBASampler : public iReference
 {
 public:
-	virtual void BeginSample(cUIPoint Size)=0;
-	virtual void EndSample(void)=0;
-	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)=0;
-	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)=0;
-	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)=0;
+	virtual void BeginSample(cUIPoint Size)noexcept(true)=0;
+	virtual void EndSample(void)noexcept(true)=0;
+	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)=0;
+	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)=0;
+	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iBitmapRGBAProcessor : public iReference
 {
 public:
-	virtual cIntegerVector<uInt8,4> BlendUNorm8(cIntegerVector<uInt8,4> DestColorVector,cIntegerVector<uInt8,4> SrcColorVector)=0;
-	virtual cIntegerVector<uInt16,4> BlendUNorm16(cIntegerVector<uInt16,4> DestColorVector,cIntegerVector<uInt8,4> SrcColorVector)=0;
-	virtual cVector<Float32,4> BlendFloat32(cVector<Float32,4> DestColorVector,cVector<uInt8,4> SrcColorVector)=0;
+	virtual cIntegerVector<uInt8,4> BlendUNorm8(cIntegerVector<uInt8,4> DestColorVector,cIntegerVector<uInt8,4> SrcColorVector)noexcept(true)=0;
+	virtual cIntegerVector<uInt16,4> BlendUNorm16(cIntegerVector<uInt16,4> DestColorVector,cIntegerVector<uInt8,4> SrcColorVector)noexcept(true)=0;
+	virtual cVector<Float32,4> BlendFloat32(cVector<Float32,4> DestColorVector,cVector<uInt8,4> SrcColorVector)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cBitmapSourceRGBASampler : public iBitmapRGBASampler
 {
 public:
-	cBitmapSourceRGBASampler();
-	~cBitmapSourceRGBASampler();
+	cBitmapSourceRGBASampler()noexcept(true);
+	~cBitmapSourceRGBASampler()noexcept(true);
 
-	virtual void BeginSample(cUIPoint Size)override;
-	virtual void EndSample(void)override;
-	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+	virtual void BeginSample(cUIPoint Size)noexcept(true)override;
+	virtual void EndSample(void)noexcept(true)override;
+	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 
 	iPtr<iBitmapDataSource> Source;
 	cFunction<iPtr<iBitmapDataSource> (cUIPoint Size)> QuerySource;
@@ -1078,154 +1078,154 @@ private:
 		ufInt8 ChannelCount;
 		ufInt8 ReadChannelCount;
 
-		virtual ~cSampling();
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y);
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y);
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y);
+		virtual ~cSampling()noexcept(true);
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true);
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true);
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true);
 	};
 
 	cnVar::cPolymorphicInterface<cSampling> fSampler;
 
-	void SetupSampling8(const cBitmapPixelFormat &PixelFormat);
-	void SetupSampling16(const cBitmapPixelFormat &PixelFormat);
-	void SetupSampling32(const cBitmapPixelFormat &PixelFormat);
+	void SetupSampling8(const cBitmapPixelFormat &PixelFormat)noexcept(true);
+	void SetupSampling16(const cBitmapPixelFormat &PixelFormat)noexcept(true);
+	void SetupSampling32(const cBitmapPixelFormat &PixelFormat)noexcept(true);
 
 	class cSamplingRGBAUNorm8x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAUNorm8 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 
 
 	class cSamplingRGBAUNorm16x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAUNorm16 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 
 
 	class cSamplingRGBAFloat32x4 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingRGBAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingBGRAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingAlphaFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 	class cSamplingLAFloat32 : public cSampling
 	{
 	public:
-		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+		virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+		virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 	};
 };
 //---------------------------------------------------------------------------
 class cBitmapRGBAFloatRender : public iBitmapRGBASampler
 {
 public:
-	cBitmapRGBAFloatRender();
-	~cBitmapRGBAFloatRender();
+	cBitmapRGBAFloatRender()noexcept(true);
+	~cBitmapRGBAFloatRender()noexcept(true);
 
-	virtual void BeginSample(cUIPoint Size)override;
-	virtual void EndSample(void)override;
-	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)override;
-	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)override;
-	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)override;
+	virtual void BeginSample(cUIPoint Size)noexcept(true)override;
+	virtual void EndSample(void)noexcept(true)override;
+	virtual cIntegerVector<uInt8,4> SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)override;
+	virtual cIntegerVector<uInt16,4> SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)override;
+	virtual cVector<Float32,4> SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)override;
 
 	rPtr<iBitmapRGBASampler> SourceSampler;
 
 	class iBlender : public iReference
 	{
 	public:
-		virtual void Begin(cUIPoint Size)=0;
-		virtual void End(void)=0;
-		virtual cVector<Float32,4> Blend(cVector<Float32,4> DestColor,sfInt32 x,sfInt32 y)=0;
+		virtual void Begin(cUIPoint Size)noexcept(true)=0;
+		virtual void End(void)noexcept(true)=0;
+		virtual cVector<Float32,4> Blend(cVector<Float32,4> DestColor,sfInt32 x,sfInt32 y)noexcept(true)=0;
 	};
 	cSeqList< rPtr<iBlender> > BlendStages;
 	cSeqList< cFunction<cVector<Float32,4> (cVector<Float32,4>)> > PixelProcessors;
 private:
-	cVector<Float32,4> Sample(sfInt32 x,sfInt32 y);
+	cVector<Float32,4> Sample(sfInt32 x,sfInt32 y)noexcept(true);
 };
 /*
 	class cSourceBlender : public cBitmapRGBAFloatRender::iBlender
@@ -1360,22 +1360,22 @@ private:
 class cBitmapDataSourceFromBlendingRGBA32 : public iBitmapDataSource
 {
 public:
-	cBitmapDataSourceFromBlendingRGBA32();
-	~cBitmapDataSourceFromBlendingRGBA32();
+	cBitmapDataSourceFromBlendingRGBA32()noexcept(true);
+	~cBitmapDataSourceFromBlendingRGBA32()noexcept(true);
 
 	// iBitmapDataSource
 
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
-	bool SetBlending(uIntn StageCount,const cImageBlendingStage *Stages,sfInt32 Width,sfInt32 Height,cBitmapPixelFormat PixelFormat);
+	bool SetBlending(uIntn StageCount,const cImageBlendingStage *Stages,sfInt32 Width,sfInt32 Height,cBitmapPixelFormat PixelFormat)noexcept(true);
 
-	uIntn GetDataSize(void);
+	uIntn GetDataSize(void)noexcept(true);
 
 private:
 	cUIPoint fSize;
@@ -1390,21 +1390,21 @@ private:
 	struct cBlendStage
 	{
 		iPtr<iBitmapDataSource> Source;
-		void (cBitmapDataSourceFromBlendingRGBA32::*BlendFunction)(iBitmapDataSource *Source);
+		void (cBitmapDataSourceFromBlendingRGBA32::*BlendFunction)(iBitmapDataSource *Source)noexcept(true);
 	};
 
 	cSeqList<cBlendStage> fBlendStages;
-	void BlendStages(void);
+	void BlendStages(void)noexcept(true);
 
-	void BlendFunction_Alpha(iBitmapDataSource *Source);
-	void BlendFunction_Copy(iBitmapDataSource *Source);
-	void BlendFunction_Or(iBitmapDataSource *Source);
-	void BlendFunction_And(iBitmapDataSource *Source);
-	void BlendFunction_Xor(iBitmapDataSource *Source);
-	void BlendFunction_Add(iBitmapDataSource *Source);
-	void BlendFunction_Mul(iBitmapDataSource *Source);
+	void BlendFunction_Alpha(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_Copy(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_Or(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_And(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_Xor(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_Add(iBitmapDataSource *Source)noexcept(true);
+	void BlendFunction_Mul(iBitmapDataSource *Source)noexcept(true);
 };
-iPtr<iBitmapDataSource> CreateBitmapSourceFromBlendingRGBA32(uIntn StageCount,const cImageBlendingStage *Stages,sfInt32 Width=0,sfInt32 Height=0,cBitmapPixelFormat PixelFormat=BitmapPixel_RGBPA32);
+iPtr<iBitmapDataSource> CreateBitmapSourceFromBlendingRGBA32(uIntn StageCount,const cImageBlendingStage *Stages,sfInt32 Width=0,sfInt32 Height=0,cBitmapPixelFormat PixelFormat=BitmapPixel_RGBPA32)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------
@@ -1420,9 +1420,9 @@ extern const cUIPoint UIPointZero;
 extern const cUIRect UIRectZero;
 extern const cUIRectangle UIRectangleZero;
 //---------------------------------------------------------------------------
-bool UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2);
+bool UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept(true);
 //---------------------------------------------------------------------------
-bool BitmapColorHasAlpha(eBitmapChannelColor Color);
+bool BitmapColorHasAlpha(eBitmapChannelColor Color)noexcept(true);
 //---------------------------------------------------------------------------
 struct cBitmapPixelFormatInfo
 {
@@ -1437,22 +1437,22 @@ extern const cBitmapPixelFormat BitmapPixelFormatR8G8B8A8;
 class cBitmapBuffer : public iBitmapDataSource
 {
 public:
-	cBitmapBuffer();
-	~cBitmapBuffer();
+	cBitmapBuffer()noexcept(true);
+	~cBitmapBuffer()noexcept(true);
 
 	// iBitmapDataSource
 
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
-	void* GetDataBuffer(void)const;
-	uIntn GetDataSize(void)const;
-	bool SetParameter(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,bool TopDown);
+	void* GetDataBuffer(void)const noexcept(true);
+	uIntn GetDataSize(void)const noexcept(true);
+	bool SetParameter(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,bool TopDown)noexcept(true);
 
 private:
 	uInt16 fBufferLockCount=0;
@@ -1462,28 +1462,28 @@ private:
 	sfInt32 fHeight;
 	uIntn fPixelBufferPitch;
 	cMemoryBlock fPixelBuffer;
-	void ResetFrameBuffer(void);
+	void ResetFrameBuffer(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cBitmapDataSourceFromMemory : public iBitmapDataSource
 {
 public:
-	cBitmapDataSourceFromMemory();
-	~cBitmapDataSourceFromMemory();
+	cBitmapDataSourceFromMemory()noexcept(true);
+	~cBitmapDataSourceFromMemory()noexcept(true);
 
 	// iBitmapDataSource
 
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
-	bool SetData(cBitmapPixelFormat Format,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitch,const void *PixelData,bool TopDown);
-	const void* GetDataBuffer(void)const;
-	uIntn GetDataSize(void)const;
+	bool SetData(cBitmapPixelFormat Format,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitch,const void *PixelData,bool TopDown)noexcept(true);
+	const void* GetDataBuffer(void)const noexcept(true);
+	uIntn GetDataSize(void)const noexcept(true);
 
 private:
 	cBitmapPixelFormat fPixelFormat;
@@ -1495,36 +1495,36 @@ private:
 	const void *fPixelData;
 	uIntn fPixelDataSize;
 };
-iPtr<cBitmapDataSourceFromMemory> CreateBitmapFromMemory(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitchSize,const void *PixelData,bool TopDown);
+iPtr<cBitmapDataSourceFromMemory> CreateBitmapFromMemory(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitchSize,const void *PixelData,bool TopDown)noexcept(true);
 //---------------------------------------------------------------------------
 class cBitmapResampleBuffer : public iBitmapDataSource
 {
 public:
-	cBitmapResampleBuffer();
-	~cBitmapResampleBuffer();
+	cBitmapResampleBuffer()noexcept(true);
+	~cBitmapResampleBuffer()noexcept(true);
 
 	// iBitmapDataSource
 
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
 	BitmapChannelColor ChannelColor=BitmapChannelColor::RGBA;
 	bool AlphaPremultiplied=false;
 	bool TopDown=false;
 
-	void SetSampleParameter(sfInt32 Width,sfInt32 Height){
+	void SetSampleParameter(sfInt32 Width,sfInt32 Height)noexcept(true){
 		fSampleImageWidth=Width;
 		fSampleImageHeight=Height;
 		fUpdate=true;
 	}
 
 	template<class TChannel,uIntn ChannelCount>
-	void SetSampler(iBitmapNormSampler<TChannel,ChannelCount> *Sampler){
+	void SetSampler(iBitmapNormSampler<TChannel,ChannelCount> *Sampler)noexcept(true){
 		fSampler->~cSampler();
 		fSampler.ConstructAs< cSamplerNorm<TChannel,ChannelCount> >();
 		auto NormSampler=static_cast<cSamplerNorm<TChannel,ChannelCount>*>(fSampler);
@@ -1533,7 +1533,7 @@ public:
 	}
 
 	template<class TChannel,uIntn ChannelCount>
-	void SetSampler(iBitmapSampler<TChannel,ChannelCount> *Sampler){
+	void SetSampler(iBitmapSampler<TChannel,ChannelCount> *Sampler)noexcept(true){
 		fSampler->~cSampler();
 		fSampler.ConstructAs< cSamplerValue<TChannel,ChannelCount> >();
 		auto ValueSampler=static_cast<cSamplerValue<TChannel,ChannelCount>*>(fSampler);
@@ -1546,10 +1546,10 @@ protected:
 	{
 	public:
 		virtual ~cSampler()=default;
-		virtual void Start(sfInt32 Width,sfInt32 Height);
-		virtual void Close(void);
-		virtual void Pixel(void *PixelBuffer);
-		virtual void SetPixelFormat(cBitmapPixelFormat &Format);
+		virtual void Start(sfInt32 Width,sfInt32 Height)noexcept(true);
+		virtual void Close(void)noexcept(true);
+		virtual void Pixel(void *PixelBuffer)noexcept(true);
+		virtual void SetPixelFormat(cBitmapPixelFormat &Format)noexcept(true);
 	};
 	class cGenericSampler : public cSampler
 	{
@@ -1573,17 +1573,17 @@ protected:
 	{
 	public:
 		rPtr< iBitmapNormSampler<TChannel,ChannelCount> > SourceSampler;
-		virtual void Start(sfInt32 Width,sfInt32 Height)override{
+		virtual void Start(sfInt32 Width,sfInt32 Height)noexcept(true)override{
 			SourceSampler->Start(Width,Height);
 		}
-		virtual void Close(void)override{
+		virtual void Close(void)noexcept(true)override{
 			SourceSampler->Close();
 		}
-		virtual void Pixel(void *PixelBuffer)override{
+		virtual void Pixel(void *PixelBuffer)noexcept(true)override{
 			auto Value=SourceSampler->Pixel();
 			Value.Store(static_cast<TChannel*>(PixelBuffer));
 		}
-		virtual void SetPixelFormat(cBitmapPixelFormat &Format)override{
+		virtual void SetPixelFormat(cBitmapPixelFormat &Format)noexcept(true)override{
 			Format.ChannelType=TNormChannelType<cnVar::TIsSigned<TChannel>::Value>::Value;
 			Format.ChannelSize=sizeof(TChannel);
 			Format.ChannelCount=ChannelCount;
@@ -1611,17 +1611,17 @@ protected:
 	{
 	public:
 		rPtr< iBitmapSampler<TChannel,ChannelCount> > SourceSampler;
-		virtual void Start(sfInt32 Width,sfInt32 Height)override{
+		virtual void Start(sfInt32 Width,sfInt32 Height)noexcept(true)override{
 			SourceSampler->Start(Width,Height);
 		}
-		virtual void Close(void)override{
+		virtual void Close(void)noexcept(true)override{
 			SourceSampler->Close();
 		}
-		virtual void Pixel(void *PixelBuffer)override{
+		virtual void Pixel(void *PixelBuffer)noexcept(true)override{
 			auto Value=SourceSampler->Pixel();
 			Value.Store(static_cast<TChannel*>(PixelBuffer));
 		}
-		virtual void SetPixelFormat(cBitmapPixelFormat &Format)override{
+		virtual void SetPixelFormat(cBitmapPixelFormat &Format)noexcept(true)override{
 			Format.ChannelType=TValueChannelType<
 				cnVar::TIsFloat<TChannel>::Value,
 				cnVar::TIsSigned<TChannel>::Value
@@ -1645,7 +1645,7 @@ private:
 
 	cnVar::cPolymorphicObject<cSampler,cGenericSampler> fSampler;
 
-	void ProcessSource(void);
+	void ProcessSource(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL

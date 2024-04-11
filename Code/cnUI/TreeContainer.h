@@ -18,12 +18,12 @@ namespace cnUI{
 class cnLib_INTERFACE viTreeBranchData : public viData
 {
 public:
-	cFunctionSet<void (void)> TreeBranchNotifySet;
+	cFunctionSet<void (void)noexcept(true)> TreeBranchNotifySet;
 	struct cTreeBranchInfo{
 		ufInt16 BranchCount;
 		eDirection BranchDirection;
 	};
-	virtual cTreeBranchInfo TreeBranchInfo(void)=0;
+	virtual cTreeBranchInfo TreeBranchInfo(void)noexcept(true)=0;
 
 	struct cTreeBranchItem
 	{
@@ -31,35 +31,35 @@ public:
 		ufInt16 NodeCount;
 		const Float32 *NodeOffsets;
 	};
-	virtual cTreeBranchItem TreeBranchItem(ufInt16 BranchIndex)=0;
+	virtual cTreeBranchItem TreeBranchItem(ufInt16 BranchIndex)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-extern rPtr<viControl> (*gCreateDefaultTreeBranchVisual)(viTreeBranchData *Data);
-extern rPtr<viControl> (*gCreateDefaultTreeExpandButtonVisual)(viButtonData *Data);
+extern rPtr<viControl> (*gCreateDefaultTreeBranchVisual)(viTreeBranchData *Data)noexcept(true);
+extern rPtr<viControl> (*gCreateDefaultTreeExpandButtonVisual)(viButtonData *Data)noexcept(true);
 //---------------------------------------------------------------------------
 class bcViewTreeContainer : public cScrollViewContainer, public viTreeBranchData
 {
 public:
-	bcViewTreeContainer();
-	~bcViewTreeContainer();
+	bcViewTreeContainer()noexcept(true);
+	~bcViewTreeContainer()noexcept(true);
 
-	virtual cTreeBranchInfo TreeBranchInfo(void)override;
-	virtual cTreeBranchItem TreeBranchItem(ufInt16 BranchIndex)override;
+	virtual cTreeBranchInfo TreeBranchInfo(void)noexcept(true)override;
+	virtual cTreeBranchItem TreeBranchItem(ufInt16 BranchIndex)noexcept(true)override;
 
-	eDirection GetTreeDirection(void)const;
-	void SetTreeDirection(eDirection Direction);
-	Float32 GetTreeLevelIdent(void)const;
-	void SetTreeLevelIdent(Float32 LevelIdent);
+	eDirection GetTreeDirection(void)const noexcept(true);
+	void SetTreeDirection(eDirection Direction)noexcept(true);
+	Float32 GetTreeLevelIdent(void)const noexcept(true);
+	void SetTreeLevelIdent(Float32 LevelIdent)noexcept(true);
 
-	void SetTreeBranchContent(rPtr<viControl> Content);
+	void SetTreeBranchContent(rPtr<viControl> Content)noexcept(true);
 	Float32 TreeBranchContentZPosition=ZPosition_Content+1;
 	
-	virtual void UpdateControlZOffset(void)override;
+	virtual void UpdateControlZOffset(void)noexcept(true)override;
 
 protected:
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
 	union{	// 0=vertial tree  1=horizontal tree
 		bool fTreeXBranch;
@@ -68,7 +68,7 @@ protected:
 	bool fTreeBranchUpper;
 
 	rPtr<viControl> fTreeBranchContent;
-	virtual void ControlTreeBranchContentSetDefault(void);
+	virtual void ControlTreeBranchContentSetDefault(void)noexcept(true);
 	Float32 fTreeLevelIndent;
 
 	//struct cTreeNodeInfo
@@ -88,10 +88,10 @@ protected:
 		bool GridXRow;
 	};
 
-	void TreeBranchDataClear(void);
-	void TreeBranchDataBuildStart(cUIRange ContentRange);
-	void TreeBranchDataBuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode);
-	void TreeBranchDataBuildFinish(BuildContext &BuildContext);
+	void TreeBranchDataClear(void)noexcept(true);
+	void TreeBranchDataBuildStart(cUIRange ContentRange)noexcept(true);
+	void TreeBranchDataBuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)noexcept(true);
+	void TreeBranchDataBuildFinish(BuildContext &BuildContext)noexcept(true);
 
 private:
 
@@ -116,13 +116,13 @@ private:
 class cControlTreeBranchData
 {
 public:
-	cControlTreeBranchData();
-	~cControlTreeBranchData();
+	cControlTreeBranchData()noexcept(true);
+	~cControlTreeBranchData()noexcept(true);
 
-	uIntn GetBranchCount(void)const;
-	viTreeBranchData::cTreeBranchItem GetBranchItem(uIntn BranchIndex)const;
+	uIntn GetBranchCount(void)const noexcept(true);
+	viTreeBranchData::cTreeBranchItem GetBranchItem(uIntn BranchIndex)const noexcept(true);
 
-	void Clear(void);
+	void Clear(void)noexcept(true);
 
 
 	struct BuildContext
@@ -132,9 +132,9 @@ public:
 		bool GridXRow;
 	};
 
-	void BuildStart(cUIRange ContentRange);
-	void BuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode);
-	void BuildFinish(BuildContext &BuildContext);
+	void BuildStart(cUIRange ContentRange)noexcept(true);
+	void BuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)noexcept(true);
+	void BuildFinish(BuildContext &BuildContext)noexcept(true);
 private:
 	bool fTreeHorizontal;
 
@@ -159,23 +159,23 @@ private:
 class bcViewTreeList : public bcViewTreeContainer, public cGridLineData
 {
 public:
-	bcViewTreeList();
-	~bcViewTreeList();
+	bcViewTreeList()noexcept(true);
+	~bcViewTreeList()noexcept(true);
 
 
-	Float32 GetListOffset(void)const;
-	void SetListOffset(Float32 ListOffset);
+	Float32 GetListOffset(void)const noexcept(true);
+	void SetListOffset(Float32 ListOffset)noexcept(true);
 
 	class cNode : public bcViewItem
 	{
 	public:
-		cNode();
-		~cNode();
-		iViewReference* GetViewReference(void)const;
-		void SetViewReference(iViewReference *ViewReference);
+		cNode()noexcept(true);
+		~cNode()noexcept(true);
+		iViewReference* GetViewReference(void)const noexcept(true);
+		void SetViewReference(iViewReference *ViewReference)noexcept(true);
 
-		aClsRef<cNode> QueryNode(uIntn NodeIndex);
-		aCls<cNode>* GetParent(void)const;
+		aClsRef<cNode> QueryNode(uIntn NodeIndex)noexcept(true);
+		aCls<cNode>* GetParent(void)const noexcept(true);
 	private:
 		friend bcViewTreeList;
 		bcViewTreeList *fOwner;
@@ -184,37 +184,37 @@ public:
 		ufInt32 fNodeIndex;
 		//ufInt32 fTreeIndex;
 
-		void SetupOwner(bcViewTreeList *Owner,cNode *Parent,ufInt32 NodeIndex);
-		void ClearOwner(void);
+		void SetupOwner(bcViewTreeList *Owner,cNode *Parent,ufInt32 NodeIndex)noexcept(true);
+		void ClearOwner(void)noexcept(true);
 
-		void NodeDeleted(cNode *Node);
+		void NodeDeleted(cNode *Node)noexcept(true);
 
 	};
 
-	aCls<cNode>* QueryRootNode(void);
-	aCls<cNode>* FindNode(Float32 Position);
-	bool FindNode(Float32 Position,aCls<cNode>* &Node);
+	aCls<cNode>* QueryRootNode(void)noexcept(true);
+	aCls<cNode>* FindNode(Float32 Position)noexcept(true);
+	bool FindNode(Float32 Position,aCls<cNode>* &Node)noexcept(true);
 
 protected:
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	virtual void ScrollContentUpdateContentLayout(void)override;
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 
 	// content range - display index
 
-	virtual cUIRange ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)=0;
-	virtual bool ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)=0;
-	virtual void ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)=0;
+	virtual cUIRange ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)noexcept(true)=0;
+	virtual bool ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)noexcept(true)=0;
+	virtual void ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)noexcept(true)=0;
 
 	// display index - node
 
-	virtual ufInt32 ViewTreeListNodeToDisplayIndex(cNode *Node)=0;
-	virtual aClsRef<cNode> ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)=0;
+	virtual ufInt32 ViewTreeListNodeToDisplayIndex(cNode *Node)noexcept(true)=0;
+	virtual aClsRef<cNode> ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)noexcept(true)=0;
 
-	void SetNeedUpdateTreeViews(void);
-	void SetNeedUpdateTreeLayout(void);
+	void SetNeedUpdateTreeViews(void)noexcept(true);
+	void SetNeedUpdateTreeLayout(void)noexcept(true);
 
 private:
 	bool fInLayout;
@@ -228,9 +228,9 @@ private:
 
 	cnRTL::cSeqSet< aClsRef<cNode> > fInUseNodeSet;
 
-	void PositNode(cNode *Node);
-	void TreePositNode(cNode *Node);
-	void TreeKeepVisibleSubNode(cNode *Node);
+	void PositNode(cNode *Node)noexcept(true);
+	void TreePositNode(cNode *Node)noexcept(true);
+	void TreeKeepVisibleSubNode(cNode *Node)noexcept(true);
 	
 };
 
@@ -300,9 +300,9 @@ public:
 
 protected:
 
-	virtual void cnLib_FUNC UILayout(void)override;
+	virtual void cnLib_FUNC UILayout(void)noexcept(true)override;
 
-	virtual void ScrollContentUpdateContentLayout(void)override;
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 
 	// control list
 
@@ -316,7 +316,7 @@ protected:
 	virtual void ScrollViewGridSetupRows(ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)=0;
 	virtual void ScrollViewGridSetupCells(ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)=0;
 	
-	void SetNeedUpdateGridLayout(void);
+	void SetNeedUpdateGridLayout(void)noexcept(true);
 
 private:
 	bool fNeedUpdateGridLayout;
@@ -338,11 +338,11 @@ private:
 	cnRTL::cSeqSet< aClsRef<cRow> > fInUseRowSet;
 	cnRTL::cSeqSet< aClsRef<cCell> > fInUseCellSet;
 
-	void AttachRow(aCls<cRow> *Row);
-	void DetachRow(cRow *Row);
+	void AttachRow(aCls<cRow> *Row)noexcept(true);
+	void DetachRow(cRow *Row)noexcept(true);
 
-	void PositRow(cRow *Row);
-	void PositCell(cCell *Cell);
+	void PositRow(cRow *Row)noexcept(true);
+	void PositCell(cCell *Cell)noexcept(true);
 	
 };
 
@@ -353,42 +353,42 @@ class cTreeExpandButton : public cButton
 {
 public:
 protected:
-	virtual void ButtonBackgroundSetDefault(void)override;
+	virtual void ButtonBackgroundSetDefault(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iControlTreeListSource
 {
 public:
-	cFunctionSet<void (void)> ControlListNotifySet;
+	cFunctionSet<void (void)noexcept(true)> ControlListNotifySet;
 
-	virtual bool TreeListGetItemCount(ufInt32 &ItemCount)=0;
-	virtual void TreeListSetupItems(ufInt32 RowIndex,ufInt32 RowCount)=0;
-	virtual void TreeListClearItems(void)=0;
-	virtual Float32 TreeListItemGetSize(ufInt32 RowIndex)=0;
-	virtual Float32 TreeListItemGetDistance(ufInt32 RowIndex)=0;
-	virtual rPtr<iViewReference> TreeListItemMake(cScrollViewContainer *Container,ufInt32 ItemIndex)=0;
+	virtual bool TreeListGetItemCount(ufInt32 &ItemCount)noexcept(true)=0;
+	virtual void TreeListSetupItems(ufInt32 RowIndex,ufInt32 RowCount)noexcept(true)=0;
+	virtual void TreeListClearItems(void)noexcept(true)=0;
+	virtual Float32 TreeListItemGetSize(ufInt32 RowIndex)noexcept(true)=0;
+	virtual Float32 TreeListItemGetDistance(ufInt32 RowIndex)noexcept(true)=0;
+	virtual rPtr<iViewReference> TreeListItemMake(cScrollViewContainer *Container,ufInt32 ItemIndex)noexcept(true)=0;
 
-	virtual void TreeEnumReset(void)=0;
-	virtual bool TreeEnumRoot(uIntn StartIndex)=0;
-	virtual bool TreeEnumEstimateNodeCount(uIntn &ItemCount)=0;
-	virtual bool TreeEnumNext(void)=0;
-	virtual Float32 TreeEnumGetSize(void)=0;
-	virtual Float32 TreeEnumGetDistance(void)=0;
-	//virtual rPtr<iControlReference> TreeEnumCreate(iControlComponentCache *Cache)=0;
-	virtual bool TreeEnumEnterNode(uIntn StartIndex)=0;
-	virtual bool TreeEnumLeaveNode(void)=0;
-	virtual bool TreeEnumIsExpanded(void)=0;
-	//virtual rPtr<iControlReference> TreeEnumCreateExpandControl(iControlComponentCache *Cache)=0;
+	virtual void TreeEnumReset(void)noexcept(true)=0;
+	virtual bool TreeEnumRoot(uIntn StartIndex)noexcept(true)=0;
+	virtual bool TreeEnumEstimateNodeCount(uIntn &ItemCount)noexcept(true)=0;
+	virtual bool TreeEnumNext(void)noexcept(true)=0;
+	virtual Float32 TreeEnumGetSize(void)noexcept(true)=0;
+	virtual Float32 TreeEnumGetDistance(void)noexcept(true)=0;
+	//virtual rPtr<iControlReference> TreeEnumCreate(iControlComponentCache *Cache)noexcept(true)=0;
+	virtual bool TreeEnumEnterNode(uIntn StartIndex)noexcept(true)=0;
+	virtual bool TreeEnumLeaveNode(void)noexcept(true)=0;
+	virtual bool TreeEnumIsExpanded(void)noexcept(true)=0;
+	//virtual rPtr<iControlReference> TreeEnumCreateExpandControl(iControlComponentCache *Cache)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cControlTreeList : public bcViewTreeList
 {
 public:
-	cControlTreeList();
-	~cControlTreeList();
+	cControlTreeList()noexcept(true);
+	~cControlTreeList()noexcept(true);
 
-	iControlTreeListSource* GetControlSource(void)const;
-	void SetControlSource(iControlTreeListSource *Source);
+	iControlTreeListSource* GetControlSource(void)const noexcept(true);
+	void SetControlSource(iControlTreeListSource *Source)noexcept(true);
 
 
 	Float32 ItemSize=0;
@@ -398,26 +398,26 @@ protected:
 
 	// bcViewTree
 
-	virtual void ScrollContentUpdateContentLayout(void)override;
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 	
-	virtual cUIRange ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)override;
-	virtual bool ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)override;
-	virtual void ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)override;
-	virtual ufInt32 ViewTreeListNodeToDisplayIndex(cNode *Node)override;
-	virtual aClsRef<cNode> ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)override;
+	virtual cUIRange ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)noexcept(true)override;
+	virtual bool ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)noexcept(true)override;
+	virtual void ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)noexcept(true)override;
+	virtual ufInt32 ViewTreeListNodeToDisplayIndex(cNode *Node)noexcept(true)override;
+	virtual aClsRef<cNode> ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)noexcept(true)override;
 
 
 private:
 	iFunctionToken *fTreeListNotifyToken;
-	void ApplyControlSource(void);
+	void ApplyControlSource(void)noexcept(true);
 	ufInt32 fTreeItemCount;
 };
 //---------------------------------------------------------------------------
 class cControlTreeGrid : public bcTreeViewGrid
 {
 public:
-	cControlTreeGrid();
-	~cControlTreeGrid();
+	cControlTreeGrid()noexcept(true);
+	~cControlTreeGrid()noexcept(true);
 
 	//iControlTreeSource* GetControlSource(void)const;
 	//void SetControlSource(iControlTreeSource *Source);
@@ -431,7 +431,7 @@ protected:
 
 	// bcViewTree
 
-	virtual void ScrollContentUpdateContentLayout(void)override;
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 	
 
 

@@ -386,7 +386,7 @@ void cODBCQuery::cFetchProcess_ServerValueBuffer::Postprocess(SQLUSMALLINT Colum
 	}
 }
 //---------------------------------------------------------------------------
-cConstMemory cODBCQuery::cFetchProcess_ServerValueBuffer::GatherReadBuffer(uIntn)
+cConstMemory cODBCQuery::cFetchProcess_ServerValueBuffer::GatherReadBuffer(uIntn)noexcept
 {
 	if(fBufferReaded){
 		return NullArray;
@@ -397,7 +397,7 @@ cConstMemory cODBCQuery::cFetchProcess_ServerValueBuffer::GatherReadBuffer(uIntn
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-void cODBCQuery::cFetchProcess_ServerValueBuffer::DismissReadBuffer(uIntn Size)
+void cODBCQuery::cFetchProcess_ServerValueBuffer::DismissReadBuffer(uIntn Size)noexcept
 {
 	fBufferReaded=true;
 }
@@ -470,7 +470,7 @@ void cODBCQuery::cFetchProcess_ServerArrayBuffer::Postprocess(SQLUSMALLINT Colum
 	FetchType=DBDataType::Null;
 }
 //---------------------------------------------------------------------------
-cConstMemory cODBCQuery::cFetchProcess_ServerArrayBuffer::GatherReadBuffer(uIntn)
+cConstMemory cODBCQuery::cFetchProcess_ServerArrayBuffer::GatherReadBuffer(uIntn)noexcept
 {
 	if(fReadIndex>=fDataBuffer->Length){
 		return NullArray;
@@ -481,7 +481,7 @@ cConstMemory cODBCQuery::cFetchProcess_ServerArrayBuffer::GatherReadBuffer(uIntn
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-void cODBCQuery::cFetchProcess_ServerArrayBuffer::DismissReadBuffer(uIntn Size)
+void cODBCQuery::cFetchProcess_ServerArrayBuffer::DismissReadBuffer(uIntn Size)noexcept
 {
 	fReadIndex+=Size;
 }
@@ -1418,7 +1418,7 @@ cODBC::~cODBC()
 {
 }
 //---------------------------------------------------------------------------
-iPtr<iSQLDBConnection> cODBC::EditAndConnect(HWND ParentWindow,const wchar_t *ConnectionString,short ConnectionStringLength,wchar_t *OutConnectionString,short &OutConnectionStringLength)
+iPtr<iSQLDBConnection> cODBC::EditAndConnect(HWND ParentWindow,const wchar_t *ConnectionString,short ConnectionStringLength,wchar_t *OutConnectionString,short &OutConnectionStringLength)noexcept
 {
 	if(ParentWindow==NULL){
 		ParentWindow=GetDesktopWindow();
@@ -1440,7 +1440,7 @@ iPtr<iSQLDBConnection> cODBC::EditAndConnect(HWND ParentWindow,const wchar_t *Co
 	return iCreate<cODBCConnection>(DBContext);
 }
 //---------------------------------------------------------------------------
-iPtr<iSQLDBConnection> cODBC::Connect(const wchar_t *ConnectionString,short ConnectionStringLength)
+iPtr<iSQLDBConnection> cODBC::Connect(const wchar_t *ConnectionString,short ConnectionStringLength)noexcept
 {
 	auto DBContext=aClsCreate<cODBCDBContext>(fEnvContext);
 	auto r=SQLDriverConnectW(DBContext->Handle,nullptr,

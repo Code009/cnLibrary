@@ -6,7 +6,7 @@ using namespace cnUI;
 
 
 //---------------------------------------------------------------------------
-void cnUI::SetUIDefaultVisualToWindowsStandardStyle(void)
+void cnUI::SetUIDefaultVisualToWindowsStandardStyle(void)noexcept
 {
 	gCreateDefaultTextCaretVisual=vWinTextCaret::Create;
 	gCreateDefaultScrollBarKit=kWinControlScrollBar::Create;
@@ -18,16 +18,16 @@ void cnUI::SetUIDefaultVisualToWindowsStandardStyle(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinRectangle::vWinRectangle()
+vWinRectangle::vWinRectangle()noexcept
 {
 }
 //---------------------------------------------------------------------------
-vWinRectangle::~vWinRectangle()
+vWinRectangle::~vWinRectangle()noexcept
 {
 	ClearObject();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinRectangle::Create(uInt32 BorderColor,uInt32 BackgroundColor)
+rPtr<viControl> vWinRectangle::Create(uInt32 BorderColor,uInt32 BackgroundColor)noexcept
 {
 	auto Content=rCreate< bwvControl<vWinRectangle> >();
 	Content->BorderColor=BorderColor;
@@ -35,19 +35,19 @@ rPtr<viControl> vWinRectangle::Create(uInt32 BorderColor,uInt32 BackgroundColor)
 	return Content;
 }
 //---------------------------------------------------------------------------
-void vWinRectangle::SetView(iUIView *View)
+void vWinRectangle::SetView(iUIView *View)noexcept
 {
 	ViewControl::SetView(View);
 	vWinDCPainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-void vWinRectangle::Update(void)
+void vWinRectangle::Update(void)noexcept
 {
 	ClearObject();
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinRectangle::ClearObject(void)
+void vWinRectangle::ClearObject(void)noexcept
 {
 	if(fObjectValid){
 		if(fBGBrush!=nullptr){
@@ -60,13 +60,13 @@ void vWinRectangle::ClearObject(void)
 	}
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinRectangle::UIMargin(const cUIRectangle &Margin)
+cUIRectangle vWinRectangle::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	cUIRectangle FrameMargin={1,1,1,1};
 	return MergeMargin(FrameMargin,Margin);
 }
 //---------------------------------------------------------------------------
-void vWinRectangle::Paint(HDC DC,HRGN)
+void vWinRectangle::Paint(HDC DC,HRGN)noexcept
 {
 	if(fObjectValid==false){
 		fObjectValid=true;
@@ -95,15 +95,15 @@ void vWinRectangle::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinBorder::vWinBorder()
+vWinBorder::vWinBorder()noexcept
 {
 }
 //---------------------------------------------------------------------------
-vWinBorder::~vWinBorder()
+vWinBorder::~vWinBorder()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinBorder::Create(UINT edge,UINT grfFlags,uInt32 BkColor)
+rPtr<viControl> vWinBorder::Create(UINT edge,UINT grfFlags,uInt32 BkColor)noexcept
 {
 	auto Content=rCreate< bwvControl<vWinBorder> >();
 	Content->BackgroundColor=BkColor;
@@ -112,24 +112,24 @@ rPtr<viControl> vWinBorder::Create(UINT edge,UINT grfFlags,uInt32 BkColor)
 	return Content;
 }
 //---------------------------------------------------------------------------
-void vWinBorder::SetView(iUIView *View)
+void vWinBorder::SetView(iUIView *View)noexcept
 {
 	ViewControl::SetView(View);
 	vWinDCPainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinBorder::UIMargin(const cUIRectangle &Margin)
+cUIRectangle vWinBorder::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	cUIRectangle FrameMargin={2,2,2,2};
 	return MergeMargin(FrameMargin,Margin);
 }
 //---------------------------------------------------------------------------
-void vWinBorder::Update(void)
+void vWinBorder::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinBorder::Paint(HDC DC,HRGN)
+void vWinBorder::Paint(HDC DC,HRGN)noexcept
 {
 	bool DrawBG=(BackgroundColor&0xFF000000)!=0;
 	if(DrawBG){
@@ -375,20 +375,20 @@ void vWinGroupBox::cTextControlNotifyProcedure::Execute(void)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinGroupBoxPainter_Normal::cWinGroupBoxPainter_Normal()
+cWinGroupBoxPainter_Normal::cWinGroupBoxPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinGroupBoxPainter_Normal::~cWinGroupBoxPainter_Normal()
+cWinGroupBoxPainter_Normal::~cWinGroupBoxPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinGroupBoxPainter_Normal::GetContentMarginRect(void)
+cUIRectangle cWinGroupBoxPainter_Normal::GetContentMarginRect(void)noexcept
 {
 	return {2,2,2,2};
 }
 //---------------------------------------------------------------------------
-void cWinGroupBoxPainter_Normal::PaintBox(HDC DC,const RECT &Rect)
+void cWinGroupBoxPainter_Normal::PaintBox(HDC DC,const RECT &Rect)noexcept
 {
 	cUIRectangle Margin={0,0,0,0};
 	RECT BorderRC;
@@ -402,28 +402,28 @@ void cWinGroupBoxPainter_Normal::PaintBox(HDC DC,const RECT &Rect)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinGroupBox::vWinGroupBox(viTextControlData *TextData)
+vWinGroupBox::vWinGroupBox(viTextControlData *TextData)noexcept
 	: fTextData(TextData)
 {
 	TextDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinGroupBox::~vWinGroupBox()
+vWinGroupBox::~vWinGroupBox()noexcept
 {
 	TextDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinGroupBox::Create(viTextControlData *Data)
+rPtr<viControl> vWinGroupBox::Create(viTextControlData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinGroupBox> >(Data);
 }
 //---------------------------------------------------------------------------
-viTextControlData* vWinGroupBox::GetTextData(void)const
+viTextControlData* vWinGroupBox::GetTextData(void)const noexcept
 {
 	return fTextData;
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::SetTextData(viTextControlData *Data)
+void vWinGroupBox::SetTextData(viTextControlData *Data)noexcept
 {
 	if(fTextData==Data)
 		return;
@@ -435,19 +435,19 @@ void vWinGroupBox::SetTextData(viTextControlData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::Update(void)
+void vWinGroupBox::Update(void)noexcept
 {
 	fFont=nullptr;
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::SetView(iUIView *View)
+void vWinGroupBox::SetView(iUIView *View)noexcept
 {
 	ViewControl::SetView(View);
 	vWinDCPainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinGroupBox::CalculateBoxMargin(Float32 TextHeight)
+cUIRectangle vWinGroupBox::CalculateBoxMargin(Float32 TextHeight)noexcept
 {
 	auto Margin=fPainter->GetContentMarginRect();
 
@@ -457,7 +457,7 @@ cUIRectangle vWinGroupBox::CalculateBoxMargin(Float32 TextHeight)
 	return Margin;
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::SetupFont(const cUITextStyle &TextStyle)
+void vWinGroupBox::SetupFont(const cUITextStyle &TextStyle)noexcept
 {
 	if(fFont!=nullptr)
 		return;
@@ -466,7 +466,7 @@ void vWinGroupBox::SetupFont(const cUITextStyle &TextStyle)
 	fFont=PaintDevice->QueryFont(TextStyle);
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::ThemeSetup(HWND WindowHandle)
+void vWinGroupBox::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(WindowHandle!=nullptr && ::IsAppThemed()){
@@ -480,13 +480,13 @@ void vWinGroupBox::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::ThemeClear(void)
+void vWinGroupBox::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::Paint(HDC DC,HRGN ClipRegion)
+void vWinGroupBox::Paint(HDC DC,HRGN ClipRegion)noexcept
 {
 	if(fTextData==nullptr)
 		return;
@@ -558,7 +558,7 @@ void vWinGroupBox::Paint(HDC DC,HRGN ClipRegion)
 
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinGroupBox::UIMargin(const cUIRectangle &Margin)
+cUIRectangle vWinGroupBox::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	if(fTextData==nullptr){
 		return UIRectangleZero;
@@ -568,7 +568,7 @@ cUIRectangle vWinGroupBox::UIMargin(const cUIRectangle &Margin)
 	return MergeMargin(FrameMargin,Margin);
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::TextDataInsertCallback(void)
+void vWinGroupBox::TextDataInsertCallback(void)noexcept
 {
 	if(fTextData!=nullptr){
 		fTextControlNotifyToken=fTextData->ControlTextNotifySet.Insert([this]{
@@ -577,7 +577,7 @@ void vWinGroupBox::TextDataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinGroupBox::TextDataRemoveCallback(void)
+void vWinGroupBox::TextDataRemoveCallback(void)noexcept
 {
 	if(fTextData!=nullptr){
 		fTextData->ControlTextNotifySet.Remove(fTextControlNotifyToken);
@@ -585,29 +585,29 @@ void vWinGroupBox::TextDataRemoveCallback(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinGroupBox::cWinGroupBox()
+cWinGroupBox::cWinGroupBox()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinGroupBox::~cWinGroupBox()
+cWinGroupBox::~cWinGroupBox()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinGroupBox::ControlBackgroundSetDefault(void)
+void cWinGroupBox::ControlBackgroundSetDefault(void)noexcept
 {
 	SetBackground(vWinGroupBox::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCFramePainter_Normal::cWinNCFramePainter_Normal()
+cWinNCFramePainter_Normal::cWinNCFramePainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinNCFramePainter_Normal::~cWinNCFramePainter_Normal()
+cWinNCFramePainter_Normal::~cWinNCFramePainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinNCFramePainter_Normal::Paint(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)
+void cWinNCFramePainter_Normal::Paint(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)noexcept
 {
 	::SetBkColor(DC,::GetSysColor(COLOR_BTNFACE));
 	::ExtTextOutW(DC,0,0,ETO_OPAQUE,&Rect,nullptr,0,nullptr);
@@ -646,39 +646,39 @@ void cWinNCFramePainter_Normal::Paint(HDC DC,const RECT &Rect,const RECT &Border
 	::GradientFill(DC,v,2,&gr,1,GRADIENT_FILL_RECT_H);
 }
 //---------------------------------------------------------------------------
-void cWinNCFramePainter_Normal::PaintFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)
+void cWinNCFramePainter_Normal::PaintFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)noexcept
 {
 	return Paint(DC,Rect,Border,CaptionHeight,Active);
 }
 //---------------------------------------------------------------------------
-void cWinNCFramePainter_Normal::PaintSmallFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)
+void cWinNCFramePainter_Normal::PaintSmallFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)noexcept
 {
 	return Paint(DC,Rect,Border,CaptionHeight,Active);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinNCFrame::vWinNCFrame(viWinNCFrameData *Data)
+vWinNCFrame::vWinNCFrame(viWinNCFrameData *Data)noexcept
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinNCFrame::~vWinNCFrame()
+vWinNCFrame::~vWinNCFrame()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinNCFrame::Create(viWinNCFrameData *Data)
+rPtr<viControl> vWinNCFrame::Create(viWinNCFrameData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinNCFrame> >(Data);
 }
 //---------------------------------------------------------------------------
-viWinNCFrameData* vWinNCFrame::GetData(void)const
+viWinNCFrameData* vWinNCFrame::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::SetData(viWinNCFrameData *Data)
+void vWinNCFrame::SetData(viWinNCFrameData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -690,12 +690,12 @@ void vWinNCFrame::SetData(viWinNCFrameData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::Update(void)
+void vWinNCFrame::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::DataInsertCallback(void)
+void vWinNCFrame::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fFrameNotifyToken=fData->FrameNotifySet.Insert([this]{
@@ -704,14 +704,14 @@ void vWinNCFrame::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::DataRemoveCallback(void)
+void vWinNCFrame::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->FrameNotifySet.Remove(fFrameNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::ThemeSetup(HWND WindowHandle)
+void vWinNCFrame::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -725,13 +725,13 @@ void vWinNCFrame::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::ThemeClear(void)
+void vWinNCFrame::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinNCFrame::Paint(HDC DC,HRGN)
+void vWinNCFrame::Paint(HDC DC,HRGN)noexcept
 {
 	bool SmallCaption;
 	bool Active;
@@ -761,18 +761,18 @@ void vWinNCFrame::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCFrame::cWinNCFrame()
+cWinNCFrame::cWinNCFrame()noexcept
 {
 	SetDefaultBorderSize();
 }
 //---------------------------------------------------------------------------
-cWinNCFrame::~cWinNCFrame()
+cWinNCFrame::~cWinNCFrame()noexcept
 {
 	SetView(nullptr);
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::SetDefaultBorderSize(void)
+void cWinNCFrame::SetDefaultBorderSize(void)noexcept
 {
 	RECT rc={0,0,0,0};
 	AdjustWindowRect(&rc,WS_OVERLAPPEDWINDOW,false);
@@ -784,7 +784,7 @@ void cWinNCFrame::SetDefaultBorderSize(void)
 	CaptionHeight=static_cast<Float32>(rc.bottom-rc.top);
 }
 //---------------------------------------------------------------------------
-static RECT GetWindowNCSize(HWND WindowHandle)
+static RECT GetWindowNCSize(HWND WindowHandle)noexcept
 {
 	RECT Rect;
 	Rect.left=0;
@@ -798,7 +798,7 @@ static RECT GetWindowNCSize(HWND WindowHandle)
 	return Rect;
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::SetBorderSizeForWindowHandle(HWND WindowHandle)
+void cWinNCFrame::SetBorderSizeForWindowHandle(HWND WindowHandle)noexcept
 {
 	DWORD ExStyle=::GetWindowLongW(WindowHandle,GWL_EXSTYLE);
 	SmallCaption=0!=(ExStyle&WS_EX_TOOLWINDOW);
@@ -813,7 +813,7 @@ void cWinNCFrame::SetBorderSizeForWindowHandle(HWND WindowHandle)
 	Update();
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::SetBorderSizeForWindowFrame(iWindowFrame *Frame)
+void cWinNCFrame::SetBorderSizeForWindowFrame(iWindowFrame *Frame)noexcept
 {
 	HWND WindowHandle=Frame->GetWindow()->GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -832,12 +832,12 @@ void cWinNCFrame::SetBorderSizeForWindowFrame(iWindowFrame *Frame)
 	Update();
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::Update(void)
+void cWinNCFrame::Update(void)noexcept
 {
 	FrameNotifySet();
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::ViewSetup(void)
+void cWinNCFrame::ViewSetup(void)noexcept
 {
 	VisualControl::ViewSetup();
 
@@ -849,7 +849,7 @@ void cWinNCFrame::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::ViewClear(void)
+void cWinNCFrame::ViewClear(void)noexcept
 {
 	auto WindowViewport=iCast<iWindowViewport>(fView);
 	if(WindowViewport!=nullptr){
@@ -861,22 +861,22 @@ void cWinNCFrame::ViewClear(void)
 	VisualControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::ControlBackgroundSetDefault(void)
+void cWinNCFrame::ControlBackgroundSetDefault(void)noexcept
 {
 	SetBackground(rCreate< bwvControl<vWinNCFrame> >(this));
 }
 //---------------------------------------------------------------------------
-bool cWinNCFrame::FrameIsSmallCaption(void)
+bool cWinNCFrame::FrameIsSmallCaption(void)noexcept
 {
 	return SmallCaption;
 }
 //---------------------------------------------------------------------------
-bool cWinNCFrame::FrameIsActivate(void)
+bool cWinNCFrame::FrameIsActivate(void)noexcept
 {
 	return fActivate;
 }
 //---------------------------------------------------------------------------
-RECT cWinNCFrame::FrameGetBorderSize(void)
+RECT cWinNCFrame::FrameGetBorderSize(void)noexcept
 {
 	RECT Border;
 	Border.left=static_cast<sfInt32>(SizeLeft);
@@ -886,12 +886,12 @@ RECT cWinNCFrame::FrameGetBorderSize(void)
 	return Border;
 }
 //---------------------------------------------------------------------------
-Float32 cWinNCFrame::FrameGetCaptionHeight(void)
+Float32 cWinNCFrame::FrameGetCaptionHeight(void)noexcept
 {
 	return CaptionHeight;
 }
 //---------------------------------------------------------------------------
-DWORD cWinNCFrame::HitTest(const cUIPoint &ViewPos)
+DWORD cWinNCFrame::HitTest(const cUIPoint &ViewPos)noexcept
 {
 	auto ViewSize=fView->GetSize();
 	if(ViewPos.x<SizeLeft){
@@ -941,7 +941,7 @@ DWORD cWinNCFrame::HitTest(const cUIPoint &ViewPos)
 	return HTNOWHERE;
 }
 //---------------------------------------------------------------------------
-iInterface* cWinNCFrame::MouseGetCursor(iUIMouseEvent *MouseEvent)
+iInterface* cWinNCFrame::MouseGetCursor(iUIMouseEvent *MouseEvent)noexcept
 {
 	cUIPoint pt;
 	MouseEvent->GetPosition(fView,pt);
@@ -969,7 +969,7 @@ iInterface* cWinNCFrame::MouseGetCursor(iUIMouseEvent *MouseEvent)
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)
+void cWinNCFrame::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 {
 	if(Button==MouseButton::Left){
 		auto WindowHandle=GetWindowHandleFromUIView(fView);
@@ -988,20 +988,20 @@ void cWinNCFrame::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)
 	}
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::WindowAttached(void)
+void cWinNCFrame::WindowAttached(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::WindowDetached(void)
+void cWinNCFrame::WindowDetached(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cWinNCFrame::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &MsgParam)
+bool cWinNCFrame::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &MsgParam)noexcept
 {MsgResult,MsgParam;
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWinNCFrame::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)
+void cWinNCFrame::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)noexcept
 {
 	//auto WindowHandle=GetViewWindowHandle(fView);
 	switch(Message.Code){
@@ -1023,23 +1023,23 @@ void cWinNCFrame::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Mess
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bvWinButton::bvWinButton(viButtonData *Data)
+bvWinButton::bvWinButton(viButtonData *Data)noexcept
 	: fButtonData(Data)
 {
 	ButtonDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-bvWinButton::~bvWinButton()
+bvWinButton::~bvWinButton()noexcept
 {
 	ButtonDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-viButtonData* bvWinButton::GetButtonData(void)const
+viButtonData* bvWinButton::GetButtonData(void)const noexcept
 {
 	return fButtonData;
 }
 //---------------------------------------------------------------------------
-void bvWinButton::SetButtonData(viButtonData *Data)
+void bvWinButton::SetButtonData(viButtonData *Data)noexcept
 {
 	if(fButtonData==Data)
 		return;
@@ -1051,7 +1051,7 @@ void bvWinButton::SetButtonData(viButtonData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void bvWinButton::ButtonDataInsertCallback(void)
+void bvWinButton::ButtonDataInsertCallback(void)noexcept
 {
 	if(fButtonData!=nullptr){
 		fButtonDataNotifyToken=fButtonData->ButtonNotifySet.Insert([this]{
@@ -1060,36 +1060,36 @@ void bvWinButton::ButtonDataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinButton::ButtonDataRemoveCallback(void)
+void bvWinButton::ButtonDataRemoveCallback(void)noexcept
 {
 	if(fButtonData!=nullptr){
 		fButtonData->ButtonNotifySet.Remove(fButtonDataNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinButton::Update(void)
+void bvWinButton::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bvWinThemeButton::bvWinThemeButton(viButtonData *Data)
+bvWinThemeButton::bvWinThemeButton(viButtonData *Data)noexcept
 	: fButtonData(Data)
 {
 	ButtonDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-bvWinThemeButton::~bvWinThemeButton()
+bvWinThemeButton::~bvWinThemeButton()noexcept
 {
 	ButtonDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-viButtonData* bvWinThemeButton::GetButtonData(void)const
+viButtonData* bvWinThemeButton::GetButtonData(void)const noexcept
 {
 	return fButtonData;
 }
 //---------------------------------------------------------------------------
-void bvWinThemeButton::SetButtonData(viButtonData *Data)
+void bvWinThemeButton::SetButtonData(viButtonData *Data)noexcept
 {
 	if(fButtonData==Data)
 		return;
@@ -1101,7 +1101,7 @@ void bvWinThemeButton::SetButtonData(viButtonData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void bvWinThemeButton::ButtonDataInsertCallback(void)
+void bvWinThemeButton::ButtonDataInsertCallback(void)noexcept
 {
 	if(fButtonData!=nullptr){
 		fButtonDataNotifyToken=fButtonData->ButtonNotifySet.Insert([this]{
@@ -1110,27 +1110,27 @@ void bvWinThemeButton::ButtonDataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinThemeButton::ButtonDataRemoveCallback(void)
+void bvWinThemeButton::ButtonDataRemoveCallback(void)noexcept
 {
 	if(fButtonData!=nullptr){
 		fButtonData->ButtonNotifySet.Remove(fButtonDataNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinThemeButton::Update(void)
+void bvWinThemeButton::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCButtonPainter_Normal::cWinNCButtonPainter_Normal()
+cWinNCButtonPainter_Normal::cWinNCButtonPainter_Normal()noexcept
 {
 }
-cWinNCButtonPainter_Normal::~cWinNCButtonPainter_Normal()
+cWinNCButtonPainter_Normal::~cWinNCButtonPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-UINT cWinNCButtonPainter_Normal::StateIDFromState(eButtonState State)
+UINT cWinNCButtonPainter_Normal::StateIDFromState(eButtonState State)noexcept
 {
 	UINT StateFlag=0;
 	switch(State){
@@ -1152,58 +1152,58 @@ UINT cWinNCButtonPainter_Normal::StateIDFromState(eButtonState State)
 	return StateFlag;
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintCloseButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintCloseButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONCLOSE|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintMinButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintMinButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONMIN|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintMaxButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintMaxButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONMAX|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintRestoreButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintRestoreButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONRESTORE|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintSmallCloseButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintSmallCloseButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONCLOSE|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Normal::PaintHelpButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Normal::PaintHelpButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateFlag=StateIDFromState(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_CAPTION,DFCS_CAPTIONHELP|StateFlag);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinNCButton::vWinNCButton(viButtonData *Data)
+vWinNCButton::vWinNCButton(viButtonData *Data)noexcept
 	: bvWinThemeButton(Data)
 {
 }
 //---------------------------------------------------------------------------
-vWinNCButton::~vWinNCButton()
+vWinNCButton::~vWinNCButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinNCButton::Create(viButtonData *Data)
+rPtr<viControl> vWinNCButton::Create(viButtonData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinNCButton> >(Data);
 }
 //---------------------------------------------------------------------------
-void vWinNCButton::ThemeSetup(HWND WindowHandle)
+void vWinNCButton::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -1217,13 +1217,13 @@ void vWinNCButton::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinNCButton::ThemeClear(void)
+void vWinNCButton::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinNCButton::Paint(HDC DC,HRGN)
+void vWinNCButton::Paint(HDC DC,HRGN)noexcept
 {
 	eButtonState State;
 	if(fButtonData!=nullptr){
@@ -1255,7 +1255,7 @@ void vWinNCButton::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-uIntn cnUI::WinNCGetButtonList(HWND WindowHandle,uIntn ListCount,eNCButtonType *ListBuffer)
+uIntn cnUI::WinNCGetButtonList(HWND WindowHandle,uIntn ListCount,eNCButtonType *ListBuffer)noexcept
 {
 	DWORD Style=::GetWindowLongW(WindowHandle,GWL_STYLE);
 	DWORD ExStyle=::GetWindowLongW(WindowHandle,GWL_EXSTYLE);
@@ -1336,13 +1336,13 @@ uIntn cnUI::WinNCGetButtonList(HWND WindowHandle,uIntn ListCount,eNCButtonType *
 	return ButtonIndex;
 }
 //---------------------------------------------------------------------------
-uIntn cnUI::WinNCGetButtonList(iUIView *View,uIntn ListCount,eNCButtonType *ListBuffer)
+uIntn cnUI::WinNCGetButtonList(iUIView *View,uIntn ListCount,eNCButtonType *ListBuffer)noexcept
 {
 	auto WindowHandle=GetWindowHandleFromUIView(View);
 	return WinNCGetButtonList(WindowHandle,ListCount,ListBuffer);
 }
 //---------------------------------------------------------------------------
-void cnUI::WinNCCommand(iUIView *View,const cUIPoint *Pos,eNCButtonType ButtonType)
+void cnUI::WinNCCommand(iUIView *View,const cUIPoint *Pos,eNCButtonType ButtonType)noexcept
 {
 	HWND WindowHandle=GetWindowHandleFromUIView(View);
 	if(WindowHandle==nullptr)
@@ -1389,24 +1389,24 @@ void cnUI::WinNCCommand(iUIView *View,const cUIPoint *Pos,eNCButtonType ButtonTy
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCButton::cWinNCButton()
+cWinNCButton::cWinNCButton()noexcept
 	: fNCButtonContent(this)
 {
 	fNCButtonContent.ButtonType=NCButtonType::Help;
 }
 //---------------------------------------------------------------------------
-cWinNCButton::~cWinNCButton()
+cWinNCButton::~cWinNCButton()noexcept
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::SetButtonType(eNCButtonType ButtonType)
+void cWinNCButton::SetButtonType(eNCButtonType ButtonType)noexcept
 {
 	fNCButtonContent.ButtonType=ButtonType;
 	fNCButtonContent.Update();
 }
 //---------------------------------------------------------------------------
-eButtonState cWinNCButton::ButtonState(void)
+eButtonState cWinNCButton::ButtonState(void)noexcept
 {
 	auto State=GetButtonState();
 	if(State==ButtonState::Normal){
@@ -1418,7 +1418,7 @@ eButtonState cWinNCButton::ButtonState(void)
 	return State;
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::ViewSetup(void)
+void cWinNCButton::ViewSetup(void)noexcept
 {
 	bcButton::ViewSetup();
 
@@ -1427,7 +1427,7 @@ void cWinNCButton::ViewSetup(void)
 	fNCButtonContent.SetView(fView);
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::ViewClear(void)
+void cWinNCButton::ViewClear(void)noexcept
 {
 	fNCButtonContent.SetView(nullptr);
 
@@ -1435,36 +1435,36 @@ void cWinNCButton::ViewClear(void)
 	bcButton::ViewClear();
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::UIResume(void)
+void cWinNCButton::UIResume(void)noexcept
 {
 	// update for activation changed
 	fNCButtonContent.Update();
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::UIPaused(void)
+void cWinNCButton::UIPaused(void)noexcept
 {
 	// update for activation changed
 	fNCButtonContent.Update();
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::ButtonClick(const cUIPoint &Pos)
+void cWinNCButton::ButtonClick(const cUIPoint &Pos)noexcept
 {
 	// perform standard non-client button commands
 	WinNCCommand(fView,&Pos,fNCButtonContent.ButtonType);
 }
 //---------------------------------------------------------------------------
-void cWinNCButton::ButtonBackgroundSetDefault(void)
+void cWinNCButton::ButtonBackgroundSetDefault(void)noexcept
 {
 	// no default background
 }
 //---------------------------------------------------------------------------
-bool cWinNCButton::ButtonMouseAllowButton(eMouseButton Button)
+bool cWinNCButton::ButtonMouseAllowButton(eMouseButton Button)noexcept
 {
 	return Button==MouseButton::Left;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<iGDIFontHandle> cnUI::vSetupTextControl(SIZE &TextSize,const wchar_t *Text,uIntn TextLength,const cUITextStyle &TextStyle)
+rPtr<iGDIFontHandle> cnUI::vSetupTextControl(SIZE &TextSize,const wchar_t *Text,uIntn TextLength,const cUITextStyle &TextStyle)noexcept
 {
 	auto Font=QueryGDIFont(TextStyle);
 
@@ -1486,19 +1486,19 @@ rPtr<iGDIFontHandle> cnUI::vSetupTextControl(SIZE &TextSize,const wchar_t *Text,
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinPushButtonPainter_Normal::cWinPushButtonPainter_Normal()
+cWinPushButtonPainter_Normal::cWinPushButtonPainter_Normal()noexcept
 {
 }
-cWinPushButtonPainter_Normal::~cWinPushButtonPainter_Normal()
+cWinPushButtonPainter_Normal::~cWinPushButtonPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinPushButtonPainter_Normal::GetContentMarginRect(void)
+cUIRectangle cWinPushButtonPainter_Normal::GetContentMarginRect(void)noexcept
 {
 	return {2,2,2,2};
 }
 //---------------------------------------------------------------------------
-void cWinPushButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinPushButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	UINT StateFlag=0;
 
@@ -1521,7 +1521,7 @@ void cWinPushButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonSt
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_BUTTON,DFCS_BUTTONPUSH|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinPushButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State)
+void cWinPushButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State)noexcept
 {
 	RECT DrawRect;
 	if(State==ButtonState::Pressed){
@@ -1549,27 +1549,27 @@ void cWinPushButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const w
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinPushButton::vWinPushButton(viButtonData *Data)
+vWinPushButton::vWinPushButton(viButtonData *Data)noexcept
 	: bvWinThemeButton(Data)
 {
 }
 //---------------------------------------------------------------------------
-vWinPushButton::~vWinPushButton()
+vWinPushButton::~vWinPushButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinPushButton::Create(viButtonData *Data)
+rPtr<viControl> vWinPushButton::Create(viButtonData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinPushButton> >(Data);
 }
 //---------------------------------------------------------------------------
-void vWinPushButton::SetView(iUIView *View)
+void vWinPushButton::SetView(iUIView *View)noexcept
 {
 	ViewControl::SetView(View);
 	vWinDCThemePainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-void vWinPushButton::ThemeSetup(HWND WindowHandle)
+void vWinPushButton::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(WindowHandle!=nullptr && ::IsAppThemed()){
@@ -1583,13 +1583,13 @@ void vWinPushButton::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinPushButton::ThemeClear(void)
+void vWinPushButton::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinPushButton::Paint(HDC DC,HRGN)
+void vWinPushButton::Paint(HDC DC,HRGN)noexcept
 {
 	eButtonState State;
 	if(fButtonData!=nullptr){
@@ -1601,7 +1601,7 @@ void vWinPushButton::Paint(HDC DC,HRGN)
 	fPainter->PaintButton(DC,fPaintRC,State);
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinPushButton::UIMargin(const cUIRectangle &Margin)
+cUIRectangle vWinPushButton::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	if(fPainter==nullptr)
 		return UIRectangleZero;
@@ -1611,36 +1611,36 @@ cUIRectangle vWinPushButton::UIMargin(const cUIRectangle &Margin)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinTextButton::ButtonBackgroundSetDefault(void)
+void cWinTextButton::ButtonBackgroundSetDefault(void)noexcept
 {
 	SetBackground(vWinPushButton::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinImageTextButton::ButtonBackgroundSetDefault(void)
+void cWinImageTextButton::ButtonBackgroundSetDefault(void)noexcept
 {
 	SetBackground(vWinPushButton::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bvWinThemeStateButton::bvWinThemeStateButton(viButtonData *ButtonData,viImageTextControlData *TextData)
+bvWinThemeStateButton::bvWinThemeStateButton(viButtonData *ButtonData,viImageTextControlData *TextData)noexcept
 	: bvWinThemeButton(ButtonData)
 	, fTextData(TextData)
 {
 	ImageTextDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-bvWinThemeStateButton::~bvWinThemeStateButton()
+bvWinThemeStateButton::~bvWinThemeStateButton()noexcept
 {
 	ImageTextDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-viImageTextControlData* bvWinThemeStateButton::GetImageTextData(void)const
+viImageTextControlData* bvWinThemeStateButton::GetImageTextData(void)const noexcept
 {
 	return fTextData;
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::SetImageTextData(viImageTextControlData *Data)
+void bvWinThemeStateButton::SetImageTextData(viImageTextControlData *Data)noexcept
 {
 	if(fTextData==Data)
 		return;
@@ -1652,7 +1652,7 @@ void bvWinThemeStateButton::SetImageTextData(viImageTextControlData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::ImageTextDataInsertCallback(void)
+void bvWinThemeStateButton::ImageTextDataInsertCallback(void)noexcept
 {
 	if(fTextData!=nullptr){
 		fImageTextNotifyToken=fTextData->ControlImageTextNotifySet.Insert([this]{
@@ -1661,25 +1661,25 @@ void bvWinThemeStateButton::ImageTextDataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::ImageTextDataRemoveCallback(void)
+void bvWinThemeStateButton::ImageTextDataRemoveCallback(void)noexcept
 {
 	if(fTextData!=nullptr){
 		fTextData->ControlImageTextNotifySet.Remove(fImageTextNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::Update(void)
+void bvWinThemeStateButton::Update(void)noexcept
 {
 	fFont=nullptr;
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::UpdateState(void)
+void bvWinThemeStateButton::UpdateState(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::SetupText(void)
+void bvWinThemeStateButton::SetupText(void)noexcept
 {
 	if(fFont!=nullptr)
 		return;
@@ -1691,7 +1691,7 @@ void bvWinThemeStateButton::SetupText(void)
 	fFont=vSetupTextControl(fTextSize,cnRTL::utow(String),Length,TextStyle);
 }
 //---------------------------------------------------------------------------
-void bvWinThemeStateButton::SetupButtonRects(RECT &BoxRect,RECT &TextRect,const cUIPoint &BoxSize)
+void bvWinThemeStateButton::SetupButtonRects(RECT &BoxRect,RECT &TextRect,const cUIPoint &BoxSize)noexcept
 {
 	cUIPoint TextSize;
 	TextSize.x=static_cast<Float32>(fTextSize.cx);
@@ -1719,60 +1719,60 @@ void bvWinThemeStateButton::SetupButtonRects(RECT &BoxRect,RECT &TextRect,const 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinStateButton::cWinStateButton()
+cWinStateButton::cWinStateButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinStateButton::~cWinStateButton()
+cWinStateButton::~cWinStateButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinStateButton::ButtonBackgroundSetDefault(void)
+void cWinStateButton::ButtonBackgroundSetDefault(void)noexcept
 {
 	// no button background
 }
 //---------------------------------------------------------------------------
-bool cWinStateButton::ButtonMouseAllowButton(eMouseButton Button)
+bool cWinStateButton::ButtonMouseAllowButton(eMouseButton Button)noexcept
 {
 	return Button==MouseButton::Left;
 }
 //---------------------------------------------------------------------------
-void cWinStateButton::ButtonClick(const cUIPoint &)
+void cWinStateButton::ButtonClick(const cUIPoint &)noexcept
 {
 	if(OnClick!=nullptr){
 		OnClick();
 	}
 }
 //---------------------------------------------------------------------------
-ufInt8 cWinStateButton::CheckState(void)
+ufInt8 cWinStateButton::CheckState(void)noexcept
 {
 	return Check;
 }
 //---------------------------------------------------------------------------
-const uChar16* cWinStateButton::ControlTextString(void)
+const uChar16* cWinStateButton::ControlTextString(void)noexcept
 {
 	return Text;
 }
 //---------------------------------------------------------------------------
-uIntn cWinStateButton::ControlTextLength(void)
+uIntn cWinStateButton::ControlTextLength(void)noexcept
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinCheckButtonPainter_Normal::cWinCheckButtonPainter_Normal()
+cWinCheckButtonPainter_Normal::cWinCheckButtonPainter_Normal()noexcept
 {
 }
 cWinCheckButtonPainter_Normal::~cWinCheckButtonPainter_Normal()
 {
 }
 //---------------------------------------------------------------------------
-cUIPoint cWinCheckButtonPainter_Normal::GetBoxSize(HDC)
+cUIPoint cWinCheckButtonPainter_Normal::GetBoxSize(HDC)noexcept
 {
 	return {14,14};
 }
 //---------------------------------------------------------------------------
-void cWinCheckButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)
+void cWinCheckButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)noexcept
 {
 	static constexpr int CheckStateMap[3]={
 		DFCS_BUTTONCHECK,				// Unchecked
@@ -1803,7 +1803,7 @@ void cWinCheckButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonS
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_BUTTON,StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinCheckButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)
+void cWinCheckButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)noexcept
 {State,CheckState;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -1818,21 +1818,21 @@ void cWinCheckButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinCheckBox::vWinCheckBox(viButtonData *ButtonData,viImageTextControlData *TextData)
+vWinCheckBox::vWinCheckBox(viButtonData *ButtonData,viImageTextControlData *TextData)noexcept
 	: bvWinThemeStateButton(ButtonData,TextData)
 {
 }
 //---------------------------------------------------------------------------
-vWinCheckBox::~vWinCheckBox()
+vWinCheckBox::~vWinCheckBox()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinCheckBox::Create(viButtonData *ButtonData,viImageTextControlData *TextData)
+rPtr<viControl> vWinCheckBox::Create(viButtonData *ButtonData,viImageTextControlData *TextData)noexcept
 {
 	return rCreate< bwvControl<vWinCheckBox> >(ButtonData,TextData);
 }
 //---------------------------------------------------------------------------
-void vWinCheckBox::ThemeSetup(HWND WindowHandle)
+void vWinCheckBox::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -1846,13 +1846,13 @@ void vWinCheckBox::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinCheckBox::ThemeClear(void)
+void vWinCheckBox::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinCheckBox::Paint(HDC DC,HRGN)
+void vWinCheckBox::Paint(HDC DC,HRGN)noexcept
 {
 	if(fTextData==nullptr)
 		return;
@@ -1893,30 +1893,30 @@ void vWinCheckBox::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinCheckButton::cWinCheckButton()
+cWinCheckButton::cWinCheckButton()noexcept
 {
 	TextAlign=Alignment::CenterLeft;
 }
 //---------------------------------------------------------------------------
-void cWinCheckButton::ControlContentSetDefault(void)
+void cWinCheckButton::ControlContentSetDefault(void)noexcept
 {
 	SetContent(vWinCheckBox::Create(this,this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinRadioButtonPainter_Normal::cWinRadioButtonPainter_Normal()
+cWinRadioButtonPainter_Normal::cWinRadioButtonPainter_Normal()noexcept
 {
 }
-cWinRadioButtonPainter_Normal::~cWinRadioButtonPainter_Normal()
+cWinRadioButtonPainter_Normal::~cWinRadioButtonPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cUIPoint cWinRadioButtonPainter_Normal::GetBoxSize(HDC)
+cUIPoint cWinRadioButtonPainter_Normal::GetBoxSize(HDC)noexcept
 {
 	return {14,14};
 }
 //---------------------------------------------------------------------------
-void cWinRadioButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)
+void cWinRadioButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)noexcept
 {
 	UINT StateFlag=0;
 	if(CheckState){
@@ -1942,7 +1942,7 @@ void cWinRadioButtonPainter_Normal::PaintButton(HDC DC,const RECT &Rect,eButtonS
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_BUTTON,DFCS_BUTTONRADIO|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinRadioButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)
+void cWinRadioButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)noexcept
 {State,CheckState;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -1957,7 +1957,7 @@ void cWinRadioButtonPainter_Normal::PaintText(HDC DC,const RECT &TextRect,const 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinRadioButton::vWinRadioButton(viButtonData *ButtonData,viImageTextControlData *TextData)
+vWinRadioButton::vWinRadioButton(viButtonData *ButtonData,viImageTextControlData *TextData)noexcept
 	: bvWinThemeStateButton(ButtonData,TextData)
 {
 }
@@ -1966,12 +1966,12 @@ vWinRadioButton::~vWinRadioButton()
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinRadioButton::Create(viButtonData *ButtonData,viImageTextControlData *TextData)
+rPtr<viControl> vWinRadioButton::Create(viButtonData *ButtonData,viImageTextControlData *TextData)noexcept
 {
 	return rCreate< bwvControl<vWinRadioButton> >(ButtonData,TextData);
 }
 //---------------------------------------------------------------------------
-void vWinRadioButton::ThemeSetup(HWND WindowHandle)
+void vWinRadioButton::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -1985,13 +1985,13 @@ void vWinRadioButton::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinRadioButton::ThemeClear(void)
+void vWinRadioButton::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinRadioButton::Paint(HDC DC,HRGN)
+void vWinRadioButton::Paint(HDC DC,HRGN)noexcept
 {
 	if(fTextData==nullptr)
 		return;
@@ -2031,25 +2031,25 @@ void vWinRadioButton::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinRadioButton::cWinRadioButton()
+cWinRadioButton::cWinRadioButton()noexcept
 {
 	TextAlign=Alignment::CenterLeft;
 }
 //---------------------------------------------------------------------------
-void cWinRadioButton::ControlContentSetDefault(void)
+void cWinRadioButton::ControlContentSetDefault(void)noexcept
 {
 	SetContent(vWinRadioButton::Create(this,this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinSpinButtonPainter_Normal::cWinSpinButtonPainter_Normal()
+cWinSpinButtonPainter_Normal::cWinSpinButtonPainter_Normal()noexcept
 {
 }
-cWinSpinButtonPainter_Normal::~cWinSpinButtonPainter_Normal()
+cWinSpinButtonPainter_Normal::~cWinSpinButtonPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-UINT cWinSpinButtonPainter_Normal::ButtonStateFlag(eButtonState State)
+UINT cWinSpinButtonPainter_Normal::ButtonStateFlag(eButtonState State)noexcept
 {
 	UINT StateFlag=0;
 
@@ -2071,25 +2071,25 @@ UINT cWinSpinButtonPainter_Normal::ButtonStateFlag(eButtonState State)
 	return StateFlag;
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Normal::PaintUpButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Normal::PaintUpButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	UINT StateFlag=ButtonStateFlag(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_SCROLL,DFCS_SCROLLUP|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Normal::PaintDownButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Normal::PaintDownButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	UINT StateFlag=ButtonStateFlag(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_SCROLL,DFCS_SCROLLDOWN|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Normal::PaintLeftButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Normal::PaintLeftButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	UINT StateFlag=ButtonStateFlag(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_SCROLL,DFCS_SCROLLLEFT|StateFlag);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Normal::PaintRightButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Normal::PaintRightButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	UINT StateFlag=ButtonStateFlag(State);
 	::DrawFrameControl(DC,(LPRECT)&Rect,DFC_SCROLL,DFCS_SCROLLRIGHT|StateFlag);
@@ -2159,23 +2159,23 @@ void vWinSpinButton::Paint(HDC DC)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinDirectionButton::vWinDirectionButton(viButtonData *ButtonData)
+vWinDirectionButton::vWinDirectionButton(viButtonData *ButtonData)noexcept
 	: bvWinThemeButton(ButtonData)
 {
 }
 //---------------------------------------------------------------------------
-vWinDirectionButton::~vWinDirectionButton()
+vWinDirectionButton::~vWinDirectionButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinDirectionButton::Create(viButtonData *ButtonData,eDirection PointerDirection)
+rPtr<viControl> vWinDirectionButton::Create(viButtonData *ButtonData,eDirection PointerDirection)noexcept
 {
 	auto v=rCreate< bwvControl<vWinDirectionButton> >(ButtonData);
 	v->PointerDirection=PointerDirection;
 	return v;
 }
 //---------------------------------------------------------------------------
-void vWinDirectionButton::ThemeSetup(HWND WindowHandle)
+void vWinDirectionButton::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -2189,18 +2189,18 @@ void vWinDirectionButton::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinDirectionButton::ThemeClear(void)
+void vWinDirectionButton::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinDirectionButton::Update(void)
+void vWinDirectionButton::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinDirectionButton::Paint(HDC DC,HRGN)
+void vWinDirectionButton::Paint(HDC DC,HRGN)noexcept
 {
 	eButtonState BtnState;
 	if(fButtonData!=nullptr){
@@ -2226,20 +2226,20 @@ void vWinDirectionButton::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinEditBackgroundPainter_Normal::cWinEditBackgroundPainter_Normal()
+cWinEditBackgroundPainter_Normal::cWinEditBackgroundPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinEditBackgroundPainter_Normal::~cWinEditBackgroundPainter_Normal()
+cWinEditBackgroundPainter_Normal::~cWinEditBackgroundPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinEditBackgroundPainter_Normal::GetContentMarginRect(void)
+cUIRectangle cWinEditBackgroundPainter_Normal::GetContentMarginRect(void)noexcept
 {
 	return {2,2,2,2};
 }
 //---------------------------------------------------------------------------
-void cWinEditBackgroundPainter_Normal::Paint(HDC DC,const RECT &Rect,ControlState State)
+void cWinEditBackgroundPainter_Normal::Paint(HDC DC,const RECT &Rect,ControlState State)noexcept
 {State;
 	auto OldPen=::SelectObject(DC,::GetStockObject(BLACK_PEN));
 	auto OldBrush=::SelectObject(DC,::GetStockObject(WHITE_BRUSH));
@@ -2249,34 +2249,34 @@ void cWinEditBackgroundPainter_Normal::Paint(HDC DC,const RECT &Rect,ControlStat
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinEditBackground::vWinEditBackground(viControlStateData *Data)
+vWinEditBackground::vWinEditBackground(viControlStateData *Data)noexcept
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinEditBackground::~vWinEditBackground()
+vWinEditBackground::~vWinEditBackground()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinEditBackground::Create(viControlStateData *Data)
+rPtr<viControl> vWinEditBackground::Create(viControlStateData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinEditBackground> >(Data);
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::SetView(iUIView *View)
+void vWinEditBackground::SetView(iUIView *View)noexcept
 {
 	ViewControl::SetView(View);
 	vWinDCThemePainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-viControlStateData* vWinEditBackground::GetData(void)const
+viControlStateData* vWinEditBackground::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::SetData(viControlStateData *Data)
+void vWinEditBackground::SetData(viControlStateData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -2288,12 +2288,12 @@ void vWinEditBackground::SetData(viControlStateData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::Update(void)
+void vWinEditBackground::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::DataInsertCallback(void)
+void vWinEditBackground::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fControlStateDataNotifyToken=fData->ControlStateNotifySet.Insert([this]{
@@ -2302,14 +2302,14 @@ void vWinEditBackground::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::DataRemoveCallback(void)
+void vWinEditBackground::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->ControlStateNotifySet.Remove(fControlStateDataNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-cUIRectangle vWinEditBackground::UIMargin(const cUIRectangle &Margin)
+cUIRectangle vWinEditBackground::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	if(fPainter==nullptr){
 		return UIRectangleZero;
@@ -2319,7 +2319,7 @@ cUIRectangle vWinEditBackground::UIMargin(const cUIRectangle &Margin)
 	return MergeMargin(FrameMargin,Margin);
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::ThemeSetup(HWND WindowHandle)
+void vWinEditBackground::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -2333,13 +2333,13 @@ void vWinEditBackground::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::ThemeClear(void)
+void vWinEditBackground::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinEditBackground::Paint(HDC DC,HRGN)
+void vWinEditBackground::Paint(HDC DC,HRGN)noexcept
 {
 	typedef cWinEditBackgroundPainter::ControlState ControlState;
 	ControlState State;
@@ -2364,13 +2364,13 @@ void vWinEditBackground::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void lWinEditFrame::ControlBackgroundSetDefault(void)
+void lWinEditFrame::ControlBackgroundSetDefault(void)noexcept
 {
 	SetBackground(vWinEditBackground::Create(nullptr));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinTextCaret::vWinTextCaret(viTextCaretData *Data)
+vWinTextCaret::vWinTextCaret(viTextCaretData *Data)noexcept
 	: fData(Data)
 {
 	fVisible=true;
@@ -2380,18 +2380,18 @@ vWinTextCaret::vWinTextCaret(viTextCaretData *Data)
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinTextCaret::~vWinTextCaret()
+vWinTextCaret::~vWinTextCaret()noexcept
 {
 	DataRemoveCallback();
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinTextCaret::Create(viTextCaretData *Data)
+rPtr<viControl> vWinTextCaret::Create(viTextCaretData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinTextCaret> >(Data);
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::CaretSetup(HWND WindowHandle,cUIPoint CaretSize)
+void vWinTextCaret::CaretSetup(HWND WindowHandle,cUIPoint CaretSize)noexcept
 {
 	if(fCaretCreated==false){
 		if(::CreateCaret(WindowHandle,nullptr,static_cast<sfInt32>(CaretSize.x),static_cast<sfInt32>(CaretSize.y))){
@@ -2403,7 +2403,7 @@ void vWinTextCaret::CaretSetup(HWND WindowHandle,cUIPoint CaretSize)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::CaretClear(void)
+void vWinTextCaret::CaretClear(void)noexcept
 {
 	if(fCaretCreated){
 		::DestroyCaret();
@@ -2411,7 +2411,7 @@ void vWinTextCaret::CaretClear(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::StateFunction(void)
+void vWinTextCaret::StateFunction(void)noexcept
 {
 	if(fFocused==false || fVisible==false){
 		CaretClear();
@@ -2449,7 +2449,7 @@ void vWinTextCaret::StateFunction(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::DataInsertCallback(void)
+void vWinTextCaret::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fTextCaretNotifyToken=fData->TextCaretNotifySet.Insert([this]{
@@ -2458,14 +2458,14 @@ void vWinTextCaret::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::DataRemoveCallback(void)
+void vWinTextCaret::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->TextCaretNotifySet.Remove(fTextCaretNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::SetView(iUIView *View)
+void vWinTextCaret::SetView(iUIView *View)noexcept
 {
 	if(fView!=nullptr){
 		ViewRemoveKeyHandler(fView,this);
@@ -2487,48 +2487,48 @@ void vWinTextCaret::SetView(iUIView *View)
 	StateFunction();
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::SetContentZPosition(Float32)
+void vWinTextCaret::SetContentZPosition(Float32)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::SetContentVisible(bool Visible)
+void vWinTextCaret::SetContentVisible(bool Visible)noexcept
 {
 	fVisible=Visible;
 	StateFunction();
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::UILayout(void)
+void vWinTextCaret::UILayout(void)noexcept
 {
 	StateFunction();
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::KeyFocusEnter(iUIKeyEvent*)
+void vWinTextCaret::KeyFocusEnter(iUIKeyEvent*)noexcept
 {
 	fFocused=true;
 	StateFunction();
 }
 //---------------------------------------------------------------------------
-void vWinTextCaret::KeyFocusLeave(iUIKeyEvent*)
+void vWinTextCaret::KeyFocusLeave(iUIKeyEvent*)noexcept
 {
 	fFocused=false;
 	StateFunction();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinTabPainter_Normal::cWinTabPainter_Normal()
+cWinTabPainter_Normal::cWinTabPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinTabPainter_Normal::~cWinTabPainter_Normal()
+cWinTabPainter_Normal::~cWinTabPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-ufInt16n cWinTabPainter_Normal::TabBorderSize(void)
+ufInt16n cWinTabPainter_Normal::TabBorderSize(void)noexcept
 {
 	return 4;
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Normal::PaintPanelHeader(HDC DC,const RECT &PanelRect)
+void cWinTabPainter_Normal::PaintPanelHeader(HDC DC,const RECT &PanelRect)noexcept
 {
 	auto PenObject=fPanelHeaderPenRecycler.Query();
 
@@ -2538,7 +2538,7 @@ void cWinTabPainter_Normal::PaintPanelHeader(HDC DC,const RECT &PanelRect)
 	::SelectObject(DC,OldPen);
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Normal::TabToTextRect(RECT &Rect,TabState State)
+void cWinTabPainter_Normal::TabToTextRect(RECT &Rect,TabState State)noexcept
 {
 	if(State==TabState::Active){
 		Rect.left+=4;
@@ -2553,7 +2553,7 @@ void cWinTabPainter_Normal::TabToTextRect(RECT &Rect,TabState State)
 	}
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Normal::PaintTabItem(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Normal::PaintTabItem(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	RECT PaintRect=Rect;
 
@@ -2586,27 +2586,27 @@ RECT cWinTabPainter_Normal::PaintTabItem(HDC DC,const RECT &Rect,TabState State)
 	return PaintRect;
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Normal::PaintItemLeft(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Normal::PaintItemLeft(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Normal::PaintItemMiddle(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Normal::PaintItemMiddle(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Normal::PaintItemRight(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Normal::PaintItemRight(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Normal::PaintItemSingle(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Normal::PaintItemSingle(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State);
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Normal::PaintItemText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,TabState State)
+void cWinTabPainter_Normal::PaintItemText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,TabState State)noexcept
 {State;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -2623,29 +2623,29 @@ void cWinTabPainter_Normal::PaintItemText(HDC DC,const RECT &TextRect,const wcha
 }
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------
-vWinTab::vWinTab(viTabData *Data)
+vWinTab::vWinTab(viTabData *Data)noexcept
 	: fData(Data)
 {
 	fUpdateTab=true;
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinTab::~vWinTab()
+vWinTab::~vWinTab()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinTab::Create(viTabData *Data)
+rPtr<viControl> vWinTab::Create(viTabData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinTab> >(Data);
 }
 //---------------------------------------------------------------------------
-viTabData* vWinTab::GetData(void)const
+viTabData* vWinTab::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinTab::SetData(viTabData *Data)
+void vWinTab::SetData(viTabData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -2657,7 +2657,7 @@ void vWinTab::SetData(viTabData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinTab::DataInsertCallback(void)
+void vWinTab::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fTabNotifyToken=fData->TabNotifySet.Insert([this]{
@@ -2666,26 +2666,26 @@ void vWinTab::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::DataRemoveCallback(void)
+void vWinTab::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->TabNotifySet.Remove(fTabNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::Update(void)
+void vWinTab::Update(void)noexcept
 {
 	fTabCacheList.Clear();
 	fUpdateTab=true;
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinTab::UpdateState(void)
+void vWinTab::UpdateState(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinTab::ThemeSetup(HWND WindowHandle)
+void vWinTab::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -2699,13 +2699,13 @@ void vWinTab::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::ThemeClear(void)
+void vWinTab::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinTab::SetupTabCache(HDC DC)
+void vWinTab::SetupTabCache(HDC DC)noexcept
 {
 	if(fData==nullptr){
 		fTabCacheList.Clear();
@@ -2761,7 +2761,7 @@ void vWinTab::SetupTabCache(HDC DC)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::Paint(HDC DC,HRGN)
+void vWinTab::Paint(HDC DC,HRGN)noexcept
 {
 	if(fPainter==nullptr)
 		return;
@@ -2804,7 +2804,7 @@ void vWinTab::Paint(HDC DC,HRGN)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)
+void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexcept
 {
 	RECT TabRect;
 	TabRect.left=fPaintRC.left+static_cast<sfInt32>(Item.TabPos);
@@ -2840,7 +2840,7 @@ void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)
 	fPainter->PaintItemText(DC,TextRect,Item.Text,Item.Text->Length,TextFont,State);
 }
 //---------------------------------------------------------------------------
-sfInt16 vWinTab::TabHitTest(Float32 x,Float32 y)
+sfInt16 vWinTab::TabHitTest(Float32 x,Float32 y)noexcept
 {
 	if(fUpdateTab){
 		fUpdateTab=false;
@@ -2869,32 +2869,32 @@ sfInt16 vWinTab::TabHitTest(Float32 x,Float32 y)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinTab::ControlContentSetDefault(void)
+void cWinTab::ControlContentSetDefault(void)noexcept
 {
 	SetContent(vWinTab::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarPainter_Normal::cBrushBMP::cBrushBMP()
+cWinScrollBarPainter_Normal::cBrushBMP::cBrushBMP()noexcept
 	: BrushPattern(nullptr)
 	, Brush(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cWinScrollBarPainter_Normal::cBrushBMP::~cBrushBMP()
+cWinScrollBarPainter_Normal::cBrushBMP::~cBrushBMP()noexcept
 {
 	if(Brush!=nullptr){
 		Destroy();
 	}
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::cBrushBMP::Destroy(void)
+void cWinScrollBarPainter_Normal::cBrushBMP::Destroy(void)noexcept
 {
 	::DeleteObject(Brush);
 	::DeleteObject(BrushPattern);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::cBrushBMP::CreateBmp32(HDC DC,int w,int h,const void *PixelData)
+void cWinScrollBarPainter_Normal::cBrushBMP::CreateBmp32(HDC DC,int w,int h,const void *PixelData)noexcept
 {
 	BrushPattern=::CreateCompatibleBitmap(DC,w,h);
 	if(BrushPattern==nullptr){
@@ -2932,7 +2932,7 @@ void cWinScrollBarPainter_Normal::cBrushBMP::CreateBmp32(HDC DC,int w,int h,cons
 	Brush=::CreatePatternBrush(BrushPattern);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::cBrushBMP::Setup(HDC DC,bool Pressed)
+void cWinScrollBarPainter_Normal::cBrushBMP::Setup(HDC DC,bool Pressed)noexcept
 {
 	BrushPattern=::CreateCompatibleBitmap(DC,2,2);
 	if(BrushPattern==nullptr){
@@ -2976,7 +2976,7 @@ const uInt32 cWinScrollBarPainter_Normal::cBrushBMPNormal::PixelData[4]={
 	0xFFFFFF,0xC8D0D4,
 };
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::cBrushBMPNormal::Setup(HDC DC)
+void cWinScrollBarPainter_Normal::cBrushBMPNormal::Setup(HDC DC)noexcept
 {
 	if(Brush==nullptr){
 		cnLib_ASSERT(BrushPattern==nullptr);
@@ -2990,7 +2990,7 @@ const uInt32 cWinScrollBarPainter_Normal::cBrushBMPPressed::PixelData[4]={
 	0x372F2B,0xC8D0D4,
 };
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::cBrushBMPPressed::Setup(HDC DC)
+void cWinScrollBarPainter_Normal::cBrushBMPPressed::Setup(HDC DC)noexcept
 {
 	if(Brush==nullptr){
 		cnLib_ASSERT(BrushPattern==nullptr);
@@ -2999,14 +2999,14 @@ void cWinScrollBarPainter_Normal::cBrushBMPPressed::Setup(HDC DC)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarPainter_Normal::cWinScrollBarPainter_Normal()
+cWinScrollBarPainter_Normal::cWinScrollBarPainter_Normal()noexcept
 {
 }
-cWinScrollBarPainter_Normal::~cWinScrollBarPainter_Normal()
+cWinScrollBarPainter_Normal::~cWinScrollBarPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-UINT cWinScrollBarPainter_Normal::BtnStateFlag(eButtonState State,bool IsActive)
+UINT cWinScrollBarPainter_Normal::BtnStateFlag(eButtonState State,bool IsActive)noexcept
 {
 	switch(State){
 	default:
@@ -3032,12 +3032,12 @@ UINT cWinScrollBarPainter_Normal::BtnStateFlag(eButtonState State,bool IsActive)
 	}
 }
 //---------------------------------------------------------------------------
-Float32 cWinScrollBarPainter_Normal::GetMinTrackButtonSize(void)
+Float32 cWinScrollBarPainter_Normal::GetMinTrackButtonSize(void)noexcept
 {
 	return 20;
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintDec(const PaintParam &Param)
+void cWinScrollBarPainter_Normal::PaintDec(const PaintParam &Param)noexcept
 {
 	DWORD ScrollBtnFlag;
 	if(Param.IsVertical){
@@ -3050,7 +3050,7 @@ void cWinScrollBarPainter_Normal::PaintDec(const PaintParam &Param)
 	::DrawFrameControl(Param.DC,const_cast<LPRECT>(&Param.Rect),DFC_SCROLL,ScrollBtnFlag);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintInc(const PaintParam &Param)
+void cWinScrollBarPainter_Normal::PaintInc(const PaintParam &Param)noexcept
 {
 	DWORD ScrollBtnFlag;
 	if(Param.IsVertical){
@@ -3063,7 +3063,7 @@ void cWinScrollBarPainter_Normal::PaintInc(const PaintParam &Param)
 	::DrawFrameControl(Param.DC,const_cast<LPRECT>(&Param.Rect),DFC_SCROLL,ScrollBtnFlag);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintBar(const PaintParam &Param,bool Active)
+void cWinScrollBarPainter_Normal::PaintBar(const PaintParam &Param,bool Active)noexcept
 {
 	if(Param.State==ButtonState::Pressed && Active){
 		auto BrushPtr=fPressedBMPRecycler.Query();
@@ -3078,17 +3078,17 @@ void cWinScrollBarPainter_Normal::PaintBar(const PaintParam &Param,bool Active)
 	}
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintDecBar(const PaintParam &Param)
+void cWinScrollBarPainter_Normal::PaintDecBar(const PaintParam &Param)noexcept
 {
 	return PaintBar(Param,Param.ActiveButton==ScrollBarButton::DecBar);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintIncBar(const PaintParam &Param)
+void cWinScrollBarPainter_Normal::PaintIncBar(const PaintParam &Param)noexcept
 {
 	return PaintBar(Param,Param.ActiveButton==ScrollBarButton::IncBar);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Normal::PaintTrack(const PaintParam &Param)
+void cWinScrollBarPainter_Normal::PaintTrack(const PaintParam &Param)noexcept
 {
 	UINT ScrollBtnFlag=DFCS_BUTTONPUSH;
 	switch(Param.State){
@@ -3106,28 +3106,28 @@ void cWinScrollBarPainter_Normal::PaintTrack(const PaintParam &Param)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinScrollBar::vWinScrollBar(viScrollBarData *Data)
+vWinScrollBar::vWinScrollBar(viScrollBarData *Data)noexcept
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinScrollBar::~vWinScrollBar()
+vWinScrollBar::~vWinScrollBar()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viScrollBar> vWinScrollBar::Create(viScrollBarData *Data)
+rPtr<viScrollBar> vWinScrollBar::Create(viScrollBarData *Data)noexcept
 {
 	return rCreate< bwvScrollBar<vWinScrollBar> >(Data);
 }
 //---------------------------------------------------------------------------
-viScrollBarData* vWinScrollBar::GetData(void)const
+viScrollBarData* vWinScrollBar::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::SetData(viScrollBarData *Data)
+void vWinScrollBar::SetData(viScrollBarData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -3139,7 +3139,7 @@ void vWinScrollBar::SetData(viScrollBarData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::DataInsertCallback(void)
+void vWinScrollBar::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fScrollBarNotifyToken=fData->ScrollBarNotifySet.Insert([this]{
@@ -3148,19 +3148,19 @@ void vWinScrollBar::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::DataRemoveCallback(void)
+void vWinScrollBar::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->ScrollBarNotifySet.Remove(fScrollBarNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::Update(void)
+void vWinScrollBar::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::ThemeSetup(HWND WindowHandle)
+void vWinScrollBar::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -3174,13 +3174,13 @@ void vWinScrollBar::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::ThemeClear(void)
+void vWinScrollBar::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::CalculateParts(Float32 TotalSize)
+void vWinScrollBar::CalculateParts(Float32 TotalSize)noexcept
 {
 
 	fTrackSize=TotalSize-fBtnSize*2;
@@ -3224,7 +3224,7 @@ void vWinScrollBar::CalculateParts(Float32 TotalSize)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBar::Paint(HDC DC,HRGN)
+void vWinScrollBar::Paint(HDC DC,HRGN)noexcept
 {
 	int PaintWidth=fPaintRC.right-fPaintRC.left;
 	int PaintHeight=fPaintRC.bottom-fPaintRC.top;
@@ -3281,7 +3281,7 @@ void vWinScrollBar::Paint(HDC DC,HRGN)
 	fPainter->PaintTrack(PartPaintParam);
 }
 //---------------------------------------------------------------------------
-eScrollBarButton vWinScrollBar::ScrollHitTest(Float32 x,Float32 y)
+eScrollBarButton vWinScrollBar::ScrollHitTest(Float32 x,Float32 y)noexcept
 {
 	if(x<0)
 		return ScrollBarButton::None;
@@ -3323,7 +3323,7 @@ eScrollBarButton vWinScrollBar::ScrollHitTest(Float32 x,Float32 y)
 	return ScrollBarButton::None;
 }
 //---------------------------------------------------------------------------
-Float32 vWinScrollBar::ScrollOffsetToValue(Float32 OffsetX,Float32 OffsetY)
+Float32 vWinScrollBar::ScrollOffsetToValue(Float32 OffsetX,Float32 OffsetY)noexcept
 {
 	if(fIsVertical){
 		return OffsetY*fValueSize/fTrackSize;
@@ -3334,26 +3334,26 @@ Float32 vWinScrollBar::ScrollOffsetToValue(Float32 OffsetX,Float32 OffsetY)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinScrollBar::ControlContentSetDefault(void)
+void cWinScrollBar::ControlContentSetDefault(void)noexcept
 {
 	SetContent(vWinScrollBar::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinControlScrollBar::ControlContentSetDefault(void)
+void cWinControlScrollBar::ControlContentSetDefault(void)noexcept
 {
 	SetContent(vWinScrollBar::Create(this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarGripPainter_Normal::cWinScrollBarGripPainter_Normal()
+cWinScrollBarGripPainter_Normal::cWinScrollBarGripPainter_Normal()noexcept
 {
 }
-cWinScrollBarGripPainter_Normal::~cWinScrollBarGripPainter_Normal()
+cWinScrollBarGripPainter_Normal::~cWinScrollBarGripPainter_Normal()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarGripPainter_Normal::Paint(HDC DC,const RECT &Rect,eAlignment BoxAlign)
+void cWinScrollBarGripPainter_Normal::Paint(HDC DC,const RECT &Rect,eAlignment BoxAlign)noexcept
 {
 	DWORD ScrollBtnFlag;
 	ufInt8 AlignLeft,AlignTop;
@@ -3378,28 +3378,28 @@ void cWinScrollBarGripPainter_Normal::Paint(HDC DC,const RECT &Rect,eAlignment B
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinScrollBarGrip::vWinScrollBarGrip(viScrollBarGripData *Data)
+vWinScrollBarGrip::vWinScrollBarGrip(viScrollBarGripData *Data)noexcept
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinScrollBarGrip::~vWinScrollBarGrip()
+vWinScrollBarGrip::~vWinScrollBarGrip()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinScrollBarGrip::Create(viScrollBarGripData *Data)
+rPtr<viControl> vWinScrollBarGrip::Create(viScrollBarGripData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinScrollBarGrip> >(Data);
 }
 //---------------------------------------------------------------------------
-viScrollBarGripData* vWinScrollBarGrip::GetData(void)const
+viScrollBarGripData* vWinScrollBarGrip::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::SetData(viScrollBarGripData *Data)
+void vWinScrollBarGrip::SetData(viScrollBarGripData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -3409,12 +3409,12 @@ void vWinScrollBarGrip::SetData(viScrollBarGripData *Data)
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::Update(void)
+void vWinScrollBarGrip::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::DataInsertCallback(void)
+void vWinScrollBarGrip::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fScrollBarGripNotifyToken=fData->ScrollBarGripNotifySet.Insert([this]{
@@ -3423,14 +3423,14 @@ void vWinScrollBarGrip::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::DataRemoveCallback(void)
+void vWinScrollBarGrip::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->ScrollBarGripNotifySet.Remove(fScrollBarGripNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::ThemeSetup(HWND WindowHandle)
+void vWinScrollBarGrip::ThemeSetup(HWND WindowHandle)noexcept
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -3444,13 +3444,13 @@ void vWinScrollBarGrip::ThemeSetup(HWND WindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::ThemeClear(void)
+void vWinScrollBarGrip::ThemeClear(void)noexcept
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinScrollBarGrip::Paint(HDC DC,HRGN)
+void vWinScrollBarGrip::Paint(HDC DC,HRGN)noexcept
 {
 	eAlignment BoxAlign;
 	if(fData!=nullptr){
@@ -3463,45 +3463,45 @@ void vWinScrollBarGrip::Paint(HDC DC,HRGN)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-kWinControlScrollBar::kWinControlScrollBar()
+kWinControlScrollBar::kWinControlScrollBar()noexcept
 {
 	ScrollBarHorizontal.SetContent(vWinScrollBar::Create(&ScrollBarHorizontal));
 	ScrollBarVertical.SetContent(vWinScrollBar::Create(&ScrollBarVertical));
 	ScrollBarGrip.SetBackground(vWinScrollBarGrip::Create(this));
 }
 //---------------------------------------------------------------------------
-kWinControlScrollBar::~kWinControlScrollBar()
+kWinControlScrollBar::~kWinControlScrollBar()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<kiScrollBar> kWinControlScrollBar::Create(void)
+rPtr<kiScrollBar> kWinControlScrollBar::Create(void)noexcept
 {
 	return rCreate< bwkScrollBar<kWinControlScrollBar> >();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinTreeBranchGraph::vWinTreeBranchGraph(viTreeBranchData *BranchData)
+vWinTreeBranchGraph::vWinTreeBranchGraph(viTreeBranchData *BranchData)noexcept
 	: fBranchData(BranchData)
 {
 	BranchDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinTreeBranchGraph::~vWinTreeBranchGraph()
+vWinTreeBranchGraph::~vWinTreeBranchGraph()noexcept
 {
 	BranchDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinTreeBranchGraph::Create(viTreeBranchData *BranchData)
+rPtr<viControl> vWinTreeBranchGraph::Create(viTreeBranchData *BranchData)noexcept
 {
 	return rCreate< bwvControl<vWinTreeBranchGraph> >(BranchData);
 }
 //---------------------------------------------------------------------------
-viTreeBranchData* vWinTreeBranchGraph::GetBranchData(void)const
+viTreeBranchData* vWinTreeBranchGraph::GetBranchData(void)const noexcept
 {
 	return fBranchData;
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::SetBranchData(viTreeBranchData *Data)
+void vWinTreeBranchGraph::SetBranchData(viTreeBranchData *Data)noexcept
 {
 	if(fBranchData==Data)
 		return;
@@ -3513,7 +3513,7 @@ void vWinTreeBranchGraph::SetBranchData(viTreeBranchData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::BranchDataInsertCallback(void)
+void vWinTreeBranchGraph::BranchDataInsertCallback(void)noexcept
 {
 	if(fBranchData!=nullptr){
 		fTreeGraphNotifyToken=fBranchData->TreeBranchNotifySet.Insert([this]{
@@ -3522,19 +3522,19 @@ void vWinTreeBranchGraph::BranchDataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::BranchDataRemoveCallback(void)
+void vWinTreeBranchGraph::BranchDataRemoveCallback(void)noexcept
 {
 	if(fBranchData!=nullptr){
 		fBranchData->TreeBranchNotifySet.Remove(fTreeGraphNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::Update(void)
+void vWinTreeBranchGraph::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::Paint(HDC DC,HRGN)
+void vWinTreeBranchGraph::Paint(HDC DC,HRGN)noexcept
 {
 	if(fBranchData==nullptr)
 		return;
@@ -3553,7 +3553,7 @@ void vWinTreeBranchGraph::Paint(HDC DC,HRGN)
 	::SelectObject(DC,OldPen);
 }
 //---------------------------------------------------------------------------
-vWinTreeBranchGraph::cTreeLinePen::cTreeLinePen()
+vWinTreeBranchGraph::cTreeLinePen::cTreeLinePen()noexcept
 {
 	LOGBRUSH BrushInfo;
 	BrushInfo.lbColor=0x505050;
@@ -3562,12 +3562,12 @@ vWinTreeBranchGraph::cTreeLinePen::cTreeLinePen()
 	Pen=::ExtCreatePen(PS_COSMETIC|PS_ALTERNATE,1,&BrushInfo,0,nullptr);
 }
 //---------------------------------------------------------------------------
-vWinTreeBranchGraph::cTreeLinePen::~cTreeLinePen()
+vWinTreeBranchGraph::cTreeLinePen::~cTreeLinePen()noexcept
 {
 	::DeleteObject(Pen);
 }
 //---------------------------------------------------------------------------
-void vWinTreeBranchGraph::DrawBranch(HDC DC,const cUIPoint &Offset,const viTreeBranchData::cTreeBranchItem &Branch)
+void vWinTreeBranchGraph::DrawBranch(HDC DC,const cUIPoint &Offset,const viTreeBranchData::cTreeBranchItem &Branch)noexcept
 {
 	Float32 Top=fPaintRC.top+Offset.y;
 	Float32 Left=fPaintRC.left+Offset.x;
@@ -3585,26 +3585,26 @@ void vWinTreeBranchGraph::DrawBranch(HDC DC,const cUIPoint &Offset,const viTreeB
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vWinTreeExpandButton::vWinTreeExpandButton(viButtonData *Data)
+vWinTreeExpandButton::vWinTreeExpandButton(viButtonData *Data)noexcept
 	: bvWinButton(Data)
 {
 }
 //---------------------------------------------------------------------------
-vWinTreeExpandButton::~vWinTreeExpandButton()
+vWinTreeExpandButton::~vWinTreeExpandButton()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinTreeExpandButton::Create(viButtonData *Data)
+rPtr<viControl> vWinTreeExpandButton::Create(viButtonData *Data)noexcept
 {
 	return rCreate< bwvControl<vWinTreeExpandButton> >(Data);
 }
 //---------------------------------------------------------------------------
-void vWinTreeExpandButton::Update(void)
+void vWinTreeExpandButton::Update(void)noexcept
 {
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinTreeExpandButton::Paint(HDC DC,HRGN)
+void vWinTreeExpandButton::Paint(HDC DC,HRGN)noexcept
 {
 	static constexpr int ExpandBoxSize=9;
 

@@ -20,144 +20,62 @@ namespace cnRTL{
 class cConnection : public iConnection
 {
 public:
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
-	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)override;
+	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;
 
 	iPtr<iAddress> LocalAddress;
 	iPtr<iAddress> RemoteAddress;
 };
 //---------------------------------------------------------------------------
-class bcConnectionQueueProcessor :  protected iAsyncNotificationCallback
+class bcConnectionListener : public iConnectionListener, protected bcAsyncQueue
 {
 public:
-	bcConnectionQueueProcessor(iConnectionQueue *Queue=nullptr);
-	~bcConnectionQueueProcessor();
+	bcConnectionListener()noexcept(true);
+	~bcConnectionListener()noexcept(true);
 
-	iConnectionQueue* GetConnectionQueue(void)const;
-	bool SetConnectionQueue(iConnectionQueue *Queue);
+	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)override;
+	virtual void cnLib_FUNC StopNotify(void)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)noexcept(true)override;
+	virtual bool cnLib_FUNC IsClosed(void)noexcept(true)override;
 
-	bool IsActive(void)const;
-
-	bool Start(iReference *Reference=nullptr);
-	void Stop(void);
-protected:
-
-	iPtr<iConnectionQueue> fConnectionQueue;
-	bool fQueueActive;
-	cAtomicVar<bool> fActiveMutex;
-	virtual void cnLib_FUNC AsyncStarted(void)override;
-	virtual void cnLib_FUNC AsyncStopped(void)override;
-};
-//---------------------------------------------------------------------------
-class bcConnectionQueue : public iConnectionQueue, protected bcAsyncQueue
-{
-public:
-	bcConnectionQueue();
-	~bcConnectionQueue();
-
-	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)override;
-	virtual void cnLib_FUNC StopNotify(void)override;
-	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)override;
-	virtual bool cnLib_FUNC IsClosed(void)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 
 protected:
 	iAsyncNotificationCallback *fConnectionQueueCallback;
 	rPtr<iReference> fConnectionQueueReference;
 
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	virtual void AsyncQueueNotify(void)override;
-};
-//---------------------------------------------------------------------------
-class bcConnectionListener : public iConnectionListener
-{
-public:
-	bcConnectionListener();
-	~bcConnectionListener();
-
-	virtual void	cnLib_FUNC Close(void)override;
-	virtual iPtr<iConnection>		cnLib_FUNC Accept(void)override;
-	virtual iPtr<iConnectionTask>	cnLib_FUNC AcceptAsync(void)override;
-
-protected:
-	void CloseListener(void);
-
-	virtual void ConnectionProcessTask(void)=0;
-	virtual void ConnectionProcessEnd(void)=0;
-
-	void UpdateAcceptTaskQueue(void);
-
-	// accept Task
-
-	class cAcceptTask : public iConnectionTask , public cTaskQueue::cTask
-	{
-	public:
-		
-		cAcceptTask()=default;
-		~cAcceptTask()=default;
-		iPtr<bcConnectionListener> Owner;
-
-		using iConnectionTask::CastInterface;
-		//virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)override;
-		virtual bool cnLib_FUNC IsDone(void)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
-		virtual void cnLib_FUNC Cancel(void)override;
-		virtual iConnection* cnLib_FUNC GetConnection(void)override;
-
-		//eStreamError cnLib_FUNC GetStreamError(void)override;
-		StreamError AcceptErrorCode;
-
-		iPtr<iConnection> Connection;
-		void PrepareAccept(void);
-	protected:
-	};
-
-
-	rPtr<cAcceptTask> QueryAcceptTask(void);
-	void CompleteAcceptTask(rPtr<cAcceptTask> Task);
-private:
-	// task queue
-
-	cTaskQueue fAcceptTaskQueue;
-
-	class cProcessAcceptTaskQueueProcedure : public bcAsyncExclusiveProcedure
-	{
-		virtual bool Procedure(void)override;
-	}fProcessAcceptTaskQueueProcedure;
-	rPtr<iAsyncProcedure> fProcessAcceptTaskWork;
-	bool ProcessAcceptTaskQueueProc(void);
-
-	bool fListenerClosed;
-
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	virtual void AsyncQueueNotify(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 
 class bcBufferedRWQueue : public bcRWQueue
 {
 public:
-	bcBufferedRWQueue();
-	~bcBufferedRWQueue();
+	bcBufferedRWQueue()noexcept(true);
+	~bcBufferedRWQueue()noexcept(true);
 
-	void PutReadData(const void *Data,uIntn Size);
-	cMemory QueryReadDataBuffer(uIntn QuerySize);
-	void AdvanceReadDataBuffer(uIntn Size);
+	void PutReadData(const void *Data,uIntn Size)noexcept(true);
+	cMemory QueryReadDataBuffer(uIntn QuerySize)noexcept(true);
+	void AdvanceReadDataBuffer(uIntn Size)noexcept(true);
 
-	cConstMemory QueryWriteData(void);
-	void AdvanceWriteData(uIntn Size);
-	bool IsWriteDataEnded(void);
+	cConstMemory QueryWriteData(void)noexcept(true);
+	void AdvanceWriteData(uIntn Size)noexcept(true);
+	bool IsWriteDataEnded(void)noexcept(true);
 
 protected:
 
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
-	virtual void ReadQueueClosed(void)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
+	virtual void ReadQueueClosed(void)noexcept(true)override;
 
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)override;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
-	virtual void WriteQueueClosed(void)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
+	virtual void WriteQueueClosed(void)noexcept(true)override;
 
-	virtual void ReadBufferNotify(void)=0;
-	virtual void WriteDataNotify(void)=0;
+	virtual void ReadBufferNotify(void)noexcept(true)=0;
+	virtual void WriteDataNotify(void)noexcept(true)=0;
 
 private:
 	cAsyncLoopbackStreamBuffer fReadDataQueue;
@@ -174,49 +92,49 @@ struct cGATTTunnelConnectionDeviceID
 class cGATTTunnelConectionDevice : public iReference, public iAddress, protected iGATTServiceHandler
 {
 public:
-	cGATTTunnelConectionDevice(rPtr<iGATTService> Service,iPtr<iGATTCharacteristic> ReadChar,iPtr<iGATTCharacteristic> WriteChar);
-	~cGATTTunnelConectionDevice();
+	cGATTTunnelConectionDevice(rPtr<iGATTService> Service,rPtr<iGATTCharacteristic> ReadChar,rPtr<iGATTCharacteristic> WriteChar)noexcept(true);
+	~cGATTTunnelConectionDevice()noexcept(true);
 
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	// iAddress
 
-	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)override;
+	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)noexcept(true)override;
 
-	cGATTTunnelConnectionDeviceID GetDeviceID()const;
-	iGATTService* GetService(void)const;
-	iGATTCharacteristic* GetReadCharacteristic(void)const;
-	iGATTCharacteristic* GetWriteCharacteristic(void)const;
+	cGATTTunnelConnectionDeviceID GetDeviceID()const noexcept(true);
+	iGATTService* GetService(void)const noexcept(true);
+	iGATTCharacteristic* GetReadCharacteristic(void)const noexcept(true);
+	iGATTCharacteristic* GetWriteCharacteristic(void)const noexcept(true);
 
 	class cRWQueue : public bcBufferedRWQueue, public cDualReference
 	{
 	public:
-		cRWQueue(rPtr<cGATTTunnelConectionDevice> Device);
-		~cRWQueue();
+		cRWQueue(rPtr<cGATTTunnelConectionDevice> Device)noexcept(true);
+		~cRWQueue()noexcept(true);
 
-		cGATTTunnelConectionDevice* GetDevice(void)const;
+		cGATTTunnelConectionDevice* GetDevice(void)const noexcept(true);
 
 		using bcBufferedRWQueue::WriteQueueSetEndMode;
 
 	protected:
-		void VirtualStarted(void);
-		void VirtualStopped(void);
+		void VirtualStarted(void)noexcept(true);
+		void VirtualStopped(void)noexcept(true);
 
 
 		rPtr<cGATTTunnelConectionDevice> fDevice;
 		//void BLEWriteProcedure(void);
 
-		virtual iReference* RWQueueInnerReference(void)override;
-		virtual void ReadBufferNotify(void)override;
-		virtual void WriteDataNotify(void)override;
+		virtual iReference* RWQueueInnerReference(void)noexcept(true)override;
+		virtual void ReadBufferNotify(void)noexcept(true)override;
+		virtual void WriteDataNotify(void)noexcept(true)override;
 	};
 	class iConnectCallback
 	{
 	public:
-		virtual void TunnelDeviceOnConnectDone(rPtr<cRWQueue> RWQueue)=0;
-		//virtual void TunnelDeviceOnConnectFailed(void)=0;
+		virtual void TunnelDeviceOnConnectDone(rPtr<cRWQueue> RWQueue)noexcept(true)=0;
+		//virtual void TunnelDeviceOnConnectFailed(void)noexcept(true)=0;
 	};
-	bool Connect(iConnectCallback *Callback);
+	bool Connect(iConnectCallback *Callback)noexcept(true);
 protected:
 	rPtr<iGATTService> fService;
 	rPtr<iGATTCharacteristic> fReadChar;
@@ -227,18 +145,17 @@ protected:
 	class cConnectProcedure
 	{
 	public:
-		operator bool ()const;
+		operator bool ()const noexcept(true);
 
-		void Start(iConnectCallback *Callback);
+		void Start(iConnectCallback *Callback)noexcept(true);
 
 	protected:
 	}fConnectProcedure;
 
-	virtual void cnLib_FUNC GATTServiceStateChanged(void)override;
-	virtual void cnLib_FUNC GATTServiceCharacteristListChanged(void)override;
+	virtual void cnLib_FUNC GATTServiceStateChanged(void)noexcept(true)override;
 
 	rInnerPtr<cRWQueue> fRWQueue;
-	void RWQueueNotifyWrite(void);
+	void RWQueueNotifyWrite(void)noexcept(true);
 
 	// connect procedure
 	enum{
@@ -251,37 +168,35 @@ protected:
 	}fConnectState;
 	iConnectCallback* fConnectCallback=nullptr;
 
-	void UpdateFunctionState(void);
-	void ConnectProcSucceed(void);
-	void ConnectProcFailed(void);
+	void UpdateFunctionState(void)noexcept(true);
+	void ConnectProcSucceed(void)noexcept(true);
+	void ConnectProcFailed(void)noexcept(true);
 
-	class cReadCharHandler : public iGATTCharacteristHandler
+	class cReadCharHandler : public iGATTCharacteristicHandler
 	{
 	public:
-		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristDescriptorListChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristValueNotify(void)override;
+		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)noexcept(true)override;
+		virtual void cnLib_FUNC GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept(true)override;
 	}fReadCharHandler;
-	class cWriteCharHandler : public iGATTCharacteristHandler
+	class cWriteCharHandler : public iGATTCharacteristicHandler
 	{
 	public:
-		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristDescriptorListChanged(void)override;
-		virtual void cnLib_FUNC GATTCharacteristValueNotify(void)override;
+		virtual void cnLib_FUNC GATTCharacteristStateChanged(void)noexcept(true)override;
+		virtual void cnLib_FUNC GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept(true)override;
 	}fWriteCharHandler;
 
-	void ReadCharValueNotify(void);
+	void ReadCharValueNotify(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cGATTTunnelConectionConnector : public iConnectionConnector
 {
 public:
-	cGATTTunnelConectionConnector();
-	~cGATTTunnelConectionConnector();
+	cGATTTunnelConectionConnector()noexcept(true);
+	~cGATTTunnelConectionConnector()noexcept(true);
 
-	virtual iAddress*		cnLib_FUNC GetLocalAddress(void)override;
-	virtual iPtr<iConnection>		cnLib_FUNC Connect(iAddress *RemoteAddress)override;
-	virtual iPtr<iConnectionTask>	cnLib_FUNC ConnectAsync(iAddress *RemoteAddress)override;
+	virtual iAddress*		cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+	virtual iPtr<iConnection>		cnLib_FUNC Connect(iAddress *RemoteAddress)noexcept(true)override;
+	virtual iPtr<iConnectionTask>	cnLib_FUNC ConnectAsync(iAddress *RemoteAddress)noexcept(true)override;
 
 protected:
 
@@ -289,35 +204,35 @@ protected:
 	class cEndpoint : public iConnection, public iEndpoint
 	{
 	public:
-		cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue);
-		~cEndpoint();
+		cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept(true);
+		~cEndpoint()noexcept(true);
 
 		virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 		// iConnection
 
-		virtual iAddress* cnLib_FUNC GetLocalAddress(void)override;
-		virtual iAddress* cnLib_FUNC GetRemoteAddress(void)override;
+		virtual iAddress* cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+		virtual iAddress* cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;
 
 		// iEndpoint
 
-		virtual void cnLib_FUNC Close(void)override;
-		virtual iReadQueue* cnLib_FUNC GetReadQueue(void)override;
-		virtual iWriteQueue* cnLib_FUNC GetWriteQueue(void)override;
-		virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
+		virtual void cnLib_FUNC Close(void)noexcept(true)override;
+		virtual iReadQueue* cnLib_FUNC GetReadQueue(void)noexcept(true)override;
+		virtual iWriteQueue* cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
+		virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 	protected:
 		rPtr<cGATTTunnelConectionDevice::cRWQueue> fRWQueue;
 	};
 
-	static iPtr<iConnection> CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue);
+	static iPtr<iConnection> CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept(true);
 	class cConnectSyncObject : public cThreadOneTimeNotifier, public cGATTTunnelConectionDevice::iConnectCallback
 	{
 	public:
 		//iTypeID ConnectionIID;
 		iPtr<iConnection> Connection;
 	protected:
-		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)override;
+		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept(true)override;
 
 	};
 	class cConnectAsyncTask : public iReference,public iConnectionTask, public cGATTTunnelConectionDevice::iConnectCallback
@@ -325,11 +240,11 @@ protected:
 	public:
 		using iConnectionTask::CastInterface;
 
-		virtual bool cnLib_FUNC IsDone(void)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
+		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
+		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
 		
-		virtual void cnLib_FUNC Cancel(void)override;
-		virtual iConnection* cnLib_FUNC GetConnection(void)override;
+		virtual void cnLib_FUNC Cancel(void)noexcept(true)override;
+		virtual iConnection* cnLib_FUNC GetConnection(void)noexcept(true)override;
 
 		//eStreamError cnLib_FUNC GetStreamError(void)override;
 		//StreamError AcceptErrorCode;
@@ -337,12 +252,12 @@ protected:
 		//iTypeID ConnectionIID;
 		cAsyncTaskState TaskState;
 
-		void ConnectStart(void);
-		void ConnectCancel(void);
+		void ConnectStart(void)noexcept(true);
+		void ConnectCancel(void)noexcept(true);
 	protected:
 		iPtr<iConnection> fConnection;
 
-		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)override;
+		virtual void TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept(true)override;
 
 	};
 };
@@ -350,34 +265,34 @@ protected:
 class cGATTTunnelConectionObserver : public bcAsyncNotification, public cDualReference, protected iAsyncNotificationCallback
 {
 public:
-	cGATTTunnelConectionObserver(iGATTPeripheralObserver *Observer);
-	~cGATTTunnelConectionObserver();
+	cGATTTunnelConectionObserver(iGATTAdvertisementObserver *Observer)noexcept(true);
+	~cGATTTunnelConectionObserver()noexcept(true);
 
 	cSeqList<cGATTTunnelConnectionDeviceID> DeviceIDs;
 
-	rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cnLib_FUNC QueryAllDevices(void);
-	rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cnLib_FUNC FetchDeviceChanges(void);
-	void cnLib_FUNC DiscardChanges(void);
+	rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cnLib_FUNC QueryAllDevices(void)noexcept(true);
+	rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cnLib_FUNC FetchDeviceChanges(void)noexcept(true);
+	void cnLib_FUNC DiscardChanges(void)noexcept(true);
 
 protected:
-	void VirtualStarted(void);
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
-	virtual iReference* NotificationInnerReference(void)override;
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	//virtual void NotificationClosed(void)override;
-	virtual CycleState NotificationCheckState(void)override;
+	virtual iReference* NotificationInnerReference(void)noexcept(true)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	//virtual void NotificationClosed(void)noexcept(true)override;
+	virtual CycleState NotificationCheckState(void)noexcept(true)override;
 
-	rPtr<iGATTPeripheralObserver> fObserver;
+	rPtr<iGATTAdvertisementObserver> fObserver;
 
 	bool fPeripheralObserverError;
 
 	// iAsyncNotificationCallback from iGATTPeripheralObserver
 
-	virtual void cnLib_FUNC AsyncStarted(void)override;
-	virtual void cnLib_FUNC AsyncStopped(void)override;
-	virtual void cnLib_FUNC AsyncNotify(void)override;
+	virtual void cnLib_FUNC AsyncStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC AsyncStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC AsyncNotify(void)noexcept(true)override;
 
 	struct cDeviceItem : cRTLAllocator
 	{
@@ -391,27 +306,24 @@ protected:
 class cGATTTunnelConectionProtocol : public iConnectionProtocol
 {
 public:
-	cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central,rPtr<iGATTPeripheralDevice> Device);
-	~cGATTTunnelConectionProtocol();
+	cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central)noexcept(true);
+	~cGATTTunnelConectionProtocol()noexcept(true);
 
 	// iConnectionProtocol
 
-	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)override;
-	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateStreamListener(iAddress *LocalAddress)override;
-	virtual iPtr<iConnectionQueue>		cnLib_FUNC CreateStreamConnectionQueue(iAddress *LocalAddress)override;
+	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept(true)override;
+	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateStreamListener(iAddress *LocalAddress)noexcept(true)override;
 
-	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)override;
-	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateEndpointListener(iAddress *LocalAddress)override;
-	virtual iPtr<iConnectionQueue>		cnLib_FUNC CreateEndpointConnectionQueue(iAddress *LocalAddress)override;
+	virtual iPtr<iConnectionConnector>	cnLib_FUNC CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept(true)override;
+	virtual iPtr<iConnectionListener>	cnLib_FUNC CreateEndpointListener(iAddress *LocalAddress)noexcept(true)override;
 
 	// iGATTTunnelConnectionProtocol
 
-	rPtr<cGATTTunnelConectionObserver> CreateObserver(const cGATTTunnelConnectionDeviceID *ServiceIDs,uIntn ServiceCount);
+	rPtr<cGATTTunnelConectionObserver> CreateObserver(const cGATTTunnelConnectionDeviceID *ServiceIDs,uIntn ServiceCount)noexcept(true);
 
 protected:
 
 	rPtr<iGATTPeripheralCentral> fCentral;
-	rPtr<iGATTPeripheralDevice> fDevice;
 
 	iPtr<cGATTTunnelConectionConnector> fEndpointConnector;
 	iPtr<cGATTTunnelConectionConnector> fStreamConnector;

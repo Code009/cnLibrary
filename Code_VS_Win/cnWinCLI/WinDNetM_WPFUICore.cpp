@@ -15,7 +15,7 @@ rcWPFUICoreProcedureCaller::rcWPFUICoreProcedureCaller(void *CPP)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureExecutor::mcDNetUIThreadAsyncProcedureExecutor(bool HighPriority,iProcedure *Procedure)
+mcDNetUIThreadAsyncProcedureExecutor::mcDNetUIThreadAsyncProcedureExecutor(bool HighPriority,iProcedure *Procedure)noexcept
 {
 	auto Caller=gcnew rcProcedureCaller(Procedure);
 	auto CallerAction=gcnew System::Action(Caller,&rcProcedureCaller::Execute);
@@ -23,12 +23,12 @@ mcDNetUIThreadAsyncProcedureExecutor::mcDNetUIThreadAsyncProcedureExecutor(bool 
 	fManaged->Priority=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
 }
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureExecutor::~mcDNetUIThreadAsyncProcedureExecutor(void)
+mcDNetUIThreadAsyncProcedureExecutor::~mcDNetUIThreadAsyncProcedureExecutor(void)noexcept
 {
 	fManaged->Action.Free();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncProcedureExecutor::mStart(mcDNetUIThreadDispatcher *UIDispatch)
+void mcDNetUIThreadAsyncProcedureExecutor::mStart(mcDNetUIThreadDispatcher *UIDispatch)noexcept
 {
 	auto Dispatcher=UIDispatch->GetDispatcher();
 
@@ -37,7 +37,7 @@ void mcDNetUIThreadAsyncProcedureExecutor::mStart(mcDNetUIThreadDispatcher *UIDi
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureRefExecutor::mcDNetUIThreadAsyncProcedureRefExecutor(bool HighPriority,iReference *Reference,iProcedure *Procedure)
+mcDNetUIThreadAsyncProcedureRefExecutor::mcDNetUIThreadAsyncProcedureRefExecutor(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 	: fReference(Reference)
 	, fProcedure(Procedure)
 {
@@ -47,7 +47,7 @@ mcDNetUIThreadAsyncProcedureRefExecutor::mcDNetUIThreadAsyncProcedureRefExecutor
 	fManaged->Priority=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
 }
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureRefExecutor::~mcDNetUIThreadAsyncProcedureRefExecutor(void)
+mcDNetUIThreadAsyncProcedureRefExecutor::~mcDNetUIThreadAsyncProcedureRefExecutor(void)noexcept
 {
 	fManaged->Action.Free();
 }
@@ -57,7 +57,7 @@ void rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncProcedureRefExecutor_Execute
 	return static_cast<mcDNetUIThreadAsyncProcedureRefExecutor*>(CPP)->CallProc();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncProcedureRefExecutor::mStart(mcDNetUIThreadDispatcher *Owner)
+void mcDNetUIThreadAsyncProcedureRefExecutor::mStart(mcDNetUIThreadDispatcher *Owner)noexcept
 {
 	auto Dispatcher=Owner->GetDispatcher();
 
@@ -67,7 +67,7 @@ void mcDNetUIThreadAsyncProcedureRefExecutor::mStart(mcDNetUIThreadDispatcher *O
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncTimerExecutor::mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThreadDispatcher *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)
+mcDNetUIThreadAsyncTimerExecutor::mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThreadDispatcher *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 	: fReference(Reference)
 	, fProcedure(Procedure)
 {
@@ -84,7 +84,7 @@ mcDNetUIThreadAsyncTimerExecutor::mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThrea
 	fFirstHitAction.Alloc(gcnew System::Action(Executor,&rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_FirstHit));
 }
 //---------------------------------------------------------------------------
-mcDNetUIThreadAsyncTimerExecutor::~mcDNetUIThreadAsyncTimerExecutor(void)
+mcDNetUIThreadAsyncTimerExecutor::~mcDNetUIThreadAsyncTimerExecutor(void)noexcept
 {
 	auto TimerTick=fTimerTick.Discard();
 	auto Timer=fTimer.Discard();
@@ -94,19 +94,19 @@ mcDNetUIThreadAsyncTimerExecutor::~mcDNetUIThreadAsyncTimerExecutor(void)
 	fFirstHitAction.Free();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mStopTimer(void)
+void mcDNetUIThreadAsyncTimerExecutor::mStopTimer(void)noexcept
 {
 	auto Timer=fTimer.Get();
 	Timer->Stop();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mHitAndSetTimer(mcDNetUIThreadDispatcher *UIDispatch)
+void mcDNetUIThreadAsyncTimerExecutor::mHitAndSetTimer(mcDNetUIThreadDispatcher *UIDispatch)noexcept
 {
 	auto Dispatcher=UIDispatch->GetDispatcher();
 	Dispatcher->BeginInvoke(fManaged->Priority,fFirstHitAction);
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mScheludeFirstHit(uInt64 Delay)
+void mcDNetUIThreadAsyncTimerExecutor::mScheludeFirstHit(uInt64 Delay)noexcept
 {
 	if(fTimerStarted==false)
 		return;
@@ -126,7 +126,7 @@ void rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_FirstHit(void)
 	static_cast<mcDNetUIThreadAsyncTimerExecutor*>(CPP)->TimerFirstHit();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerTick(void)
+void mcDNetUIThreadAsyncTimerExecutor::TimerTick(void)noexcept
 {
 	auto Timer=fTimer.Get();
 	if(fTimerStarted==false){
@@ -146,7 +146,7 @@ void mcDNetUIThreadAsyncTimerExecutor::TimerTick(void)
 	}
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerFirstHit(void)
+void mcDNetUIThreadAsyncTimerExecutor::TimerFirstHit(void)noexcept
 {
 	if(fTimerStarted==false)
 		return;
@@ -159,29 +159,29 @@ void mcDNetUIThreadAsyncTimerExecutor::TimerFirstHit(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher::mcDNetUIThreadDispatcher(iReference *OwnerInnerReference)
+mcDNetUIThreadDispatcher::mcDNetUIThreadDispatcher(iReference *OwnerInnerReference)noexcept
 	: fOnShutdownEvent(gcnew System::EventHandler(gcnew rcWPFUICoreProcedureCaller(this),&rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_OnShutdownFinished))
 	, fOwnerInnerReference(OwnerInnerReference)
 {
 }
 //---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher::~mcDNetUIThreadDispatcher()
+mcDNetUIThreadDispatcher::~mcDNetUIThreadDispatcher()noexcept
 {
 }
 //---------------------------------------------------------------------------
-System::Windows::Threading::Dispatcher^ __clrcall mcDNetUIThreadDispatcher::GetDispatcher(void)
+System::Windows::Threading::Dispatcher^ __clrcall mcDNetUIThreadDispatcher::GetDispatcher(void)noexcept
 {
 	return fDispatcher.Get();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::SetupDispatcher(System::Windows::Threading::Dispatcher ^Dispatcher)
+void mcDNetUIThreadDispatcher::SetupDispatcher(System::Windows::Threading::Dispatcher ^Dispatcher)noexcept
 {
 	rIncReference(fOwnerInnerReference,'disp');
 	fDispatcher.Set(Dispatcher);
 	Dispatcher->ShutdownFinished+=fOnShutdownEvent;
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::ClearDispatcher(void)
+void mcDNetUIThreadDispatcher::ClearDispatcher(void)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	if(Dispatcher!=nullptr){
@@ -201,7 +201,7 @@ void rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_OnShutdownFinished(
 	CPPDispatcher->WPFOnShutdown();
 }
 //---------------------------------------------------------------------------
-System::Windows::Threading::DispatcherPriority __clrcall mcDNetUIThreadDispatcher::GetDispatcherPriority(bool HighPriority)
+System::Windows::Threading::DispatcherPriority __clrcall mcDNetUIThreadDispatcher::GetDispatcherPriority(bool HighPriority)noexcept
 {
 	if(HighPriority){
 		return System::Windows::Threading::DispatcherPriority::Normal;
@@ -211,7 +211,7 @@ System::Windows::Threading::DispatcherPriority __clrcall mcDNetUIThreadDispatche
 	}
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mIsCurrent(void)
+bool mcDNetUIThreadDispatcher::mIsCurrent(void)noexcept
 {
 	if(fDispatcherShutdown)
 		return true;
@@ -219,22 +219,22 @@ bool mcDNetUIThreadDispatcher::mIsCurrent(void)
 	return Dispatcher->CheckAccess();
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mIsShutdown(void)
+bool mcDNetUIThreadDispatcher::mIsShutdown(void)noexcept
 {
 	return fDispatcherShutdown;
 }
 //---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher* mcDNetUIThreadDispatcher::mCurrentUIDispatcher(void)
+mcDNetUIThreadDispatcher* mcDNetUIThreadDispatcher::mCurrentUIDispatcher(void)noexcept
 {
 	return rcDNetUIThreadContext::gTLSContext.CPPDispatcher;
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::SetThreadReleaseNotify(System::Action ^Action)
+void mcDNetUIThreadDispatcher::SetThreadReleaseNotify(System::Action ^Action)noexcept
 {
 	fReleaseNotify.Set(Action);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mCreateOnCurrentThread(void)
+bool mcDNetUIThreadDispatcher::mCreateOnCurrentThread(void)noexcept
 {
 	auto Dispatcher=System::Windows::Threading::Dispatcher::CurrentDispatcher;
 	if(Dispatcher==nullptr)
@@ -254,14 +254,14 @@ void rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_ThreadExitProcedure
 	static_cast<mcDNetUIThreadDispatcher*>(CPP)->ThreadExitProc();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::ThreadExitProc(void)
+void mcDNetUIThreadDispatcher::ThreadExitProc(void)noexcept
 {
 	fDispatchedRelease=false;
 	UIThreadRelease();
 	rDecReference(fOwnerInnerReference,'shut');
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mShutdownFrame(void)
+void mcDNetUIThreadDispatcher::mShutdownFrame(void)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	if(Dispatcher==nullptr){
@@ -287,7 +287,7 @@ void mcDNetUIThreadDispatcher::mShutdownFrame(void)
 	}
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::WPFOnShutdown(void)
+void mcDNetUIThreadDispatcher::WPFOnShutdown(void)noexcept
 {
 	auto AutoLock=TakeLock(&fShutdownLock);
 	fDispatcherShutdown=true;
@@ -303,7 +303,7 @@ void mcDNetUIThreadDispatcher::WPFOnShutdown(void)
 	}
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::UIThreadRelease(void)
+void mcDNetUIThreadDispatcher::UIThreadRelease(void)noexcept
 {
 	auto ReleaseNoitify=fReleaseNotify.Get();
 	if(ReleaseNoitify!=nullptr){
@@ -315,7 +315,7 @@ void mcDNetUIThreadDispatcher::UIThreadRelease(void)
 	ClearDispatcher();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mAttachDispatcher(cDispatcherFinishNotify *NotifyToken)
+void mcDNetUIThreadDispatcher::mAttachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	auto AutoLock=TakeLock(&fShutdownLock);
@@ -326,7 +326,7 @@ void mcDNetUIThreadDispatcher::mAttachDispatcher(cDispatcherFinishNotify *Notify
 	fFinishNotifySet.Insert(NotifyToken);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mDetachDispatcher(cDispatcherFinishNotify *NotifyToken)
+bool mcDNetUIThreadDispatcher::mDetachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	if(Dispatcher->CheckAccess()){
@@ -355,12 +355,12 @@ bool mcDNetUIThreadDispatcher::mDetachDispatcher(cDispatcherFinishNotify *Notify
 	}
 }
 //---------------------------------------------------------------------------
-void __clrcall mcDNetUIThreadDispatcher::FinishNotifyRelease(System::IntPtr This,System::IntPtr FinishNotify)
+void __clrcall mcDNetUIThreadDispatcher::FinishNotifyRelease(System::IntPtr This,System::IntPtr FinishNotify)noexcept
 {
 	static_cast<mcDNetUIThreadDispatcher*>(This.ToPointer())->NotifyFinish(static_cast<cDispatcherFinishNotify*>(FinishNotify.ToPointer()));
 }
 //---------------------------------------------------------------------------
-void __clrcall mcDNetUIThreadDispatcher::NotifyFinish(cDispatcherFinishNotify *FinishNotify)
+void __clrcall mcDNetUIThreadDispatcher::NotifyFinish(cDispatcherFinishNotify *FinishNotify)noexcept
 {
 	fFinishNotifySet.Remove(FinishNotify);
 	if(fDispatcherShutdown){
@@ -371,7 +371,7 @@ void __clrcall mcDNetUIThreadDispatcher::NotifyFinish(cDispatcherFinishNotify *F
 	FinishNotify->NotifyProcedure(FinishNotify,false);
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecute(bool HighPriority,iProcedure *Procedure)
+void mcDNetUIThreadDispatcher::mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	auto dp=GetDispatcherPriority(HighPriority);
@@ -379,7 +379,7 @@ void mcDNetUIThreadDispatcher::mDispatchExecute(bool HighPriority,iProcedure *Pr
 	Dispatcher->BeginInvoke(dp,gcnew System::Action(ProcExecute,&rcProcedureCaller::Execute));
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)
+void mcDNetUIThreadDispatcher::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	auto dp=GetDispatcherPriority(HighPriority);
@@ -387,7 +387,7 @@ void mcDNetUIThreadDispatcher::mDispatchExecuteSync(bool HighPriority,iProcedure
 	Dispatcher->Invoke(dp,gcnew System::Action(ProcExecute,&rcProcedureCaller::Execute));
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)
+void mcDNetUIThreadDispatcher::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	auto dp=GetDispatcherPriority(HighPriority);
@@ -400,7 +400,7 @@ void rcWPFUICoreProcedureCaller::mcDispatchExecuteAsyncTask_Execute(void)
 	static_cast<mcDNetUIThreadDispatcher::mcDispatchExecuteAsyncTask*>(CPP)->ExecuteTask();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteAsync(mcDispatchExecuteAsyncTask *Task,bool HighPriority)
+void mcDNetUIThreadDispatcher::mDispatchExecuteAsync(mcDispatchExecuteAsyncTask *Task,bool HighPriority)noexcept
 {
 	auto Dispatcher=fDispatcher.Get();
 	auto dp=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
@@ -410,19 +410,19 @@ void mcDNetUIThreadDispatcher::mDispatchExecuteAsync(mcDispatchExecuteAsyncTask 
 	Dispatcher->BeginInvoke(dp,dproc);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(eKeyCode KeyCode)
+bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyDown(Key);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)
+bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyToggled(Key);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIPoint &Position)
+bool mcDNetUIThreadDispatcher::mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIPoint &Position)noexcept
 {
 	System::Object^ RelativeObject=UIViewVisualHandle;
 	auto ViewVisual=dynamic_cast<IWPFUIViewVisual^>(RelativeObject);
@@ -436,7 +436,7 @@ bool mcDNetUIThreadDispatcher::mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIP
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)
+bool mcDNetUIThreadDispatcher::mMouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
 	if(RelativeElement==nullptr)
@@ -448,7 +448,7 @@ bool mcDNetUIThreadDispatcher::mMouseGetPosition(System::Windows::Media::Visual 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)
+bool mcDNetUIThreadDispatcher::mMouseGetPosition(IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)noexcept
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(ViewVisual->Visual);
 	if(RelativeElement==nullptr)
@@ -461,7 +461,7 @@ bool mcDNetUIThreadDispatcher::mMouseGetPosition(IWPFUIViewVisual ^ViewVisual,cU
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(eMouseButton Button)
+bool mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(eMouseButton Button)noexcept
 {
 	System::Windows::Input::MouseButtonState BtnState;
 	switch(Button){
@@ -525,7 +525,7 @@ void rcDNetUIThreadDispatchFrame::UIThreadExit(void)
 	fDispatchFrame.Continue=false;
 }
 //---------------------------------------------------------------------------
-void cnWin::rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher)
+void cnWin::rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher)noexcept
 {
 	System::Threading::ManualResetEvent DoneEvent(false);
 	auto ThreadProcedure=gcnew rcDNetUIThreadDispatchFrame(DispatcherReference,Dispatcher,%DoneEvent);
@@ -539,22 +539,22 @@ void cnWin::rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherRefe
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIApplicationDispatchFrame::mcDNetUIApplicationDispatchFrame()
+mcDNetUIApplicationDispatchFrame::mcDNetUIApplicationDispatchFrame()noexcept
 	: fDispatchFrameRef(gcnew System::Windows::Threading::DispatcherFrame())
 {
 }
 //---------------------------------------------------------------------------
-mcDNetUIApplicationDispatchFrame::~mcDNetUIApplicationDispatchFrame(void)
+mcDNetUIApplicationDispatchFrame::~mcDNetUIApplicationDispatchFrame()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void mcDNetUIApplicationDispatchFrame::mNotifyStopRun(void)
+void mcDNetUIApplicationDispatchFrame::mNotifyStopRun(void)noexcept
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=false;
 }
 //---------------------------------------------------------------------------
-void mcDNetUIApplicationDispatchFrame::mWPFUIMain(void)
+void mcDNetUIApplicationDispatchFrame::mWPFUIMain(void)noexcept
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=true;

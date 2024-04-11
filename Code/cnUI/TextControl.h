@@ -34,7 +34,7 @@ struct cTextDocumentLinePart
 class cnLib_INTERFACE viTextDocumentData : public viData
 {
 public:
-	cFunctionSet<void (void)> TextDocumentNotifySet;
+	cFunctionSet<void (void)noexcept(true)> TextDocumentNotifySet;
 	struct cVisualInfo
 	{
 		Float32 ContentX;
@@ -42,7 +42,7 @@ public:
 		uIntn LineIndex;
 		ufInt16 LineCount;
 	};
-	virtual cVisualInfo TextDocumentVisualInfo(void)=0;
+	virtual cVisualInfo TextDocumentVisualInfo(void)noexcept(true)=0;
 	struct cVisualLineInfo
 	{
 		Float32 Left;
@@ -51,8 +51,8 @@ public:
 		cUIColor LineColor;
 		uIntn PartCount;
 	};
-	virtual bool TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)=0;
-	virtual bool TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)=0;
+	virtual bool TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)noexcept(true)=0;
+	virtual bool TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE viTextDocument : public viControl
@@ -71,25 +71,25 @@ public:
 class vTextDocument : public vSimpleViewPainter
 {
 public:
-	vTextDocument(viTextDocumentData *Data=nullptr);
-	~vTextDocument();
+	vTextDocument(viTextDocumentData *Data=nullptr)noexcept(true);
+	~vTextDocument()noexcept(true);
 
-	static rPtr<viTextDocument> Create(viTextDocumentData *Data);
+	static rPtr<viTextDocument> Create(viTextDocumentData *Data)noexcept(true);
 
-	viTextDocumentData* GetData(void)const;
-	void SetData(viTextDocumentData *Data);
+	viTextDocumentData* GetData(void)const noexcept(true);
+	void SetData(viTextDocumentData *Data)noexcept(true);
 
 protected:
 	dPtr<viTextDocumentData> fData;
 
-	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)override;
+	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)noexcept(true)override;
 
-	void Update(void);
+	void Update(void)noexcept(true);
 private:
 
 
-	void DataInsertCallback(void);
-	void DataRemoveCallback(void);
+	void DataInsertCallback(void)noexcept(true);
+	void DataRemoveCallback(void)noexcept(true);
 
 	iFunctionToken *fTextDocumentNotifyToken;
 
@@ -112,8 +112,8 @@ private:
 	uIntn fCacheLineIndex;
 	cUIPoint fDisplayPos;
 	
-	void UpdateCache(uIntn LineIndex,uIntn LineCount);
-	void SetupCacheLine(iUISimplePaintDevice *Device,cTextLineCache &Cache,uIntn LineIndex);
+	void UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept(true);
+	void SetupCacheLine(iUISimplePaintDevice *Device,cTextLineCache &Cache,uIntn LineIndex)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct cIndexPoint
@@ -125,102 +125,102 @@ struct cIndexPoint
 class bcTextDocument : public cScrollContent, public viTextDocumentData
 {
 public:
-	bcTextDocument();
-	~bcTextDocument();
+	bcTextDocument()noexcept(true);
+	~bcTextDocument()noexcept(true);
 
 	Float32 ContentZPosition=ZPosition_Content;
-	void UpdateZIndex(void);
+	void UpdateZIndex(void)noexcept(true);
 
-	void SetContent(rPtr<viTextDocument> Content);
+	void SetContent(rPtr<viTextDocument> Content)noexcept(true);
 	template<class TVisual>
-	void SetContent(TVisual &Visual){
+	void SetContent(TVisual &Visual)noexcept(true){
 		SetContent(rCreate< bwvTextDocument<TVisual&> >(Visual));
 	}
 
 	// viTextDocumentData
 
-	virtual cVisualInfo TextDocumentVisualInfo(void)override;
-	virtual bool TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)override;
-	virtual bool TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)override;
+	virtual cVisualInfo TextDocumentVisualInfo(void)noexcept(true)override;
+	virtual bool TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)noexcept(true)override;
+	virtual bool TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)noexcept(true)override;
 
 	// line layout info
 
-	uIntn GetVisibleLineIndex(void)const;
-	uIntn GetVisibleLineCount(void)const;
-	Float32 GetDocumentContentX(void);
-	Float32 GetDocumentContentY(void);
-	Float32 GetLineContentY(uIntn LineIndex)const;
-	cUIRange GetLineContentRange(uIntn StartIndex,uIntn EndIndex);
-	cUIRange GetTextContentRange(uIntn LineIndex,uIntn TextIndex,uIntn TextEndIndex);
-	sIntn FindLineInContent(Float32 ContentY);
-	//uIntn FindTextInContent(uIntn LineIndex,Float32 ContentX);
-	//uIntn FindTextInContent(uIntn LineIndex,Float32 ContentX,bool &InText);
-	cIndexPoint HitTest(Float32 x,Float32 y);
+	uIntn GetVisibleLineIndex(void)const noexcept(true);
+	uIntn GetVisibleLineCount(void)const noexcept(true);
+	Float32 GetDocumentContentX(void)noexcept(true);
+	Float32 GetDocumentContentY(void)noexcept(true);
+	Float32 GetLineContentY(uIntn LineIndex)const noexcept(true);
+	cUIRange GetLineContentRange(uIntn StartIndex,uIntn EndIndex)noexcept(true);
+	cUIRange GetTextContentRange(uIntn LineIndex,uIntn TextIndex,uIntn TextEndIndex)noexcept(true);
+	sIntn FindLineInContent(Float32 ContentY)noexcept(true);
+	//uIntn FindTextInContent(uIntn LineIndex,Float32 ContentX)noexcept(true);
+	//uIntn FindTextInContent(uIntn LineIndex,Float32 ContentX,bool &InText)noexcept(true);
+	cIndexPoint HitTest(Float32 x,Float32 y)noexcept(true);
 
-	Float32 GetLineHeight(uIntn LineIndex);
-	Float32 GetLineWidth(uIntn LineIndex);
+	Float32 GetLineHeight(uIntn LineIndex)noexcept(true);
+	Float32 GetLineWidth(uIntn LineIndex)noexcept(true);
 
 	// document annotation
 
 	class iAnnotator
 	{
 	public:
-		virtual void Setup(uIntn LineIndex)=0;
-		virtual void Clear(void)=0;
-		virtual bool Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)=0;
-		virtual bool Fetch(uIntn &AnnotateIndex,cTextDocumentLinePart &TextPart)=0;
+		virtual void Setup(uIntn LineIndex)noexcept(true)=0;
+		virtual void Clear(void)noexcept(true)=0;
+		virtual bool Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)noexcept(true)=0;
+		virtual bool Fetch(uIntn &AnnotateIndex,cTextDocumentLinePart &TextPart)noexcept(true)=0;
 	};
-	bool InsertAnnotator(iAnnotator *Annotator,sIntn Order=0);
-	bool RemoveAnnotator(iAnnotator *Annotator);
+	bool InsertAnnotator(iAnnotator *Annotator,sIntn Order=0)noexcept(true);
+	bool RemoveAnnotator(iAnnotator *Annotator)noexcept(true);
 
 	// document properties
 
-	virtual void GetDefaultTextStyle(cUITextStyle &Style);
-	virtual uIntn GetLineLength(uIntn LineIndex);
-	virtual cString<uChar16> GetLineText(uIntn LineIndex);
+	virtual void GetDefaultTextStyle(cUITextStyle &Style)noexcept(true);
+	virtual uIntn GetLineLength(uIntn LineIndex)noexcept(true);
+	virtual cString<uChar16> GetLineText(uIntn LineIndex)noexcept(true);
 
 protected:
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
 	// content
 
 	rPtr<viTextDocument> fContent;
-	virtual void ControlContentSetDefault(void);
+	virtual void ControlContentSetDefault(void)noexcept(true);
 
 
 	// cScrollContent
 	
-	virtual void ScrollContentUpdateContentLayout(void);
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true);
 
 	// content info
 
-	virtual uIntn ContentItemGetCount(bool Vertical);
-	virtual cUIRange ContentItemGetAllRange(bool Vertical);
-	virtual cUIRange ContentItemGetRange(bool Vertical,uIntn Index);
-	virtual cAnyObject ContentItemGetObject(bool Vertical,uIntn Index);
+	virtual uIntn ContentItemGetCount(bool Vertical)noexcept(true);
+	virtual cUIRange ContentItemGetAllRange(bool Vertical)noexcept(true);
+	virtual cUIRange ContentItemGetRange(bool Vertical,uIntn Index)noexcept(true);
+	virtual cAnyObject ContentItemGetObject(bool Vertical,uIntn Index)noexcept(true);
 
 	// document layout
 
-	virtual Float32 TextDocumentVerticalAlign(Float32 TotalHeight);
-	virtual Float32 TextDocumentHorizontalAlign(Float32 LineWidth);
-	virtual cUIColor TextDocumentGetLineColor(uIntn LineIndex);
+	virtual Float32 TextDocumentVerticalAlign(Float32 TotalHeight)noexcept(true);
+	virtual Float32 TextDocumentHorizontalAlign(Float32 LineWidth)noexcept(true);
+	virtual cUIColor TextDocumentGetLineColor(uIntn LineIndex)noexcept(true);
 	
 	// lines data
 
-	virtual void TextDocumentLineEnumReset(void)=0;
-	virtual bool TextDocumentLineEnum(uIntn LineIndex)=0;
-	virtual bool TextDocumentLineEnumNext(void)=0;
-	virtual Float32 TextDocumentLineEnumHeight(void)=0;
+	virtual void TextDocumentLineEnumReset(void)noexcept(true)=0;
+	virtual bool TextDocumentLineEnum(uIntn LineIndex)noexcept(true)=0;
+	virtual bool TextDocumentLineEnumNext(void)noexcept(true)=0;
+	virtual Float32 TextDocumentLineEnumHeight(void)noexcept(true)=0;
 
-	virtual void TextDocumentLineEnumPartEnum(void)=0;
-	virtual bool TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)=0;
+	virtual void TextDocumentLineEnumPartEnum(void)noexcept(true)=0;
+	virtual bool TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept(true)=0;
 
-	void ScrollTextToVisible(uIntn LineIndex,uIntn TextIndex);
+	void ScrollTextToVisible(uIntn LineIndex,uIntn TextIndex)noexcept(true);
 
-	Float32 AlignDocumentVertical(Float32 TotalHeight);
-	Float32 AlignLineHorizontal(Float32 LineWidth);
+	Float32 AlignDocumentVertical(Float32 TotalHeight)noexcept(true);
+	Float32 AlignLineHorizontal(Float32 LineWidth)noexcept(true);
 
 	Float32 fScrollTotalSize[2];
 	
@@ -245,16 +245,16 @@ protected:
 		Float32 Height;
 		Float32 HeadBorder;
 	};
-	void ClearCache(void);
-	aCls<cLineItem>* QueryCacheLine(uIntn LineIndex);
+	void ClearCache(void)noexcept(true);
+	aCls<cLineItem>* QueryCacheLine(uIntn LineIndex)noexcept(true);
 
-	void LineItemAppendTextLayout(cLineItem *LineItem,const cTextDocumentLinePart &TextPart);
+	void LineItemAppendTextLayout(cLineItem *LineItem,const cTextDocumentLinePart &TextPart)noexcept(true);
 
-	uIntn LineItemFindTextIndex(cLineItem *LineItem,Float32 LineX);
-	uIntn LineItemFindTextPartIndex(cLineItem *LineItem,uIntn &TextIndex);
+	uIntn LineItemFindTextIndex(cLineItem *LineItem,Float32 LineX)noexcept(true);
+	uIntn LineItemFindTextPartIndex(cLineItem *LineItem,uIntn &TextIndex)noexcept(true);
 
 
-	void SetNeedUpdateTextContent(void);
+	void SetNeedUpdateTextContent(void)noexcept(true);
 private:
 	cnRTL::cSeqSet<iAnnotator*> fAnnotators;
 
@@ -264,18 +264,18 @@ private:
 	cnRTL::cSeqList< aClsRef<cLineItem> > fVisibleLineList;
 
 	cnRTL::cSeqList< aClsRef<cLineItem> > fCacheLines;
-	aCls<cLineItem>* QueryCacheLineInEnumeration(uIntn LineIndex);
-	aClsRef<cLineItem> CreateEnumCacheLine(void);
+	aCls<cLineItem>* QueryCacheLineInEnumeration(uIntn LineIndex)noexcept(true);
+	aClsRef<cLineItem> CreateEnumCacheLine(void)noexcept(true);
 
-	void UpdateLinePosition(uIntn LineIndex);
+	void UpdateLinePosition(uIntn LineIndex)noexcept(true);
 
-	void UpdateVisibleLineRange(Float32 StartPos,Float32 EndPos);
+	void UpdateVisibleLineRange(Float32 StartPos,Float32 EndPos)noexcept(true);
 
-	void AnnotationSetup(uIntn LineIndex);
-	void AnnotationClear(void);
-	void AnnotateProcess(cLineItem *NewItem,cTextDocumentLinePart &TextPart);
-	void CacheLineAppendPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart);
-	void CacheLineInsertPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &AnnotatedPart);
+	void AnnotationSetup(uIntn LineIndex)noexcept(true);
+	void AnnotationClear(void)noexcept(true);
+	void AnnotateProcess(cLineItem *NewItem,cTextDocumentLinePart &TextPart)noexcept(true);
+	void CacheLineAppendPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart)noexcept(true);
+	void CacheLineInsertPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &AnnotatedPart)noexcept(true);
 	cnRTL::cSeqSet<iAnnotator*> fTempAnnotator;
 
 	//cUITextLineLayout fVisualEnumLineLayout;
@@ -285,16 +285,16 @@ class bcTextList : public bcTextDocument, protected KeyHandler, protected MouseH
 	public viControlStateData
 {
 public:
-	bcTextList();
-	~bcTextList();
+	bcTextList()noexcept(true);
+	~bcTextList()noexcept(true);
 
 	eAlignment TextAlign=Alignment::TopLeft;
 
-	void Update(void);
+	void Update(void)noexcept(true);
 
-	virtual bool ControlHot(void)override;
-	virtual bool ControlFocused(void)override;
-	virtual bool ControlDisabled(void)override;
+	virtual bool ControlHot(void)noexcept(true)override;
+	virtual bool ControlFocused(void)noexcept(true)override;
+	virtual bool ControlDisabled(void)noexcept(true)override;
 
 protected:
 	bool fHot		:1;
@@ -302,43 +302,43 @@ protected:
 
 	bool fLBtnDown=false;
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
 	// key
 
-	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)override;
-	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)override;
-	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)override;
+	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)noexcept(true)override;
+	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)noexcept(true)override;
+	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)override;
 
 	// mouse
 
-	virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-	virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)override;
+	virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+	virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept(true)override;
 
 
 	// bcTextDocument
 
-	virtual Float32 TextDocumentVerticalAlign(Float32 TotalHeight)override;
-	virtual Float32 TextDocumentHorizontalAlign(Float32 LineWidth)override;
+	virtual Float32 TextDocumentVerticalAlign(Float32 TotalHeight)noexcept(true)override;
+	virtual Float32 TextDocumentHorizontalAlign(Float32 LineWidth)noexcept(true)override;
 
 	// content
 
-	virtual void ControlStateChanged(void);
+	virtual void ControlStateChanged(void)noexcept(true);
 
-	virtual void TextListSetHotLine(sIntn LineIndex)=0;
-	virtual void TextListSelectLine(sIntn LineIndex)=0;
-	virtual void TextListMoveLine(bool Down)=0;
-	//virtual void TextListMoveLines(bool Down)=0;
+	virtual void TextListSetHotLine(sIntn LineIndex)noexcept(true)=0;
+	virtual void TextListSelectLine(sIntn LineIndex)noexcept(true)=0;
+	virtual void TextListMoveLine(bool Down)noexcept(true)=0;
+	//virtual void TextListMoveLines(bool Down)noexcept(true)=0;
 
 private:
 	// fetch for viTextDocumentData
 	//ufInt32 fLineIDSeed;
-	//ufInt32 GenerateLineID(void);
+	//ufInt32 GenerateLineID(void)noexcept(true);
 
 	sIntn fMouseDownVisibleLineIndex;
 };
@@ -346,8 +346,8 @@ private:
 class cTextList : public bcTextList
 {
 public:
-	cTextList();
-	~cTextList();
+	cTextList()noexcept(true);
+	~cTextList()noexcept(true);
 
 	Float32 LineHeight=0;
 	cnRTL::cSeqList< cStringBuffer<uChar16> > TextList;
@@ -360,35 +360,35 @@ public:
 
 	bool HideSelectionWhenBlur;
 
-	sIntn GetSelectIndex(void);
-	void SetSelectIndex(sIntn Index);
+	sIntn GetSelectIndex(void)noexcept(true);
+	void SetSelectIndex(sIntn Index)noexcept(true);
 
-	cFunction<void (void)> OnSelectionChanged;
+	cFunction<void (void)noexcept(true)> OnSelectionChanged;
 
 protected:
 
 	// bcTextDocument
 
-	virtual cUIColor TextDocumentGetLineColor(uIntn LineIndex)override;
-	virtual void TextDocumentLineEnumReset(void)override;
-	virtual bool TextDocumentLineEnum(uIntn LineIndex)override;
-	virtual bool TextDocumentLineEnumNext(void)override;
-	virtual Float32 TextDocumentLineEnumHeight(void)override;
+	virtual cUIColor TextDocumentGetLineColor(uIntn LineIndex)noexcept(true)override;
+	virtual void TextDocumentLineEnumReset(void)noexcept(true)override;
+	virtual bool TextDocumentLineEnum(uIntn LineIndex)noexcept(true)override;
+	virtual bool TextDocumentLineEnumNext(void)noexcept(true)override;
+	virtual Float32 TextDocumentLineEnumHeight(void)noexcept(true)override;
 
-	virtual void TextDocumentLineEnumPartEnum(void)override;
-	virtual bool TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)override;
+	virtual void TextDocumentLineEnumPartEnum(void)noexcept(true)override;
+	virtual bool TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept(true)override;
 
 
 	sIntn fHotLineIndex;
 	sIntn fSelectedLineIndex;
 
 
-	virtual void TextListSetHotLine(sIntn LineIndex)override;
-	virtual void TextListSelectLine(sIntn LineIndex)override;
-	virtual void TextListMoveLine(bool Down)override;
+	virtual void TextListSetHotLine(sIntn LineIndex)noexcept(true)override;
+	virtual void TextListSelectLine(sIntn LineIndex)noexcept(true)override;
+	virtual void TextListMoveLine(bool Down)noexcept(true)override;
 
 private:
-	cArray<const uChar16> TextListEditGetLine(uIntn LineIndex);
+	cArray<const uChar16> TextListEditGetLine(uIntn LineIndex)noexcept(true);
 
 	// text enum
 	uIntn fEnumLineIndex;
@@ -409,10 +409,10 @@ private:
 class vTextSelectBox : public vSimpleViewPainter
 {
 public:
-	vTextSelectBox(viButtonData *ButtonData=nullptr,viTextControlData *TextData=nullptr);
-	~vTextSelectBox();
+	vTextSelectBox(viButtonData *ButtonData=nullptr,viTextControlData *TextData=nullptr)noexcept(true);
+	~vTextSelectBox()noexcept(true);
 
-	static rPtr<viControl> Create(viButtonData *ButtonData,viTextControlData *TextData);
+	static rPtr<viControl> Create(viButtonData *ButtonData,viTextControlData *TextData)noexcept(true);
 
 	//viButtonData* GetButtonData(void)const;
 	//void SetButtonData(viButtonData *Data);
@@ -427,13 +427,13 @@ protected:
 	iPtr<iUITextGraph> fCacheTextGraph;
 	cUIPoint fTextGraphSize;
 	bool fUpdateText;
-	void SetupTextCache(void);
+	void SetupTextCache(void)noexcept(true);
 
-	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)override;
+	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)noexcept(true)override;
 
 
-	void Update(void);
-	void UpdateState(void);
+	void Update(void)noexcept(true);
+	void UpdateState(void)noexcept(true);
 private:
 	//void ButtonDataInsertCallback(void);
 	//void ButtonDataRemoveCallback(void);
@@ -448,39 +448,39 @@ private:
 class cTextSelectBox : public bcTextButton, private iPopupWindowControlCallback
 {
 public:
-	cTextSelectBox();
-	~cTextSelectBox();
+	cTextSelectBox()noexcept(true);
+	~cTextSelectBox()noexcept(true);
 
-	virtual const uChar16* ControlTextString(void)override;
-	virtual uIntn ControlTextLength(void)override;
+	virtual const uChar16* ControlTextString(void)noexcept(true)override;
+	virtual uIntn ControlTextLength(void)noexcept(true)override;
 
 protected:
 
 	rPtr<iPopupWindowControl> fPopupWindowControl;
 	class cSelectList : public cTextList
 	{
-		cTextSelectBox* GetHost(void);
+		cTextSelectBox* GetHost(void)noexcept(true);
 	public:
 
-		virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)override;
+		virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)override;
 	};
 	cSelectList fPopupList;
 
-	void SelectConfirm(void);
-	void SelectCancel(void);
+	void SelectConfirm(void)noexcept(true);
+	void SelectCancel(void)noexcept(true);
 
-	virtual void ButtonContentSetDefault(void)override;
-	virtual bool ButtonMouseAllowButton(eMouseButton Button)override;
-	virtual void ButtonClick(const cUIPoint &Pos)override;
+	virtual void ButtonContentSetDefault(void)noexcept(true)override;
+	virtual bool ButtonMouseAllowButton(eMouseButton Button)noexcept(true)override;
+	virtual void ButtonClick(const cUIPoint &Pos)noexcept(true)override;
 
-	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)override;
-
-
-	virtual void cnLib_FUNC PopupOnShow(void)override;
-	virtual void cnLib_FUNC PopupOnHide(void)override;
+	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)override;
 
 
-	void PopupSelectWindow(void);
+	virtual void cnLib_FUNC PopupOnShow(void)noexcept(true)override;
+	virtual void cnLib_FUNC PopupOnHide(void)noexcept(true)override;
+
+
+	void PopupSelectWindow(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

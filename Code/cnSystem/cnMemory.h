@@ -20,21 +20,21 @@ public:
 	// Size				the size to be allocated, in bytes 
 	// Alignment		alignment requirement of the memory
 	// return pointer to allocated block. if fails, return null pointer
-	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)=0;
+	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)noexcept(true)=0;
 	// Free
 	//	Frees a memory block allocated from this heap
 	// Pointer			A pointer to the memory block to be freed
 	// Size				size close to the number of bytes of the memory, or 0 if size of the memory block is unknown
 	// Alignment		alignment of the memory
 	// return true if mem is valid and freed
-	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)=0;
+	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept(true)=0;
 	// Resize
 	//	Resize a block of memory
 	// Pointer			pointer to the memory to resizes
 	// Size				size close to the size of the block, or 0 if size of the block is unknown
 	// NewSize			The new size of the memory block
 	// return true if block is resized, or false if the block cannot be resized
-	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)=0;
+	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept(true)=0;
 
 	// Relocate
 	//	Relocate a block of memory
@@ -47,13 +47,13 @@ public:
 	//						if true , the function leave the new block empty and do not free the old block. otherwise the function copy content from old block to the new block.
 	// ManualCopy	[out]	false if the new block is ready and old block is freed. true if new block is empty and old block is not freed
 	// return pointer to relocated block. if fails, return null pointer
-	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)=0;
+	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept(true)=0;
 
 	// SizeOf
 	//	get number of bytes of the memory block
 	// Pointer				pointer to the block of memory that the function resizes
 	// return size of memory block
-	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)=0;
+	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)noexcept(true)=0;
 
 };
 //- swap memory -------------------------------------------------------------
@@ -62,20 +62,20 @@ class cnLib_INTERFACE iSwapMemory : public iReference
 public:
 	// GetSize
 	//	get total size of block
-	virtual uInt64	cnLib_FUNC GetSize(void)=0;
+	virtual uInt64	cnLib_FUNC GetSize(void)noexcept(true)=0;
 	// Map
 	//	map content into memory
 	// Offset		start address to map in the block, must matches memory allocation granularity
 	// Size			size to map
 	// ProtectFlag	protection of the view
 	// return: pointer to content mapped into memory
-	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)=0;
+	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)noexcept(true)=0;
 	// Unmap
 	//	cancel map in memory
 	// Pointer	pointer previously returned from Map
 	// Size		size to unmap, must be the size previously mapped
 	// return: true if the content unmapped
-	virtual bool	cnLib_FUNC Unmap(void *Pointer,uIntn Size)=0;
+	virtual bool	cnLib_FUNC Unmap(void *Pointer,uIntn Size)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
@@ -85,11 +85,11 @@ extern iMemoryHeap*const DefaultMemoryHeap;
 struct DefaultHeap{
 //---------------------------------------------------------------------------
 
-static void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment);
-static bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment);
-static bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize);
-static void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy);
-static uIntn cnLib_FUNC SizeOf(void *Pointer);
+static void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)noexcept(true);
+static bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept(true);
+static bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept(true);
+static void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept(true);
+static uIntn cnLib_FUNC SizeOf(void *Pointer)noexcept(true);
 
 //---------------------------------------------------------------------------
 };

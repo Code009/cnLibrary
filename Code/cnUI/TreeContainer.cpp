@@ -5,24 +5,24 @@ using namespace cnLibrary;
 using namespace cnUI;
 
 //---------------------------------------------------------------------------
-rPtr<viControl> (*cnUI::gCreateDefaultTreeBranchVisual)(viTreeBranchData *Data)=nullptr;
-rPtr<viControl> (*cnUI::gCreateDefaultTreeExpandButtonVisual)(viButtonData *Data)=nullptr;
+rPtr<viControl> (*cnUI::gCreateDefaultTreeBranchVisual)(viTreeBranchData *Data)noexcept=nullptr;
+rPtr<viControl> (*cnUI::gCreateDefaultTreeExpandButtonVisual)(viButtonData *Data)noexcept=nullptr;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcViewTreeContainer::bcViewTreeContainer()
+bcViewTreeContainer::bcViewTreeContainer()noexcept
 	: fTreeXBranch(false)
 	, fTreeBranchUpper(false)
 	, fTreeLevelIndent(24)
 {
 }
 //---------------------------------------------------------------------------
-bcViewTreeContainer::~bcViewTreeContainer()
+bcViewTreeContainer::~bcViewTreeContainer()noexcept
 {
 	SetView(nullptr);
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-bcViewTreeContainer::cTreeBranchInfo bcViewTreeContainer::TreeBranchInfo(void)
+bcViewTreeContainer::cTreeBranchInfo bcViewTreeContainer::TreeBranchInfo(void)noexcept
 {
 	cTreeBranchInfo BranchInfo;
 	BranchInfo.BranchCount=fTreeBranchs.GetCount();
@@ -30,7 +30,7 @@ bcViewTreeContainer::cTreeBranchInfo bcViewTreeContainer::TreeBranchInfo(void)
 	return BranchInfo;
 }
 //---------------------------------------------------------------------------
-bcViewTreeContainer::cTreeBranchItem bcViewTreeContainer::TreeBranchItem(ufInt16 BranchIndex)
+bcViewTreeContainer::cTreeBranchItem bcViewTreeContainer::TreeBranchItem(ufInt16 BranchIndex)noexcept
 {
 	cTreeBranchItem BranchItem;
 	auto &CacheBranch=fTreeBranchs[BranchIndex];
@@ -40,23 +40,23 @@ bcViewTreeContainer::cTreeBranchItem bcViewTreeContainer::TreeBranchItem(ufInt16
 	return BranchItem;
 }
 //---------------------------------------------------------------------------
-eDirection bcViewTreeContainer::GetTreeDirection(void)const
+eDirection bcViewTreeContainer::GetTreeDirection(void)const noexcept
 {
 	return static_cast<eDirection>(fTreeBranchUpper)+(static_cast<eDirection>(fTreeXBranch)<<1);
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::SetTreeDirection(eDirection Direction)
+void bcViewTreeContainer::SetTreeDirection(eDirection Direction)noexcept
 {
 	fTreeBranchUpper=(Direction&1)!=0;
 	fTreeXBranch=((Direction>>1)&1)!=0;
 }
 //---------------------------------------------------------------------------
-Float32 bcViewTreeContainer::GetTreeLevelIdent(void)const
+Float32 bcViewTreeContainer::GetTreeLevelIdent(void)const noexcept
 {
 	return fTreeLevelIndent;
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::SetTreeLevelIdent(Float32 LevelIdent)
+void bcViewTreeContainer::SetTreeLevelIdent(Float32 LevelIdent)noexcept
 {
 	if(fTreeLevelIndent!=LevelIdent){
 		fTreeLevelIndent=LevelIdent;
@@ -65,14 +65,14 @@ void bcViewTreeContainer::SetTreeLevelIdent(Float32 LevelIdent)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::ControlTreeBranchContentSetDefault(void)
+void bcViewTreeContainer::ControlTreeBranchContentSetDefault(void)noexcept
 {
 	if(gCreateDefaultTreeBranchVisual!=nullptr){
 		SetTreeBranchContent((*gCreateDefaultTreeBranchVisual)(this));
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::SetTreeBranchContent(rPtr<viControl> Content)
+void bcViewTreeContainer::SetTreeBranchContent(rPtr<viControl> Content)noexcept
 {
 	if(fTreeBranchContent!=nullptr){
 		fTreeBranchContent->SetView(nullptr);
@@ -84,7 +84,7 @@ void bcViewTreeContainer::SetTreeBranchContent(rPtr<viControl> Content)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::UpdateControlZOffset(void)
+void bcViewTreeContainer::UpdateControlZOffset(void)noexcept
 {
 	cScrollViewContainer::UpdateControlZOffset();
 
@@ -93,7 +93,7 @@ void bcViewTreeContainer::UpdateControlZOffset(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::ViewSetup(void)
+void bcViewTreeContainer::ViewSetup(void)noexcept
 {
 	cScrollViewContainer::ViewSetup();
 
@@ -105,7 +105,7 @@ void bcViewTreeContainer::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::ViewClear(void)
+void bcViewTreeContainer::ViewClear(void)noexcept
 {
 	if(fTreeBranchContent!=nullptr){
 		fTreeBranchContent->SetView(nullptr);
@@ -114,12 +114,12 @@ void bcViewTreeContainer::ViewClear(void)
 	cScrollViewContainer::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::TreeBranchDataClear(void)
+void bcViewTreeContainer::TreeBranchDataClear(void)noexcept
 {
 	fTreeBranchs.Clear();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::TreeBranchDataBuildStart(cUIRange ContentRange)
+void bcViewTreeContainer::TreeBranchDataBuildStart(cUIRange ContentRange)noexcept
 {
 	fBuildingContentRange=ContentRange;
 	fBuildingLastNodeEndPos=fBuildingContentRange.Begin;
@@ -127,7 +127,7 @@ void bcViewTreeContainer::TreeBranchDataBuildStart(cUIRange ContentRange)
 	fTreeBranchs.Clear();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::TreeBranchDataBuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)
+void bcViewTreeContainer::TreeBranchDataBuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)noexcept
 {
 	Float32 NodePos[2];
 	NodePos[!BuildContext.GridXRow]=(ItemRange.Begin+ItemRange.End)/2;
@@ -182,7 +182,7 @@ void bcViewTreeContainer::TreeBranchDataBuildBranch(BuildContext &BuildContext,c
 
 }
 //---------------------------------------------------------------------------
-void bcViewTreeContainer::TreeBranchDataBuildFinish(BuildContext &BuildContext)
+void bcViewTreeContainer::TreeBranchDataBuildFinish(BuildContext &BuildContext)noexcept
 {
 	Float32 cUIRectangle::*pBranchRangeEnd=BuildContext.GridXRow?&cUIRectangle::Right:&cUIRectangle::Bottom;
 	for(auto &Branch : fBuildingBranchs){
@@ -265,20 +265,20 @@ void bcViewTreeContainer::ReloadTreeBranchData(void)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cControlTreeBranchData::cControlTreeBranchData()
+cControlTreeBranchData::cControlTreeBranchData()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cControlTreeBranchData::~cControlTreeBranchData()
+cControlTreeBranchData::~cControlTreeBranchData()noexcept
 {
 }
 //---------------------------------------------------------------------------
-uIntn cControlTreeBranchData::GetBranchCount(void)const
+uIntn cControlTreeBranchData::GetBranchCount(void)const noexcept
 {
 	return fTreeBranchs.GetCount();
 }
 //---------------------------------------------------------------------------
-viTreeBranchData::cTreeBranchItem cControlTreeBranchData::GetBranchItem(uIntn BranchIndex)const
+viTreeBranchData::cTreeBranchItem cControlTreeBranchData::GetBranchItem(uIntn BranchIndex)const noexcept
 {
 	viTreeBranchData::cTreeBranchItem BranchItem;
 	auto &CacheBranch=fTreeBranchs[BranchIndex];
@@ -288,12 +288,12 @@ viTreeBranchData::cTreeBranchItem cControlTreeBranchData::GetBranchItem(uIntn Br
 	return BranchItem;
 }
 //---------------------------------------------------------------------------
-void cControlTreeBranchData::Clear(void)
+void cControlTreeBranchData::Clear(void)noexcept
 {
 	fTreeBranchs.Clear();
 }
 //---------------------------------------------------------------------------
-void cControlTreeBranchData::BuildStart(cUIRange ContentRange)
+void cControlTreeBranchData::BuildStart(cUIRange ContentRange)noexcept
 {
 	fBuildingContentRange=ContentRange;
 	fBuildingLastNodeEndPos=fBuildingContentRange.Begin;
@@ -301,7 +301,7 @@ void cControlTreeBranchData::BuildStart(cUIRange ContentRange)
 	fTreeBranchs.Clear();
 }
 //---------------------------------------------------------------------------
-void cControlTreeBranchData::BuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)
+void cControlTreeBranchData::BuildBranch(BuildContext &BuildContext,cUIRange ItemRange,sfInt16 Level,bool IsLastNode)noexcept
 {
 	Float32 NodePos[2];
 	NodePos[!BuildContext.GridXRow]=(ItemRange.Begin+ItemRange.End)/2;
@@ -356,7 +356,7 @@ void cControlTreeBranchData::BuildBranch(BuildContext &BuildContext,cUIRange Ite
 
 }
 //---------------------------------------------------------------------------
-void cControlTreeBranchData::BuildFinish(BuildContext &BuildContext)
+void cControlTreeBranchData::BuildFinish(BuildContext &BuildContext)noexcept
 {
 	Float32 cUIRectangle::*pBranchRangeEnd=BuildContext.GridXRow?&cUIRectangle::Right:&cUIRectangle::Bottom;
 	for(auto &Branch : fBuildingBranchs){
@@ -380,7 +380,7 @@ void cControlTreeBranchData::BuildFinish(BuildContext &BuildContext)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcViewTreeList::bcViewTreeList()
+bcViewTreeList::bcViewTreeList()noexcept
 	: fInLayout(false)
 	, fNeedUpdateTreeViews(false)
 	, fNeedUpdateTreeLayout(false)
@@ -389,31 +389,31 @@ bcViewTreeList::bcViewTreeList()
 {
 }
 //---------------------------------------------------------------------------
-bcViewTreeList::~bcViewTreeList()
+bcViewTreeList::~bcViewTreeList()noexcept
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-Float32 bcViewTreeList::GetListOffset(void)const
+Float32 bcViewTreeList::GetListOffset(void)const noexcept
 {
 	return fScrollOffset[!fTreeXBranch];
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::SetListOffset(Float32 ListOffset)
+void bcViewTreeList::SetListOffset(Float32 ListOffset)noexcept
 {
 	Float32 Offset[2];
 	Offset[!fTreeXBranch]=ListOffset;
 	SetScrollOffset({Offset[0],Offset[1]});
 }
 //---------------------------------------------------------------------------
-aCls<bcViewTreeList::cNode>* bcViewTreeList::FindNode(Float32 Position)
+aCls<bcViewTreeList::cNode>* bcViewTreeList::FindNode(Float32 Position)noexcept
 {
 	aCls<cNode>* Node;
 	FindNode(Position,Node);
 	return Node;
 }
 //---------------------------------------------------------------------------
-bool bcViewTreeList::FindNode(Float32 Position,aCls<cNode>* &Node)
+bool bcViewTreeList::FindNode(Float32 Position,aCls<cNode>* &Node)noexcept
 {
 	ufInt32 DisplayIndex;
 	bool Ret=ViewTreeListDisplayFindAt(Position,DisplayIndex);
@@ -421,7 +421,7 @@ bool bcViewTreeList::FindNode(Float32 Position,aCls<cNode>* &Node)
 	return Ret;
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::SetNeedUpdateTreeViews(void)
+void bcViewTreeList::SetNeedUpdateTreeViews(void)noexcept
 {
 	if(fNeedUpdateTreeViews)
 		return;
@@ -430,7 +430,7 @@ void bcViewTreeList::SetNeedUpdateTreeViews(void)
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::SetNeedUpdateTreeLayout(void)
+void bcViewTreeList::SetNeedUpdateTreeLayout(void)noexcept
 {
 	if(fNeedUpdateTreeLayout)
 		return;
@@ -439,7 +439,7 @@ void bcViewTreeList::SetNeedUpdateTreeLayout(void)
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::ViewSetup(void)
+void bcViewTreeList::ViewSetup(void)noexcept
 {
 	cScrollViewContainer::ViewSetup();
 
@@ -451,7 +451,7 @@ void bcViewTreeList::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::ViewClear(void)
+void bcViewTreeList::ViewClear(void)noexcept
 {
 	if(fTreeBranchContent!=nullptr){
 		fTreeBranchContent->SetView(nullptr);
@@ -460,7 +460,7 @@ void bcViewTreeList::ViewClear(void)
 	cScrollViewContainer::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::ScrollContentUpdateContentLayout(void)
+void bcViewTreeList::ScrollContentUpdateContentLayout(void)noexcept
 {
 	fInLayout=true;
 	cScrollViewContainer::ScrollContentUpdateContentLayout();
@@ -629,12 +629,12 @@ void bcViewTreeList::ReloadTreeBranchData(void)
 }
 	*/
 //---------------------------------------------------------------------------
-aCls<bcViewTreeList::cNode>* bcViewTreeList::QueryRootNode(void)
+aCls<bcViewTreeList::cNode>* bcViewTreeList::QueryRootNode(void)noexcept
 {
 	return fRootNode;
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::PositNode(cNode *Node)
+void bcViewTreeList::PositNode(cNode *Node)noexcept
 {
 	cUIRectangle NodeRect;
 
@@ -662,7 +662,7 @@ void bcViewTreeList::PositNode(cNode *Node)
 	ViewItemSetRectangle(Node,NodeRect);
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::TreePositNode(cNode *Node)
+void bcViewTreeList::TreePositNode(cNode *Node)noexcept
 {
 	PositNode(Node);
 
@@ -671,7 +671,7 @@ void bcViewTreeList::TreePositNode(cNode *Node)
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::TreeKeepVisibleSubNode(cNode *Node)
+void bcViewTreeList::TreeKeepVisibleSubNode(cNode *Node)noexcept
 {
 	for(auto SubNodePair : Node->fNodeMap){
 		auto Node=SubNodePair.Value;
@@ -682,13 +682,13 @@ void bcViewTreeList::TreeKeepVisibleSubNode(cNode *Node)
 	}
 }
 //---------------------------------------------------------------------------
-bcViewTreeList::cNode::cNode()
+bcViewTreeList::cNode::cNode()noexcept
 	: fOwner(nullptr)
 	, fParent(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-bcViewTreeList::cNode::~cNode()
+bcViewTreeList::cNode::~cNode()noexcept
 {
 	for(auto NodePair : fNodeMap){
 		NodePair.Value->ClearOwner();
@@ -699,21 +699,21 @@ bcViewTreeList::cNode::~cNode()
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::cNode::SetupOwner(bcViewTreeList *Owner,cNode *Parent,ufInt32 NodeIndex)
+void bcViewTreeList::cNode::SetupOwner(bcViewTreeList *Owner,cNode *Parent,ufInt32 NodeIndex)noexcept
 {
 	fOwner=Owner;
 	fParent=Parent;
 	fOwner->ViewItemAttach(this);
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::cNode::ClearOwner(void)
+void bcViewTreeList::cNode::ClearOwner(void)noexcept
 {
 	fOwner->ViewItemDetach(this);
 	fParent=nullptr;
 	fOwner=nullptr;
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::cNode::NodeDeleted(cNode *Node)
+void bcViewTreeList::cNode::NodeDeleted(cNode *Node)noexcept
 {
 	auto Pair=fNodeMap.GetPair(Node->fNodeIndex);
 	if(Pair!=nullptr){
@@ -722,26 +722,26 @@ void bcViewTreeList::cNode::NodeDeleted(cNode *Node)
 	}
 }
 //---------------------------------------------------------------------------
-iViewReference* bcViewTreeList::cNode::GetViewReference(void)const
+iViewReference* bcViewTreeList::cNode::GetViewReference(void)const noexcept
 {
 	if(fOwner==nullptr)
 		return nullptr;
 	return fOwner->ViewItemGetViewReference(this);
 }
 //---------------------------------------------------------------------------
-void bcViewTreeList::cNode::SetViewReference(iViewReference *ViewRef)
+void bcViewTreeList::cNode::SetViewReference(iViewReference *ViewRef)noexcept
 {
 	if(fOwner==nullptr)
 		return;
 	fOwner->ViewItemSetViewReference(this,ViewRef);
 }
 //---------------------------------------------------------------------------
-aCls<bcViewTreeList::cNode>* bcViewTreeList::cNode::GetParent(void)const
+aCls<bcViewTreeList::cNode>* bcViewTreeList::cNode::GetParent(void)const noexcept
 {
 	return static_cast<aCls<bcViewTreeList::cNode>*>(fParent);
 }
 //---------------------------------------------------------------------------
-aClsRef<bcViewTreeList::cNode> bcViewTreeList::cNode::QueryNode(uIntn NodeIndex)
+aClsRef<bcViewTreeList::cNode> bcViewTreeList::cNode::QueryNode(uIntn NodeIndex)noexcept
 {
 	if(fOwner==nullptr)
 		return nullptr;
@@ -765,7 +765,7 @@ aClsRef<bcViewTreeList::cNode> bcViewTreeList::cNode::QueryNode(uIntn NodeIndex)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cTreeExpandButton::ButtonBackgroundSetDefault(void)
+void cTreeExpandButton::ButtonBackgroundSetDefault(void)noexcept
 {
 	if(gCreateDefaultTreeExpandButtonVisual!=nullptr){
 		SetBackground(gCreateDefaultTreeExpandButtonVisual(this));
@@ -773,21 +773,21 @@ void cTreeExpandButton::ButtonBackgroundSetDefault(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cControlTreeList::cControlTreeList()
+cControlTreeList::cControlTreeList()noexcept
 	: fControlSource(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cControlTreeList::~cControlTreeList()
+cControlTreeList::~cControlTreeList()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iControlTreeListSource* cControlTreeList::GetControlSource(void)const
-{
+iControlTreeListSource* cControlTreeList::GetControlSource(void)const noexcept
+{ 
 	return fControlSource;
 }
 //---------------------------------------------------------------------------
-void cControlTreeList::SetControlSource(iControlTreeListSource *Source)
+void cControlTreeList::SetControlSource(iControlTreeListSource *Source)noexcept
 {
 	if(fControlSource!=nullptr){
 		fControlSource->ControlListNotifySet.Remove(fTreeListNotifyToken);
@@ -803,12 +803,12 @@ void cControlTreeList::SetControlSource(iControlTreeListSource *Source)
 	SetNeedUpdateTreeViews();
 }
 //---------------------------------------------------------------------------
-void cControlTreeList::ScrollContentUpdateContentLayout(void)
+void cControlTreeList::ScrollContentUpdateContentLayout(void)noexcept
 {
 	bcViewTreeList::ScrollContentUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-cUIRange cControlTreeList::ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)
+cUIRange cControlTreeList::ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)noexcept
 {
 	cUIRange Range;
 	Range.Begin=DisplayIndex*(ItemSize+ItemBorder)+ItemBorder;
@@ -816,7 +816,7 @@ cUIRange cControlTreeList::ViewTreeListDisplayQueryRange(ufInt32 DisplayIndex)
 	return Range;
 }
 //---------------------------------------------------------------------------
-bool cControlTreeList::ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)
+bool cControlTreeList::ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)noexcept
 {
 	if(Position<=1){
 		DisplayIndex=0;
@@ -828,7 +828,7 @@ bool cControlTreeList::ViewTreeListDisplayFindAt(Float32 Position,ufInt32 &Displ
 	return Pos%static_cast<ufInt32>(ItemSize+ItemBorder)!=0;
 }
 //---------------------------------------------------------------------------
-void cControlTreeList::ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)
+void cControlTreeList::ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 DisplayEndIndex)noexcept
 {
 	if(fTreeItemCount<DisplayEndIndex){
 		fTreeItemCount=DisplayEndIndex;
@@ -852,17 +852,17 @@ void cControlTreeList::ViewTreeListDisplaySetupItems(uIntn DisplayIndex,ufInt32 
 	//fControlSource->ListClearItems();
 }
 //---------------------------------------------------------------------------
-aClsRef<cControlTreeList::cNode> cControlTreeList::ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)
+aClsRef<cControlTreeList::cNode> cControlTreeList::ViewTreeListDisplayIndexToNode(ufInt32 DisplayIndex)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-ufInt32 cControlTreeList::ViewTreeListNodeToDisplayIndex(cNode *Node)
+ufInt32 cControlTreeList::ViewTreeListNodeToDisplayIndex(cNode *Node)noexcept
 {
 	return IndexNotFound;
 }
 //---------------------------------------------------------------------------
-void cControlTreeList::ApplyControlSource(void)
+void cControlTreeList::ApplyControlSource(void)noexcept
 {
 //	if(RowSize==0){
 //		fScrollLowwerLimit[!fGridXRow]=0;

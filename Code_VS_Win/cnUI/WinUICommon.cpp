@@ -4,7 +4,7 @@ using namespace cnLibrary;
 using namespace cnUI;
 
 //---------------------------------------------------------------------------
-HWND cnUI::GetWindowHandleFromUIWindow(iUIArea *Area)
+HWND cnUI::GetWindowHandleFromUIWindow(iUIArea *Area)noexcept
 {
 	if(Area==nullptr)
 		return nullptr;
@@ -15,14 +15,14 @@ HWND cnUI::GetWindowHandleFromUIWindow(iUIArea *Area)
 	return WindowHandleProperty->GetWindowHandle();
 }
 //---------------------------------------------------------------------------
-HWND cnUI::GetWindowHandleFromUIView(iUIView *View)
+HWND cnUI::GetWindowHandleFromUIView(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return nullptr;
 	return GetWindowHandleFromUIWindow(View->GetWindow());
 }
 //---------------------------------------------------------------------------
-//HWND cnUI::GetComponentWindowHandle(iWindowComponent *WindowComponent)
+//HWND cnUI::GetComponentWindowHandle(iWindowComponent *WindowComponent)noexcept
 //{
 //	if(WindowComponent==nullptr){
 //		return nullptr;
@@ -33,7 +33,7 @@ HWND cnUI::GetWindowHandleFromUIView(iUIView *View)
 //	return Window->GetWindowHandle();
 //}
 //---------------------------------------------------------------------------
-void cnUI::HWNDSetOwner(HWND WindowHandle,HWND OwnerHandle)
+void cnUI::HWNDSetOwner(HWND WindowHandle,HWND OwnerHandle)noexcept
 {
 	if(WindowHandle==nullptr){
 		return;
@@ -44,7 +44,7 @@ void cnUI::HWNDSetOwner(HWND WindowHandle,HWND OwnerHandle)
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::AlignWindowRect(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)
+cUIPoint cnUI::AlignWindowRect(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept
 {
 	cUIPoint ScreenPos;
 	if(Relative!=nullptr && Relative->GetPosition(nullptr,ScreenPos)){
@@ -67,7 +67,7 @@ cUIPoint cnUI::AlignWindowRect(iUIArea *Relative,const cUIPoint &WindowSize,cons
 	return cnUI::RectAlignAroundRectLimited(Align,{ScreenSizeX,ScreenSizeY},ScreenPos,AlignSize,WindowSize);
 }
 //---------------------------------------------------------------------------
-void cnUI::MoveWindowAlign(HWND WindowHandle,iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)
+void cnUI::MoveWindowAlign(HWND WindowHandle,iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept
 {
 	auto WindowPos=AlignWindowRect(Relative,WindowSize,AlignPos,AlignSize,Align);
 	::MoveWindow(WindowHandle,WindowPos.x,WindowPos.y,WindowSize.x,WindowSize.y,FALSE);
@@ -79,9 +79,9 @@ class cSysMouseCursor : public iMouseCursorSetter
 {
 public:
 	HCURSOR Cursor;
-	cSysMouseCursor(HCURSOR Cursor):Cursor(Cursor){}
+	cSysMouseCursor(HCURSOR Cursor)noexcept:Cursor(Cursor){}
 
-	virtual void cnLib_FUNC SetCursor(void)override{
+	virtual void cnLib_FUNC SetCursor(void)noexcept override{
 		::SetCursor(Cursor);
 	}
 };
@@ -89,31 +89,31 @@ public:
 class cNullMouseCursor : public iMouseCursorSetter
 {
 public:
-	virtual void cnLib_FUNC SetCursor(void)override{}
+	virtual void cnLib_FUNC SetCursor(void)noexcept override{}
 };
 static cNullMouseCursor gNullMouseCursor;
 }
 //---------------------------------------------------------------------------
-iInterface* cnUI::QueryNullMouseCursor(void)
+iInterface* cnUI::QueryNullMouseCursor(void)noexcept
 {
 	return &gNullMouseCursor;
 }
 //---------------------------------------------------------------------------
-iPtr<iInterface> cnUI::QuerySystemMouseCursor(LPCWSTR ID)
+iPtr<iInterface> cnUI::QuerySystemMouseCursor(LPCWSTR ID)noexcept
 {
 	auto Cursor=::LoadCursorW(nullptr,ID);
 	return iCreate<cSysMouseCursor>(Cursor);
 }
 //---------------------------------------------------------------------------
-rPtr<iGDIFontHandle> cnUI::QueryGDIFont(const cUITextStyle &TextStyle)
+rPtr<iGDIFontHandle> cnUI::QueryGDIFont(const cUITextStyle &TextStyle)noexcept
 {
 	auto Device=cnWindows::QueryDCPaintDevice();
 	return Device->QueryFont(TextStyle);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void WindowMessageHandler::WindowAttached(void){}
-void WindowMessageHandler::WindowDetached(void){}
-bool WindowMessageHandler::WindowMessage(LRESULT &,const cWindowMessageParam &){	return false;	}
-void WindowMessageHandler::WindowMessageProcessed(LRESULT,const cWindowMessageParam&){}
+void WindowMessageHandler::WindowAttached(void)noexcept{}
+void WindowMessageHandler::WindowDetached(void)noexcept{}
+bool WindowMessageHandler::WindowMessage(LRESULT &,const cWindowMessageParam &)noexcept{	return false;	}
+void WindowMessageHandler::WindowMessageProcessed(LRESULT,const cWindowMessageParam&)noexcept{}
 //---------------------------------------------------------------------------

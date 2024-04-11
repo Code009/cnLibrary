@@ -106,8 +106,8 @@ private:
 		virtual void cnLib_FUNC LateBind(void)override;
 		virtual void cnLib_FUNC Postprocess(SQLUSMALLINT ColumnNumber)override;
 
-		virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-		virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+		virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
+		virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 	private:
 		SQLLEN fSQLBindRet_Len_Ind;
 		union{
@@ -140,8 +140,8 @@ private:
 		virtual void cnLib_FUNC LateBind(void)override;
 		virtual void cnLib_FUNC Postprocess(SQLUSMALLINT ColumnNumber)override;
 
-		virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-		virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+		virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
+		virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 	private:
 		cnRTL::cMemoryBuffer fDataBuffer;
 		const cODBCTypeInfo &fTypeInfo;
@@ -309,8 +309,8 @@ public:
 	cODBC();
 	~cODBC();
 
-	virtual iPtr<iSQLDBConnection> cnLib_FUNC EditAndConnect(HWND ParentWindow,const wchar_t *ConnectionString,short ConnectionStringLength,wchar_t *OutConnectionString,short &OutConnectionStringLength)override;
-	virtual iPtr<iSQLDBConnection> cnLib_FUNC Connect(const wchar_t *ConnectionString,short ConnectionStringLength)override;
+	virtual iPtr<iSQLDBConnection> cnLib_FUNC EditAndConnect(HWND ParentWindow,const wchar_t *ConnectionString,short ConnectionStringLength,wchar_t *OutConnectionString,short &OutConnectionStringLength)noexcept(true)override;
+	virtual iPtr<iSQLDBConnection> cnLib_FUNC Connect(const wchar_t *ConnectionString,short ConnectionStringLength)noexcept(true)override;
 private:
 	aClsRef<cODBCEnvContext> fEnvContext;
 };

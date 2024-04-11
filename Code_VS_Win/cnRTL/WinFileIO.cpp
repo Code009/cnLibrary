@@ -8,7 +8,7 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-HANDLE cnWinRTL::Win32FileOpenHandle(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag,DWORD Flag)
+HANDLE cnWinRTL::Win32FileOpenHandle(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag,DWORD Flag)noexcept
 {
 	DWORD WinAccessFlag=0;
 	if((AccessMode&FileAccess::Read)!=FileAccess::None)
@@ -38,7 +38,7 @@ HANDLE cnWinRTL::Win32FileOpenHandle(const wchar_t *FileName,eFileAccess AccessM
 	return ::CreateFileW(FileName,WinAccessFlag,WinShareFlag,NULL,WinCreateDispostion,Flag,NULL);
 }
 //---------------------------------------------------------------------------
-uInt64 cnWinRTL::Win32FileGetSize(const wchar_t *FileName)
+uInt64 cnWinRTL::Win32FileGetSize(const wchar_t *FileName)noexcept
 {
     WIN32_FILE_ATTRIBUTE_DATA AttributeData;
 	if(::GetFileAttributesExW(FileName,GetFileExInfoStandard,&AttributeData)==FALSE)
@@ -49,7 +49,7 @@ uInt64 cnWinRTL::Win32FileGetSize(const wchar_t *FileName)
     return size.QuadPart;
 }
 //---------------------------------------------------------------------------
-bool cnWinRTL::Win32FileIsExists(const wchar_t *FileName)
+bool cnWinRTL::Win32FileIsExists(const wchar_t *FileName)noexcept
 {
 	DWORD fa=::GetFileAttributesW(FileName);
 	if(fa==INVALID_FILE_ATTRIBUTES){
@@ -59,7 +59,7 @@ bool cnWinRTL::Win32FileIsExists(const wchar_t *FileName)
 	return true;
 }
 //---------------------------------------------------------------------------
-eStreamError cnWinRTL::Win32ErrorToStreamError(DWORD ErrorCode)
+eStreamError cnWinRTL::Win32ErrorToStreamError(DWORD ErrorCode)noexcept
 {
 	switch(ErrorCode){
 	default:
@@ -74,24 +74,24 @@ eStreamError cnWinRTL::Win32ErrorToStreamError(DWORD ErrorCode)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileHandle::cWin32FileHandle()
+cWin32FileHandle::cWin32FileHandle()noexcept
 	: Handle(INVALID_HANDLE_VALUE)
 {
 }
 //---------------------------------------------------------------------------
-cWin32FileHandle::cWin32FileHandle(HANDLE InitalHandle)
+cWin32FileHandle::cWin32FileHandle(HANDLE InitalHandle)noexcept
 	: Handle(InitalHandle)
 {
 }
 //---------------------------------------------------------------------------
-cWin32FileHandle::~cWin32FileHandle()
+cWin32FileHandle::~cWin32FileHandle()noexcept
 {
 	if(Handle!=INVALID_HANDLE_VALUE){
 		::CloseHandle(Handle);
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32FileHandle::TransferHandle(HANDLE NewHandle)
+void cWin32FileHandle::TransferHandle(HANDLE NewHandle)noexcept
 {
 	if(Handle!=INVALID_HANDLE_VALUE){
 		::CloseHandle(Handle);
@@ -99,31 +99,31 @@ void cWin32FileHandle::TransferHandle(HANDLE NewHandle)
 	Handle=NewHandle;
 }
 //---------------------------------------------------------------------------
-void cWin32FileHandle::Close(void)
+void cWin32FileHandle::Close(void)noexcept
 {
 	TransferHandle(INVALID_HANDLE_VALUE);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileMappingHandle::cWin32FileMappingHandle()
+cWin32FileMappingHandle::cWin32FileMappingHandle()noexcept
 	: Handle(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cWin32FileMappingHandle::cWin32FileMappingHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle)
+cWin32FileMappingHandle::cWin32FileMappingHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle)noexcept
 	: Handle(InitalHandle)
 	, FileHandle(cnVar::MoveCast(InitialFileHandle))
 {
 }
 //---------------------------------------------------------------------------
-cWin32FileMappingHandle::~cWin32FileMappingHandle()
+cWin32FileMappingHandle::~cWin32FileMappingHandle()noexcept
 {
 	if(Handle!=nullptr){
 		::CloseHandle(Handle);
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32FileMappingHandle::TransferHandle(HANDLE NewHandle,aClsRef<cWin32FileHandle> NewFileHandle)
+void cWin32FileMappingHandle::TransferHandle(HANDLE NewHandle,aClsRef<cWin32FileHandle> NewFileHandle)noexcept
 {
 	if(Handle!=nullptr){
 		::CloseHandle(Handle);
@@ -132,24 +132,24 @@ void cWin32FileMappingHandle::TransferHandle(HANDLE NewHandle,aClsRef<cWin32File
 	FileHandle=cnVar::MoveCast(NewFileHandle);
 }
 //---------------------------------------------------------------------------
-void cWin32FileMappingHandle::Close(void)
+void cWin32FileMappingHandle::Close(void)noexcept
 {
 	TransferHandle(nullptr,nullptr);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileMapping::cWin32FileMapping(aClsRef<cWin32FileMappingHandle> Handle,uInt64 Size,DWORD MapFlag)
+cWin32FileMapping::cWin32FileMapping(aClsRef<cWin32FileMappingHandle> Handle,uInt64 Size,DWORD MapFlag)noexcept
 	: fFileMappingHandle(cnVar::MoveCast(Handle))
 {
 	fSize=Size;
 	fMapFlag=MapFlag;
 }
 //---------------------------------------------------------------------------
-cWin32FileMapping::~cWin32FileMapping()
+cWin32FileMapping::~cWin32FileMapping()noexcept
 {
 }
 //---------------------------------------------------------------------------
-DWORD cWin32FileMapping::FileAccessToMapFlag(eFileAccess AccessMode)
+DWORD cWin32FileMapping::FileAccessToMapFlag(eFileAccess AccessMode)noexcept
 {
 	DWORD MapFlag=0;
 	if((AccessMode&FileAccess::Read)!=FileAccess::None){
@@ -161,39 +161,40 @@ DWORD cWin32FileMapping::FileAccessToMapFlag(eFileAccess AccessMode)
 	return MapFlag;
 }
 //---------------------------------------------------------------------------
-uInt64 cWin32FileMapping::GetSize(void)
+uInt64 cWin32FileMapping::GetSize(void)noexcept
 {
 	return fSize;
 }
 //---------------------------------------------------------------------------
-void* cWin32FileMapping::Map(uInt64 Offset,uIntn Size)
+void* cWin32FileMapping::Map(uInt64 Offset,uIntn Size)noexcept
 {
 
 	return ::MapViewOfFile(fFileMappingHandle->Handle,fMapFlag,static_cast<DWORD>(Offset>>32),static_cast<DWORD>(Offset),Size);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileMapping::Unmap(void *Pointer,uIntn Size)
+bool cWin32FileMapping::Unmap(void *Pointer,uIntn Size)noexcept
 {	Size;
 	return ::UnmapViewOfFile(Pointer)!=0;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileHandleSequenceStream::cWin32FileHandleSequenceStream(aClsRef<cWin32FileHandle> FileHandle)
+cWin32FileHandleSequenceStream::cWin32FileHandleSequenceStream(aClsRef<cWin32FileHandle> FileHandle)noexcept
 	: fFileHandle(cnVar::MoveCast(FileHandle))
 {
 	fCachedFilePos=false;
 }
 //---------------------------------------------------------------------------
-cWin32FileHandleSequenceStream::~cWin32FileHandleSequenceStream()
+cWin32FileHandleSequenceStream::~cWin32FileHandleSequenceStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cWin32FileHandleSequenceStream::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cWin32FileHandleSequenceStream::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iWinFileHandle,iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-static StreamError ERROR_to_StreamError(DWORD Error){
+static StreamError ERROR_to_StreamError(DWORD Error)noexcept
+{
 	switch(Error){
 	default:
 		return StreamError::Unknown;
@@ -208,7 +209,7 @@ static StreamError ERROR_to_StreamError(DWORD Error){
 	}
 }
 //---------------------------------------------------------------------------
-eStreamError cWin32FileHandleSequenceStream::GetStreamError(void)
+eStreamError cWin32FileHandleSequenceStream::GetStreamError(void)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return StreamError::Closed;
@@ -216,12 +217,12 @@ eStreamError cWin32FileHandleSequenceStream::GetStreamError(void)
 	return ERROR_to_StreamError(Error);
 }
 //---------------------------------------------------------------------------
-HANDLE cWin32FileHandleSequenceStream::GetFileHandle(void)
+HANDLE cWin32FileHandleSequenceStream::GetFileHandle(void)noexcept
 {
 	return fFileHandle->Handle;
 }
 //---------------------------------------------------------------------------
-void cWin32FileHandleSequenceStream::SetupFilePos(void)
+void cWin32FileHandleSequenceStream::SetupFilePos(void)noexcept
 {
 	if(fCachedFilePos)
 		return;
@@ -238,12 +239,12 @@ void cWin32FileHandleSequenceStream::SetupFilePos(void)
 	fCachedFilePos=true;
 }
 //---------------------------------------------------------------------------
-void cWin32FileHandleSequenceStream::Close(void)
+void cWin32FileHandleSequenceStream::Close(void)noexcept
 {
 	fFileHandle->Close();
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::IsEndOfReading(void)
+bool cWin32FileHandleSequenceStream::IsEndOfReading(void)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -255,7 +256,7 @@ bool cWin32FileHandleSequenceStream::IsEndOfReading(void)
 	return fFilePos>=static_cast<uInt64>(FileSize.QuadPart);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::SetEndOfStream(void)
+bool cWin32FileHandleSequenceStream::SetEndOfStream(void)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -265,7 +266,7 @@ bool cWin32FileHandleSequenceStream::SetEndOfStream(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cWin32FileHandleSequenceStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	SizeCompleted=0;
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
@@ -279,7 +280,7 @@ bool cWin32FileHandleSequenceStream::Read(void *Buffer,uIntn Size,uIntn &SizeCom
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cWin32FileHandleSequenceStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	SizeCompleted=0;
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
@@ -293,7 +294,7 @@ bool cWin32FileHandleSequenceStream::Write(const void *Buffer,uIntn Size,uIntn &
 	return true;
 }
 //---------------------------------------------------------------------------
-uInt64 cWin32FileHandleSequenceStream::GetPointer(void)
+uInt64 cWin32FileHandleSequenceStream::GetPointer(void)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return 0;
@@ -301,7 +302,7 @@ uInt64 cWin32FileHandleSequenceStream::GetPointer(void)
 	return fFilePos;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::MovePointerBegin(uInt64 Offset)
+bool cWin32FileHandleSequenceStream::MovePointerBegin(uInt64 Offset)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -315,7 +316,7 @@ bool cWin32FileHandleSequenceStream::MovePointerBegin(uInt64 Offset)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::MovePointerCurrent(sInt64 Offset)
+bool cWin32FileHandleSequenceStream::MovePointerCurrent(sInt64 Offset)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -329,7 +330,7 @@ bool cWin32FileHandleSequenceStream::MovePointerCurrent(sInt64 Offset)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileHandleSequenceStream::MovePointerEnd(sInt64 Offset)
+bool cWin32FileHandleSequenceStream::MovePointerEnd(sInt64 Offset)noexcept
 {
 	if(fFileHandle->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -344,31 +345,31 @@ bool cWin32FileHandleSequenceStream::MovePointerEnd(sInt64 Offset)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTFileOverlappedIOHandle::bcNTFileOverlappedIOHandle()
+bcNTFileOverlappedIOHandle::bcNTFileOverlappedIOHandle()noexcept
 	: Handle(INVALID_HANDLE_VALUE)
 {
 }
 //---------------------------------------------------------------------------
-bcNTFileOverlappedIOHandle::~bcNTFileOverlappedIOHandle()
+bcNTFileOverlappedIOHandle::~bcNTFileOverlappedIOHandle()noexcept
 {
 	cnLib_ASSERT(Handle==INVALID_HANDLE_VALUE);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleSyncIOObject::cNTFileOverlappedIOHandleSyncIOObject()
+cNTFileOverlappedIOHandleSyncIOObject::cNTFileOverlappedIOHandleSyncIOObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleSyncIOObject::~cNTFileOverlappedIOHandleSyncIOObject()
+cNTFileOverlappedIOHandleSyncIOObject::~cNTFileOverlappedIOHandleSyncIOObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleSyncIOObject::Completed(void)
+void cNTFileOverlappedIOHandleSyncIOObject::Completed(void)noexcept
 {
 	fNotifier.Notify();
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleSyncIOObject::Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)
+bool cNTFileOverlappedIOHandleSyncIOObject::Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)noexcept
 {
 	if(FileIO->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -398,7 +399,7 @@ bool cNTFileOverlappedIOHandleSyncIOObject::Read(bcNTFileOverlappedIOHandle *Fil
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleSyncIOObject::Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)
+bool cNTFileOverlappedIOHandleSyncIOObject::Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)noexcept
 {
 	if(FileIO->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -429,57 +430,57 @@ bool cNTFileOverlappedIOHandleSyncIOObject::Write(bcNTFileOverlappedIOHandle *Fi
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleAsyncIOTask::cNTFileOverlappedIOHandleAsyncIOTask()
+cNTFileOverlappedIOHandleAsyncIOTask::cNTFileOverlappedIOHandleAsyncIOTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleAsyncIOTask::~cNTFileOverlappedIOHandleAsyncIOTask()
+cNTFileOverlappedIOHandleAsyncIOTask::~cNTFileOverlappedIOHandleAsyncIOTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTFileOverlappedIOHandleAsyncIOTask::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTFileOverlappedIOHandleAsyncIOTask::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleAsyncIOTask::Completed(void)
+void cNTFileOverlappedIOHandleAsyncIOTask::Completed(void)noexcept
 {
 	fTaskState.SetDone();
 	iDecReference(this,'task');
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::IsDone(void)
+bool cNTFileOverlappedIOHandleAsyncIOTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)
+bool cNTFileOverlappedIOHandleAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleAsyncIOTask::Cancel(void)
+void cNTFileOverlappedIOHandleAsyncIOTask::Cancel(void)noexcept
 {
 	fFileIO->CancelOperation(this);
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::GetResult(uIntn &retSizeCompleted)
+bool cNTFileOverlappedIOHandleAsyncIOTask::GetResult(uIntn &retSizeCompleted)noexcept
 {
 	retSizeCompleted=BytesCompleted;
 	return ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-eStreamError cNTFileOverlappedIOHandleAsyncIOTask::GetStreamError(void)
+eStreamError cNTFileOverlappedIOHandleAsyncIOTask::GetStreamError(void)noexcept
 {
 	return Win32ErrorToStreamError(ErrorCode);
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleAsyncIOTask::SetupOverlapped(void)
+void cNTFileOverlappedIOHandleAsyncIOTask::SetupOverlapped(void)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleAsyncIOTask::SetupOverlapped(uInt64 Offset)
+void cNTFileOverlappedIOHandleAsyncIOTask::SetupOverlapped(uInt64 Offset)noexcept
 {
 	Overlapped.hEvent=nullptr;
 	Overlapped.Internal=0;
@@ -488,7 +489,7 @@ void cNTFileOverlappedIOHandleAsyncIOTask::SetupOverlapped(uInt64 Offset)
 	Overlapped.OffsetHigh=static_cast<DWORD>(Offset>>32);
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)
+bool cNTFileOverlappedIOHandleAsyncIOTask::Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)noexcept
 {
 	if(FileIO->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -520,7 +521,7 @@ bool cNTFileOverlappedIOHandleAsyncIOTask::Read(bcNTFileOverlappedIOHandle *File
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)
+bool cNTFileOverlappedIOHandleAsyncIOTask::Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)noexcept
 {
 	if(FileIO->Handle==INVALID_HANDLE_VALUE)
 		return false;
@@ -554,42 +555,42 @@ bool cNTFileOverlappedIOHandleAsyncIOTask::Write(bcNTFileOverlappedIOHandle *Fil
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleStream::cNTFileOverlappedIOHandleStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)
+cNTFileOverlappedIOHandleStream::cNTFileOverlappedIOHandleStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)noexcept
 	: fFileIO(cnVar::MoveCast(FileIO))
 {
 	fEOF=false;
 }
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleStream::~cNTFileOverlappedIOHandleStream()
+cNTFileOverlappedIOHandleStream::~cNTFileOverlappedIOHandleStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTFileOverlappedIOHandleStream::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTFileOverlappedIOHandleStream::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return iWinFileHandle::CastInterface(InterfaceID);
 }
 //---------------------------------------------------------------------------
-HANDLE cNTFileOverlappedIOHandleStream::GetFileHandle(void)
+HANDLE cNTFileOverlappedIOHandleStream::GetFileHandle(void)noexcept
 {
 	return fFileIO->Handle;
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleStream::Close(void)
+void cNTFileOverlappedIOHandleStream::Close(void)noexcept
 {
 	fFileIO->Close();
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleStream::IsEndOfReading(void)
+bool cNTFileOverlappedIOHandleStream::IsEndOfReading(void)noexcept
 {
 	return fEOF;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleStream::SetEndOfStream(void)
+bool cNTFileOverlappedIOHandleStream::SetEndOfStream(void)noexcept
 {
 	return ::SetEndOfFile(fFileIO->Handle)!=FALSE;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTFileOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTFileOverlappedIOHandleSyncIOObject IOObject;
 
@@ -608,7 +609,7 @@ bool cNTFileOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &SizeCo
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTFileOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTFileOverlappedIOHandleSyncIOObject IOObject;
 
@@ -622,7 +623,7 @@ bool cNTFileOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uIntn 
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleStream::cReadTask::Completed(void)
+void cNTFileOverlappedIOHandleStream::cReadTask::Completed(void)noexcept
 {
 	if(ErrorCode==ERROR_HANDLE_EOF){
 		Host->fEOF=true;
@@ -632,7 +633,7 @@ void cNTFileOverlappedIOHandleStream::cReadTask::Completed(void)
 	cNTFileOverlappedIOHandleAsyncIOTask::Completed();
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::ReadAsync(void *Buffer,uIntn Size)
+iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::ReadAsync(void *Buffer,uIntn Size)noexcept
 {
 	auto Task=iCreate<cReadTask>();
 	Task->Host=this;
@@ -643,7 +644,7 @@ iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::ReadAsync(void *Buffer,uIntn 
 	return Task;
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::WriteAsync(const void *Buffer,uIntn Size)
+iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::WriteAsync(const void *Buffer,uIntn Size)noexcept
 {
 	auto Task=iCreate<cNTFileOverlappedIOHandleAsyncIOTask>();
 	Task->SetupOverlapped();
@@ -654,40 +655,40 @@ iPtr<iStreamTask> cNTFileOverlappedIOHandleStream::WriteAsync(const void *Buffer
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleFileStream::cNTFileOverlappedIOHandleFileStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)
+cNTFileOverlappedIOHandleFileStream::cNTFileOverlappedIOHandleFileStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)noexcept
 	: fFileIO(cnVar::MoveCast(FileIO))
 {
 }
 //---------------------------------------------------------------------------
-cNTFileOverlappedIOHandleFileStream::~cNTFileOverlappedIOHandleFileStream()
+cNTFileOverlappedIOHandleFileStream::~cNTFileOverlappedIOHandleFileStream()noexcept
 {
 	if(fFileIO->Handle!=INVALID_HANDLE_VALUE)
 		fFileIO->Close();
 }
 //---------------------------------------------------------------------------
-void* cNTFileOverlappedIOHandleFileStream::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTFileOverlappedIOHandleFileStream::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iWinFileHandle,iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-eStreamError cNTFileOverlappedIOHandleFileStream::GetStreamError(void)
+eStreamError cNTFileOverlappedIOHandleFileStream::GetStreamError(void)noexcept
 {
 	DWORD Error=::GetLastError();
 	return Win32ErrorToStreamError(Error);
 }
 //---------------------------------------------------------------------------
-HANDLE cNTFileOverlappedIOHandleFileStream::GetFileHandle(void)
+HANDLE cNTFileOverlappedIOHandleFileStream::GetFileHandle(void)noexcept
 {
 	return fFileIO->Handle;
 }
 //---------------------------------------------------------------------------
-void cNTFileOverlappedIOHandleFileStream::Close(void)
+void cNTFileOverlappedIOHandleFileStream::Close(void)noexcept
 {
 	if(fFileIO->Handle!=INVALID_HANDLE_VALUE)
 		fFileIO->Close();
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleFileStream::Read(void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)
+bool cNTFileOverlappedIOHandleFileStream::Read(void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)noexcept
 {
 	cNTFileOverlappedIOHandleSyncIOObject IOObject;
 
@@ -709,7 +710,7 @@ bool cNTFileOverlappedIOHandleFileStream::Read(void *Buffer,uIntn Size,uInt64 Of
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleFileStream::Write(const void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)
+bool cNTFileOverlappedIOHandleFileStream::Write(const void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)noexcept
 {
 	cNTFileOverlappedIOHandleSyncIOObject IOObject;
 
@@ -727,7 +728,7 @@ bool cNTFileOverlappedIOHandleFileStream::Write(const void *Buffer,uIntn Size,uI
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::ReadAsync(void *Buffer,uIntn Size,uInt64 Offset)
+iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::ReadAsync(void *Buffer,uIntn Size,uInt64 Offset)noexcept
 {
 	auto Task=iCreate<cNTFileOverlappedIOHandleAsyncIOTask>();
 	Task->SetupOverlapped(Offset);
@@ -737,7 +738,7 @@ iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::ReadAsync(void *Buffer,uI
 	return Task;
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::WriteAsync(const void *Buffer,uIntn Size,uInt64 Offset)
+iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::WriteAsync(const void *Buffer,uIntn Size,uInt64 Offset)noexcept
 {
 	auto Task=iCreate<cNTFileOverlappedIOHandleAsyncIOTask>();
 	Task->SetupOverlapped(Offset);
@@ -748,7 +749,7 @@ iPtr<iStreamTask> cNTFileOverlappedIOHandleFileStream::WriteAsync(const void *Bu
 
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleFileStream::GetSize(uInt64 &Size)
+bool cNTFileOverlappedIOHandleFileStream::GetSize(uInt64 &Size)noexcept
 {
 	LARGE_INTEGER CurFileSize;
 	if(::GetFileSizeEx(fFileIO->Handle,&CurFileSize)==false)
@@ -757,7 +758,7 @@ bool cNTFileOverlappedIOHandleFileStream::GetSize(uInt64 &Size)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleFileStream::SetSize(uInt64 NewSize)
+bool cNTFileOverlappedIOHandleFileStream::SetSize(uInt64 NewSize)noexcept
 {
 	LARGE_INTEGER NewFileSize;
 	NewFileSize.QuadPart=NewSize;
@@ -771,54 +772,54 @@ bool cNTFileOverlappedIOHandleFileStream::SetSize(uInt64 NewSize)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleFileStream::FlushBuffer(void)
+bool cNTFileOverlappedIOHandleFileStream::FlushBuffer(void)noexcept
 {
 	return ::FlushFileBuffers(fFileIO->Handle)!=FALSE;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileWatcher::cNTFolderOverlappedIOHandleFileWatcher(rPtr<bcNTFileOverlappedIOHandle> FolderIO)
+cNTFolderOverlappedIOHandleFileWatcher::cNTFolderOverlappedIOHandleFileWatcher(rPtr<bcNTFileOverlappedIOHandle> FolderIO)noexcept
 	: fFolderIO(cnVar::MoveCast(FolderIO))
 {
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileWatcher::~cNTFolderOverlappedIOHandleFileWatcher()
+cNTFolderOverlappedIOHandleFileWatcher::~cNTFolderOverlappedIOHandleFileWatcher()noexcept
 {
 	fFolderIO->Close();
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::VirtualStopped(void)
+void cNTFolderOverlappedIOHandleFileWatcher::VirtualStopped(void)noexcept
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-iReference* cNTFolderOverlappedIOHandleFileWatcher::NotificationInnerReference(void)
+iReference* cNTFolderOverlappedIOHandleFileWatcher::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::NotificationStarted(void)
+void cNTFolderOverlappedIOHandleFileWatcher::NotificationStarted(void)noexcept
 {
 	bcAsyncNotification::NotificationStarted();
 
 	ContinueRead();
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileWatcher::CycleState cNTFolderOverlappedIOHandleFileWatcher::NotificationCheckState(void)
+cNTFolderOverlappedIOHandleFileWatcher::CycleState cNTFolderOverlappedIOHandleFileWatcher::NotificationCheckState(void)noexcept
 {
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::AsyncQueueNotify(void)
+void cNTFolderOverlappedIOHandleFileWatcher::AsyncQueueNotify(void)noexcept
 {
 	ContinueRead();
 	
 	bcAsyncNotification::AsyncQueueNotify();
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::ContinueRead(void)
+void cNTFolderOverlappedIOHandleFileWatcher::ContinueRead(void)noexcept
 {
 	if(fReadChangeFlag.Acquire()==false)
 		return;
@@ -842,12 +843,12 @@ void cNTFolderOverlappedIOHandleFileWatcher::ContinueRead(void)
 	}while(fReadChangeFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileWatcher* cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::GetHost(void)
+cNTFolderOverlappedIOHandleFileWatcher* cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cNTFolderOverlappedIOHandleFileWatcher::fDirectoryReadChangeObject);
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::Read(bcNTFileOverlappedIOHandle *FolderIO)
+bool cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::Read(bcNTFileOverlappedIOHandle *FolderIO)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 
@@ -864,13 +865,13 @@ bool cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::Read(bc
 	return false;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::Completed(void)
+void cNTFolderOverlappedIOHandleFileWatcher::cDirectoryReadChangeObject::Completed(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cNTFolderOverlappedIOHandleFileWatcher::fDirectoryReadChangeObject);
 	return Host->DirectoryReadCompleted();
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileWatcher::DirectoryReadCompleted(void)
+void cNTFolderOverlappedIOHandleFileWatcher::DirectoryReadCompleted(void)noexcept
 {
 	fReadInProgress=false;
 	if(fDirectoryReadChangeObject.ErrorCode==ERROR_SUCCESS){
@@ -885,7 +886,7 @@ void cNTFolderOverlappedIOHandleFileWatcher::DirectoryReadCompleted(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileObserver::cNTFolderOverlappedIOHandleFileObserver(rPtr<bcNTFileOverlappedIOHandle> FolderIO,cnRTL::cString<wchar_t> Path,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path))
+cNTFolderOverlappedIOHandleFileObserver::cNTFolderOverlappedIOHandleFileObserver(rPtr<bcNTFileOverlappedIOHandle> FolderIO,cnRTL::cString<wchar_t> Path,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path)noexcept)noexcept
 	: fFolderIO(cnVar::MoveCast(FolderIO))
 	, fPath(cnVar::MoveCast(Path))
 	, fFindPath(Win32FileMakeFindName(fPath,fPath->Length,L"*"))
@@ -896,7 +897,7 @@ cNTFolderOverlappedIOHandleFileObserver::cNTFolderOverlappedIOHandleFileObserver
 	fDirectoryReadChangeObject.ReadChangeBuffer=cnSystem::DefaultHeap::Alloc(fDirectoryReadChangeObject.ReadChangeBufferSize,sizeof(DWORD));
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileObserver::~cNTFolderOverlappedIOHandleFileObserver()
+cNTFolderOverlappedIOHandleFileObserver::~cNTFolderOverlappedIOHandleFileObserver()noexcept
 {
 	cnSystem::DefaultHeap::Free(fDirectoryReadChangeObject.ReadChangeBuffer,fDirectoryReadChangeObject.ReadChangeBufferSize,sizeof(DWORD));
 
@@ -910,14 +911,19 @@ cNTFolderOverlappedIOHandleFileObserver::~cNTFolderOverlappedIOHandleFileObserve
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::VirtualStopped(void)
+void cNTFolderOverlappedIOHandleFileObserver::VirtualStarted(void)noexcept
+{
+	InnerActivate('self');
+}
+//---------------------------------------------------------------------------
+void cNTFolderOverlappedIOHandleFileObserver::VirtualStopped(void)noexcept
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)
+bool cNTFolderOverlappedIOHandleFileObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -930,34 +936,34 @@ bool cNTFolderOverlappedIOHandleFileObserver::StartNotify(iReference *Reference,
 	return true;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::StopNotify(void)
+void cNTFolderOverlappedIOHandleFileObserver::StopNotify(void)noexcept
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::NotifyCallback(bool IdleNotify)
+void cNTFolderOverlappedIOHandleFileObserver::NotifyCallback(bool IdleNotify)noexcept
 {
 	NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::IsClosed(void)
+bool cNTFolderOverlappedIOHandleFileObserver::IsClosed(void)noexcept
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-iReference* cNTFolderOverlappedIOHandleFileObserver::NotificationInnerReference(void)
+iReference* cNTFolderOverlappedIOHandleFileObserver::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::NotificationStarted(void)
+void cNTFolderOverlappedIOHandleFileObserver::NotificationStarted(void)noexcept
 {
 	fCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::NotificationStopped(void)
+void cNTFolderOverlappedIOHandleFileObserver::NotificationStopped(void)noexcept
 {
 	auto Reference=cnVar::MoveCast(fCallbackReference);
 	auto Callback=fCallback;
@@ -965,17 +971,17 @@ void cNTFolderOverlappedIOHandleFileObserver::NotificationStopped(void)
 	Callback->AsyncStopped();
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileObserver::CycleState cNTFolderOverlappedIOHandleFileObserver::NotificationCheckState(void)
+cNTFolderOverlappedIOHandleFileObserver::CycleState cNTFolderOverlappedIOHandleFileObserver::NotificationCheckState(void)noexcept
 {
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::AsyncQueueNotify(void)
+void cNTFolderOverlappedIOHandleFileObserver::AsyncQueueNotify(void)noexcept
 {
 	fCallback->AsyncNotify();
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::IsDot(const WIN32_FIND_DATA &fd)
+bool cNTFolderOverlappedIOHandleFileObserver::IsDot(const WIN32_FIND_DATA &fd)noexcept
 {
 	if((fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0)
 		return false;
@@ -985,21 +991,21 @@ bool cNTFolderOverlappedIOHandleFileObserver::IsDot(const WIN32_FIND_DATA &fd)
 	return Win32FileNameCheckIsDot(fd.cFileName);
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::IsInvalidFile(const WIN32_FIND_DATA &fd)
+bool cNTFolderOverlappedIOHandleFileObserver::IsInvalidFile(const WIN32_FIND_DATA &fd)noexcept
 {
 	if(IsDot(fd))
 		return true;
 	return false;
 }
 //---------------------------------------------------------------------------
-cnRTL::cString<wchar_t> cNTFolderOverlappedIOHandleFileObserver::MakeFileName(const WIN32_FIND_DATA &fd)
+cnRTL::cString<wchar_t> cNTFolderOverlappedIOHandleFileObserver::MakeFileName(const WIN32_FIND_DATA &fd)noexcept
 {
 	// create file name
 	auto pFileName=wtou(fd.cFileName);
 	return Win32FileMakeName(fPath,fPath.GetLength(),&pFileName,1);
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::RefreshFileMap(void)
+void cNTFolderOverlappedIOHandleFileObserver::RefreshFileMap(void)noexcept
 {
 	if(fRestartTrack){
 		ContinueRead();
@@ -1012,12 +1018,12 @@ void cNTFolderOverlappedIOHandleFileObserver::RefreshFileMap(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DiscardChanges(void)
+void cNTFolderOverlappedIOHandleFileObserver::DiscardChanges(void)noexcept
 {
 	RefreshFileMap();
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::EnumCurrentFiles(void)
+rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::EnumCurrentFiles(void)noexcept
 {
 	RefreshFileMap();
 	auto Enum=rCreate<cFileEnum>();
@@ -1032,7 +1038,7 @@ rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::EnumCurrentFiles(
 	return Enum;
 }
 //---------------------------------------------------------------------------
-rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::FetchFileChange(void)
+rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::FetchFileChange(void)noexcept
 {
 	if(fRestartTrack){
 		ContinueRead();
@@ -1048,7 +1054,7 @@ rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::FetchFileCh
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd)
+void cNTFolderOverlappedIOHandleFileObserver::AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd)noexcept
 {
 	Info.CreationTime=fd.ftCreationTime;
 	Info.FileAttributes=fd.dwFileAttributes;
@@ -1059,7 +1065,7 @@ void cNTFolderOverlappedIOHandleFileObserver::AssignFileInfo(cFileInfo &Info,con
 	Info.LastWriteTime=fd.ftLastWriteTime;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::SetupFileInfo(cFileInfo &Info,const wchar_t *FileName)
+void cNTFolderOverlappedIOHandleFileObserver::SetupFileInfo(cFileInfo &Info,const wchar_t *FileName)noexcept
 {
 	auto FilePath=fPath;
 	FilePath.Append(L"\\");
@@ -1078,7 +1084,7 @@ void cNTFolderOverlappedIOHandleFileObserver::SetupFileInfo(cFileInfo &Info,cons
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::ReloadFileMap(void)
+void cNTFolderOverlappedIOHandleFileObserver::ReloadFileMap(void)noexcept
 {
 	WIN32_FIND_DATAW fd;
 
@@ -1096,7 +1102,7 @@ void cNTFolderOverlappedIOHandleFileObserver::ReloadFileMap(void)
 	::FindClose(FindHandle);
 }
 //---------------------------------------------------------------------------
-rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::CompareFileMap(void)
+rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::CompareFileMap(void)noexcept
 {
 	auto ChangeEnum=rCreate<cFileChangeEnum>();
 	ChangeEnum->CreateFileName=fCreateFileName;
@@ -1143,7 +1149,7 @@ rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::CompareFile
 	return ChangeEnum;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::ContinueRead(void)
+void cNTFolderOverlappedIOHandleFileObserver::ContinueRead(void)noexcept
 {
 	if(fReadChangeFlag.Acquire()==false)
 		return;
@@ -1167,12 +1173,12 @@ void cNTFolderOverlappedIOHandleFileObserver::ContinueRead(void)
 	}while(fReadChangeFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-cNTFolderOverlappedIOHandleFileObserver* cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::GetHost(void)
+cNTFolderOverlappedIOHandleFileObserver* cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cNTFolderOverlappedIOHandleFileObserver::fDirectoryReadChangeObject);
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::Read(bcNTFileOverlappedIOHandle *FolderIO)
+bool cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::Read(bcNTFileOverlappedIOHandle *FolderIO)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 
@@ -1189,13 +1195,13 @@ bool cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::Read(b
 	return false;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::Completed(void)
+void cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::Completed(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cNTFolderOverlappedIOHandleFileObserver::fDirectoryReadChangeObject);
 	return Host->DirectoryReadCompleted();
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadCompleted(void)
+void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadCompleted(void)noexcept
 {
 	fReadInProgress=false;
 	if(fDirectoryReadChangeObject.ErrorCode==ERROR_SUCCESS){
@@ -1220,13 +1226,13 @@ void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadCompleted(void)
 	InnerDecReference('noti');
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadError(void)
+void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadError(void)noexcept
 {
 	// cannot track of changes
 	fRestartTrack=true;
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)
+void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)noexcept
 {
 	DWORD CurOffset=0;
 	bool AnyUpdate=false;
@@ -1269,7 +1275,7 @@ void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::CommitPendingChanges(cFileChangeEnum *ChangeEnum)
+void cNTFolderOverlappedIOHandleFileObserver::CommitPendingChanges(cFileChangeEnum *ChangeEnum)noexcept
 {
 	auto ChangeList=fPendingChangeStack.Swap(nullptr);
 	if(ChangeList==nullptr)
@@ -1317,7 +1323,7 @@ void cNTFolderOverlappedIOHandleFileObserver::CommitPendingChanges(cFileChangeEn
 	}while(Next!=nullptr);
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::cFileEnum::Fetch(void)
+bool cNTFolderOverlappedIOHandleFileObserver::cFileEnum::Fetch(void)noexcept
 {
 	uIntn NextIndex=EnumIndex+1;
 	if(NextIndex<FileList.GetCount()){
@@ -1327,7 +1333,7 @@ bool cNTFolderOverlappedIOHandleFileObserver::cFileEnum::Fetch(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-iFile* cNTFolderOverlappedIOHandleFileObserver::cFileEnum::GetCurrentFile(void)
+iFile* cNTFolderOverlappedIOHandleFileObserver::cFileEnum::GetCurrentFile(void)noexcept
 {
 	if(CurrentFile==nullptr){
 		auto &CurFile=FileList[EnumIndex];
@@ -1339,7 +1345,7 @@ iFile* cNTFolderOverlappedIOHandleFileObserver::cFileEnum::GetCurrentFile(void)
 	return CurrentFile;
 }
 //---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::Fetch(void)
+bool cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::Fetch(void)noexcept
 {
 	switch(EnumPart){
 	default:
@@ -1368,7 +1374,7 @@ bool cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::Fetch(void)
 	}
 }
 //---------------------------------------------------------------------------
-iFile* cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetCurrentFile(void)
+iFile* cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetCurrentFile(void)noexcept
 {
 	if(CurrentFile==nullptr){
 		switch(EnumPart){
@@ -1395,7 +1401,7 @@ iFile* cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetCurrentFile(
 	return CurrentFile;
 }
 //---------------------------------------------------------------------------
-eFileChange cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetChange(void)
+eFileChange cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetChange(void)noexcept
 {
 	switch(EnumPart){
 	default:
@@ -1414,17 +1420,17 @@ eFileChange cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetChange(
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
-cNT6ThreadPoolFileIOHandle::cNT6ThreadPoolFileIOHandle()
+cNT6ThreadPoolFileIOHandle::cNT6ThreadPoolFileIOHandle()noexcept
 	: fIOThreadPool(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolFileIOHandle::~cNT6ThreadPoolFileIOHandle()
+cNT6ThreadPoolFileIOHandle::~cNT6ThreadPoolFileIOHandle()noexcept
 {
 	cnLib_ASSERT(Handle==INVALID_HANDLE_VALUE);
 }
 //---------------------------------------------------------------------------
-bool cNT6ThreadPoolFileIOHandle::Open(HANDLE FileHandle,PTP_CALLBACK_ENVIRON Environment)
+bool cNT6ThreadPoolFileIOHandle::Open(HANDLE FileHandle,PTP_CALLBACK_ENVIRON Environment)noexcept
 {
 	fIOThreadPool=::CreateThreadpoolIo(FileHandle,IoCompletionCallback,this,Environment);
 	if(fIOThreadPool==nullptr)
@@ -1434,7 +1440,7 @@ bool cNT6ThreadPoolFileIOHandle::Open(HANDLE FileHandle,PTP_CALLBACK_ENVIRON Env
 	return true;
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolFileIOHandle::Close(void)
+void cNT6ThreadPoolFileIOHandle::Close(void)noexcept
 {
 	cnLib_ASSERT(Handle!=INVALID_HANDLE_VALUE);
 
@@ -1444,17 +1450,17 @@ void cNT6ThreadPoolFileIOHandle::Close(void)
 
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolFileIOHandle::StartIO(void)
+void cNT6ThreadPoolFileIOHandle::StartIO(void)noexcept
 {
 	::StartThreadpoolIo(fIOThreadPool);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolFileIOHandle::CancelIO(void)
+void cNT6ThreadPoolFileIOHandle::CancelIO(void)noexcept
 {
 	::CancelThreadpoolIo(fIOThreadPool);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolFileIOHandle::CancelOperation(bcIOObject *Object)
+void cNT6ThreadPoolFileIOHandle::CancelOperation(bcIOObject *Object)noexcept
 {
 	::CancelIoEx(Handle,&Object->Overlapped);
 }
@@ -1466,7 +1472,7 @@ VOID CALLBACK cNT6ThreadPoolFileIOHandle::IoCompletionCallback(
 	_In_        ULONG                 IoResult,
 	_In_        ULONG_PTR             NumberOfBytesTransferred,
 	_Inout_     PTP_IO                Io
-){
+)noexcept{
 Instance,Context,Io;
 	auto IOObject=cnMemory::GetObjectFromMemberPointer(static_cast<OVERLAPPED*>(Overlapped),&bcIOObject::Overlapped);
 	IOObject->ErrorCode=IoResult;

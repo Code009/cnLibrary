@@ -515,13 +515,13 @@ struct NopTypeOperator_MoveAssign
 template<class T,bool ClassNew>
 struct TypeOperator_New
 {
-	static void* New(void)noexcept(cnLib_NOEXCEPTEXPR(T::operator new(sizeof(T))))
+	static void* New(void)noexcept(noexcept(T::operator new(sizeof(T))))
 	{	return T::operator new(sizeof(T));	}
 };
 template<class T>
 struct TypeOperator_New<T,false>
 {
-	static void* New(void)noexcept(cnLib_NOEXCEPTEXPR(operator new(sizeof(T))))
+	static void* New(void)noexcept(noexcept(operator new(sizeof(T))))
 	{	return operator new(sizeof(T));	}
 };
 
@@ -555,7 +555,7 @@ template<class T>
 struct TypeOperator_Construct_Class
 {
 	static void Construct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&>())))
 	{	return cnVar::ManualConstruct(*static_cast<T*>(p));	}
 };
 
@@ -574,7 +574,7 @@ template<class T>
 struct TypeOperator_Destruct_Class
 {
 	static void Destruct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>().~T()))
+		noexcept(noexcept(cnVar::DeclVal<T&>().~T()))
 	{	return cnVar::ManualDestruct(*static_cast<T*>(p));	}
 };
 
@@ -593,7 +593,7 @@ template<class T>
 struct TypeOperator_CopyConstruct_Class
 {
 	static void CopyConstruct(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<const T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<const T&>())))
 	{
 		cnVar::ManualConstruct(*static_cast<T*>(d),*static_cast<const T*>(s));
 	}
@@ -619,7 +619,7 @@ template<class T>
 struct TypeOperator_MoveConstruct_Class
 {
 	static void MoveConstruct(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&&>())))
 	{	cnVar::ManualConstruct(*static_cast<T*>(d),static_cast<T&&>(*static_cast<T*>(s)));	}
 };
 template<uIntn Size>
@@ -644,7 +644,7 @@ template<class T>
 struct TypeOperator_CopyAssign_Class
 {
 	static void CopyAssign(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
 	{
 		*static_cast<T*>(d)=*static_cast<const T*>(s);
 	}
@@ -670,7 +670,7 @@ template<class T>
 struct TypeOperator_MoveAssign_Class
 {
 	static void MoveAssign(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
+		noexcept(noexcept(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
 	{
 		*static_cast<T*>(d)=static_cast<T&&>(*static_cast<T*>(s));
 	}
@@ -749,14 +749,14 @@ struct SafeTypeOperator_MoveAssign<T,false>
 template<class T,uIntn Length,bool ClassNew>
 struct ArrayTypeOperator_New
 {
-	static void* New(void)noexcept(cnLib_NOEXCEPTEXPR(T::operator new[](sizeof(T)*Length)))
+	static void* New(void)noexcept(noexcept(T::operator new[](sizeof(T)*Length)))
 	{	return T::operator new[](sizeof(T)*Length);	}
 };
 
 template<class T,uIntn Length>
 struct ArrayTypeOperator_New<T,Length,false>
 {
-	static void* New(void)noexcept(cnLib_NOEXCEPTEXPR(operator new[](sizeof(T)*Length)))
+	static void* New(void)noexcept(noexcept(operator new[](sizeof(T)*Length)))
 	{	return operator new[](sizeof(T)*Length);	}
 };
 
@@ -790,7 +790,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_Construct_Class
 {
 	static void Construct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(p)[i]);
@@ -813,7 +813,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_Destruct_Class
 {
 	static void Destruct(void *p)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>().~T()))
+		noexcept(noexcept(cnVar::DeclVal<T&>().~T()))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualDestruct(static_cast<T*>(p)[i]);
@@ -836,7 +836,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_CopyConstruct_Class
 {
 	static void CopyConstruct(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<const T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<const T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<const T*>(s)[i]);
@@ -859,7 +859,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_MoveConstruct_Class
 {
 	static void MoveConstruct(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<T&&>(static_cast<T*>(s)[i]));
@@ -883,7 +883,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_CopyAssign_Class
 {
 	static void CopyAssign(void *d,const void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
+		noexcept(noexcept(T(cnVar::DeclVal<T&>()=cnVar::DeclVal<const T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
 			static_cast<T*>(d)[i]=static_cast<const T*>(s)[i];
@@ -906,7 +906,7 @@ template<class T,uIntn Length>
 struct ArrayTypeOperator_MoveAssign_Class
 {
 	static void MoveAssign(void *d,void *s)
-		noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
+		noexcept(noexcept(cnVar::DeclVal<T&>()=cnVar::DeclVal<T&&>()))
 	{
 		for(uIntn i=0;i<Length;i++){
 			static_cast<T*>(d)[i]=static_cast<T&&>(static_cast<T*>(s)[i]);

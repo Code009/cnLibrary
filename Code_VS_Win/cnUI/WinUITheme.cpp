@@ -10,15 +10,15 @@ using namespace cnRTL;
 using namespace cnUI;
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------
-vWinDCThemePainter::vWinDCThemePainter()
+vWinDCThemePainter::vWinDCThemePainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
-vWinDCThemePainter::~vWinDCThemePainter()
+vWinDCThemePainter::~vWinDCThemePainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::PaintStarted(void)
+void vWinDCThemePainter::PaintStarted(void)noexcept
 {
 	vWinDCPainter::PaintStarted();
 	
@@ -26,7 +26,7 @@ void vWinDCThemePainter::PaintStarted(void)
 	SetupPaintWindow();
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::PaintStopped(void)
+void vWinDCThemePainter::PaintStopped(void)noexcept
 {
 	if(fWindow!=nullptr){
 		ClearPaintWindow();
@@ -36,7 +36,7 @@ void vWinDCThemePainter::PaintStopped(void)
 	vWinDCPainter::PaintStopped();
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::PaintWindowChanged(void)
+void vWinDCThemePainter::PaintWindowChanged(void)noexcept
 {
 	if(fDCViewContent->GetPaintState()==UIState::Null){
 		fWindow=fDCViewContent->GetWindow();
@@ -47,7 +47,7 @@ void vWinDCThemePainter::PaintWindowChanged(void)
 	SetupPaintWindow();
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::SetupPaintWindow(void)
+void vWinDCThemePainter::SetupPaintWindow(void)noexcept
 {
 	if(fWindow!=nullptr){
 		fWindow->InsertMessageHandler(this);
@@ -60,7 +60,7 @@ void vWinDCThemePainter::SetupPaintWindow(void)
 	fDCViewContent->InvalidateRect(&fPaintRC);
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::ClearPaintWindow(void)
+void vWinDCThemePainter::ClearPaintWindow(void)noexcept
 {
 	ThemeClear();
 	if(fWindow!=nullptr){
@@ -68,25 +68,25 @@ void vWinDCThemePainter::ClearPaintWindow(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::WindowAttached(void)
+void vWinDCThemePainter::WindowAttached(void)noexcept
 {
 	auto WindowHandle=fWindow->GetWindowHandle();
 	ThemeClear();
 	ThemeSetup(WindowHandle);
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::WindowDetached(void)
+void vWinDCThemePainter::WindowDetached(void)noexcept
 {
 	ThemeClear();
 	ThemeSetup(nullptr);
 }
 //---------------------------------------------------------------------------
-bool vWinDCThemePainter::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)
+bool vWinDCThemePainter::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)noexcept
 {MsgResult,Message;
 	return false;
 }
 //---------------------------------------------------------------------------
-void vWinDCThemePainter::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)
+void vWinDCThemePainter::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)noexcept
 {
 	switch(Message.Code){
 	case WM_THEMECHANGED:
@@ -98,29 +98,29 @@ void vWinDCThemePainter::WindowMessageProcessed(LRESULT,const cWindowMessagePara
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCFramePainter::cWinNCFramePainter()
+cWinNCFramePainter::cWinNCFramePainter()noexcept
 {
 }
-cWinNCFramePainter::~cWinNCFramePainter()
+cWinNCFramePainter::~cWinNCFramePainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCFramePainter_Theme::cWinNCFramePainter_Theme(HTHEME Theme)
+cWinNCFramePainter_Theme::cWinNCFramePainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinNCFramePainter_Theme::~cWinNCFramePainter_Theme()
+cWinNCFramePainter_Theme::~cWinNCFramePainter_Theme()noexcept
 {
 }
 //---------------------------------------------------------------------------
-HTHEME cWinNCFramePainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinNCFramePainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_WINDOW);
 }
 //---------------------------------------------------------------------------
-void cWinNCFramePainter_Theme::PaintFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)
+void cWinNCFramePainter_Theme::PaintFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)noexcept
 {
 	int StateID;
 	RECT rc;
@@ -157,7 +157,7 @@ void cWinNCFramePainter_Theme::PaintFrame(HDC DC,const RECT &Rect,const RECT &Bo
 	::DrawThemeBackground(fTheme,DC,WP_CAPTION,StateID,&rc,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCFramePainter_Theme::PaintSmallFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)
+void cWinNCFramePainter_Theme::PaintSmallFrame(HDC DC,const RECT &Rect,const RECT &Border,Float32 CaptionHeight,bool Active)noexcept
 {
 	int StateID;
 	RECT rc;
@@ -195,30 +195,30 @@ void cWinNCFramePainter_Theme::PaintSmallFrame(HDC DC,const RECT &Rect,const REC
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCButtonPainter::cWinNCButtonPainter()
+cWinNCButtonPainter::cWinNCButtonPainter()noexcept
 {
 }
-cWinNCButtonPainter::~cWinNCButtonPainter()
+cWinNCButtonPainter::~cWinNCButtonPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinNCButtonPainter_Theme::cWinNCButtonPainter_Theme(HTHEME Theme)
+cWinNCButtonPainter_Theme::cWinNCButtonPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinNCButtonPainter_Theme::~cWinNCButtonPainter_Theme()
+cWinNCButtonPainter_Theme::~cWinNCButtonPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinNCButtonPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinNCButtonPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_WINDOW);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintCloseButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintCloseButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -242,7 +242,7 @@ void cWinNCButtonPainter_Theme::PaintCloseButton(HDC DC,const RECT &Rect,eButton
 	::DrawThemeBackground(fTheme,DC,WP_CLOSEBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintMinButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintMinButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -266,7 +266,7 @@ void cWinNCButtonPainter_Theme::PaintMinButton(HDC DC,const RECT &Rect,eButtonSt
 	::DrawThemeBackground(fTheme,DC,WP_MINBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintMaxButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintMaxButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -290,7 +290,7 @@ void cWinNCButtonPainter_Theme::PaintMaxButton(HDC DC,const RECT &Rect,eButtonSt
 	::DrawThemeBackground(fTheme,DC,WP_MAXBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintRestoreButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintRestoreButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -314,7 +314,7 @@ void cWinNCButtonPainter_Theme::PaintRestoreButton(HDC DC,const RECT &Rect,eButt
 	::DrawThemeBackground(fTheme,DC,WP_RESTOREBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintSmallCloseButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintSmallCloseButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -338,7 +338,7 @@ void cWinNCButtonPainter_Theme::PaintSmallCloseButton(HDC DC,const RECT &Rect,eB
 	::DrawThemeBackground(fTheme,DC,WP_SMALLCLOSEBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinNCButtonPainter_Theme::PaintHelpButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinNCButtonPainter_Theme::PaintHelpButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -363,30 +363,30 @@ void cWinNCButtonPainter_Theme::PaintHelpButton(HDC DC,const RECT &Rect,eButtonS
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinGroupBoxPainter::cWinGroupBoxPainter()
+cWinGroupBoxPainter::cWinGroupBoxPainter()noexcept
 {
 }
-cWinGroupBoxPainter::~cWinGroupBoxPainter()
+cWinGroupBoxPainter::~cWinGroupBoxPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinGroupBoxPainter_Theme::cWinGroupBoxPainter_Theme(HTHEME Theme)
+cWinGroupBoxPainter_Theme::cWinGroupBoxPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinGroupBoxPainter_Theme::~cWinGroupBoxPainter_Theme()
+cWinGroupBoxPainter_Theme::~cWinGroupBoxPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinGroupBoxPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinGroupBoxPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_BUTTON);
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinGroupBoxPainter_Theme::GetContentMarginRect(void)
+cUIRectangle cWinGroupBoxPainter_Theme::GetContentMarginRect(void)noexcept
 {
 	HRESULT hr;
 	MARGINS Margin={0,0,0,0};
@@ -399,37 +399,37 @@ cUIRectangle cWinGroupBoxPainter_Theme::GetContentMarginRect(void)
 	};
 }
 //---------------------------------------------------------------------------
-void cWinGroupBoxPainter_Theme::PaintBox(HDC DC,const RECT &Rect)
+void cWinGroupBoxPainter_Theme::PaintBox(HDC DC,const RECT &Rect)noexcept
 {
 	HRESULT hr;
 	hr=::DrawThemeBackground(fTheme,DC,BP_GROUPBOX,GBS_NORMAL,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinPushButtonPainter::cWinPushButtonPainter()
+cWinPushButtonPainter::cWinPushButtonPainter()noexcept
 {
 }
-cWinPushButtonPainter::~cWinPushButtonPainter()
+cWinPushButtonPainter::~cWinPushButtonPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinPushButtonPainter_Theme::cWinPushButtonPainter_Theme(HTHEME Theme)
+cWinPushButtonPainter_Theme::cWinPushButtonPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinPushButtonPainter_Theme::~cWinPushButtonPainter_Theme()
+cWinPushButtonPainter_Theme::~cWinPushButtonPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinPushButtonPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinPushButtonPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_BUTTON);
 }
 //---------------------------------------------------------------------------
-int cWinPushButtonPainter_Theme::StateIDFromState(eButtonState State)
+int cWinPushButtonPainter_Theme::StateIDFromState(eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -453,7 +453,7 @@ int cWinPushButtonPainter_Theme::StateIDFromState(eButtonState State)
 
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinPushButtonPainter_Theme::GetContentMarginRect(void)
+cUIRectangle cWinPushButtonPainter_Theme::GetContentMarginRect(void)noexcept
 {
 	HRESULT hr;
 	MARGINS Margin={0,0,0,0};
@@ -465,7 +465,7 @@ cUIRectangle cWinPushButtonPainter_Theme::GetContentMarginRect(void)
 	};
 }
 //---------------------------------------------------------------------------
-void cWinPushButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinPushButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 
@@ -473,7 +473,7 @@ void cWinPushButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonSta
 	hr=::DrawThemeBackground(fTheme,DC,BP_PUSHBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinPushButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State)
+void cWinPushButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 	HGDIOBJ OldFont=nullptr;
@@ -490,30 +490,30 @@ void cWinPushButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wc
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinStateButtonPainter::cWinStateButtonPainter()
+cWinStateButtonPainter::cWinStateButtonPainter()noexcept
 {
 }
-cWinStateButtonPainter::~cWinStateButtonPainter()
+cWinStateButtonPainter::~cWinStateButtonPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinCheckButtonPainter_Theme::cWinCheckButtonPainter_Theme(HTHEME Theme)
+cWinCheckButtonPainter_Theme::cWinCheckButtonPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinCheckButtonPainter_Theme::~cWinCheckButtonPainter_Theme()
+cWinCheckButtonPainter_Theme::~cWinCheckButtonPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinCheckButtonPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinCheckButtonPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_BUTTON);
 }
 //---------------------------------------------------------------------------
-int cWinCheckButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 CheckState)
+int cWinCheckButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 CheckState)noexcept
 {
 	static constexpr int CheckBoxStateMap[3][4]={
 		{	// Unchecked
@@ -565,7 +565,7 @@ int cWinCheckButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 Chec
 	return StateID;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWinCheckButtonPainter_Theme::GetBoxSize(HDC DC)
+cUIPoint cWinCheckButtonPainter_Theme::GetBoxSize(HDC DC)noexcept
 {
 	SIZE BGSize;
 	::GetThemePartSize(fTheme,DC,BP_RADIOBUTTON,RBS_UNCHECKEDNORMAL,nullptr,TS_TRUE,&BGSize);
@@ -573,14 +573,14 @@ cUIPoint cWinCheckButtonPainter_Theme::GetBoxSize(HDC DC)
 	return {static_cast<Float32>(BGSize.cx),static_cast<Float32>(BGSize.cy)};
 }
 //---------------------------------------------------------------------------
-void cWinCheckButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)
+void cWinCheckButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)noexcept
 {
 	auto StateID=StateIDFromState(State,CheckState);
 
 	::DrawThemeBackground(fTheme,DC,BP_CHECKBOX,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinCheckButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)
+void cWinCheckButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)noexcept
 {	State,CheckState;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -595,22 +595,22 @@ void cWinCheckButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const w
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinRadioButtonPainter_Theme::cWinRadioButtonPainter_Theme(HTHEME Theme)
+cWinRadioButtonPainter_Theme::cWinRadioButtonPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinRadioButtonPainter_Theme::~cWinRadioButtonPainter_Theme()
+cWinRadioButtonPainter_Theme::~cWinRadioButtonPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinRadioButtonPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinRadioButtonPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_BUTTON);
 }
 //---------------------------------------------------------------------------
-int cWinRadioButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 CheckState)
+int cWinRadioButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 CheckState)noexcept
 {
 	static constexpr int RadioBoxStateMap[2][4]={
 		{	// Unchecked
@@ -649,7 +649,7 @@ int cWinRadioButtonPainter_Theme::StateIDFromState(eButtonState State,uInt8 Chec
 	return StateID;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWinRadioButtonPainter_Theme::GetBoxSize(HDC DC)
+cUIPoint cWinRadioButtonPainter_Theme::GetBoxSize(HDC DC)noexcept
 {
 	SIZE BGSize;
 	::GetThemePartSize(fTheme,DC,BP_RADIOBUTTON,RBS_UNCHECKEDNORMAL,nullptr,TS_TRUE,&BGSize);
@@ -657,14 +657,14 @@ cUIPoint cWinRadioButtonPainter_Theme::GetBoxSize(HDC DC)
 	return {static_cast<Float32>(BGSize.cx),static_cast<Float32>(BGSize.cy)};
 }
 //---------------------------------------------------------------------------
-void cWinRadioButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)
+void cWinRadioButtonPainter_Theme::PaintButton(HDC DC,const RECT &Rect,eButtonState State,ufInt8 CheckState)noexcept
 {
 	auto StateID=StateIDFromState(State,CheckState);
 
 	::DrawThemeBackground(fTheme,DC,BP_RADIOBUTTON,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinRadioButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)
+void cWinRadioButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,eButtonState State,uInt8 CheckState)noexcept
 {	State,CheckState;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -678,30 +678,30 @@ void cWinRadioButtonPainter_Theme::PaintText(HDC DC,const RECT &TextRect,const w
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinSpinButtonPainter::cWinSpinButtonPainter()
+cWinSpinButtonPainter::cWinSpinButtonPainter()noexcept
 {
 }
-cWinSpinButtonPainter::~cWinSpinButtonPainter()
+cWinSpinButtonPainter::~cWinSpinButtonPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinSpinButtonPainter_Theme::cWinSpinButtonPainter_Theme(HTHEME Theme)
+cWinSpinButtonPainter_Theme::cWinSpinButtonPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinSpinButtonPainter_Theme::~cWinSpinButtonPainter_Theme()
+cWinSpinButtonPainter_Theme::~cWinSpinButtonPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinSpinButtonPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinSpinButtonPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_SPIN);
 }
 //---------------------------------------------------------------------------
-int cWinSpinButtonPainter_Theme::StateIDFromState(eButtonState State)
+int cWinSpinButtonPainter_Theme::StateIDFromState(eButtonState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -725,7 +725,7 @@ int cWinSpinButtonPainter_Theme::StateIDFromState(eButtonState State)
 
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Theme::PaintUpButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Theme::PaintUpButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 
@@ -733,7 +733,7 @@ void cWinSpinButtonPainter_Theme::PaintUpButton(HDC DC,const RECT &Rect,eButtonS
 	hr=::DrawThemeBackground(fTheme,DC,SPNP_UP,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Theme::PaintDownButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Theme::PaintDownButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 
@@ -741,7 +741,7 @@ void cWinSpinButtonPainter_Theme::PaintDownButton(HDC DC,const RECT &Rect,eButto
 	hr=::DrawThemeBackground(fTheme,DC,SPNP_DOWN,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Theme::PaintLeftButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Theme::PaintLeftButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 
@@ -749,7 +749,7 @@ void cWinSpinButtonPainter_Theme::PaintLeftButton(HDC DC,const RECT &Rect,eButto
 	hr=::DrawThemeBackground(fTheme,DC,SPNP_UPHORZ,StateID,&Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinSpinButtonPainter_Theme::PaintRightButton(HDC DC,const RECT &Rect,eButtonState State)
+void cWinSpinButtonPainter_Theme::PaintRightButton(HDC DC,const RECT &Rect,eButtonState State)noexcept
 {
 	auto StateID=StateIDFromState(State);
 
@@ -758,30 +758,30 @@ void cWinSpinButtonPainter_Theme::PaintRightButton(HDC DC,const RECT &Rect,eButt
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinEditBackgroundPainter::cWinEditBackgroundPainter()
+cWinEditBackgroundPainter::cWinEditBackgroundPainter()noexcept
 {
 }
-cWinEditBackgroundPainter::~cWinEditBackgroundPainter()
+cWinEditBackgroundPainter::~cWinEditBackgroundPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinEditBackgroundPainter_Theme::cWinEditBackgroundPainter_Theme(HTHEME Theme)
+cWinEditBackgroundPainter_Theme::cWinEditBackgroundPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinEditBackgroundPainter_Theme::~cWinEditBackgroundPainter_Theme()
+cWinEditBackgroundPainter_Theme::~cWinEditBackgroundPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinEditBackgroundPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinEditBackgroundPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_EDIT);
 }
 //---------------------------------------------------------------------------
-cUIRectangle cWinEditBackgroundPainter_Theme::GetContentMarginRect(void)
+cUIRectangle cWinEditBackgroundPainter_Theme::GetContentMarginRect(void)noexcept
 {
 	HRESULT hr;
 	MARGINS Margin={0,0,0,0};
@@ -794,7 +794,7 @@ cUIRectangle cWinEditBackgroundPainter_Theme::GetContentMarginRect(void)
 	};
 }
 //---------------------------------------------------------------------------
-void cWinEditBackgroundPainter_Theme::Paint(HDC DC,const RECT &Rect,ControlState State)
+void cWinEditBackgroundPainter_Theme::Paint(HDC DC,const RECT &Rect,ControlState State)noexcept
 {
 	int StateID;
 	switch(State){
@@ -817,35 +817,35 @@ void cWinEditBackgroundPainter_Theme::Paint(HDC DC,const RECT &Rect,ControlState
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinTabPainter::cWinTabPainter()
+cWinTabPainter::cWinTabPainter()noexcept
 {
 }
-cWinTabPainter::~cWinTabPainter()
+cWinTabPainter::~cWinTabPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinTabPainter_Theme::cWinTabPainter_Theme(HTHEME Theme)
+cWinTabPainter_Theme::cWinTabPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinTabPainter_Theme::~cWinTabPainter_Theme()
+cWinTabPainter_Theme::~cWinTabPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinTabPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinTabPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_TAB);
 }
 //---------------------------------------------------------------------------
-ufInt16n cWinTabPainter_Theme::TabBorderSize(void)
+ufInt16n cWinTabPainter_Theme::TabBorderSize(void)noexcept
 {
 	return 4;
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Theme::PaintPanelHeader(HDC DC,const RECT &PanelRect)
+void cWinTabPainter_Theme::PaintPanelHeader(HDC DC,const RECT &PanelRect)noexcept
 {
 	auto PenObject=fPanelHeaderPenRecycler.Query();
 
@@ -855,7 +855,7 @@ void cWinTabPainter_Theme::PaintPanelHeader(HDC DC,const RECT &PanelRect)
 	::SelectObject(DC,OldPen);
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Theme::TabToTextRect(RECT &Rect,TabState State)
+void cWinTabPainter_Theme::TabToTextRect(RECT &Rect,TabState State)noexcept
 {
 	if(State==TabState::Active){
 		Rect.left+=4;
@@ -870,7 +870,7 @@ void cWinTabPainter_Theme::TabToTextRect(RECT &Rect,TabState State)
 	}
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Theme::PaintTabItem(HDC DC,const RECT &Rect,TabState State,uInt8 PartID)
+RECT cWinTabPainter_Theme::PaintTabItem(HDC DC,const RECT &Rect,TabState State,uInt8 PartID)noexcept
 {
 	RECT PaintRect=Rect;
 	int StateID;
@@ -899,27 +899,27 @@ RECT cWinTabPainter_Theme::PaintTabItem(HDC DC,const RECT &Rect,TabState State,u
 	return PaintRect;
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Theme::PaintItemLeft(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Theme::PaintItemLeft(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State,TABP_TABITEMLEFTEDGE);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Theme::PaintItemMiddle(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Theme::PaintItemMiddle(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State,TABP_TABITEM);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Theme::PaintItemRight(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Theme::PaintItemRight(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State,TABP_TABITEMRIGHTEDGE);
 }
 //---------------------------------------------------------------------------
-RECT cWinTabPainter_Theme::PaintItemSingle(HDC DC,const RECT &Rect,TabState State)
+RECT cWinTabPainter_Theme::PaintItemSingle(HDC DC,const RECT &Rect,TabState State)noexcept
 {
 	return PaintTabItem(DC,Rect,State,TABP_TABITEMBOTHEDGE);
 }
 //---------------------------------------------------------------------------
-void cWinTabPainter_Theme::PaintItemText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,TabState State)
+void cWinTabPainter_Theme::PaintItemText(HDC DC,const RECT &TextRect,const wchar_t *Text,uIntn TextLength,HFONT TextFont,TabState State)noexcept
 {State;
 	HGDIOBJ OldFont=nullptr;
 	if(TextFont!=nullptr){
@@ -936,30 +936,30 @@ void cWinTabPainter_Theme::PaintItemText(HDC DC,const RECT &TextRect,const wchar
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarPainter::cWinScrollBarPainter()
+cWinScrollBarPainter::cWinScrollBarPainter()noexcept
 {
 }
-cWinScrollBarPainter::~cWinScrollBarPainter()
+cWinScrollBarPainter::~cWinScrollBarPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarPainter_Theme::cWinScrollBarPainter_Theme(HTHEME Theme)
+cWinScrollBarPainter_Theme::cWinScrollBarPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinScrollBarPainter_Theme::~cWinScrollBarPainter_Theme()
+cWinScrollBarPainter_Theme::~cWinScrollBarPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinScrollBarPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinScrollBarPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_SCROLLBAR);
 }
 //---------------------------------------------------------------------------
-uIntn cWinScrollBarPainter_Theme::BtnStateIndex(eButtonState State,bool IsActive)
+uIntn cWinScrollBarPainter_Theme::BtnStateIndex(eButtonState State,bool IsActive)noexcept
 {
 	switch(State){
 	default:
@@ -985,7 +985,7 @@ uIntn cWinScrollBarPainter_Theme::BtnStateIndex(eButtonState State,bool IsActive
 	}
 }
 //---------------------------------------------------------------------------
-int cWinScrollBarPainter_Theme::BtnStateFlag(eButtonState State,bool IsActive)
+int cWinScrollBarPainter_Theme::BtnStateFlag(eButtonState State,bool IsActive)noexcept
 {
 	auto StateIndex=BtnStateIndex(State,IsActive);
 
@@ -999,12 +999,12 @@ int cWinScrollBarPainter_Theme::BtnStateFlag(eButtonState State,bool IsActive)
 	return StateMap[StateIndex];
 }
 //---------------------------------------------------------------------------
-Float32 cWinScrollBarPainter_Theme::GetMinTrackButtonSize(void)
+Float32 cWinScrollBarPainter_Theme::GetMinTrackButtonSize(void)noexcept
 {
 	return 20;
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Theme::PaintDec(const PaintParam &Param)
+void cWinScrollBarPainter_Theme::PaintDec(const PaintParam &Param)noexcept
 {
 	auto StateIndex=BtnStateIndex(Param.State,Param.ActiveButton==ScrollBarButton::Dec);
 
@@ -1033,7 +1033,7 @@ void cWinScrollBarPainter_Theme::PaintDec(const PaintParam &Param)
 	::DrawThemeBackground(fTheme,Param.DC,SBP_ARROWBTN,StateID,&Param.Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Theme::PaintInc(const PaintParam &Param)
+void cWinScrollBarPainter_Theme::PaintInc(const PaintParam &Param)noexcept
 {
 	auto StateIndex=BtnStateIndex(Param.State,Param.ActiveButton==ScrollBarButton::Inc);
 
@@ -1062,7 +1062,7 @@ void cWinScrollBarPainter_Theme::PaintInc(const PaintParam &Param)
 	::DrawThemeBackground(fTheme,Param.DC,SBP_ARROWBTN,StateID,&Param.Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Theme::PaintDecBar(const PaintParam &Param)
+void cWinScrollBarPainter_Theme::PaintDecBar(const PaintParam &Param)noexcept
 {
 	int PartID;
 	int StateID;
@@ -1076,7 +1076,7 @@ void cWinScrollBarPainter_Theme::PaintDecBar(const PaintParam &Param)
 	::DrawThemeBackground(fTheme,Param.DC,PartID,StateID,&Param.Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Theme::PaintIncBar(const PaintParam &Param)
+void cWinScrollBarPainter_Theme::PaintIncBar(const PaintParam &Param)noexcept
 {
 	int PartID;
 	int StateID;
@@ -1090,7 +1090,7 @@ void cWinScrollBarPainter_Theme::PaintIncBar(const PaintParam &Param)
 	::DrawThemeBackground(fTheme,Param.DC,PartID,StateID,&Param.Rect,nullptr);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarPainter_Theme::PaintTrack(const PaintParam &Param)
+void cWinScrollBarPainter_Theme::PaintTrack(const PaintParam &Param)noexcept
 {
 	int PartID;
 	int StateID;
@@ -1105,30 +1105,30 @@ void cWinScrollBarPainter_Theme::PaintTrack(const PaintParam &Param)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarGripPainter::cWinScrollBarGripPainter()
+cWinScrollBarGripPainter::cWinScrollBarGripPainter()noexcept
 {
 }
-cWinScrollBarGripPainter::~cWinScrollBarGripPainter()
+cWinScrollBarGripPainter::~cWinScrollBarGripPainter()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinScrollBarGripPainter_Theme::cWinScrollBarGripPainter_Theme(HTHEME Theme)
+cWinScrollBarGripPainter_Theme::cWinScrollBarGripPainter_Theme(HTHEME Theme)noexcept
 {
 	fTheme=Theme;
 }
 //---------------------------------------------------------------------------
-cWinScrollBarGripPainter_Theme::~cWinScrollBarGripPainter_Theme()
+cWinScrollBarGripPainter_Theme::~cWinScrollBarGripPainter_Theme()noexcept
 {
 	::CloseThemeData(fTheme);
 }
 //---------------------------------------------------------------------------
-HTHEME cWinScrollBarGripPainter_Theme::OpenTheme(HWND WindowHandle)
+HTHEME cWinScrollBarGripPainter_Theme::OpenTheme(HWND WindowHandle)noexcept
 {
 	return ::OpenThemeData(WindowHandle,VSCLASS_SCROLLBAR);
 }
 //---------------------------------------------------------------------------
-void cWinScrollBarGripPainter_Theme::Paint(HDC DC,const RECT &Rect,eAlignment BoxAlign)
+void cWinScrollBarGripPainter_Theme::Paint(HDC DC,const RECT &Rect,eAlignment BoxAlign)noexcept
 {
 	::SetBkColor(DC,::GetSysColor(COLOR_BTNFACE));
 	::ExtTextOutW(DC,0,0,ETO_OPAQUE,&Rect,nullptr,0,nullptr);

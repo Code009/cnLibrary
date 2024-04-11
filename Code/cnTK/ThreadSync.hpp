@@ -20,10 +20,10 @@ namespace TKRuntime{
 
 struct ThreadNotification;
 //{
-//	void Start(void);
-//	void Finish(void);
-//	void Wait(void);
-//	void Notify(void);
+//	void Start(void)noexcept;
+//	void Finish(void)noexcept;
+//	void Wait(void)noexcept;
+//	void Notify(void)noexcept;
 //};
 
 //---------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 
 #include <windows.foundation.h>
 #include <windows.storage.streams.h>
+#include <weakreference.h>
 
 #include <roapi.h>
 #if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0x50000

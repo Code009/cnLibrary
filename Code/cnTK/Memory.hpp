@@ -138,7 +138,7 @@ namespace cnMemory{
 //			false if the Dest is not found, and the ResultIndex is proper position for dest element
 // note: if source array is not ordered, the Result is undefined
 template<class TPtr,class TComparison>
-inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(Src[0])))
+inline bool ViewBinarySearch(uIntn &ResultIndex,TPtr Src,uIntn SrcLength,TComparison cnLib_UREF Comparison)noexcept(noexcept(Comparison(Src[0])))
 {
 	if(SrcLength==0){
 		ResultIndex=0;
@@ -324,14 +324,14 @@ namespace cnVar{
 // Object		reference to object
 template<class T>
 inline void ManualConstruct(T &Object)
-	noexcept(cnLib_NOEXCEPTEXPR(T()))
+	noexcept(noexcept(T()))
 {
 	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
 		T;
 }
 template<class T>
 inline void ManualConstructZero(T &Object)
-	noexcept(cnLib_NOEXCEPTEXPR(T()))
+	noexcept(noexcept(T()))
 {
 	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
 		T();
@@ -345,7 +345,7 @@ inline void ManualConstructZero(T &Object)
 // Args			arguments for constructor
 template<class T,class TArg,class...TArgs>
 inline void ManualConstruct(T &Object,TArg cnLib_UREF Arg,TArgs cnLib_UREF...Args)
-	noexcept(cnLib_NOEXCEPTEXPR(T(cnLib_UREFCAST(TArg)(Arg),cnLib_UREFCAST(TArgs)(Args)...)))
+	noexcept(noexcept(T(cnLib_UREFCAST(TArg)(Arg),cnLib_UREFCAST(TArgs)(Args)...)))
 {
 	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
 		T(cnLib_UREFCAST(TArg)(Arg),cnLib_UREFCAST(TArgs)(Args)...);
@@ -357,7 +357,7 @@ inline void ManualConstruct(T &Object,TArg cnLib_UREF Arg,TArgs cnLib_UREF...Arg
 
 template<class T, class T0>
 inline void ManualConstruct(T &Object, T0 cnLib_UREF P0)
-	noexcept(cnLib_NOEXCEPTEXPR(T(
+	noexcept(noexcept(T(
 		cnLib_UREFCAST(T0)(P0)
 	)))
 {
@@ -366,7 +366,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0)
 }
 template<class T, class T0, class T1>
 inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1)
-	noexcept(cnLib_NOEXCEPTEXPR(T(
+	noexcept(noexcept(T(
 		cnLib_UREFCAST(T0)(P0),
 		cnLib_UREFCAST(T1)(P1)
 	)))
@@ -379,7 +379,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1)
 }
 template<class T, class T0, class T1, class T2>
 inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cnLib_UREF P2)
-	noexcept(cnLib_NOEXCEPTEXPR(T(
+	noexcept(noexcept(T(
 		cnLib_UREFCAST(T0)(P0),
 		cnLib_UREFCAST(T1)(P1),
 		cnLib_UREFCAST(T1)(P2)
@@ -394,7 +394,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cn
 }
 template<class T, class T0, class T1, class T2, class T3>
 inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cnLib_UREF  P2, T3 cnLib_UREF P3)
-	noexcept(cnLib_NOEXCEPTEXPR(T(
+	noexcept(noexcept(T(
 		cnLib_UREFCAST(T0)(P0),
 		cnLib_UREFCAST(T1)(P1),
 		cnLib_UREFCAST(T1)(P2),
@@ -416,7 +416,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cn
 //	call destructor on object space
 // Object		reference to object
 template<class T>
-inline void ManualDestruct(T &Object)noexcept(cnLib_NOEXCEPTEXPR(Object.~T()))
+inline void ManualDestruct(T &Object)noexcept(noexcept(Object.~T()))
 {
 	UnusedParameter(Object);	// prevent unused parameter warning on class do not have destructor
 	Object.~T();
@@ -439,17 +439,17 @@ public:
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 	template<class...TArgs>
-	void Construct(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TObject(cnLib_UREFCAST(TArgs)(Args)...)))
+	void Construct(TArgs cnLib_UREF...Args)noexcept(noexcept(TObject(cnLib_UREFCAST(TArgs)(Args)...)))
 	{
 		ManualConstruct(*reinterpret_cast<TObject*>(this),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 #else
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-	void Construct(void)noexcept(cnLib_NOEXCEPTEXPR(TObject()))
+	void Construct(void)noexcept(noexcept(TObject()))
 	{	ManualConstruct(*reinterpret_cast<TObject*>(this));	}
 	template<class TArg0>
-	void Construct(TArg0 cnLib_UREF Arg0)noexcept(cnLib_NOEXCEPTEXPR(TObject(cnLib_UREFCAST(TArg0)(Arg0))))
+	void Construct(TArg0 cnLib_UREF Arg0)noexcept(noexcept(TObject(cnLib_UREFCAST(TArg0)(Arg0))))
 	{
 		ManualConstruct(*reinterpret_cast<TObject*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
@@ -457,7 +457,7 @@ public:
 	}
 	template<class TArg0,class TArg1>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1)
-		noexcept(cnLib_NOEXCEPTEXPR(TObject(
+		noexcept(noexcept(TObject(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		)))
@@ -469,7 +469,7 @@ public:
 	}
 	template<class TArg0,class TArg1,class TArg2>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2)
-		noexcept(cnLib_NOEXCEPTEXPR(TObject(
+		noexcept(noexcept(TObject(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -483,7 +483,7 @@ public:
 	}
 	template<class TArg0,class TArg1,class TArg2,class TArg3>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2,TArg3 cnLib_UREF Arg3)
-		noexcept(cnLib_NOEXCEPTEXPR(TObject(
+		noexcept(noexcept(TObject(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -499,7 +499,7 @@ public:
 	}
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-	void Destruct(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TObject&>().~TObject()))
+	void Destruct(void)noexcept(noexcept(cnVar::DeclVal<TObject&>().~TObject()))
 	{
 		ManualDestruct(*reinterpret_cast<TObject*>(this));
 	}
@@ -669,7 +669,7 @@ public:
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	template<class TDest,class...TArgs>
-	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
+	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(noexcept(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
 	{
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
 		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
@@ -679,11 +679,11 @@ public:
 #else
 	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 	template<class TDest>
-	void Construct(void)noexcept(cnLib_NOEXCEPTEXPR(TDest()))
+	void Construct(void)noexcept(noexcept(TDest()))
 	{	ManualConstruct(*reinterpret_cast<TDest*>(this));	}
 	template<class TDest,class TArg0>
 	void Construct(TArg0 cnLib_UREF Arg0)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArg0)(Arg0))))
+		noexcept(noexcept(TDest(cnLib_UREFCAST(TArg0)(Arg0))))
 	{
 		ManualConstruct(*reinterpret_cast<TDest*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
@@ -691,7 +691,7 @@ public:
 	}
 	template<class TDest,class TArg0,class TArg1>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+		noexcept(noexcept(TDest(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		)))
@@ -703,7 +703,7 @@ public:
 	}
 	template<class TDest,class TArg0,class TArg1,class TArg2>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+		noexcept(noexcept(TDest(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -717,7 +717,7 @@ public:
 	}
 	template<class TDest,class TArg0,class TArg1,class TArg2,class TArg3>
 	void Construct(TArg0 cnLib_UREF Arg0,TArg1 cnLib_UREF Arg1,TArg2 cnLib_UREF Arg2,TArg3 cnLib_UREF Arg3)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(
+		noexcept(noexcept(TDest(
 			cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -735,7 +735,7 @@ public:
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class TDest>
-	void DestructAs(void)noexcept(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TDest&>().~TDest()))
+	void DestructAs(void)noexcept(noexcept(cnVar::DeclVal<TDest&>().~TDest()))
 	{
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
 		ManualDestruct(*reinterpret_cast<TDest*>(this));
@@ -786,7 +786,7 @@ public:
 	~cPolymorphicClass(){	reinterpret_cast<TInterface*>(this)->~TInterface();	}
 
 	template<class TDest,class...TArgs>
-	void Replace(TArgs cnLib_UREF...Args)noexcept(cnLib_NOEXCEPTEXPR(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
+	void Replace(TArgs cnLib_UREF...Args)noexcept(noexcept(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
 	{
 		reinterpret_cast<TInterface*>(this)->~TInterface();
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");

@@ -7,15 +7,15 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32DebugTextOutput::cWin32DebugTextOutput()
+cWin32DebugTextOutput::cWin32DebugTextOutput()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWin32DebugTextOutput::~cWin32DebugTextOutput()
+cWin32DebugTextOutput::~cWin32DebugTextOutput()noexcept
 {
 }
 //---------------------------------------------------------------------------
-uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)
+uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)noexcept
 {
 	auto CurrentCodePage=GetACP();
 	arPtr<cWin32CodePageConvertBuffer> Converter;
@@ -277,26 +277,21 @@ uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32ConsoleOutput::cWin32ConsoleOutput()
-	: fOutputHandle(::GetStdHandle(STD_OUTPUT_HANDLE))
-{
-}
-//---------------------------------------------------------------------------
-cWin32ConsoleOutput::cWin32ConsoleOutput(HANDLE OutputHandle)
+cWin32ConsoleOutput::cWin32ConsoleOutput(HANDLE OutputHandle)noexcept
 	: fOutputHandle(OutputHandle)
 {
 }
 //---------------------------------------------------------------------------
-cWin32ConsoleOutput::~cWin32ConsoleOutput()
+cWin32ConsoleOutput::~cWin32ConsoleOutput()noexcept
 {
 }
 //---------------------------------------------------------------------------
-HANDLE cWin32ConsoleOutput::GetOutputHandle(void)const
+HANDLE cWin32ConsoleOutput::GetOutputHandle(void)const noexcept
 {
 	return fOutputHandle;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWin32ConsoleOutput::GetPageSize(void)
+cUIPoint cWin32ConsoleOutput::GetPageSize(void)noexcept
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)){
@@ -308,14 +303,14 @@ cUIPoint cWin32ConsoleOutput::GetPageSize(void)
 	return UIPointZero;
 }
 //---------------------------------------------------------------------------
-uIntn cWin32ConsoleOutput::Print(const uChar16 *Text,uIntn Length)
+uIntn cWin32ConsoleOutput::Print(const uChar16 *Text,uIntn Length)noexcept
 {
 	DWORD LengthWritten=0;
 	::WriteConsoleW(fOutputHandle,Text,Length,&LengthWritten,nullptr);
 	return LengthWritten;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWin32ConsoleOutput::GetCursorPos(void)
+cUIPoint cWin32ConsoleOutput::GetCursorPos(void)noexcept
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)){
@@ -327,7 +322,7 @@ cUIPoint cWin32ConsoleOutput::GetCursorPos(void)
 	return UIPointZero;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)
+bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)noexcept
 {
 	COORD CurPos;
 	CurPos.X=static_cast<SHORT>(Pos.x);
@@ -337,7 +332,7 @@ bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::GetCursorVisible(void)
+bool cWin32ConsoleOutput::GetCursorVisible(void)noexcept
 {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	CursorInfo.dwSize=sizeof(CONSOLE_CURSOR_INFO);
@@ -347,7 +342,7 @@ bool cWin32ConsoleOutput::GetCursorVisible(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)
+bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)noexcept
 {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	CursorInfo.dwSize=sizeof(CONSOLE_CURSOR_INFO);
@@ -358,16 +353,16 @@ bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::MoveCursor(eDirection Direction,ufInt16 Count)
+void cWin32ConsoleOutput::MoveCursor(eDirection Direction,ufInt16 Count)noexcept
 {
 
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::MoveCursorLineHead(bool Up,ufInt16 Count)
+void cWin32ConsoleOutput::MoveCursorLineHead(bool Up,ufInt16 Count)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::EraseLine(void)
+void cWin32ConsoleOutput::EraseLine(void)noexcept
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)==FALSE){
@@ -382,7 +377,7 @@ void cWin32ConsoleOutput::EraseLine(void)
 	::FillConsoleOutputCharacterW(fOutputHandle,L' ',WriteLength,WriteCoord,&CharWritten);
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)
+void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)noexcept
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)==FALSE){
@@ -404,75 +399,140 @@ void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32ConsoleInput::cWin32ConsoleInput()
-	: cWin32ConsoleInput(::GetStdHandle(STD_INPUT_HANDLE))
-{
-}
-//---------------------------------------------------------------------------
-cWin32ConsoleInput::cWin32ConsoleInput(HANDLE InputHandle)
+cWin32ConsoleInput::cWin32ConsoleInput(HANDLE InputHandle,iDispatch *Dispatch)noexcept
 	: fInputHandle(InputHandle)
+	, fDispatch(Dispatch)
+	, fConsoleInputWaiter(cnWindows::DefaultThreadPool->CreateHandleWaiter(&fInnerReference,&fConsoleHandleWaitProcedure))
+	, fConsoleProcessWork(fDispatch->CreateWork(&fInnerReference,&fConsoleInputProcessProcedure))
 {
-	fExitEvent=::CreateEvent(nullptr,TRUE,FALSE,nullptr);
 }
 //---------------------------------------------------------------------------
-cWin32ConsoleInput::~cWin32ConsoleInput()
+cWin32ConsoleInput::~cWin32ConsoleInput()noexcept
 {
-	::CloseHandle(fExitEvent);
 }
 //---------------------------------------------------------------------------
-HANDLE cWin32ConsoleInput::GetInputHandle(void)const
+void cWin32ConsoleInput::VirtualStarted(void)noexcept
+{
+	cDualReference::VirtualStarted();
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::VirtualStopped(void)noexcept
+{
+	cDualReference::VirtualStopped();
+}
+//---------------------------------------------------------------------------
+HANDLE cWin32ConsoleInput::GetInputHandle(void)const noexcept
 {
 	return fInputHandle;
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::NotifyClose(void)
+iDispatch* cWin32ConsoleInput::GetDispatch(void)noexcept(true)
 {
-	if(fHandler!=nullptr){
-		fHandler->OnClose();
-	}
-	else{
-		Exit();
-	}
+	return fDispatch;
 }
 //---------------------------------------------------------------------------
-iConsoleInputHandler* cWin32ConsoleInput::GetHandler(void)
+bool cWin32ConsoleInput::StartHandle(iReference *Reference,iConsoleInputHandler *Handler)noexcept(true)
 {
-	return fHandler;
-}
-//---------------------------------------------------------------------------
-void cWin32ConsoleInput::SetHandler(iConsoleInputHandler *Handler)
-{
-	fHandler=Handler;
-}
-//---------------------------------------------------------------------------
-void cWin32ConsoleInput::Exit(void)
-{
-	::SetEvent(fExitEvent);
-}
-//---------------------------------------------------------------------------
-bool cWin32ConsoleInput::ConsoleInputProcess(void)
-{
-	// begin read input
-	HANDLE Waits[2]={
-		fInputHandle,
-		fExitEvent,
-	};
-	DWORD WaitResult=::WaitForMultipleObjects(2,Waits,FALSE,INFINITE);
-	if(WaitResult==WAIT_OBJECT_0+1){
-		// exit event
-		return false;
-	}
-	if(WaitResult!=WAIT_OBJECT_0){
-		// error
+	if(fHandleStartFlag.Acquire.Xchg(true)){
 		return false;
 	}
 
+	if(fHandler!=nullptr){
+		return false;
+	}
+
+	fHandlerReference=Reference;
+	fHandler=Handler;
+	fHandleStopFlag=false;
+	fHandlerActive=false;
+
+	NotifyConsoleInputProcess();
+
+	fHandleStartFlag.Release.Store(false);
+	return true;
+
+	fConsoleInputWaiter->SetWait(fInputHandle,nullptr);
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::StopHandle(void)noexcept(true)
+{
+	if(fHandleStopFlag.Free.Xchg(true))
+		return;
+
+	NotifyConsoleInputProcess();
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::cConsoleHandleWaitProcedure::Execute(DWORD WaitResult)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWin32ConsoleInput::fConsoleHandleWaitProcedure);
+	return Host->NotifyConsoleInputProcess();
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::cConsoleInputProcessProcedure::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWin32ConsoleInput::fConsoleInputProcessProcedure);
+	return Host->ConsoleInputProcessThread();
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::NotifyConsoleInputProcess(void)noexcept
+{
+	if(fInputThreadExclusiveFlag.Acquire()==false)
+		return;
+
+	fConsoleProcessWork->Start();
+}
+//---------------------------------------------------------------------------
+void cWin32ConsoleInput::ConsoleInputProcessThread(void)noexcept
+{
+	do{
+		while(fHandler!=nullptr){
+			fInputThreadExclusiveFlag.Continue();
+
+			if(ConsoleInputProcess()==false)
+				break;
+		}
+	}while(fInputThreadExclusiveFlag.Release()==false);
+}
+//---------------------------------------------------------------------------
+bool cWin32ConsoleInput::ConsoleInputProcess(void)noexcept
+{
+	if(fHandler==nullptr){
+		return false;
+	}
+
+	if(fHandlerActive==false){
+		fHandlerActive=true;
+		fHandler->ConsoleStarted();
+	}
+
+	if(fHandleStopFlag.Get()){
+		fHandlerActive=false;
+			
+		auto HandlerReference=cnVar::MoveCast(fHandlerReference);
+		auto Handler=fHandler;
+		fHandler=nullptr;
+
+		Handler->ConsoleStopped();
+		return false;
+	}
+	
+	if(HandleInput()){
+		return true;
+	}
+	fConsoleInputWaiter->SetWait(fInputHandle,nullptr);
+	return false;
+}
+//---------------------------------------------------------------------------
+bool cWin32ConsoleInput::HandleInput(void)noexcept
+{
 	DWORD TotalEvent=0;
 	if(::GetNumberOfConsoleInputEvents(fInputHandle,&TotalEvent)==false){
 		return false;
 	}
+	if(TotalEvent==0)
+		return false;
 	iConsoleInputHandler *Handler;
-	while(TotalEvent!=0){
+	do{
 		// has input records
 		constexpr uIntn RecordBufferCount=4;
 		INPUT_RECORD RecordBuffer[RecordBufferCount];
@@ -501,7 +561,7 @@ bool cWin32ConsoleInput::ConsoleInputProcess(void)
 		if(::GetNumberOfConsoleInputEvents(fInputHandle,&TotalEvent)==false){
 			return false;
 		}
-	}
+	}while(TotalEvent!=0);
 	Handler=fHandler;
 	if(Handler==nullptr){
 		return false;
@@ -514,41 +574,7 @@ bool cWin32ConsoleInput::ConsoleInputProcess(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-//bool cWin32ConsoleInput::ConsoleProcedure(void)
-//{
-//}
-////---------------------------------------------------------------------------
-//DWORD cWin32ConsoleInput::ConsoleInputThreadProc(LPVOID Parameter)
-//{
-//	auto This=static_cast<cWin32ConsoleInput*>(Parameter);
-//	This->ConsoleInputThread();
-//	return 0;
-//}
-////---------------------------------------------------------------------------
-//void cWin32ConsoleInput::ConsoleInputThread(void)
-//{
-//	do{
-//		while(fHandler!=nullptr){
-//			fInputThreadExclusiveFlag.Continue();
-//
-//			if(ConsoleInputProcess()==false)
-//				break;
-//		}
-//	}while(fInputThreadExclusiveFlag.Release()==false);
-//}
-////---------------------------------------------------------------------------
-//void cWin32ConsoleInput::ActivateInputThread(void)
-//{
-//	if(fInputThreadExclusiveFlag.Acquire()==false)
-//		return;
-//
-//
-//	HANDLE InputThreadHandle=::CreateThread(nullptr,0,ConsoleInputThreadProc,this,0,nullptr);
-//
-//	::CloseHandle(InputThreadHandle);
-//}
-//---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_EVENT_RECORD &Record)
+void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_EVENT_RECORD &Record)noexcept
 {
 	if(Record.bKeyDown){
 		for(uIntn i=0;i<Record.wRepeatCount;i++){
@@ -566,11 +592,41 @@ void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordMouse(iConsoleInputHandler *Handler,MOUSE_EVENT_RECORD &Record)
+void cWin32ConsoleInput::HandleInputRecordMouse(iConsoleInputHandler *Handler,MOUSE_EVENT_RECORD &Record)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordWindowBufferSize(iConsoleInputHandler *Handler,WINDOW_BUFFER_SIZE_RECORD &Record)
+void cWin32ConsoleInput::HandleInputRecordWindowBufferSize(iConsoleInputHandler *Handler,WINDOW_BUFFER_SIZE_RECORD &Record)noexcept
 {
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWindowsConsoleHost::cWindowsConsoleHost(HANDLE OutputHandle,HANDLE InputHandle,iDispatch *Dispatch)noexcept
+	: fOutput(rCreate<cWin32ConsoleOutput>(OutputHandle))
+	, fInput(rCreate<cWin32ConsoleInput>(InputHandle,Dispatch))
+{
+}
+//---------------------------------------------------------------------------
+cWindowsConsoleHost::~cWindowsConsoleHost()noexcept
+{
+}
+//---------------------------------------------------------------------------
+iConsoleOutput* cWindowsConsoleHost::GetOutput(void)noexcept
+{
+	return fOutput;
+}
+//---------------------------------------------------------------------------
+iConsoleInput* cWindowsConsoleHost::GetInput(void)noexcept
+{
+	return fInput;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rPtr<iWindowsConsoleHost> cnWinRTL::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept
+{
+	auto InputHandle=::GetStdHandle(STD_INPUT_HANDLE);
+	auto OutputHandle=::GetStdHandle(STD_OUTPUT_HANDLE);
+
+	return rCreate<cWindowsConsoleHost>(OutputHandle,InputHandle,Dispatch);
 }
 //---------------------------------------------------------------------------

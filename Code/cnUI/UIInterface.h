@@ -20,8 +20,8 @@ namespace cnUI{
 class cnLib_INTERFACE iViewReference : public iReference
 {
 public:
-	virtual iUIView* GetView(void)const=0;
-	virtual tTypeID GetImplementationType(void)const=0;
+	virtual iUIView* GetView(void)const noexcept(true)=0;
+	virtual tTypeID GetImplementationType(void)const noexcept(true)=0;
 };
 template<class TControl>
 class cControlViewReference : public iViewReference, public TControl
@@ -29,11 +29,11 @@ class cControlViewReference : public iViewReference, public TControl
 public:
 	using TControl::TControl;
 
-	virtual iUIView* GetView(void)const override{
+	virtual iUIView* GetView(void)const noexcept(true)override{
 		return TControl::GetView();
 	}
 	
-	virtual tTypeID GetImplementationType(void)const override
+	virtual tTypeID GetImplementationType(void)const noexcept(true)override
 	{
 		return cnVar::TTypeID<cControlViewReference>::Value;
 	}
@@ -45,10 +45,10 @@ class bcControlInterfaceWrapper : public TClass,public TInterface
 public:
 	using TClass::TClass;
 protected:
-	TClass* operator ->(){
+	TClass* operator ->()noexcept(true){
 		return this;
 	}
-	const TClass* operator ->()const{
+	const TClass* operator ->()const noexcept(true){
 		return this;
 	}
 
@@ -58,13 +58,13 @@ template<class TClass,class TInterface>
 class bcControlInterfaceWrapper<TClass&,TInterface> : public TInterface
 {
 public:
-	bcControlInterfaceWrapper(TClass &Ref):Control(Ref){}
+	bcControlInterfaceWrapper(TClass &Ref)noexcept(true):Control(Ref){}
 protected:
 	TClass &Control;
-	TClass* operator ->(){
+	TClass* operator ->()noexcept(true){
 		return cnMemory::AddressOf(Control);
 	}
-	const TClass* operator ->()const{
+	const TClass* operator ->()const noexcept(true){
 		return cnMemory::AddressOf(Control);
 	}
 };
@@ -76,8 +76,8 @@ protected:
 class cnLib_INTERFACE iControlComponent : public iReference
 {
 public:
-	virtual void SetView(iUIView *View)=0;
-	virtual void SetContentZPosition(Float32 ZPosition);
+	virtual void SetView(iUIView *View)noexcept(true)=0;
+	virtual void SetContentZPosition(Float32 ZPosition)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<class TClass,class TInterface=iControlComponent>
@@ -86,10 +86,10 @@ class bwControlComponent : public bcControlInterfaceWrapper<TClass,TInterface>
 public:
 	using bcControlInterfaceWrapper<TClass,TInterface>::bcControlInterfaceWrapper;
 
-	virtual void SetView(iUIView *View)override{
+	virtual void SetView(iUIView *View)noexcept(true)override{
 		return (*this)->SetView(View);
 	}
-	virtual void SetContentZPosition(Float32 ZPosition)override{
+	virtual void SetContentZPosition(Float32 ZPosition)noexcept(true)override{
 		return (*this)->SetContentZPosition(ZPosition);
 	}
 
@@ -98,7 +98,7 @@ public:
 class cnLib_INTERFACE kiControl : public iControlComponent
 {
 public:
-	virtual void SetLayoutOrder(sfInt16 Order);
+	virtual void SetLayoutOrder(sfInt16 Order)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<class TClass,class TInterface=kiControl>
@@ -107,7 +107,7 @@ class bwkControl : public bwControlComponent<TClass,TInterface>
 public:
 	using bwControlComponent<TClass,TInterface>::bwControlComponent;
 
-	virtual void SetLayoutOrder(sfInt16 Order)override{
+	virtual void SetLayoutOrder(sfInt16 Order)noexcept(true)override{
 		return (*this)->SetLayoutOrder(Order);
 	}
 };
@@ -119,7 +119,7 @@ public:
 class cnLib_INTERFACE viControl : public iControlComponent
 {
 public:
-	virtual void SetContentVisible(bool Visible);
+	virtual void SetContentVisible(bool Visible)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<class TClass,class TInterface=viControl>
@@ -128,7 +128,7 @@ class bwvControl : public bwControlComponent<TClass,TInterface>
 public:
 	using bwControlComponent<TClass,TInterface>::bwControlComponent;
 
-	virtual void SetContentVisible(bool Visible)override{
+	virtual void SetContentVisible(bool Visible)noexcept(true)override{
 		return (*this)->SetContentVisible(Visible);
 	}
 
@@ -137,20 +137,20 @@ public:
 class viData
 {
 public:
-	viData();
-	~viData();
+	viData()noexcept(true);
+	~viData()noexcept(true);
 
 
 protected:
 
-	void InvalidateData(void);
+	void InvalidateData(void)noexcept(true);
 private:
 	template<class T> friend class dPtr;
 
 	class bcNotifyToken
 	{
 	public:
-		virtual void NotifyInvalidate(viData *Token)=0;
+		virtual void NotifyInvalidate(viData *Token)noexcept(true)=0;
 
 		bcNotifyToken *Parent;
 		bcNotifyToken *Child[2];
@@ -158,9 +158,9 @@ private:
 		ufInt8 Color;
 	};
 
-	void NotifyInvalidate(void);
-	void NotifyRegister(bcNotifyToken *NotifyToken);
-	void NotifyUnregister(bcNotifyToken *NotifyToken);
+	void NotifyInvalidate(void)noexcept(true);
+	void NotifyRegister(bcNotifyToken *NotifyToken)noexcept(true);
+	void NotifyUnregister(bcNotifyToken *NotifyToken)noexcept(true);
 
 	cnRTL::cLinkItemSet<bcNotifyToken,cnDataStruct::cItemAddressOrderOperator<bcNotifyToken> > fRefSet;
 	bool fInvalidated;
@@ -171,21 +171,21 @@ template<class T>
 class dPtr : public viData::bcNotifyToken
 {
 public:
-	dPtr():fPointer(nullptr){}
-	~dPtr(){
+	dPtr()noexcept(true):fPointer(nullptr){}
+	~dPtr()noexcept(true){
 		if(fPointer!=nullptr)
 			fPointer->NotifyUnregister(this);
 	}
 
-	operator T* ()const{	return fPointer;	}
-	T* operator -> ()const{	return fPointer;	}
-	T* Pointer(void)const{	return fPointer;	}
+	operator T* ()const noexcept(true){	return fPointer;	}
+	T* operator -> ()const noexcept(true){	return fPointer;	}
+	T* Pointer(void)const noexcept(true){	return fPointer;	}
 
-	dPtr(T *Ptr):fPointer(Ptr){
+	dPtr(T *Ptr)noexcept(true):fPointer(Ptr){
 		if(fPointer!=nullptr)
 			fPointer->NotifyRegister(this);
 	}
-	dPtr& operator =(T *Ptr){
+	dPtr& operator =(T *Ptr)noexcept(true){
 		if(fPointer!=nullptr)
 			fPointer->NotifyUnregister(this);
 		fPointer=Ptr;
@@ -194,7 +194,7 @@ public:
 		return *this;
 	}
 
-	dPtr(const dPtr &Src)
+	dPtr(const dPtr &Src)noexcept(true)
 		: fPointer(Src.Pointer())
 	{
 		if(fPointer!=nullptr)
@@ -203,7 +203,7 @@ public:
 protected:
 	T *fPointer;
 
-	virtual void NotifyInvalidate(viData*)override{
+	virtual void NotifyInvalidate(viData*)noexcept(true)override{
 		fPointer=nullptr;
 	}
 };

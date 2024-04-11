@@ -7,7 +7,7 @@ using namespace cnUI;
 //---------------------------------------------------------------------------
 const cUIRange cnUI::UIRangeZero={0,0};
 //---------------------------------------------------------------------------
-bool cnUI::ViewIsParentOf(iUIView *Parent,iUIView *Child)
+bool cnUI::ViewIsParentOf(iUIView *Parent,iUIView *Child)noexcept
 {
 	if(Child==nullptr)
 		return false;
@@ -22,7 +22,7 @@ bool cnUI::ViewIsParentOf(iUIView *Parent,iUIView *Child)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView)
+bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -40,7 +40,7 @@ bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView)
 	return ParentView->InsertView(View);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView,iUIView *CurrentParent)
+bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView,iUIView *CurrentParent)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -57,7 +57,7 @@ bool cnUI::ViewSetParent(iUIView *View,iUIView *ParentView,iUIView *CurrentParen
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cnUI::ViewIsPointInside(iUIArea *Area,Float32 x,Float32 y)
+bool cnUI::ViewIsPointInside(iUIArea *Area,Float32 x,Float32 y)noexcept
 {
 	cUIPoint Size=Area->GetSize();
 	if(x<0 || x>=Size.x)
@@ -67,7 +67,7 @@ bool cnUI::ViewIsPointInside(iUIArea *Area,Float32 x,Float32 y)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewGetPos(iUIArea *View,iUIArea *Relative,cUIPoint &Pos)
+bool cnUI::ViewGetPos(iUIArea *View,iUIArea *Relative,cUIPoint &Pos)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -75,7 +75,7 @@ bool cnUI::ViewGetPos(iUIArea *View,iUIArea *Relative,cUIPoint &Pos)
 	return View->GetPosition(Relative,Pos);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetPos(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos)
+bool cnUI::ViewSetPos(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -83,7 +83,7 @@ bool cnUI::ViewSetPos(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos)
 	return View->SetPosition(Relative,Pos);
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::ViewGetSize(iUIArea *View)
+cUIPoint cnUI::ViewGetSize(iUIArea *View)noexcept
 {
 	if(View==nullptr)
 		return UIPointZero;
@@ -91,7 +91,7 @@ cUIPoint cnUI::ViewGetSize(iUIArea *View)
 	return View->GetSize();
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetSize(iUIArea *View,const cUIPoint &Size)
+bool cnUI::ViewSetSize(iUIArea *View,const cUIPoint &Size)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -99,7 +99,7 @@ bool cnUI::ViewSetSize(iUIArea *View,const cUIPoint &Size)
 	return View->SetSize(Size);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIPoint &Pos,cUIPoint &Size)
+bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIPoint &Pos,cUIPoint &Size)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -111,7 +111,7 @@ bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIPoint &Pos,cUIPoint &S
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)
+bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -119,7 +119,7 @@ bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIPoint &Pos,const
 	return View->ArrangeRectangle(Relative,Pos,Size);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIRect &Rect)
+bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIRect &Rect)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -131,7 +131,7 @@ bool cnUI::ViewGetRect(iUIArea *View,iUIArea *Relative,cUIRect &Rect)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIRect &Rect)
+bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIRect &Rect)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -139,42 +139,42 @@ bool cnUI::ViewSetRect(iUIArea *View,iUIArea *Relative,const cUIRect &Rect)
 	return View->ArrangeRectangle(Relative,Rect.Pos,Rect.Size);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewGetVisible(iUIView *View)
+bool cnUI::ViewGetVisible(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return false;
 	return View->GetVisible();
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetVisible(iUIView *View,bool Value)
+bool cnUI::ViewSetVisible(iUIView *View,bool Value)noexcept
 {
 	if(View==nullptr)
 		return false;
 	return View->SetVisible(Value);
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewGetEnable(iUIView *View)
+bool cnUI::ViewGetEnable(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return false;
 	return View->GetEnable();
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetEnable(iUIView *View,bool Value)
+bool cnUI::ViewSetEnable(iUIView *View,bool Value)noexcept
 {
 	if(View==nullptr)
 		return false;
 	return View->SetEnable(Value);
 }
 //---------------------------------------------------------------------------
-Float32 cnUI::ViewGetZPosition(iUIView *View)
+Float32 cnUI::ViewGetZPosition(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return 0;
 	return View->GetZPosition();
 }
 //---------------------------------------------------------------------------
-bool cnUI::ViewSetZPosition(iUIView *View,Float32 ZPosition)
+bool cnUI::ViewSetZPosition(iUIView *View,Float32 ZPosition)noexcept
 {
 	if(View==nullptr)
 		return false;
@@ -182,58 +182,58 @@ bool cnUI::ViewSetZPosition(iUIView *View,Float32 ZPosition)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void UIStateHandler::UIStarted(void){}
-void UIStateHandler::UIShow(void){}
-void UIStateHandler::UIResume(void){}
-void UIStateHandler::UIPaused(void){}
-void UIStateHandler::UIHide(void){}
-void UIStateHandler::UIStopped(void){}
+void UIStateHandler::UIStarted(void)noexcept{}
+void UIStateHandler::UIShow(void)noexcept{}
+void UIStateHandler::UIResume(void)noexcept{}
+void UIStateHandler::UIPaused(void)noexcept{}
+void UIStateHandler::UIHide(void)noexcept{}
+void UIStateHandler::UIStopped(void)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void UIViewHandler::UILayout(void){}
-cUIRectangle UIViewHandler::UIMargin(const cUIRectangle&){	return UIRectangleZero;	}
-void UIViewHandler::WindowChanged(void){}
-void UIViewHandler::ParentChanged(void){}
-void UIViewHandler::ContentScaleChanged(void){}
-void UIViewHandler::RectangleChanged(bool,bool){}
-void UIViewHandler::ZPositionChanged(void){}
-void UIViewHandler::VisibleChanged(void){}
-void UIViewHandler::EnableChanged(void){}
+void UIViewHandler::UILayout(void)noexcept{}
+cUIRectangle UIViewHandler::UIMargin(const cUIRectangle&)noexcept{	return UIRectangleZero;	}
+void UIViewHandler::WindowChanged(void)noexcept{}
+void UIViewHandler::ParentChanged(void)noexcept{}
+void UIViewHandler::ContentScaleChanged(void)noexcept{}
+void UIViewHandler::RectangleChanged(bool,bool)noexcept{}
+void UIViewHandler::ZPositionChanged(void)noexcept{}
+void UIViewHandler::VisibleChanged(void)noexcept{}
+void UIViewHandler::EnableChanged(void)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void KeyHandler::KeyFocusEnterRange(iUIKeyEvent*){}
-void KeyHandler::KeyFocusLeaveRange(iUIKeyEvent*){}
-void KeyHandler::KeyFocusEnter(iUIKeyEvent*){}
-void KeyHandler::KeyFocusLeave(iUIKeyEvent*){}
-void KeyHandler::KeyDown(iUIKeyEvent*,eKeyCode){}
-void KeyHandler::KeyUp(iUIKeyEvent*,eKeyCode){}
-void KeyHandler::KeyInput(iUIKeyEvent*,eKeyCode){}
+void KeyHandler::KeyFocusEnterRange(iUIKeyEvent*)noexcept{}
+void KeyHandler::KeyFocusLeaveRange(iUIKeyEvent*)noexcept{}
+void KeyHandler::KeyFocusEnter(iUIKeyEvent*)noexcept{}
+void KeyHandler::KeyFocusLeave(iUIKeyEvent*)noexcept{}
+void KeyHandler::KeyDown(iUIKeyEvent*,eKeyCode)noexcept{}
+void KeyHandler::KeyUp(iUIKeyEvent*,eKeyCode)noexcept{}
+void KeyHandler::KeyInput(iUIKeyEvent*,eKeyCode)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void TextInputHandler::TextInput(const uChar16*,uIntn){}
-void TextInputHandler::TextCompositionStarted(void){}
-void TextInputHandler::TextCompositionFinished(void){}
-void TextInputHandler::TextCompositionUpdate(sfInt32,const uChar16*,uIntn){}
+void TextInputHandler::TextInput(const uChar16*,uIntn)noexcept{}
+void TextInputHandler::TextCompositionStarted(void)noexcept{}
+void TextInputHandler::TextCompositionFinished(void)noexcept{}
+void TextInputHandler::TextCompositionUpdate(sfInt32,const uChar16*,uIntn)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void MouseHandler::MouseEnterRange(iUIMouseEvent*){}
-void MouseHandler::MouseLeaveRange(iUIMouseEvent*){}
-void MouseHandler::MouseEnter(iUIMouseEvent*){}
-void MouseHandler::MouseLeave(iUIMouseEvent*){}
-iInterface* MouseHandler::MouseGetCursor(iUIMouseEvent*){	return nullptr;	}
-void MouseHandler::MouseMove(iUIMouseEvent*){}
-void MouseHandler::MouseDown(iUIMouseEvent*,eMouseButton){}
-void MouseHandler::MouseUp(iUIMouseEvent*,eMouseButton){}
-void MouseHandler::MouseWheel(iUIMouseEvent*,Float32,Float32){}
+void MouseHandler::MouseEnterRange(iUIMouseEvent*)noexcept{}
+void MouseHandler::MouseLeaveRange(iUIMouseEvent*)noexcept{}
+void MouseHandler::MouseEnter(iUIMouseEvent*)noexcept{}
+void MouseHandler::MouseLeave(iUIMouseEvent*)noexcept{}
+iInterface* MouseHandler::MouseGetCursor(iUIMouseEvent*)noexcept{	return nullptr;	}
+void MouseHandler::MouseMove(iUIMouseEvent*)noexcept{}
+void MouseHandler::MouseDown(iUIMouseEvent*,eMouseButton)noexcept{}
+void MouseHandler::MouseUp(iUIMouseEvent*,eMouseButton)noexcept{}
+void MouseHandler::MouseWheel(iUIMouseEvent*,Float32,Float32)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void TouchHandler::TouchBegin(iUITouchEvent*){}
-void TouchHandler::TouchEnd(iUITouchEvent*){}
-void TouchHandler::TouchLost(iUITouchEvent*){}
-void TouchHandler::TouchMove(iUITouchEvent*){}
+void TouchHandler::TouchBegin(iUITouchEvent*)noexcept{}
+void TouchHandler::TouchEnd(iUITouchEvent*)noexcept{}
+void TouchHandler::TouchLost(iUITouchEvent*)noexcept{}
+void TouchHandler::TouchMove(iUITouchEvent*)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iUIKeyControl* cnUI::ViewInsertKeyHandler(iUIView *View,iUIKeyHandler *Handler,sfInt16 Order)
+iUIKeyControl* cnUI::ViewInsertKeyHandler(iUIView *View,iUIKeyHandler *Handler,sfInt16 Order)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -241,7 +241,7 @@ iUIKeyControl* cnUI::ViewInsertKeyHandler(iUIView *View,iUIKeyHandler *Handler,s
 	}
 	return KeyControl;
 }
-iUIKeyControl* cnUI::ViewRemoveKeyHandler(iUIView *View,iUIKeyHandler *Handler)
+iUIKeyControl* cnUI::ViewRemoveKeyHandler(iUIView *View,iUIKeyHandler *Handler)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -250,7 +250,7 @@ iUIKeyControl* cnUI::ViewRemoveKeyHandler(iUIView *View,iUIKeyHandler *Handler)
 	return KeyControl;
 }
 //---------------------------------------------------------------------------
-iUIKeyControl* cnUI::ViewInsertKeyHandlerFilter(iUIView *View,iUIKeyHandler *Handler,sfInt16 Order)
+iUIKeyControl* cnUI::ViewInsertKeyHandlerFilter(iUIView *View,iUIKeyHandler *Handler,sfInt16 Order)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -258,7 +258,7 @@ iUIKeyControl* cnUI::ViewInsertKeyHandlerFilter(iUIView *View,iUIKeyHandler *Han
 	}
 	return KeyControl;
 }
-iUIKeyControl* cnUI::ViewRemoveKeyHandlerFilter(iUIView *View,iUIKeyHandler *Handler)
+iUIKeyControl* cnUI::ViewRemoveKeyHandlerFilter(iUIView *View,iUIKeyHandler *Handler)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -267,7 +267,7 @@ iUIKeyControl* cnUI::ViewRemoveKeyHandlerFilter(iUIView *View,iUIKeyHandler *Han
 	return KeyControl;
 }
 //---------------------------------------------------------------------------
-iUIKeyControl* cnUI::ViewInsertTextInputHandler(iUIView *View,iUITextInputHandler *Handler,sfInt16 Order)
+iUIKeyControl* cnUI::ViewInsertTextInputHandler(iUIView *View,iUITextInputHandler *Handler,sfInt16 Order)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -275,7 +275,7 @@ iUIKeyControl* cnUI::ViewInsertTextInputHandler(iUIView *View,iUITextInputHandle
 	}
 	return KeyControl;
 }
-iUIKeyControl* cnUI::ViewRemoveTextInputHandler(iUIView *View,iUITextInputHandler *Handler)
+iUIKeyControl* cnUI::ViewRemoveTextInputHandler(iUIView *View,iUITextInputHandler *Handler)noexcept
 {
 	auto KeyControl=iCast<iUIKeyControl>(View);
 	if(KeyControl!=nullptr){
@@ -284,7 +284,7 @@ iUIKeyControl* cnUI::ViewRemoveTextInputHandler(iUIView *View,iUITextInputHandle
 	return KeyControl;
 }
 //---------------------------------------------------------------------------
-iUIMouseControl* cnUI::ViewInsertMouseHandler(iUIView *View,iUIMouseHandler *Handler,sfInt16 Order)
+iUIMouseControl* cnUI::ViewInsertMouseHandler(iUIView *View,iUIMouseHandler *Handler,sfInt16 Order)noexcept
 {
 	auto MouseControl=iCast<iUIMouseControl>(View);
 	if(MouseControl!=nullptr){
@@ -292,7 +292,7 @@ iUIMouseControl* cnUI::ViewInsertMouseHandler(iUIView *View,iUIMouseHandler *Han
 	}
 	return MouseControl;
 }
-iUIMouseControl* cnUI::ViewRemoveMouseHandler(iUIView *View,iUIMouseHandler *Handler)
+iUIMouseControl* cnUI::ViewRemoveMouseHandler(iUIView *View,iUIMouseHandler *Handler)noexcept
 {
 	auto MouseControl=iCast<iUIMouseControl>(View);
 	if(MouseControl!=nullptr){
@@ -301,7 +301,7 @@ iUIMouseControl* cnUI::ViewRemoveMouseHandler(iUIView *View,iUIMouseHandler *Han
 	return MouseControl;
 }
 //---------------------------------------------------------------------------
-iUIMouseControl* cnUI::ViewInsertMouseHandlerFilter(iUIView *View,iUIMouseHandler *Handler,sfInt16 Order)
+iUIMouseControl* cnUI::ViewInsertMouseHandlerFilter(iUIView *View,iUIMouseHandler *Handler,sfInt16 Order)noexcept
 {
 	auto MouseControl=iCast<iUIMouseControl>(View);
 	if(MouseControl!=nullptr){
@@ -309,7 +309,7 @@ iUIMouseControl* cnUI::ViewInsertMouseHandlerFilter(iUIView *View,iUIMouseHandle
 	}
 	return MouseControl;
 }
-iUIMouseControl* cnUI::ViewRemoveMouseHandlerFilter(iUIView *View,iUIMouseHandler *Handler)
+iUIMouseControl* cnUI::ViewRemoveMouseHandlerFilter(iUIView *View,iUIMouseHandler *Handler)noexcept
 {
 	auto MouseControl=iCast<iUIMouseControl>(View);
 	if(MouseControl!=nullptr){
@@ -318,7 +318,7 @@ iUIMouseControl* cnUI::ViewRemoveMouseHandlerFilter(iUIView *View,iUIMouseHandle
 	return MouseControl;
 }
 //---------------------------------------------------------------------------
-iUITouchControl* cnUI::ViewInsertTouchHandler(iUIView *View,iUITouchHandler *Handler,sfInt16 Order)
+iUITouchControl* cnUI::ViewInsertTouchHandler(iUIView *View,iUITouchHandler *Handler,sfInt16 Order)noexcept
 {
 	auto TouchControl=iCast<iUITouchControl>(View);
 	if(TouchControl!=nullptr){
@@ -326,7 +326,7 @@ iUITouchControl* cnUI::ViewInsertTouchHandler(iUIView *View,iUITouchHandler *Han
 	}
 	return TouchControl;
 }
-iUITouchControl* cnUI::ViewRemoveTouchHandler(iUIView *View,iUITouchHandler *Handler)
+iUITouchControl* cnUI::ViewRemoveTouchHandler(iUIView *View,iUITouchHandler *Handler)noexcept
 {
 	auto TouchControl=iCast<iUITouchControl>(View);
 	if(TouchControl!=nullptr){
@@ -335,7 +335,7 @@ iUITouchControl* cnUI::ViewRemoveTouchHandler(iUIView *View,iUITouchHandler *Han
 	return TouchControl;
 }
 //---------------------------------------------------------------------------
-iUITouchControl* cnUI::ViewInsertTouchHandlerFilter(iUIView *View,iUITouchHandler *Handler,sfInt16 Order)
+iUITouchControl* cnUI::ViewInsertTouchHandlerFilter(iUIView *View,iUITouchHandler *Handler,sfInt16 Order)noexcept
 {
 	auto TouchControl=iCast<iUITouchControl>(View);
 	if(TouchControl!=nullptr){
@@ -343,7 +343,7 @@ iUITouchControl* cnUI::ViewInsertTouchHandlerFilter(iUIView *View,iUITouchHandle
 	}
 	return TouchControl;
 }
-iUITouchControl* cnUI::ViewRemoveTouchHandlerFilter(iUIView *View,iUITouchHandler *Handler)
+iUITouchControl* cnUI::ViewRemoveTouchHandlerFilter(iUIView *View,iUITouchHandler *Handler)noexcept
 {
 	auto TouchControl=iCast<iUITouchControl>(View);
 	if(TouchControl!=nullptr){

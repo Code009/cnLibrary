@@ -19,7 +19,7 @@ inline void TKRuntime::Debug::AssertionMessage(const char *Message){
 }
 
 template<>
-struct TKRuntime::TMathFloat<4>
+struct TKRuntime::TFloatMath<4>
 {
 	static float Absolute(float n){				return ::fabsf(n);	}
 	static float RoundNearest(float n){			return ::roundf(n);	}
@@ -48,7 +48,7 @@ struct TKRuntime::TMathFloat<4>
 };
 
 template<>
-struct TKRuntime::TMathFloat<8>
+struct TKRuntime::TFloatMath<8>
 {
 	
 	static double Absolute(double n){				return ::fabs(n);	}
@@ -200,27 +200,28 @@ struct TKRuntime::TStringConvertFloat : CPPRuntime::TStringConvertFloat<ValueSiz
 };
 
 
-template<class T>
+template<uIntn IntegerSize>
 struct TKRuntime::TAtomicInteger
 {
-	typedef std::atomic<T> tAtomic;
-	typedef T tVariable;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tInteger;
+	typedef volatile std::atomic<tInteger> tAtomic;
+	typedef tInteger tNonAtomic;
 
-	static tVariable Get(const tAtomic &a){
+	static tInteger Get(const tAtomic &a){
 		return a;
 	}
-	static void Set(tAtomic &a,const tVariable &v){
+	static void Set(tAtomic &a,const tInteger &v){
 		a=v;
 	}
 
-	static tVariable FreeLoad(const tAtomic &a){
+	static tInteger FreeLoad(const tAtomic &a){
 		return a.load(std::memory_order::memory_order_relaxed);
 	}
-	static tVariable AcquireLoad(const tAtomic &a){
+	static tInteger AcquireLoad(const tAtomic &a){
 		return a.load(std::memory_order::memory_order_acquire);
 	}
 
-	static bool WatchEqual(const tAtomic &a,const tVariable &Value,uIntn Count)noexcept{
+	static bool WatchEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
 		for(uIntn i=0;i<Count;i++){
 			if(a.load(std::memory_order::memory_order_relaxed)==Value){
 				return true;
@@ -228,7 +229,7 @@ struct TKRuntime::TAtomicInteger
 		}
 		return false;
 	}
-	static bool WatchNotEqual(const tAtomic &a,const tVariable &Value,uIntn Count)noexcept{
+	static bool WatchNotEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
 		for(uIntn i=0;i<Count;i++){
 			if(a.load(std::memory_order::memory_order_relaxed)!=Value){
 				return true;
@@ -238,99 +239,99 @@ struct TKRuntime::TAtomicInteger
 	}
 
 
-	static void FreeStore(tAtomic &a,const tVariable &v){
+	static void FreeStore(tAtomic &a,const tInteger &v){
 		a.store(v,std::memory_order::memory_order_relaxed);
 	}
-	static void ReleaseStore(tAtomic &a,const tVariable &v){
+	static void ReleaseStore(tAtomic &a,const tInteger &v){
 		a.store(v,std::memory_order::memory_order_release);
 	}
 
-	static tVariable FreeExchange(tAtomic &a,const tVariable &v){
+	static tInteger FreeExchange(tAtomic &a,const tInteger &v){
 		return a.exchange(v,std::memory_order::memory_order_relaxed);
 	}
-	static tVariable AcquireExchange(tAtomic &a,const tVariable &v){
+	static tInteger AcquireExchange(tAtomic &a,const tInteger &v){
 		return a.exchange(v,std::memory_order::memory_order_acquire);
 	}
-	static tVariable ReleaseExchange(tAtomic &a,const tVariable &v){
+	static tInteger ReleaseExchange(tAtomic &a,const tInteger &v){
 		return a.exchange(v,std::memory_order::memory_order_release);
 	}
-	static tVariable BarrierExchange(tAtomic &a,const tVariable &v){
+	static tInteger BarrierExchange(tAtomic &a,const tInteger &v){
 		return a.exchange(v,std::memory_order::memory_order_acq_rel);
 	}
 
-	static bool FreeCompareStore(tAtomic &a,tVariable c,const tVariable &v){
+	static bool FreeCompareStore(tAtomic &a,tInteger c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_relaxed);
 	}
-	static bool AcquireCompareStore(tAtomic &a,tVariable c,const tVariable &v){
+	static bool AcquireCompareStore(tAtomic &a,tInteger c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acquire);
 	}
-	static bool ReleaseCompareStore(tAtomic &a,tVariable c,const tVariable &v){
+	static bool ReleaseCompareStore(tAtomic &a,tInteger c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_release);
 	}
-	static bool BarrierCompareStore(tAtomic &a,tVariable c,const tVariable &v){
+	static bool BarrierCompareStore(tAtomic &a,tInteger c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acq_rel);
 	}
 
-	static bool FreeCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
+	static bool FreeCompareExchange(tAtomic &a,tInteger &c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_relaxed);
 	}
-	static bool AcquireCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
+	static bool AcquireCompareExchange(tAtomic &a,tInteger &c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acquire);
 	}
-	static bool ReleaseCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
+	static bool ReleaseCompareExchange(tAtomic &a,tInteger &c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_release);
 	}
-	static bool BarrierCompareExchange(tAtomic &a,tVariable &c,const tVariable &v){
+	static bool BarrierCompareExchange(tAtomic &a,tInteger &c,const tInteger &v){
 		return a.compare_exchange_strong(c,v,std::memory_order::memory_order_acq_rel);
 	}
 
-	static tVariable FreeAdd(tAtomic &a,const tVariable &v){
+	static tInteger FreeAdd(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_relaxed);
 	}
-	static tVariable FreeAddN(tAtomic &a,const tVariable &v){
+	static tInteger FreeAddN(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_relaxed)+v;
 	}
-	static tVariable AcquireAdd(tAtomic &a,const tVariable &v){
+	static tInteger AcquireAdd(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_acquire);
 	}
-	static tVariable AcquireAddN(tAtomic &a,const tVariable &v){
+	static tInteger AcquireAddN(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_acquire)+v;
 	}
-	static tVariable ReleaseAdd(tAtomic &a,const tVariable &v){
+	static tInteger ReleaseAdd(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_release);
 	}
-	static tVariable ReleaseAddN(tAtomic &a,const tVariable &v){
+	static tInteger ReleaseAddN(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_release)+v;
 	}
-	static tVariable BarrierAdd(tAtomic &a,const tVariable &v){
+	static tInteger BarrierAdd(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_acq_rel);
 	}
-	static tVariable BarrierAddN(tAtomic &a,const tVariable &v){
+	static tInteger BarrierAddN(tAtomic &a,const tInteger &v){
 		return a.fetch_add(v,std::memory_order::memory_order_acq_rel)+v;
 	}
 
-	static tVariable FreeSub(tAtomic &a,const tVariable &v){
+	static tInteger FreeSub(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_relaxed);
 	}
-	static tVariable FreeSubN(tAtomic &a,const tVariable &v){
+	static tInteger FreeSubN(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_relaxed)-v;
 	}
-	static tVariable AcquireSub(tAtomic &a,const tVariable &v){
+	static tInteger AcquireSub(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_acquire);
 	}
-	static tVariable AcquireSubN(tAtomic &a,const tVariable &v){
+	static tInteger AcquireSubN(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_acquire)-v;
 	}
-	static tVariable ReleaseSub(tAtomic &a,const tVariable &v){
+	static tInteger ReleaseSub(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_release);
 	}
-	static tVariable ReleaseSubN(tAtomic &a,const tVariable &v){
+	static tInteger ReleaseSubN(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_release)-v;
 	}
-	static tVariable BarrierSub(tAtomic &a,const tVariable &v){
+	static tInteger BarrierSub(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_acq_rel);
 	}
-	static tVariable BarrierSubN(tAtomic &a,const tVariable &v){
+	static tInteger BarrierSubN(tAtomic &a,const tInteger &v){
 		return a.fetch_sub(v,std::memory_order::memory_order_acq_rel)-v;
 	}
 };

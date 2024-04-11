@@ -14,7 +14,7 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
-void NTFileTimeToDateTime(cDateTime &DateTime,const FILETIME &FileTime);
+void NTFileTimeToDateTime(cDateTime &DateTime,const FILETIME &FileTime)noexcept(true);
 //---------------------------------------------------------------------------
 struct cNTFileTime
 {
@@ -23,22 +23,22 @@ struct cNTFileTime
 		LARGE_INTEGER TimeValue;
 	};
 
-	void SetNow(void);
-	bool ToDateTime(cDateTime &DateTime)const;
-	bool FromDateTime(const cDateTime &DateTime);
-	void FromTimepoint(iTimepoint *Time);
-	void FromTimepoint(iTimepoint *Time,sInt64 Delay);
-	void FromTimeDue(iTimepoint *DueTime,sInt64 DueTimeDelay);
+	void SetNow(void)noexcept(true);
+	bool ToDateTime(cDateTime &DateTime)const noexcept(true);
+	bool FromDateTime(const cDateTime &DateTime)noexcept(true);
+	void FromTimepoint(iTimepoint *Time)noexcept(true);
+	void FromTimepoint(iTimepoint *Time,sInt64 Delay)noexcept(true);
+	void FromTimeDue(iTimepoint *DueTime,sInt64 DueTimeDelay)noexcept(true);
 
-	void AdjustSeconds(sInt64 Seconds);
-	void AdjustNanoSeconds(sInt64 Seconds);
+	void AdjustSeconds(sInt64 Seconds)noexcept(true);
+	void AdjustNanoSeconds(sInt64 Seconds)noexcept(true);
 
-	sInt64 DifferenceNanoseconds(const cNTFileTime &Time)const;
-	Float64 DifferenceSeconds(const cNTFileTime &Time)const;
-	//Float64 ReleativeToUNIXEpoch(void)const;
+	sInt64 DifferenceNanoseconds(const cNTFileTime &Time)const noexcept(true);
+	Float64 DifferenceSeconds(const cNTFileTime &Time)const noexcept(true);
+	//Float64 ReleativeToUNIXEpoch(void)const noexcept(true);
 
-	sInt64 ToSystemTime(void)const;
-	void FromSystemTime(sInt64 SystemTime);
+	uInt64 ToSystemTime(void)const noexcept(true);
+	void FromSystemTime(uInt64 SystemTime)noexcept(true);
 
 
 };
@@ -46,19 +46,19 @@ struct cNTFileTime
 class cNTFileTimePoint : public iFileTime, public cNTFileTime
 {
 public:
-	cNTFileTimePoint();
-	~cNTFileTimePoint();
+	cNTFileTimePoint()noexcept(true);
+	~cNTFileTimePoint()noexcept(true);
 
-	static iPtr<cNTFileTimePoint> TimeNow(void);
+	static iPtr<cNTFileTimePoint> TimeNow(void)noexcept(true);
 
-	virtual sInt64 cnLib_FUNC SystemTime(void)override;
-	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)override;
+	virtual sInt64 cnLib_FUNC SystemTime(void)noexcept(true)override;
+	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)noexcept(true)override;
 
-	virtual FILETIME cnLib_FUNC GetFileTime(void)override;
-	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)override;
+	virtual FILETIME cnLib_FUNC GetFileTime(void)noexcept(true)override;
+	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-sInt64 TimepointSinceNTFileTimeNowNS(iTimepoint *Timepoint);
+sInt64 SystemTimeSinceNTFileTimeNowNS(uInt64 SystemTime)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL
 //---------------------------------------------------------------------------

@@ -752,7 +752,11 @@ namespace Var_TH{
 
 template<class TConvertFrom,class TConvertTo>
 struct IsReinterpretable
-	: cnVar::TConstantValueBool<sizeof(TConvertFrom)==sizeof(TConvertTo) && cnVar::TIsConvertible<TConvertFrom*,TConvertTo*>::Value>{};
+	: cnVar::TConstantValueBool<sizeof(TConvertFrom)==sizeof(TConvertTo) && cnVar::TIsConvertible<typename cnVar::TRemoveReference<TConvertFrom>::Type*,typename cnVar::TRemoveReference<TConvertTo>::Type*>::Value>{};
+
+template<class TConvertFrom,class TConvertTo>
+struct IsReinterpretable<TConvertFrom*,TConvertTo*>
+	: IsReinterpretable<TConvertFrom,TConvertTo>{};
 
 template<class TConvertTo>		struct IsReinterpretable<void,TConvertTo>	: cnVar::TConstantValueFalse{};
 template<class TConvertFrom>	struct IsReinterpretable<TConvertFrom,void>	: cnVar::TConstantValueTrue{};
@@ -924,16 +928,16 @@ struct TryCast
 {
 	template<class TDest,class TSrc>
 	static bool Call(TDest &Dest,const TSrc &Src)
-		noexcept(cnLib_NOEXCEPTEXPR(Dest=static_cast<TDest>(Src)))
+		noexcept(noexcept(Dest=static_cast<TDest>(Src)))
 	{	Dest=static_cast<TDest>(Src);	return true;	}
 
 	template<class TDest,class TSrc>
 	static TDest CastRet(const TSrc &Src)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(static_cast<TDest>(Src))))
+		noexcept(noexcept(TDest(static_cast<TDest>(Src))))
 	{	return static_cast<TDest>(Src);	}
 	template<class TDest,class TSrc>
 	static TDest CastRetDef(const TSrc &Src,const TDest &)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest(static_cast<TDest>(Src))))
+		noexcept(noexcept(TDest(static_cast<TDest>(Src))))
 	{	return static_cast<TDest>(Src);	}
 };
 template<>
@@ -945,7 +949,7 @@ struct TryCast<false>
 
 	template<class TDest,class TSrc>
 	static TDest CastRet(const TSrc &)
-		noexcept(cnLib_NOEXCEPTEXPR(TDest()))
+		noexcept(noexcept(TDest()))
 	{	return TDest();	}
 	template<class TDest,class TSrc>
 	static TDest CastRetDef(const TSrc &,const TDest &Def)noexcept(true)
@@ -1006,16 +1010,16 @@ inline const TRet& ReturnCast(const T& Var)noexcept(true)
 //---------------------------------------------------------------------------
 
 template<class TDest,class TSrc>
-inline bool TryCastTo(TDest &Dest,const TSrc &Src)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::Call(Dest,Src))))
+inline bool TryCastTo(TDest &Dest,const TSrc &Src)noexcept(noexcept((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::Call(Dest,Src))))
 {	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::Call(Dest,Src);	}
 
 
 template<class TDest,class TSrc>
-inline TDest TryCast(const TSrc &Src)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src))))
+inline TDest TryCast(const TSrc &Src)noexcept(noexcept((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src))))
 {	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::template CastRet<TDest,TSrc>(Src);	}
 
 template<class TDest,class TSrc>
-inline TDest TryCast(const TSrc &Src,typename TTypeDef<TDest>::Type const &Default)noexcept(cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default))))
+inline TDest TryCast(const TSrc &Src,typename TTypeDef<TDest>::Type const &Default)noexcept(noexcept((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default))))
 {	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default);	}
 
 //---------------------------------------------------------------------------

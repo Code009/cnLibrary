@@ -26,6 +26,75 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
+class cDualReference : public bcVirtualLifeCycle
+{
+public:
+	template<class T>
+	struct cRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
+	{
+		static void Acquire(T *Token)noexcept(true){
+			if(Token!=nullptr){
+				cnLib_ASSERT(Token->fInnerReference.Ref!=0);
+				Token->fInnerReference.Inc();
+			}
+		}
+		static void Release(T *Token)noexcept(true){
+			if(Token!=nullptr){
+				cnLib_ASSERT(Token->fInnerReference.Ref!=0);
+				Token->fInnerReference.Dec();
+			}
+		}
+	};
+protected:
+	class cInner : public iReference
+	{
+	public:
+		cAtomicVar<uIntn> Ref=0;
+		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override{
+			cnLib_ASSERT(Ref!=0);
+			return Inc();
+		}
+		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override{
+			cnLib_ASSERT(Ref!=0);
+			return Dec();
+		}
+
+		void Inc(void)noexcept(true);
+		void Dec(void)noexcept(true);
+	}fInnerReference;
+
+	cDualReference()noexcept(true){}
+
+	void InnerActivate(uInt32 Tag)noexcept(true){
+		cnLib_ASSERT(fInnerReference.Ref==0);
+		cnRTL_DEBUG_LOG_REFERENCE_INC(this,Tag);
+		return fInnerReference.Inc();
+	}
+
+	void InnerIncReference(uInt32 Tag)noexcept(true){
+		cnLib_ASSERT(fInnerReference.Ref!=0);
+		cnRTL_DEBUG_LOG_REFERENCE_INC(this,Tag);
+		return fInnerReference.Inc();
+	}
+	void InnerDecReference(uInt32 Tag)noexcept(true){
+		cnLib_ASSERT(fInnerReference.Ref!=0);
+		cnRTL_DEBUG_LOG_REFERENCE_DEC(this,Tag);
+		return fInnerReference.Dec();
+	}
+
+	// override virtual life cycle start to increase inner reference
+	void VirtualStarted(void)noexcept(true){
+		InnerActivate('self');
+	}
+	// override virtual life cycle stop to decrease inner reference
+	void VirtualStopped(void)noexcept(true){
+		InnerDecReference('self');
+	}
+};
+//---------------------------------------------------------------------------
+template<class T>
+using rInnerPtr = cnVar::cPtrReference< cDualReference::cRefTokenOperator<T> >;
+//---------------------------------------------------------------------------
 
 // Automatic Object Pointer
 
@@ -33,7 +102,7 @@ namespace cnRTL{
 template<class T>
 struct aTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
 {
-	static void Manage(T* const &Token){
+	static void Manage(T* const &Token)noexcept(true){
 		typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedManager<T>,
 			cVirtualLifeCycleSharedManager<T>
@@ -44,7 +113,7 @@ struct aTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
 		}
 	}
 
-	static void Release(T* const &Token){
+	static void Release(T* const &Token)noexcept(true){
 		if(Token!=nullptr){
 			typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 				cCPPLifeCycleSharedManager<T>,
@@ -58,24 +127,24 @@ template<class T>
 using aPtr = cnVar::cPtrOwner< aTokenOperator<T> >;
 //---------------------------------------------------------------------------
 template<class T>
-aPtr<T> aTake(T *Object)
+inline aPtr<T> aTake(T *Object)noexcept(true)
 {
 	return aPtr<T>::TakeFromManual(Object);
 }
 //---------------------------------------------------------------------------
 template<class T>
-typename cnVar::TSelect<0,aPtr<T>
+inline typename cnVar::TSelect<0,aPtr<T>
 	, decltype(new T)
->::Type aCreate(void)
+>::Type aCreate(void)noexcept(true)
 {
 	auto Object=new T;
 	aTokenOperator<T>::ManageShared(Object);
 	return aPtr<T>::TakeFromManual(Object);
 }
 template<class T,class...TArgs>
-typename cnVar::TSelect<0,aPtr<T>
+inline typename cnVar::TSelect<0,aPtr<T>
 	, decltype(new T(cnVar::DeclVal<T>()))
->::Type aCreate(TArgs&&...Args)
+>::Type aCreate(TArgs&&...Args)noexcept(true)
 {
 	auto Object=new T(static_cast<TArgs&&>(Args)...);
 	aTokenOperator<T>::ManageShared(Object);
@@ -91,11 +160,7 @@ class impReferenceLifeCycleObject : public T, public TLifeCycleInstance, public 
 {
 public:
 	using T::T;
-#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	~impReferenceLifeCycleObject()=default;
-#else
-	~impReferenceLifeCycleObject(){}
-#endif
 
 	template<class TLifeCycleObject>
 	struct tActivation
@@ -130,7 +195,7 @@ public:
 	class bcNotifyToken
 	{
 	public:
-		virtual bool cnLib_FUNC InvalidationNotify(iObservedReference *Reference)=0;
+		virtual bool cnLib_FUNC InvalidationNotify(iObservedReference *Reference)noexcept(true)=0;
 
 		bcNotifyToken *Parent;
 		bcNotifyToken *Child[2];
@@ -139,18 +204,18 @@ public:
 	};
 	static_assert(sizeof(bcNotifyToken)<=sizeof(iReferenceInvalidationNotify),"incompatiable iReferenceInvalidationNotify");
 
-	void RefReset(void);
-	void RefInvalidate(iObservedReference *ObservedReference);
+	void RefReset(void)noexcept(true);
+	void RefInvalidate(iObservedReference *ObservedReference)noexcept(true);
 
-	void RefInc(void);
-	bool RefDec(void);
+	void RefInc(void)noexcept(true);
+	bool RefDec(void)noexcept(true);
 
-	void WeakRegister(iReferenceInvalidationNotify *NotifyToken);
-	void WeakUnregister(iReferenceInvalidationNotify *NotifyToken);
+	void WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
+	void WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
 
-	void WeakRegister(bcNotifyToken *NotifyToken);
-	void WeakUnregister(bcNotifyToken *NotifyToken);
-	bool WeakToStrong(void);
+	void WeakRegister(bcNotifyToken *NotifyToken)noexcept(true);
+	void WeakUnregister(bcNotifyToken *NotifyToken)noexcept(true);
+	bool WeakToStrong(void)noexcept(true);
 protected:
 	cAtomicVar<uIntn> fRefCount;
 	cAtomicVar<uIntn> fRegisterCount;
@@ -163,11 +228,7 @@ class impObservedReferenceLifeCycleObject : public T, public TLifeCycleInstance,
 {
 public:
 	using T::T;
-#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	~impObservedReferenceLifeCycleObject()=default;
-#else
-	~impObservedReferenceLifeCycleObject(){}
-#endif
 
 	template<class TLifeCycleObject>
 	struct tActivation : TLifeCycleInstance::template tActivation<TLifeCycleObject>
@@ -229,9 +290,9 @@ struct TReferenceLifeCycleTypes
 };
 //---------------------------------------------------------------------------
 template<class T>
-typename cnVar::TSelect<0,rPtr<T>
+inline typename cnVar::TSelect<0,rPtr<T>
 	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject)
->::Type rCreate(void)
+>::Type rCreate(void)noexcept(true)
 {
 	typedef typename TReferenceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject;
@@ -241,9 +302,9 @@ typename cnVar::TSelect<0,rPtr<T>
 }
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
-typename cnVar::TSelect<0,rPtr<T>
+inline typename cnVar::TSelect<0,rPtr<T>
 	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
->::Type rCreate(TArgs&&...Args)
+>::Type rCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef typename TReferenceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject(cnVar::Forward<TArgs>(Args)...);
@@ -337,9 +398,9 @@ struct TInterfaceLifeCycleTypes
 };
 //---------------------------------------------------------------------------
 template<class T>
-typename cnVar::TSelect<0,iPtr<T>
+inline typename cnVar::TSelect<0,iPtr<T>
 	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject)
->::Type iCreate(void)
+>::Type iCreate(void)noexcept(true)
 {
 	typedef typename TInterfaceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject;
@@ -349,9 +410,9 @@ typename cnVar::TSelect<0,iPtr<T>
 }
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
-typename cnVar::TSelect<0,iPtr<T>
+inline typename cnVar::TSelect<0,iPtr<T>
 	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
->::Type iCreate(TArgs&&...Args)
+>::Type iCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef typename TInterfaceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject(cnVar::Forward<TArgs>(Args)...);
@@ -377,7 +438,7 @@ class cAutoRecyclableObject
 template<class T>
 struct arPointerOwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
 {
-	static void Release(T* const &Token){
+	static void Release(T* const &Token)noexcept(true){
 		if(Token!=nullptr){
 			cAutoRecyclableObject<T>::template tActivation< cAutoRecyclableObject<T> >::Stop(static_cast<cAutoRecyclableObject<T>*>(Token));
 		}
@@ -388,7 +449,7 @@ template<class T>
 using arPtr = cnVar::cPtrOwner< arPointerOwnerTokenOperator<T> >;
 //---------------------------------------------------------------------------
 template<class T>
-inline arPtr<T> arCreateUnrecyclable(void){
+inline arPtr<T> arCreateUnrecyclable(void)noexcept(true){
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleSharedManager< cAutoRecyclableObject<T> >,
 		cVirtualLifeCycleSharedManager< cAutoRecyclableObject<T> >
@@ -408,17 +469,17 @@ public:
 		cVirtualLifeCycleRecyclableSharedManager< cAutoRecyclableObject<T>,cRecyclableObjectAllocator< cAutoRecyclableObject<T> > >
 	>::Type tLifeCycleSharedRecyclableManager;
 	
-	arSharedObjectRecycler() : fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
-	~arSharedObjectRecycler(){}
+	arSharedObjectRecycler()noexcept(true) : fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
+	~arSharedObjectRecycler()noexcept(true){}
 
-	arPtr<T> operator ()(void){	return Query();	}
-	arPtr<T> Query(void){
+	arPtr<T> operator ()(void)noexcept(true){	return Query();	}
+	arPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
 		return arPtr<T>::TakeFromManual(Object);
 	}
 
-	static arPtr<T> QueryShared(void){
+	static arPtr<T> QueryShared(void)noexcept(true){
 		auto Manager=tLifeCycleSharedRecyclableManager::GetSharedManager();
 		auto Object=Manager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
@@ -430,7 +491,7 @@ private:
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline arPtr<T> arQuerySharedObject(void){
+inline arPtr<T> arQuerySharedObject(void)noexcept(true){
 	return arSharedObjectRecycler<T>::QueryShared();
 }
 //---------------------------------------------------------------------------
@@ -443,11 +504,11 @@ public:
 		cVirtualLifeCycleRecyclableManager< cAutoRecyclableObject<T>,cRecyclableObjectAllocator< cAutoRecyclableObject<T> > >
 	>::Type tLifeCycleRecyclableManager;
 
-	arObjectRecycler() : fManager(rCreate<tLifeCycleRecyclableManager>()){}
-	~arObjectRecycler(){}
+	arObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
+	~arObjectRecycler()noexcept(true){}
 
-	arPtr<T> operator ()(void){	Query();	}
-	arPtr<T> Query(void){
+	arPtr<T> operator ()(void)noexcept(true){	Query();	}
+	arPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleRecyclableManager::Start(Object);
 		return arPtr<T>::TakeFromManual(Object);
@@ -488,17 +549,17 @@ class rSharedObjectRecycler
 public:
 
 	typedef typename TReferenceLifeCycleRecyclableSharedManagerTypes<T>::tLifeCycleManager tLifeCycleSharedRecyclableManager;
-	rSharedObjectRecycler() : fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
-	~rSharedObjectRecycler(){}
+	rSharedObjectRecycler()noexcept(true) : fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
+	~rSharedObjectRecycler()noexcept(true){}
 
-	rPtr<T> operator ()(void){	Query();	}
-	rPtr<T> Query(void){
+	rPtr<T> operator ()(void)noexcept(true){	Query();	}
+	rPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
 		return rPtr<T>::TakeFromManual(Object);
 	}
 
-	static rPtr<T> QueryShared(void){
+	static rPtr<T> QueryShared(void)noexcept(true){
 		auto Manager=tLifeCycleSharedRecyclableManager::GetSharedManager();
 		auto Object=Manager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
@@ -506,11 +567,11 @@ public:
 	}
 private:
 
-	rPtr<typename tLifeCycleSharedRecyclableManager> fManager;
+	rPtr<tLifeCycleSharedRecyclableManager> fManager;
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline rPtr<T> rQuerySharedObject(void){
+inline rPtr<T> rQuerySharedObject(void)noexcept(true){
 	return rSharedObjectRecycler<T>::QueryShared();
 }
 //---------------------------------------------------------------------------
@@ -539,11 +600,11 @@ class rObjectRecycler
 {
 public:
 	typedef typename TReferenceLifeCycleRecyclableManagerTypes<T>::tLifeCycleManager tLifeCycleRecyclableManager;
-	rObjectRecycler() : fManager(rCreate<tLifeCycleRecyclableManager>()){}
-	~rObjectRecycler(){}
+	rObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
+	~rObjectRecycler()noexcept(true){}
 
-	rPtr<T> operator ()(void){	Query();	}
-	rPtr<T> Query(void){
+	rPtr<T> operator ()(void)noexcept(true){	Query();	}
+	rPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleRecyclableManager::tLifeCycleActivation::Start(Object);
 		return rPtr<T>::TakeFromManual(Object);
@@ -577,17 +638,17 @@ class iSharedObjectRecycler
 {
 public:
 	typedef typename TInterfaceLifeCycleRecyclableSharedManagerTypes<T>::tLifeCycleManager tLifeCycleSharedRecyclableManager;
-	iSharedObjectRecycler()	: fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
-	~iSharedObjectRecycler(){}
+	iSharedObjectRecycler()noexcept(true)	: fManager(tLifeCycleSharedRecyclableManager::GetSharedManager()){}
+	~iSharedObjectRecycler()noexcept(true){}
 
-	iPtr<T> operator ()(void){	Query();	}
-	iPtr<T> Query(void){
+	iPtr<T> operator ()(void)noexcept(true){	Query();	}
+	iPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
 		return iPtr<T>::TakeFromManual(Object);
 	}
 	
-	static iPtr<T> QueryShared(void){
+	static iPtr<T> QueryShared(void)noexcept(true){
 		auto Manager=tLifeCycleSharedRecyclableManager::GetSharedManager();
 		auto Object=Manager->Query();
 		tLifeCycleSharedRecyclableManager::tLifeCycleActivation::Start(Object);
@@ -595,11 +656,11 @@ public:
 	}
 private:
 
-	rPtr<typename tLifeCycleSharedRecyclableManager> fManager;
+	rPtr<tLifeCycleSharedRecyclableManager> fManager;
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline iPtr<T> iQuerySharedObject(void){
+inline iPtr<T> iQuerySharedObject(void)noexcept(true){
 	return iSharedObjectRecycler<T>::QueryShared();
 }
 //---------------------------------------------------------------------------
@@ -629,11 +690,11 @@ class iObjectRecycler
 public:
 	typedef typename TInterfaceLifeCycleRecyclableManagerTypes<T>::tLifeCycleManager tLifeCycleRecyclableManager;
 
-	iObjectRecycler() : fManager(rCreate<tLifeCycleRecyclableManager>()){}
-	~iObjectRecycler(){}
+	iObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
+	~iObjectRecycler()noexcept(true){}
 
-	iPtr<T> operator ()(void){	Query();	}
-	iPtr<T> Query(void){
+	iPtr<T> operator ()(void)noexcept(true){	Query();	}
+	iPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleRecyclableManager::tLifeCycleActivation::Start(Object);
 		return iPtr<T>::TakeFromManual(Object);
@@ -649,13 +710,13 @@ private:
 class cClassReferenceWithWeakSet
 {
 public:
-	cClassReferenceWithWeakSet();
-	~cClassReferenceWithWeakSet();
+	cClassReferenceWithWeakSet()noexcept(true);
+	~cClassReferenceWithWeakSet()noexcept(true);
 
 	class bcNotifyToken
 	{
 	public:
-		virtual bool cnLib_FUNC InvalidationNotify(cClassReferenceWithWeakSet *Token)=0;
+		virtual bool cnLib_FUNC InvalidationNotify(cClassReferenceWithWeakSet *Token)noexcept(true)=0;
 
 		bcNotifyToken *Parent;
 		bcNotifyToken *Child[2];
@@ -663,15 +724,15 @@ public:
 		ufInt8 Color;
 	};
 
-	void RefReset(void);
-	void RefInvalidate(void);
+	void RefReset(void)noexcept(true);
+	void RefInvalidate(void)noexcept(true);
 	
-	void RefInc(void);
-	bool RefDec(void);
+	void RefInc(void)noexcept(true);
+	bool RefDec(void)noexcept(true);
 
-	void WeakRegister(bcNotifyToken *NotifyToken);
-	void WeakUnregister(bcNotifyToken *NotifyToken);
-	bool WeakToStrong(void);
+	void WeakRegister(bcNotifyToken *NotifyToken)noexcept(true);
+	void WeakUnregister(bcNotifyToken *NotifyToken)noexcept(true);
+	bool WeakToStrong(void)noexcept(true);
 protected:
 	cAtomicVar<uIntn> fRefCount;
 	cAtomicVar<uIntn> fRegisterCount;
@@ -723,8 +784,8 @@ public:
 	friend bcVirtualLifeCycle::cActivation<aCls>;
 protected:
 
-	void RefClassAcquireReference(void){	RefInc();	}
-	void RefClassReleaseReference(void){	if(RefDec()){	tActivation<aCls>::Stop(this);	}	}
+	void RefClassAcquireReference(void)noexcept(true){	RefInc();	}
+	void RefClassReleaseReference(void)noexcept(true){	if(RefDec()){	tActivation<aCls>::Stop(this);	}	}
 
 };
 //---------------------------------------------------------------------------
@@ -739,15 +800,15 @@ struct TAutoClassLifeCycleTypes
 template<class T>
 struct cAutoClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< aCls<T>* >
 {
-	static void Acquire(aCls<T> *Token){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
-	static void Release(aCls<T> *Token){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
+	static void Acquire(aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
+	static void Release(aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
 struct cAutoClassRefTokenOperator<const T> : cnVar::bcPointerRefTokenOperator< const aCls<T>* >
 {
-	static void Acquire(const aCls<T> *Token){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
-	static void Release(const aCls<T> *Token){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
+	static void Acquire(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
+	static void Release(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -811,32 +872,23 @@ public:
 
 protected:
 
-	void RefClassAcquireReference(void){	RefInc();	}
-	void RefClassReleaseReference(void){	if(RefDec()){	tActivation<arCls>::Stop(this);	}	}
+	void RefClassAcquireReference(void)noexcept(true){	RefInc();	}
+	void RefClassReleaseReference(void)noexcept(true){	if(RefDec()){	tActivation<arCls>::Stop(this);	}	}
 
 };
 //---------------------------------------------------------------------------
 template<class T>
 struct cAutoRecyclableClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< arCls<T>* >
 {
-	static void Acquire(arCls<T> *Token){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
-	static void Release(arCls<T> *Token){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
-
-	//template<class=decltype(new arCls<T>)>
-	//static cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator> Create(void)
-	//{
-	//	auto NewObject=new arCls<T>;
-	//	arCls<T>::LifeCycleStart(NewObject);
-	//	return cnVar::cPtrReference<cAutoRecyclableClassRefTokenOperator>::TakeFromManual(NewObject);
-	//}
-
+	static void Acquire(arCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
+	static void Release(arCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
 struct cAutoRecyclableClassRefTokenOperator<const T> : cnVar::bcPointerRefTokenOperator< const arCls<T>* >
 {
-	static void Acquire(const aCls<T> *Token){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
-	static void Release(const aCls<T> *Token){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
+	static void Acquire(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
+	static void Release(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -855,22 +907,22 @@ struct cAutoClassWeakRefTokenOperator
 	typedef cClassReferenceWithWeakSet* tRegToken;
 	typedef cClassReferenceWithWeakSet::bcNotifyToken tNotifyToken;
 
-	static tRegToken Register(tRef Ref,tNotifyToken *NotifyToken){
+	static tRegToken Register(tRef Ref,tNotifyToken *NotifyToken)noexcept(true){
 		if(Ref==nullptr)
 			return nullptr;
 		Ref->WeakRegister(NotifyToken);
 		return Ref;
 	}
-	static tRegToken Register(tPtr Pointer,tNotifyToken *NotifyToken){
+	static tRegToken Register(tPtr Pointer,tNotifyToken *NotifyToken)noexcept(true){
 		if(Pointer==nullptr)
 			return nullptr;
 		Pointer->WeakRegister(NotifyToken);
 		return Pointer;
 	}
-	static void Unregister(tRegToken RegToken,tNotifyToken *NotifyToken){
+	static void Unregister(tRegToken RegToken,tNotifyToken *NotifyToken)noexcept(true){
 		return RegToken->WeakUnregister(NotifyToken);
 	}
-	static tRef Reference(tRegToken RegToken){
+	static tRef Reference(tRegToken RegToken)noexcept(true){
 		return RegToken->WeakToStrong()?tRef::TakeFromManual(static_cast<tPtr>(RegToken)):nullptr;
 	}
 };
@@ -881,29 +933,29 @@ template<class T>
 using arClsWeakRef=cnVar::cPtrWeakReference< cAutoClassWeakRefTokenOperator< arCls<T> > >;
 //---------------------------------------------------------------------------
 template<class T>
-aCls<T>* aClsFromPtr(T *Src)
+inline aCls<T>* aClsFromPtr(T *Src)noexcept(true)
 {
 	return static_cast<aCls<T>*>(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-aClsRef<T> aClsTake(aCls<T> *Src,uInt32 Tag)
+inline aClsRef<T> aClsTake(aCls<T> *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return aClsRef<T>::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-aCls<T>* aClsExtract(aClsRef<T> &Src,uInt32 Tag)
+inline aCls<T>* aClsExtract(aClsRef<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<aCls<T>*>(Src),Tag);
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
 template<class T>
-typename cnVar::TSelect<0,aClsRef<T>
+inline typename cnVar::TSelect<0,aClsRef<T>
 	, decltype(new aCls<T>)
->::Type aClsCreate(void)
+>::Type aClsCreate(void)noexcept(true)
 {
 	auto NewObject=new aCls<T>;
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);
@@ -912,9 +964,9 @@ typename cnVar::TSelect<0,aClsRef<T>
 }
 
 template<class T,class...TArgs>
-typename cnVar::TSelect<0,aClsRef<T>
+inline typename cnVar::TSelect<0,aClsRef<T>
 	, decltype(new aCls<T>(cnVar::DeclVal<TArgs>()...))
->::Type aClsCreate(TArgs&&...Args)
+>::Type aClsCreate(TArgs&&...Args)noexcept(true)
 {
 	auto NewObject=new aCls<T>(cnVar::Forward<TArgs>(Args)...);
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);
@@ -923,20 +975,20 @@ typename cnVar::TSelect<0,aClsRef<T>
 }
 //---------------------------------------------------------------------------
 template<class T>
-arCls<T>* arClsFromPtr(T *Src)
+inline arCls<T>* arClsFromPtr(T *Src)noexcept(true)
 {
 	return static_cast<arCls<T>*>(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-arClsRef<T> arClsTake(arCls<T> *Src,uInt32 Tag)
+inline arClsRef<T> arClsTake(arCls<T> *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return arClsRef<T>::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-arCls<T>* arClsExtract(arClsRef<T> &Src,uInt32 Tag)
+inline arCls<T>* arClsExtract(arClsRef<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<arCls<T>*>(Src),Tag);
 	return Src.ExtractToManual();
@@ -947,17 +999,17 @@ class arClsSharedObjectRecycler
 {
 public:
 	typedef typename arCls<T>::tLifeCycleSharedManager tLifeCycleManager;
-	arClsSharedObjectRecycler() : fManager(tLifeCycleManager::GetSharedManager()){}
-	~arClsSharedObjectRecycler(){}
+	arClsSharedObjectRecycler()noexcept(true) : fManager(tLifeCycleManager::GetSharedManager()){}
+	~arClsSharedObjectRecycler()noexcept(true){}
 
-	arClsRef<T> operator ()(void){	return Query();	}
-	arClsRef<T> Query(void){
+	arClsRef<T> operator ()(void)noexcept(true){	return Query();	}
+	arClsRef<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleManager::tLifeCycleActivation::Start(Object);
 		return arClsRef<T>::TakeFromManual(Object);
 	}
 
-	static arClsRef<T> QueryShared(void){
+	static arClsRef<T> QueryShared(void)noexcept(true){
 		auto Manager=tLifeCycleManager::GetSharedManager();
 		auto Object=Manager->Query();
 		tLifeCycleManager::tLifeCycleActivation::Start(Object);
@@ -965,11 +1017,11 @@ public:
 	}
 private:
 
-	rPtr<typename tLifeCycleManager> fManager;
+	rPtr<tLifeCycleManager> fManager;
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline arClsRef<T> arClsQuerySharedObject(void){
+inline arClsRef<T> arClsQuerySharedObject(void)noexcept(true){
 	return arClsSharedObjectRecycler<T>::QueryShared();
 }
 //---------------------------------------------------------------------------
@@ -979,11 +1031,11 @@ class arClsObjectRecycler
 public:
 	typedef typename arCls<T>::tLifeCycleManager tLifeCycleManager;
 
-	arClsObjectRecycler() : fManager(rCreate<tLifeCycleManager>()){}
-	~arClsObjectRecycler(){}
+	arClsObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleManager>()){}
+	~arClsObjectRecycler()noexcept(true){}
 
-	arClsRef<T> operator ()(void){	Query();	}
-	arClsRef<T> Query(void){
+	arClsRef<T> operator ()(void)noexcept(true){	Query();	}
+	arClsRef<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
 		tLifeCycleManager::tLifeCycleActivation::Start(Object);
 		return arClsRef<T>::TakeFromManual(Object);

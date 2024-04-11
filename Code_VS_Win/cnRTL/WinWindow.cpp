@@ -18,13 +18,13 @@ using namespace cnWinRTL;
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WINXP
 //---------------------------------------------------------------------------
-LRESULT NTXPWindowSubclass::cDefaultProcedureCaller::Execute(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
+LRESULT NTXPWindowSubclass::cDefaultProcedureCaller::Execute(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept
 {
 	return ::DefSubclassProc(hWnd,uMsg,wParam,lParam);
 }
 //---------------------------------------------------------------------------
 static constexpr UINT SubclassID=0xC009;
-static LRESULT CALLBACK SubclassProcedure(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam,UINT_PTR uIdSubclass,DWORD_PTR dwRefData)
+static LRESULT CALLBACK SubclassProcedure(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam,UINT_PTR uIdSubclass,DWORD_PTR dwRefData)noexcept
 {	hWnd,uIdSubclass;
 	auto WindowSubclass=reinterpret_cast<bcWindowSubclass*>(dwRefData);
 	if(uMsg!=WM_DESTROY){
@@ -36,12 +36,12 @@ static LRESULT CALLBACK SubclassProcedure(HWND hWnd,UINT uMsg,WPARAM wParam,LPAR
 	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 //---------------------------------------------------------------------------
-bool NTXPWindowSubclass::SetLocal(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool NTXPWindowSubclass::SetLocal(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept
 {
 	return Set(WindowHandle,Subclass);
 }
 //---------------------------------------------------------------------------
-bool NTXPWindowSubclass::Set(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool NTXPWindowSubclass::Set(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept
 {
 	if(::SetWindowSubclass(WindowHandle,SubclassProcedure,SubclassID,reinterpret_cast<DWORD_PTR>(Subclass))==FALSE){
 		return false;
@@ -51,7 +51,7 @@ bool NTXPWindowSubclass::Set(HWND WindowHandle,bcWindowSubclass *Subclass)
 	return true;
 }
 //---------------------------------------------------------------------------
-void NTXPWindowSubclass::Restore(HWND WindowHandle,bcWindowSubclass *Subclass)
+void NTXPWindowSubclass::Restore(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept
 {
 	// window destroyed
 	Subclass->SubclassDetached();
@@ -62,15 +62,15 @@ void NTXPWindowSubclass::Restore(HWND WindowHandle,bcWindowSubclass *Subclass)
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_WINXP
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWindowUIState::cWindowUIState()
+cWindowUIState::cWindowUIState()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWindowUIState::~cWindowUIState()
+cWindowUIState::~cWindowUIState()noexcept
 {
 }
 //---------------------------------------------------------------------------
-LONG cWindowUIState::WindowAttached(HWND WindowHandle)
+LONG cWindowUIState::WindowAttached(HWND WindowHandle)noexcept
 {
 	fWindowValid=true;
 
@@ -83,18 +83,18 @@ LONG cWindowUIState::WindowAttached(HWND WindowHandle)
 }
 
 //---------------------------------------------------------------------------
-void cWindowUIState::WindowDetached(void)
+void cWindowUIState::WindowDetached(void)noexcept
 {
 	fWindowValid=false;
 }
 //---------------------------------------------------------------------------
-void cWindowUIState::AfterChildWindowCreated(HWND WindowHandle)
+void cWindowUIState::AfterChildWindowCreated(HWND WindowHandle)noexcept
 {
 	LONG StyleValue=::GetWindowLongW(WindowHandle,GWL_STYLE);
 	fWindowVisible=(0!=(StyleValue&WS_VISIBLE));
 }
 //---------------------------------------------------------------------------
-bool cWindowUIState::WindowMessageCheckState(const cWindowMessageParam &MsgParam)
+bool cWindowUIState::WindowMessageCheckState(const cWindowMessageParam &MsgParam)noexcept
 {
 	switch(MsgParam.Code){
 	case WM_STYLECHANGED:
@@ -146,7 +146,7 @@ bool cWindowUIState::WindowMessageCheckState(const cWindowMessageParam &MsgParam
 	return false;
 }
 //---------------------------------------------------------------------------
-eUIState cWindowUIState::GetUIState(void)const
+eUIState cWindowUIState::GetUIState(void)const noexcept
 {
 	if(fWindowValid==false)
 		return UIState::Null;
@@ -162,7 +162,7 @@ eUIState cWindowUIState::GetUIState(void)const
 	return UIState::Active;
 }
 //---------------------------------------------------------------------------
-int cnWinRTL::GetWindowDPI(HWND hWnd)
+int cnWinRTL::GetWindowDPI(HWND hWnd)noexcept
 {
 //#if _WIN32_WINNT >= _WIN32_WINNT_WINBLUE
 	auto monitor=::MonitorFromWindow(hWnd,MONITOR_DEFAULTTONEAREST);
@@ -177,7 +177,7 @@ int cnWinRTL::GetWindowDPI(HWND hWnd)
 //#endif
 }
 //---------------------------------------------------------------------------
-HWND cnWinRTL::GetWindowHandleFromUIWindow(iUIArea *Area)
+HWND cnWinRTL::GetWindowHandleFromUIWindow(iUIArea *Area)noexcept
 {
 	if(Area==nullptr)
 		return nullptr;
@@ -188,14 +188,14 @@ HWND cnWinRTL::GetWindowHandleFromUIWindow(iUIArea *Area)
 	return WindowHandleProperty->GetWindowHandle();
 }
 //---------------------------------------------------------------------------
-HWND cnWinRTL::GetWindowHandleFromUIView(iUIView *View)
+HWND cnWinRTL::GetWindowHandleFromUIView(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return nullptr;
 	return GetWindowHandleFromUIWindow(View->GetWindow());
 }
 //---------------------------------------------------------------------------
-iWindow* cnWinRTL::GetWindowFromUIWindow(iUIArea *Area)
+iWindow* cnWinRTL::GetWindowFromUIWindow(iUIArea *Area)noexcept
 {
 	auto WindowClient=iCast<iWindowClient>(Area);
 	if(WindowClient!=nullptr)
@@ -207,7 +207,7 @@ iWindow* cnWinRTL::GetWindowFromUIWindow(iUIArea *Area)
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iWindow* cnWinRTL::GetWindowFromUIView(iUIView *View)
+iWindow* cnWinRTL::GetWindowFromUIView(iUIView *View)noexcept
 {
 	if(View==nullptr)
 		return nullptr;

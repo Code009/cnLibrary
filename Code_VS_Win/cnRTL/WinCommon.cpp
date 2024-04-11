@@ -7,7 +7,7 @@ using namespace cnWinRTL;
 
 
 //---------------------------------------------------------------------------
-sInt32 cnRTL::SysHandleToValue(HANDLE Handle)
+sInt32 cnRTL::SysHandleToValue(HANDLE Handle)noexcept
 {
 #ifdef _WIN64
 	return static_cast<sInt32>(reinterpret_cast<sInt64>(Handle));
@@ -16,7 +16,7 @@ sInt32 cnRTL::SysHandleToValue(HANDLE Handle)
 #endif
 }
 //---------------------------------------------------------------------------
-HANDLE cnRTL::SysHandleFromValue(sInt32 Value)
+HANDLE cnRTL::SysHandleFromValue(sInt32 Value)noexcept
 {
 #ifdef _WIN64
 	return reinterpret_cast<HANDLE>(static_cast<sInt64>(Value));
@@ -25,25 +25,25 @@ HANDLE cnRTL::SysHandleFromValue(sInt32 Value)
 #endif
 }
 //---------------------------------------------------------------------------
-uChar16 *cnRTL::wtou(wchar_t *Str)
+uChar16 *cnRTL::wtou(wchar_t *Str)noexcept
 {
 	return reinterpret_cast<uChar16*>(Str);
 }
-const uChar16 *cnRTL::wtou(const wchar_t *Str)
+const uChar16 *cnRTL::wtou(const wchar_t *Str)noexcept
 {
 	return reinterpret_cast<const uChar16*>(Str);
 }
 //---------------------------------------------------------------------------
-wchar_t *cnRTL::utow(uChar16 *Str)
+wchar_t *cnRTL::utow(uChar16 *Str)noexcept
 {
 	return reinterpret_cast<wchar_t*>(Str);
 }
-const wchar_t *cnRTL::utow(const uChar16 *Str)
+const wchar_t *cnRTL::utow(const uChar16 *Str)noexcept
 {
 	return reinterpret_cast<const wchar_t*>(Str);
 }
 //---------------------------------------------------------------------------
-uIntn cTextEncodingConverter_UnicodeToMultiByte::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)
+uIntn cTextEncodingConverter_UnicodeToMultiByte::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
 {
 	int DestConvertedSize=::WideCharToMultiByte(DestCodePage,0,static_cast<const wchar_t*>(Src),static_cast<int>(SrcSize/2),static_cast<char*>(Dest),static_cast<int>(DestSize),NULL,NULL);
 	if(DestConvertedSize==0){
@@ -58,7 +58,7 @@ uIntn cTextEncodingConverter_UnicodeToMultiByte::Convert(void *Dest,uIntn DestSi
 	return DestConvertedSize;
 }
 //---------------------------------------------------------------------------
-uIntn cTextEncodingConverter_MultiByteToUnicode::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)
+uIntn cTextEncodingConverter_MultiByteToUnicode::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
 {
 	int DestConvertedLength=::MultiByteToWideChar(SrcCodePage,0,static_cast<const char*>(Src),static_cast<int>(SrcSize),static_cast<wchar_t*>(Dest),static_cast<int>(DestSize/2));
 	if(DestConvertedLength==0){
@@ -74,12 +74,12 @@ uIntn cTextEncodingConverter_MultiByteToUnicode::Convert(void *Dest,uIntn DestSi
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWin32CodePageConvertBuffer::CopyUTF8(const uChar8 *Text,uIntn Length)
+void cWin32CodePageConvertBuffer::CopyUTF8(const uChar8 *Text,uIntn Length)noexcept
 {
 	Result.SetString(reinterpret_cast<const char*>(Text),Length);
 }
 //---------------------------------------------------------------------------
-void cWin32CodePageConvertBuffer::TranslateWideChar(const wchar_t *Text,uIntn Length)
+void cWin32CodePageConvertBuffer::TranslateWideChar(const wchar_t *Text,uIntn Length)noexcept
 {
 	int CharLength=::WideCharToMultiByte(CP_ACP,0,Text,static_cast<int>(Length),nullptr,0,nullptr,nullptr);
 	if(CharLength<=0){
@@ -95,7 +95,7 @@ void cWin32CodePageConvertBuffer::TranslateWideChar(const wchar_t *Text,uIntn Le
 	Result.SetLength(CharLength);
 }
 //---------------------------------------------------------------------------
-void cWin32CodePageConvertBuffer::TranslateUTF8(const uChar8 *Text,uIntn Length)
+void cWin32CodePageConvertBuffer::TranslateUTF8(const uChar8 *Text,uIntn Length)noexcept
 {
 	int WideCharLength=::MultiByteToWideChar(CP_UTF8,0,reinterpret_cast<const char*>(Text),static_cast<int>(Length),nullptr,0);
 	if(WideCharLength<=0){
@@ -108,27 +108,27 @@ void cWin32CodePageConvertBuffer::TranslateUTF8(const uChar8 *Text,uIntn Length)
 	return TranslateWideChar(WideCharTemp->Pointer,WideCharLength);
 }
 //---------------------------------------------------------------------------
-void cWin32CodePageConvertBuffer::TranslateUTF16(const uChar16 *Text,uIntn Length)
+void cWin32CodePageConvertBuffer::TranslateUTF16(const uChar16 *Text,uIntn Length)noexcept
 {
 	return TranslateWideChar(utow(Text),Length);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTimeMeter::cTimeMeter()
+cTimeMeter::cTimeMeter()noexcept
 {
 	Reset();
 }
 //---------------------------------------------------------------------------
-cTimeMeter::~cTimeMeter()
+cTimeMeter::~cTimeMeter()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cTimeMeter::Reset(void)
+void cTimeMeter::Reset(void)noexcept
 {
 	::QueryPerformanceCounter(&fCheckPoint);
 }
 //---------------------------------------------------------------------------
-double cTimeMeter::Check(void)
+double cTimeMeter::Check(void)noexcept
 {
 	LARGE_INTEGER Now;
 	LARGE_INTEGER PF;
@@ -138,7 +138,7 @@ double cTimeMeter::Check(void)
 	return double(d)/PF.QuadPart;
 }
 //---------------------------------------------------------------------------
-int cTimeMeter::Check(int Scale)
+int cTimeMeter::Check(int Scale)noexcept
 {
 	LARGE_INTEGER Now;
 	LARGE_INTEGER PF;

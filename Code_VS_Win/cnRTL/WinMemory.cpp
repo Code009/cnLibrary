@@ -19,14 +19,14 @@ using namespace cnWinRTL;
 static _CrtMemState DebugMemStat;
 #endif // cnLib_DEBUG_REPORTLEAK
 
-cCRTDebugMemoryHeap::cCRTDebugMemoryHeap()
+cCRTDebugMemoryHeap::cCRTDebugMemoryHeap()noexcept
 {
 #ifdef cnLib_DEBUG_REPORTLEAK
 	_CrtMemCheckpoint(&DebugMemStat);
 #endif // cnLib_DEBUG_REPORTLEAK
 }
 //---------------------------------------------------------------------------
-cCRTDebugMemoryHeap::~cCRTDebugMemoryHeap()
+cCRTDebugMemoryHeap::~cCRTDebugMemoryHeap()noexcept
 {
 #ifdef cnLib_DEBUG_REPORTLEAK
 	_CrtMemState CurDebugMemStat;
@@ -40,29 +40,29 @@ cCRTDebugMemoryHeap::~cCRTDebugMemoryHeap()
 #endif // cnLib_DEBUG_REPORTLEAK
 }
 //---------------------------------------------------------------------------
-void* cCRTDebugMemoryHeap::Alloc(uIntn Size,uIntn Alignment)
+void* cCRTDebugMemoryHeap::Alloc(uIntn Size,uIntn Alignment)noexcept
 {Alignment;
 	return _malloc_dbg(Size,_NORMAL_BLOCK, __FILE__, __LINE__);
 }
 //---------------------------------------------------------------------------
-bool cCRTDebugMemoryHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)
+bool cCRTDebugMemoryHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept
 {Size,Alignment;
 	_free_dbg(Pointer,_NORMAL_BLOCK);
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCRTDebugMemoryHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)
+bool cCRTDebugMemoryHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept
 {Size;
 	return nullptr!=_expand_dbg(Pointer,NewSize,_NORMAL_BLOCK, __FILE__, __LINE__);
 }
 //---------------------------------------------------------------------------
-void* cCRTDebugMemoryHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)
+void* cCRTDebugMemoryHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept
 {Alignment;NewAlignment;Size;
 	ManualCopy=false;
 	return _realloc_dbg(Pointer,NewSize,_NORMAL_BLOCK, __FILE__, __LINE__);
 }
 //---------------------------------------------------------------------------
-uIntn cCRTDebugMemoryHeap::SizeOf(void *Pointer)
+uIntn cCRTDebugMemoryHeap::SizeOf(void *Pointer)noexcept
 {
 	return _msize_dbg(Pointer,_NORMAL_BLOCK);
 } 
@@ -70,12 +70,12 @@ uIntn cCRTDebugMemoryHeap::SizeOf(void *Pointer)
 #endif
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcWinMemoryHeap::bcWinMemoryHeap(HANDLE Heap)
+bcWinMemoryHeap::bcWinMemoryHeap(HANDLE Heap)noexcept
 	: fHeap(Heap)
 {
 }
 //---------------------------------------------------------------------------
-void* bcWinMemoryHeap::Alloc(uIntn Size,uIntn Alignment)
+void* bcWinMemoryHeap::Alloc(uIntn Size,uIntn Alignment)noexcept
 {
 	DWORD Flags=0;
 	if(Alignment>8 && Size>8){
@@ -84,17 +84,17 @@ void* bcWinMemoryHeap::Alloc(uIntn Size,uIntn Alignment)
 	return ::HeapAlloc(fHeap,Flags|HEAP_GENERATE_EXCEPTIONS,Size);
 }
 //---------------------------------------------------------------------------
-bool bcWinMemoryHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)
+bool bcWinMemoryHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept
 {Size,Alignment;
 	return ::HeapFree(fHeap,0,Pointer)!=FALSE;
 }
 //---------------------------------------------------------------------------
-bool bcWinMemoryHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)
+bool bcWinMemoryHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept
 {Size;
 	return nullptr!=::HeapReAlloc(fHeap,HEAP_REALLOC_IN_PLACE_ONLY,Pointer,NewSize);
 }
 //---------------------------------------------------------------------------
-void* bcWinMemoryHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)
+void* bcWinMemoryHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept
 {Size,Alignment;
 	DWORD Flags=0;
 	if(NewAlignment>8 && NewSize>8){
@@ -107,23 +107,23 @@ void* bcWinMemoryHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn N
 	return ::HeapReAlloc(fHeap,Flags|HEAP_GENERATE_EXCEPTIONS,Pointer,NewSize);
 }
 //---------------------------------------------------------------------------
-uIntn bcWinMemoryHeap::SizeOf(void *Pointer)
+uIntn bcWinMemoryHeap::SizeOf(void *Pointer)noexcept
 {
 	return ::HeapSize(fHeap,0,Pointer);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinMemoryHeap::cWinMemoryHeap(HANDLE Heap)
+cWinMemoryHeap::cWinMemoryHeap(HANDLE Heap)noexcept
 	: bcWinMemoryHeap(Heap)
 {
 }
 //---------------------------------------------------------------------------
-cWinMemoryHeap::cWinMemoryHeap(DWORD Options,SIZE_T InitialSize,SIZE_T MaximumSize)
+cWinMemoryHeap::cWinMemoryHeap(DWORD Options,SIZE_T InitialSize,SIZE_T MaximumSize)noexcept
 	: bcWinMemoryHeap(::HeapCreate(Options,InitialSize,MaximumSize))
 {
 }
 //---------------------------------------------------------------------------
-cWinMemoryHeap::~cWinMemoryHeap()
+cWinMemoryHeap::~cWinMemoryHeap()noexcept
 {
 	::HeapDestroy(fHeap);
 }

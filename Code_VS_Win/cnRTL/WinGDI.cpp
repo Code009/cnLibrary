@@ -7,7 +7,7 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-COLORREF cnWinRTL::COLORREFFromUIColor(const cUIColor &UIColor)
+COLORREF cnWinRTL::COLORREFFromUIColor(const cUIColor &UIColor)noexcept
 {
 #pragma message (cnLib_FILE_LINE ": TODO - use vector")
 	return static_cast<uInt32>(UIColor.Red*255.f) |
@@ -16,7 +16,7 @@ COLORREF cnWinRTL::COLORREFFromUIColor(const cUIColor &UIColor)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGDIBitmapBuffer::cGDIBitmapBuffer()
+cGDIBitmapBuffer::cGDIBitmapBuffer()noexcept
 {
 	Bitmap=nullptr;
 	Width=0;
@@ -26,14 +26,14 @@ cGDIBitmapBuffer::cGDIBitmapBuffer()
 	BitmapData=nullptr;
 }
 //---------------------------------------------------------------------------
-cGDIBitmapBuffer::~cGDIBitmapBuffer()
+cGDIBitmapBuffer::~cGDIBitmapBuffer()noexcept
 {
 	if(Bitmap!=nullptr){
 		::DeleteObject(Bitmap);
 	}
 }
 //---------------------------------------------------------------------------
-void cGDIBitmapBuffer::Clear(void)
+void cGDIBitmapBuffer::Clear(void)noexcept
 {
 	if(Bitmap!=nullptr){
 		::DeleteObject(Bitmap);
@@ -46,7 +46,7 @@ void cGDIBitmapBuffer::Clear(void)
 	BitmapData=nullptr;
 }
 //---------------------------------------------------------------------------
-void cGDIBitmapBuffer::Setup(HDC DC,int NewWidth,int NewHeight)
+void cGDIBitmapBuffer::Setup(HDC DC,int NewWidth,int NewHeight)noexcept
 {
 	// clear old bitmap
 	Clear();
@@ -87,7 +87,7 @@ void cGDIBitmapBuffer::Setup(HDC DC,int NewWidth,int NewHeight)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGDIBitmapSection::cGDIBitmapSection()
+cGDIBitmapSection::cGDIBitmapSection()noexcept
 {
 	Section=nullptr;
 	Bitmap=nullptr;
@@ -95,7 +95,7 @@ cGDIBitmapSection::cGDIBitmapSection()
 	Height=0;
 }
 //---------------------------------------------------------------------------
-cGDIBitmapSection::~cGDIBitmapSection()
+cGDIBitmapSection::~cGDIBitmapSection()noexcept
 {
 	if(Bitmap!=nullptr){
 		::DeleteObject(Bitmap);
@@ -103,7 +103,7 @@ cGDIBitmapSection::~cGDIBitmapSection()
 	}
 }
 //---------------------------------------------------------------------------
-void cGDIBitmapSection::Clear(void)
+void cGDIBitmapSection::Clear(void)noexcept
 {
 	if(Bitmap!=nullptr){
 		::DeleteObject(Bitmap);
@@ -118,7 +118,7 @@ void cGDIBitmapSection::Clear(void)
 	BitmapData=nullptr;
 }
 //---------------------------------------------------------------------------
-void cGDIBitmapSection::Setup(HDC DC,int NewWidth,int NewHeight)
+void cGDIBitmapSection::Setup(HDC DC,int NewWidth,int NewHeight)noexcept
 {
 	// clear old bitmap
 	Clear();
@@ -162,25 +162,25 @@ void cGDIBitmapSection::Setup(HDC DC,int NewWidth,int NewHeight)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGDIBitmap::cGDIBitmap(HBITMAP Bitmap,bool HasAlpha)
+cGDIBitmap::cGDIBitmap(HBITMAP Bitmap,bool HasAlpha)noexcept
 {
 	fBitmap=Bitmap;
 	fHasAlpha=HasAlpha;
 }
 //---------------------------------------------------------------------------
-cGDIBitmap::~cGDIBitmap()
+cGDIBitmap::~cGDIBitmap()noexcept
 {
 	if(fBitmap!=nullptr){
 		::DeleteObject(fBitmap);
 	}
 }
 //---------------------------------------------------------------------------
-void* cGDIBitmap::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cGDIBitmap::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iGDIBitmap>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-cUIPoint cGDIBitmap::GetSize(void)
+cUIPoint cGDIBitmap::GetSize(void)noexcept
 {
 	BITMAP BmpInfo;
 	if(::GetObjectW(fBitmap,sizeof(BmpInfo),&BmpInfo)){
@@ -189,17 +189,17 @@ cUIPoint cGDIBitmap::GetSize(void)
 	return {0,0};
 }
 //---------------------------------------------------------------------------
-HBITMAP cGDIBitmap::GetBitmap(void)
+HBITMAP cGDIBitmap::GetBitmap(void)noexcept
 {
 	return fBitmap;
 }
 //---------------------------------------------------------------------------
-bool cGDIBitmap::HasAlpha(void)
+bool cGDIBitmap::HasAlpha(void)noexcept
 {
 	return fHasAlpha;
 }
 //---------------------------------------------------------------------------
-bool cnWinRTL::GDIDrawBitmap(HDC DC,int DrawX,int DrawY,int DrawWidth,int DrawHeight,HDC MemDC,HBITMAP Bitmap,int BmpWidth,int BmpHeight,bool HasAlpha)
+bool cnWinRTL::GDIDrawBitmap(HDC DC,int DrawX,int DrawY,int DrawWidth,int DrawHeight,HDC MemDC,HBITMAP Bitmap,int BmpWidth,int BmpHeight,bool HasAlpha)noexcept
 {
 	auto OldBitmap=::SelectObject(MemDC,Bitmap);
 	BOOL r;
@@ -285,7 +285,7 @@ static const BITMAPV4HEADER DCBitmapV4Header_RGB32={
 	0,	//bV4GammaBlue;
 };
 //---------------------------------------------------------------------------
-HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,IWICBitmapSource *BitmapSource,bool &HasAlpha)
+HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,IWICBitmapSource *BitmapSource,bool &HasAlpha)noexcept
 {
 	cnLib_ASSERT(DC!=nullptr);
 
@@ -401,7 +401,7 @@ HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,IWICBitmapSource *BitmapSource
 
 }
 //---------------------------------------------------------------------------
-HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,iBitmapDataSource *Source,bool &HasAlpha)
+HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,iBitmapDataSource *Source,bool &HasAlpha)noexcept
 {
 	cnLib_ASSERT(DC!=nullptr);
 	// load COM
@@ -507,52 +507,52 @@ HBITMAP cnWinRTL::DCCreateBitmapFromSource(HDC DC,iBitmapDataSource *Source,bool
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGDIDC::cGDIDC(HDC DC)
+cGDIDC::cGDIDC(HDC DC)noexcept
 	: fDC(DC)
 {
 }
 //---------------------------------------------------------------------------
-cGDIDC::~cGDIDC()
+cGDIDC::~cGDIDC()noexcept
 {
 	if(fDC!=nullptr){
 		::DeleteDC(fDC);
 	}
 }
 //---------------------------------------------------------------------------
-HDC cGDIDC::GetHandle(void)
+HDC cGDIDC::GetHandle(void)noexcept
 {
 	return fDC;
 }
 //---------------------------------------------------------------------------
-HDC cGDIDC::GetDC(void)
+HDC cGDIDC::GetDC(void)noexcept
 {
 	return fDC;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGDIFontHandle::cGDIFontHandle(HFONT FontHandle)
+cGDIFontHandle::cGDIFontHandle(HFONT FontHandle)noexcept
 	: fFontHandle(FontHandle)
 {
 	
 }
 //---------------------------------------------------------------------------
-cGDIFontHandle::~cGDIFontHandle()
+cGDIFontHandle::~cGDIFontHandle()noexcept
 {
 	::DeleteObject(fFontHandle);
 }
 //---------------------------------------------------------------------------
-HFONT cGDIFontHandle::GetFontHandle(void)
+HFONT cGDIFontHandle::GetFontHandle(void)noexcept
 {
 	return fFontHandle;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDCPaintDevice::cMemDC::cMemDC()
+cDCPaintDevice::cMemDC::cMemDC()noexcept
 	: cGDIDC(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-void cDCPaintDevice::cMemDC::SetupDC(HDC IC,uIntn DCNumber)
+void cDCPaintDevice::cMemDC::SetupDC(HDC IC,uIntn DCNumber)noexcept
 {
 	if(fDC!=nullptr){
 		if(fDCNumber==DCNumber)
@@ -565,7 +565,7 @@ void cDCPaintDevice::cMemDC::SetupDC(HDC IC,uIntn DCNumber)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cDCPaintDevice::cFontIndex::operator <(const cFontIndex &Src)const
+bool cDCPaintDevice::cFontIndex::operator <(const cFontIndex &Src)const noexcept
 {
 	if(InfoValue<InfoValue)
 		return true;
@@ -573,7 +573,7 @@ bool cDCPaintDevice::cFontIndex::operator <(const cFontIndex &Src)const
 		return true;
 	return false;
 }
-bool cDCPaintDevice::cFontIndex::operator ==(const cFontIndex &Src)const
+bool cDCPaintDevice::cFontIndex::operator ==(const cFontIndex &Src)const noexcept
 {
 	if(InfoValue!=InfoValue)
 		return false;
@@ -583,19 +583,19 @@ bool cDCPaintDevice::cFontIndex::operator ==(const cFontIndex &Src)const
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDCPaintDevice::cBitmap::cBitmap(cDCPaintDevice *Owner,iBitmapDataSource *Source,HBITMAP Bitmap,bool HasAlpha)
+cDCPaintDevice::cBitmap::cBitmap(cDCPaintDevice *Owner,iBitmapDataSource *Source,HBITMAP Bitmap,bool HasAlpha)noexcept
 	: cGDIBitmap(Bitmap,HasAlpha),fSource(Source)
 {
 	fOwner=Owner;
 	fOwner->fBitmapCache[fSource]=this;
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource *cDCPaintDevice::cBitmap::GetSource(void)const
+iBitmapDataSource *cDCPaintDevice::cBitmap::GetSource(void)const noexcept
 {
 	return fSource;
 }
 //---------------------------------------------------------------------------
-void cDCPaintDevice::cBitmap::VirtualStopped(void)
+void cDCPaintDevice::cBitmap::VirtualStopped(void)noexcept
 {
 	if(fOwner->fUIThread->IsCurrentThread()){
 		ThreadDelete();
@@ -606,7 +606,7 @@ void cDCPaintDevice::cBitmap::VirtualStopped(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cDCPaintDevice::cBitmap::ThreadDelete(void)
+void cDCPaintDevice::cBitmap::ThreadDelete(void)noexcept
 {
 	// delete
 	fOwner->fBitmapCache.Remove(fSource);
@@ -614,61 +614,61 @@ void cDCPaintDevice::cBitmap::ThreadDelete(void)
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-void cDCPaintDevice::cBitmap::cThreadDeleteProcedure::Execute(void)
+void cDCPaintDevice::cBitmap::cThreadDeleteProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cBitmap::fThreadDeleteProcedure);
 	Host->ThreadDelete();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDCPaintDevice::cDCPaintDevice()
+cDCPaintDevice::cDCPaintDevice()noexcept
 	: fUIThread(cnWindows::CreateUIThreadOnCurrentThread())
 {
 	fDCNumber=0;
 	UpdateDisplaySetting();
 }
 //---------------------------------------------------------------------------
-cDCPaintDevice::~cDCPaintDevice()
+cDCPaintDevice::~cDCPaintDevice()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cDCPaintDevice::CheckThread(void)
+bool cDCPaintDevice::CheckThread(void)noexcept
 {
 	return fUIThread->IsCurrentThread();
 }
 //---------------------------------------------------------------------------
-HDC cDCPaintDevice::GetScreenICHandle(void)
+HDC cDCPaintDevice::GetScreenICHandle(void)noexcept
 {
 	return fScreenIC->GetHandle();
 }
 //---------------------------------------------------------------------------
-cGDIDC* cDCPaintDevice::GetScreenIC(void)
+cGDIDC* cDCPaintDevice::GetScreenIC(void)noexcept
 {
 	return fScreenIC;
 }
 //---------------------------------------------------------------------------
-iGDIDC* cDCPaintDevice::GetScreenInfomationDC(void)
+iGDIDC* cDCPaintDevice::GetScreenInfomationDC(void)noexcept
 {
 	if(CheckThread()==false)
 		return nullptr;
 	return fScreenIC;
 }
 //---------------------------------------------------------------------------
-rPtr<cGDIDC> cDCPaintDevice::QueryMemDC(void)
+rPtr<cGDIDC> cDCPaintDevice::QueryMemDC(void)noexcept
 {
 	auto MemDC=fMemDCRecycler.Query();
 	MemDC->SetupDC(fScreenIC->GetHandle(),fDCNumber);
 	return MemDC;
 }
 //---------------------------------------------------------------------------
-rPtr<iGDIDC> cDCPaintDevice::QueryMemoryDC(void)
+rPtr<iGDIDC> cDCPaintDevice::QueryMemoryDC(void)noexcept
 {
 	if(CheckThread()==false)
 		return nullptr;
 	return QueryMemDC();
 }
 //---------------------------------------------------------------------------
-void cDCPaintDevice::UpdateDisplaySetting(void)
+void cDCPaintDevice::UpdateDisplaySetting(void)noexcept
 {
 	fDM.dmSize=sizeof(fDM);
 	fDM.dmDriverExtra=0;
@@ -682,7 +682,7 @@ void cDCPaintDevice::UpdateDisplaySetting(void)
 
 }
 //---------------------------------------------------------------------------
-rPtr<iGDIFontHandle> cDCPaintDevice::QueryFont(const cUITextStyle &TextStyle)
+rPtr<iGDIFontHandle> cDCPaintDevice::QueryFont(const cUITextStyle &TextStyle)noexcept
 {
 	if(CheckThread()==false)
 		return nullptr;
@@ -759,7 +759,7 @@ rPtr<iGDIFontHandle> cDCPaintDevice::QueryFont(const cUITextStyle &TextStyle)
 	return MapItem;
 }
 //---------------------------------------------------------------------------
-iPtr<iGDIBitmap> cDCPaintDevice::CreateBitmapCopyFromSource(iBitmapDataSource *Source)
+iPtr<iGDIBitmap> cDCPaintDevice::CreateBitmapCopyFromSource(iBitmapDataSource *Source)noexcept
 {
 	if(CheckThread()==false)
 		return nullptr;

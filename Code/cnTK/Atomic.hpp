@@ -17,58 +17,59 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace TKRuntime{
 //---------------------------------------------------------------------------
-	
-template<class TInteger>
+
+template<uIntn Size>
 struct TAtomicInteger;
 //{
 //	typedef tAtomic;
-//	typedef TInteger tVariable;
+//	typedef tInteger;
 //
-//	static TInteger Get(const tAtomic &a)noexcept;
-//	static void Set(tAtomic &a,const TInteger &v)noexcept;
+//	static tInteger Get(const tAtomic &a)noexcept;
+//	static void Set(tAtomic &a,tInteger v)noexcept;
 //
-//	static bool WatchEqual(tAtomic &a,const tVariable &Value,uIntn Count)noexcept;
-//	static bool WatchNotEqual(tAtomic &a,const tVariable &Value,uIntn Count)noexcept;
+//	static bool WatchEqual(tAtomic &a,tInteger Value,uIntn Count)noexcept;
+//	static bool WatchNotEqual(tAtomic &a,tInteger Value,uIntn Count)noexcept;
 //
-//	static TInteger FreeLoad(const tAtomic &a)noexcept;
-//	static TInteger AcquireLoad(const tAtomic &a)noexcept;
+//	static tInteger FreeLoad(const tAtomic &a)noexcept;
+//	static tInteger AcquireLoad(const tAtomic &a)noexcept;
 //
-//	static void FreeStore(tAtomic &a,const TInteger &v)noexcept;
-//	static void ReleaseStore(tAtomic &a,const TInteger &v)noexcept;
+//	static void FreeStore(tAtomic &a,tInteger v)noexcept;
+//	static void ReleaseStore(tAtomic &a,tInteger v)noexcept;
 //
-//	static TInteger FreeExchange(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger AcquireExchange(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger ReleaseExchange(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger BarrierExchange(tAtomic &a,const TInteger &v)noexcept;
+//	static tInteger FreeExchange(tAtomic &a,tInteger v)noexcept;
+//	static tInteger AcquireExchange(tAtomic &a,tInteger v)noexcept;
+//	static tInteger ReleaseExchange(tAtomic &a,tInteger v)noexcept;
+//	static tInteger BarrierExchange(tAtomic &a,tInteger v)noexcept;
 //
-//	static bool FreeCompareStore(tAtomic &a,const TInteger &c,const TInteger &v)noexcept;
-//	static bool AcquireCompareStore(tAtomic &a,const TInteger &c,const TInteger &v)noexcept;
-//	static bool ReleaseCompareStore(tAtomic &a,const TInteger &c,const TInteger &v)noexcept;
-//	static bool BarrierCompareStore(tAtomic &a,const TInteger &c,const TInteger &v)noexcept;
+//	static bool FreeCompareStore(tAtomic &a,tInteger c,tInteger v)noexcept;
+//	static bool AcquireCompareStore(tAtomic &a,tInteger c,tInteger v)noexcept;
+//	static bool ReleaseCompareStore(tAtomic &a,tInteger c,tInteger v)noexcept;
+//	static bool BarrierCompareStore(tAtomic &a,tInteger c,tInteger v)noexcept;
 
-//	static bool FreeCompareExchange(tAtomic &a,TInteger &c,const TInteger &v)noexcept;
-//	static bool AcquireCompareExchange(tAtomic &a,TInteger &c,const TInteger &v)noexcept;
-//	static bool ReleaseCompareExchange(tAtomic &a,TInteger &c,const TInteger &v)noexcept;
-//	static bool BarrierCompareExchange(tAtomic &a,TInteger &c,const TInteger &v)noexcept;
+//	static bool FreeCompareExchange(tAtomic &a,tInteger &c,tInteger v)noexcept;
+//	static bool AcquireCompareExchange(tAtomic &a,tInteger &c,tInteger v)noexcept;
+//	static bool ReleaseCompareExchange(tAtomic &a,tInteger &c,tInteger v)noexcept;
+//	static bool BarrierCompareExchange(tAtomic &a,tInteger &c,tInteger v)noexcept;
 //
-//	static TInteger FreeAdd(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger FreeAddN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger AcquireAdd(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger AcquireAddN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger ReleaseAdd(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger ReleaseAddN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger BarrierAdd(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger BarrierAddN(tAtomic &a,const TInteger &v)noexcept;
+//	static tInteger FreeAdd(tAtomic &a,tInteger v)noexcept;
+//	static tInteger FreeAddN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger AcquireAdd(tAtomic &a,tInteger v)noexcept;
+//	static tInteger AcquireAddN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger ReleaseAdd(tAtomic &a,tInteger v)noexcept;
+//	static tInteger ReleaseAddN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger BarrierAdd(tAtomic &a,tInteger v)noexcept;
+//	static tInteger BarrierAddN(tAtomic &a,tInteger v)noexcept;
 //
-//	static TInteger FreeSub(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger FreeSubN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger AcquireSub(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger AcquireSubN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger ReleaseSub(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger ReleaseSubN(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger BarrierSub(tAtomic &a,const TInteger &v)noexcept;
-//	static TInteger BarrierSubN(tAtomic &a,const TInteger &v)noexcept;
+//	static tInteger FreeSub(tAtomic &a,tInteger v)noexcept;
+//	static tInteger FreeSubN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger AcquireSub(tAtomic &a,tInteger v)noexcept;
+//	static tInteger AcquireSubN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger ReleaseSub(tAtomic &a,tInteger v)noexcept;
+//	static tInteger ReleaseSubN(tAtomic &a,tInteger v)noexcept;
+//	static tInteger BarrierSub(tAtomic &a,tInteger v)noexcept;
+//	static tInteger BarrierSubN(tAtomic &a,tInteger v)noexcept;
 //};
+
 
 template<class TPointer>
 struct TAtomicLink;
@@ -97,138 +98,137 @@ namespace cnAsync{
 template<class TVariable,class TIntegerAtomicOperator>
 struct TAtomicVariableOperatorByInteger
 {
-	typedef TVariable tVariable;
 	typedef typename TIntegerAtomicOperator::tAtomic tAtomic;
-	typedef typename TIntegerAtomicOperator::tVariable tInteger;
+	typedef typename TIntegerAtomicOperator::tInteger tInteger;
 
-	static tVariable Get(const tAtomic &av)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::Get(av) );
+	static TVariable Get(const tAtomic &av)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::Get(av) );
 	}
-	static void Set(tAtomic &av,const tVariable &v)noexcept(true){
+	static void Set(tAtomic &av,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::Set(av,reinterpret_cast<const tInteger&>(v));
 	}
 
-	static bool WatchEqual(const tAtomic &av,const tVariable &Value,uIntn Count)noexcept(true){
+	static bool WatchEqual(const tAtomic &av,const TVariable &Value,uIntn Count)noexcept(true){
 		return TIntegerAtomicOperator::WatchEqual(av,reinterpret_cast<const tInteger&>(Value),Count);
 	}
-	static bool WatchNotEqual(const tAtomic &av,const tVariable &Value,uIntn Count)noexcept(true){
+	static bool WatchNotEqual(const tAtomic &av,const TVariable &Value,uIntn Count)noexcept(true){
 		return TIntegerAtomicOperator::WatchNotEqual(av,reinterpret_cast<const tInteger&>(Value),Count);
 	}
 
-	static tVariable FreeLoad(const tAtomic &av)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeLoad(av) );
+	static TVariable FreeLoad(const tAtomic &av)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeLoad(av) );
 	}
-	static tVariable AcquireLoad(const tAtomic &av)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireLoad(av) );
+	static TVariable AcquireLoad(const tAtomic &av)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireLoad(av) );
 	}
-	static void FreeStore(tAtomic &av,const tVariable &v)noexcept(true){
+	static void FreeStore(tAtomic &av,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::FreeStore(av,reinterpret_cast<const tInteger&>(v));
 	}
-	static void ReleaseStore(tAtomic &av,const tVariable &v)noexcept(true){
+	static void ReleaseStore(tAtomic &av,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::ReleaseStore(av,reinterpret_cast<const tInteger&>(v));
 	}
 	
-	static tVariable FreeExchange(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeExchange(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable FreeExchange(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeExchange(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable AcquireExchange(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireExchange(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable AcquireExchange(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireExchange(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable ReleaseExchange(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::ReleaseExchange(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable ReleaseExchange(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::ReleaseExchange(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable BarrierExchange(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::BarrierExchange(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable BarrierExchange(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::BarrierExchange(av,reinterpret_cast<const tInteger&>(v)) );
 	}
 
-	static bool FreeCompareStore(tAtomic &av,const tVariable &c,const tVariable &v)noexcept(true){
+	static bool FreeCompareStore(tAtomic &av,const TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::FreeCompareStore(av,reinterpret_cast<const tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool AcquireCompareStore(tAtomic &av,const tVariable &c,const tVariable &v)noexcept(true){
+	static bool AcquireCompareStore(tAtomic &av,const TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::AcquireCompareStore(av,reinterpret_cast<const tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool ReleaseCompareStore(tAtomic &av,const tVariable &c,const tVariable &v)noexcept(true){
+	static bool ReleaseCompareStore(tAtomic &av,const TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::ReleaseCompareStore(av,reinterpret_cast<const tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool BarrierCompareStore(tAtomic &av,const tVariable &c,const tVariable &v)noexcept(true){
+	static bool BarrierCompareStore(tAtomic &av,const TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::BarrierCompareStore(av,reinterpret_cast<const tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
 
-	static bool FreeCompareExchange(tAtomic &av,tVariable &c,const tVariable &v)noexcept(true){
+	static bool FreeCompareExchange(tAtomic &av,TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::FreeCompareExchange(av,reinterpret_cast<tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool AcquireCompareExchange(tAtomic &av,tVariable &c,const tVariable &v)noexcept(true){
+	static bool AcquireCompareExchange(tAtomic &av,TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::AcquireCompareExchange(av,reinterpret_cast<tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool ReleaseCompareExchange(tAtomic &av,tVariable &c,const tVariable &v)noexcept(true){
+	static bool ReleaseCompareExchange(tAtomic &av,TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::ReleaseCompareExchange(av,reinterpret_cast<tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
-	static bool BarrierCompareExchange(tAtomic &av,tVariable &c,const tVariable &v)noexcept(true){
+	static bool BarrierCompareExchange(tAtomic &av,TVariable &c,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::BarrierCompareExchange(av,reinterpret_cast<tInteger&>(c),reinterpret_cast<const tInteger&>(v));
 	}
 
-	static tVariable FreeAdd(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeAdd(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable FreeAdd(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeAdd(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable FreeAddN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeAddN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable FreeAddN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeAddN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable AcquireAdd(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireAdd(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable AcquireAdd(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireAdd(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable AcquireAddN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireAddN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable AcquireAddN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireAddN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable ReleaseAdd(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::ReleaseAdd(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable ReleaseAdd(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::ReleaseAdd(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable ReleaseAddN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::ReleaseAddN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable ReleaseAddN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::ReleaseAddN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable BarrierAdd(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::BarrierAdd(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable BarrierAdd(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::BarrierAdd(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable BarrierAddN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::BarrierAddN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable BarrierAddN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::BarrierAddN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
 
-	static tVariable FreeSub(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeSub(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable FreeSub(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeSub(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable FreeSubN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::FreeSubN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable FreeSubN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::FreeSubN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable AcquireSub(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireSub(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable AcquireSub(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireSub(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable AcquireSubN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::AcquireSubN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable AcquireSubN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::AcquireSubN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable ReleaseSub(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::ReleaseSub(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable ReleaseSub(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::ReleaseSub(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable ReleaseSubN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::ReleaseSubN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable ReleaseSubN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::ReleaseSubN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable BarrierSub(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::BarrierSub(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable BarrierSub(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::BarrierSub(av,reinterpret_cast<const tInteger&>(v)) );
 	}
-	static tVariable BarrierSubN(tAtomic &av,const tVariable &v)noexcept(true){
-		return cnVar::ReturnCast<tVariable>( TIntegerAtomicOperator::BarrierSubN(av,reinterpret_cast<const tInteger&>(v)) );
+	static TVariable BarrierSubN(tAtomic &av,const TVariable &v)noexcept(true){
+		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::BarrierSubN(av,reinterpret_cast<const tInteger&>(v)) );
 	}
 };
 
 template<class TVariable>
 union cAtomicVariable
 {
-	typedef typename cnVar::TIntegerOfSize<sizeof(TVariable),false>::Type tInteger;
-	typedef typename TKRuntime::template TAtomicInteger<tInteger> tAtomicIntegerOperator;
-	typedef typename tAtomicIntegerOperator::tAtomic tAtomic;
+	typedef typename TKRuntime::template TAtomicInteger<sizeof(TVariable)> tAtomicInteger;
+	typedef typename tAtomicInteger::tInteger tInteger;
+	typedef typename tAtomicInteger::tAtomic tAtomic;
 	typedef TVariable tVariable;
 	typedef typename cnVar::TSelect<
 		cnVar::TIsSame<tInteger,tVariable>::Value
-		, TAtomicVariableOperatorByInteger<TVariable,tAtomicIntegerOperator>
-		, tAtomicIntegerOperator
+		, TAtomicVariableOperatorByInteger<TVariable,tAtomicInteger>
+		, tAtomicInteger
 	>::Type tAtomicOperator;
 	
 
@@ -705,7 +705,7 @@ public:
 			return fAtomicPtr==nullptr;
 		}
 
-		tRefToken RefToken=TRefTokenOperator::TokenFromPointer(Pointer);
+		tRefToken RefToken=TRefTokenOperator::TokenFrom(Pointer);
 		TRefTokenOperator::Acquire(RefToken);
 		if(fAtomicPtr.Barrier.CmpStore(nullptr,Pointer)){
 			return true;

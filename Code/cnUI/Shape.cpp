@@ -5,27 +5,27 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vSolidStaticColor::vSolidStaticColor()
+vSolidStaticColor::vSolidStaticColor()noexcept
 {
 }
 //---------------------------------------------------------------------------
-vSolidStaticColor::~vSolidStaticColor()
+vSolidStaticColor::~vSolidStaticColor()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void vSolidStaticColor::Paint(iUISimplePaintContext *Context)
+void vSolidStaticColor::Paint(iUISimplePaintContext *Context)noexcept
 {
 	Context->Fill({0,0},fPaintSize,Color);
 }
 //---------------------------------------------------------------------------
-void vSolidStaticColor::Update(void)
+void vSolidStaticColor::Update(void)noexcept
 {
 	if(fViewContent!=nullptr){
 		fViewContent->QueryUpdate();
 	}
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vSolidStaticColor::Create(cUIColor Color)
+rPtr<viControl> vSolidStaticColor::Create(cUIColor Color)noexcept
 {
 	auto Content=rCreate< bwvControl<vSolidStaticColor> >();
 	Content->Color=Color;
@@ -33,18 +33,18 @@ rPtr<viControl> vSolidStaticColor::Create(cUIColor Color)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vSolidColor::vSolidColor(viSolidColorData *Data)
+vSolidColor::vSolidColor(viSolidColorData *Data)noexcept
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vSolidColor::~vSolidColor()
+vSolidColor::~vSolidColor()noexcept
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-void vSolidColor::Paint(iUISimplePaintContext *Context)
+void vSolidColor::Paint(iUISimplePaintContext *Context)noexcept
 {
 	if(fData==nullptr)
 		return;
@@ -53,12 +53,12 @@ void vSolidColor::Paint(iUISimplePaintContext *Context)
 	Context->Fill({0,0},fPaintSize,Color);
 }
 //---------------------------------------------------------------------------
-viSolidColorData* vSolidColor::GetData(void)const
+viSolidColorData* vSolidColor::GetData(void)const noexcept
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vSolidColor::SetData(viSolidColorData *Data)
+void vSolidColor::SetData(viSolidColorData *Data)noexcept
 {
 	if(fData==Data)
 		return;
@@ -70,14 +70,14 @@ void vSolidColor::SetData(viSolidColorData *Data)
 	Update();
 }
 //---------------------------------------------------------------------------
-void vSolidColor::Update(void)
+void vSolidColor::Update(void)noexcept
 {
 	if(fViewContent!=nullptr){
 		fViewContent->QueryUpdate();
 	}
 }
 //---------------------------------------------------------------------------
-void vSolidColor::DataInsertCallback(void)
+void vSolidColor::DataInsertCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fSolidColorNotifyToken=fData->SolidColorNotifySet.Insert([this]{
@@ -86,28 +86,28 @@ void vSolidColor::DataInsertCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void vSolidColor::DataRemoveCallback(void)
+void vSolidColor::DataRemoveCallback(void)noexcept
 {
 	if(fData!=nullptr){
 		fData->SolidColorNotifySet.Remove(fSolidColorNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vSolidColor::Create(viSolidColorData *Data)
+rPtr<viControl> vSolidColor::Create(viSolidColorData *Data)noexcept
 {
 	return rCreate< bwvControl<vSolidColor> >(Data);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vBitmapImage::vBitmapImage()
+vBitmapImage::vBitmapImage()noexcept
 {
 }
 //---------------------------------------------------------------------------
-vBitmapImage::~vBitmapImage()
+vBitmapImage::~vBitmapImage()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void vBitmapImage::Paint(iUISimplePaintContext *Context)
+void vBitmapImage::Paint(iUISimplePaintContext *Context)noexcept
 {
 	if(fBitmapCache==nullptr){
 		if(BitmapSource!=nullptr){
@@ -121,7 +121,7 @@ void vBitmapImage::Paint(iUISimplePaintContext *Context)
 	}
 }
 //---------------------------------------------------------------------------
-void vBitmapImage::Update(void)
+void vBitmapImage::Update(void)noexcept
 {
 	fBitmapCache=nullptr;
 	if(fViewContent!=nullptr){
@@ -129,7 +129,7 @@ void vBitmapImage::Update(void)
 	}
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vBitmapImage::Create(iBitmapDataSource *Source)
+rPtr<viControl> vBitmapImage::Create(iBitmapDataSource *Source)noexcept
 {
 	auto Content=rCreate< bwvControl<vBitmapImage> >();
 	Content->BitmapSource=Source;

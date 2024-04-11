@@ -196,27 +196,27 @@ struct cUIRectangle
 class cnLib_INTERFACE iUIMouse : public iInterface
 {
 public:
-	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)=0;
-	virtual bool cnLib_FUNC EventIsButtonDown(eMouseButton Button)=0;
-	virtual bool cnLib_FUNC IsButtonDown(eMouseButton Button)=0;
+	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)noexcept(true)=0;
+	virtual bool cnLib_FUNC EventIsButtonDown(eMouseButton Button)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsButtonDown(eMouseButton Button)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIKeyboard : public iInterface
 {
 public:
-	virtual bool cnLib_FUNC EventIsKeyDown(eKeyCode KeyCode)=0;
-	virtual bool cnLib_FUNC EventIsKeyToggled(eKeyCode KeyCode)=0;
-	virtual bool cnLib_FUNC IsKeyDown(eKeyCode KeyCode)=0;
-	virtual bool cnLib_FUNC IsKeyToggled(eKeyCode KeyCode)=0;
+	virtual bool cnLib_FUNC EventIsKeyDown(eKeyCode KeyCode)noexcept(true)=0;
+	virtual bool cnLib_FUNC EventIsKeyToggled(eKeyCode KeyCode)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsKeyDown(eKeyCode KeyCode)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsKeyToggled(eKeyCode KeyCode)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIThread : public iInterface
 {
 public:
-	virtual bool cnLib_FUNC IsCurrentThread(void)=0;
-	virtual iDispatch* cnLib_FUNC GetDispatch(bool HighPriority)=0;
-	virtual iUIKeyboard* cnLib_FUNC GetDefaultKeyboard(void)=0;
-	virtual iUIMouse* cnLib_FUNC GetDefaultMouse(void)=0;
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)=0;
+	virtual iDispatch* cnLib_FUNC GetDispatch(bool HighPriority)noexcept(true)=0;
+	virtual iUIKeyboard* cnLib_FUNC GetDefaultKeyboard(void)noexcept(true)=0;
+	virtual iUIMouse* cnLib_FUNC GetDefaultMouse(void)noexcept(true)=0;
 };
 
 //---------------------------------------------------------------------------
@@ -225,51 +225,51 @@ class cnLib_INTERFACE iUIArea : public iInterface
 public:
 	// GetUIThread
 	//	get ui thread of the ui element
-	virtual iUIThread* cnLib_FUNC GetUIThread(void)=0;
+	virtual iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true)=0;
 
-	virtual Float32 cnLib_FUNC GetContentScale(void)=0;
-	virtual cUIPoint cnLib_FUNC GetSize(void)=0;
-	virtual bool cnLib_FUNC SetSize(cUIPoint Size)=0;
+	virtual Float32 cnLib_FUNC GetContentScale(void)noexcept(true)=0;
+	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetSize(cUIPoint Size)noexcept(true)=0;
 
 	// TranslatePoint
 	//	translate point from this area to relative area
 	// [in]Relative		relative area. nullptr for relative to screen
 	// [in]Position		poition relative to this area
 	// [out]Position	poition relative to Relative
-	virtual bool cnLib_FUNC TranslatePointTo(iInterface *Relative,cUIPoint &Position)=0;
+	virtual bool cnLib_FUNC TranslatePointTo(iInterface *Relative,cUIPoint &Position)noexcept(true)=0;
 
 	// MoveTo
 	//	change position of the ui area
 	// [in]Relative		relative area. nullptr for relative to screen
 	// [in]Position		lefttop position of the area relative to lefttop of relative area
-	virtual bool cnLib_FUNC MoveTo(iInterface *Relative,cUIPoint Position)=0;
+	virtual bool cnLib_FUNC MoveTo(iInterface *Relative,cUIPoint Position)noexcept(true)=0;
 	
 	// ArrangeRectangle
 	//	set rectangle of the ui area
 	// [in]Relative		relative area. nullptr for relative to screen
 	// [in]Position		lefttop position of the area relative to lefttop of relative area
-	virtual bool cnLib_FUNC ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)=0;
+	virtual bool cnLib_FUNC ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)noexcept(true)=0;
 
-	bool GetPosition(iInterface *Relative,cUIPoint &Position){
+	bool GetPosition(iInterface *Relative,cUIPoint &Position)noexcept(true){
 		Position.x=0;
 		Position.y=0;
 		return TranslatePointTo(Relative,Position);
 	}
-	bool SetPosition(iInterface *Relative,cUIPoint Position){
+	bool SetPosition(iInterface *Relative,cUIPoint Position)noexcept(true){
 		return MoveTo(Relative,Position);
 	}
 
 
-	virtual Float32 cnLib_FUNC GetZPosition(void)=0;
-	virtual bool cnLib_FUNC SetZPosition(Float32 Position)=0;
+	virtual Float32 cnLib_FUNC GetZPosition(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetZPosition(Float32 Position)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIScreenHandler
 {
 public:
-	virtual void cnLib_FUNC ContentScaleChanged(void)=0;
-	virtual void cnLib_FUNC SizeChanged(void)=0;
-	virtual void cnLib_FUNC VisibleChanged(void)=0;
+	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SizeChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC VisibleChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIScreen : public iUIArea
@@ -278,10 +278,10 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
-	virtual bool cnLib_FUNC InsertScreenHandler(iUIScreenHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveScreenHandler(iUIScreenHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertScreenHandler(iUIScreenHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveScreenHandler(iUIScreenHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC IsVisible(void)=0;
+	virtual bool cnLib_FUNC IsVisible(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,UIState)
@@ -298,42 +298,42 @@ public:
 	// UIStarted
 	//	NoHost => Background
 	//	called when view has entered a host
-	virtual void cnLib_FUNC UIStarted(void)=0;
+	virtual void cnLib_FUNC UIStarted(void)noexcept(true)=0;
 	// UIShow
 	//	Background => Inactive
 	//	called when view become visible
-	virtual void cnLib_FUNC UIShow(void)=0;
+	virtual void cnLib_FUNC UIShow(void)noexcept(true)=0;
 	// UIResume
 	//	Inactive => Active
 	//	called when view become active
-	virtual void cnLib_FUNC UIResume(void)=0;
+	virtual void cnLib_FUNC UIResume(void)noexcept(true)=0;
 	// UIPaused
 	//	Inactive <= Active
 	//	called when layout is inactive
-	virtual void cnLib_FUNC UIPaused(void)=0;
+	virtual void cnLib_FUNC UIPaused(void)noexcept(true)=0;
 	// UIHide
 	//	Background <= Inactive
 	//	called when layout become invisible
-	virtual void cnLib_FUNC UIHide(void)=0;
+	virtual void cnLib_FUNC UIHide(void)noexcept(true)=0;
 	// UIStopped
 	//	NoHost <= Background
 	//	called when layout has leaved a host
-	virtual void cnLib_FUNC UIStopped(void)=0;
+	virtual void cnLib_FUNC UIStopped(void)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIViewHandler
 {
 public:
-	virtual void cnLib_FUNC UILayout(void)=0;
-	virtual cUIRectangle cnLib_FUNC UIMargin(const cUIRectangle &Margin)=0;
-	virtual void cnLib_FUNC ContentScaleChanged(void)=0;
-	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)=0;
-	virtual void cnLib_FUNC ZPositionChanged(void)=0;
-	virtual void cnLib_FUNC VisibleChanged(void)=0;
-	virtual void cnLib_FUNC EnableChanged(void)=0;
-	virtual void cnLib_FUNC WindowChanged(void)=0;
-	virtual void cnLib_FUNC ParentChanged(void)=0;
+	virtual void cnLib_FUNC UILayout(void)noexcept(true)=0;
+	virtual cUIRectangle cnLib_FUNC UIMargin(const cUIRectangle &Margin)noexcept(true)=0;
+	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)=0;
+	virtual void cnLib_FUNC ZPositionChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC VisibleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC EnableChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC WindowChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ParentChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIView : public iUIArea
@@ -342,49 +342,49 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
-	virtual eUIState cnLib_FUNC GetUIState(void)=0;
-	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveStateHandler(iUIStateHandler *Handler)=0;
+	virtual eUIState cnLib_FUNC GetUIState(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveStateHandler(iUIStateHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC GetVisible(void)=0;
-	virtual bool cnLib_FUNC SetVisible(bool Visible)=0;
+	virtual bool cnLib_FUNC GetVisible(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetVisible(bool Visible)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC IsEnabled(void)=0;
-	virtual bool cnLib_FUNC GetEnable(void)=0;
-	virtual bool cnLib_FUNC SetEnable(bool Enable)=0;
+	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetEnable(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetEnable(bool Enable)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveViewHandler(iUIViewHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveViewHandler(iUIViewHandler *Handler)noexcept(true)=0;
 
-	virtual void cnLib_FUNC ArrangeLayout(void)=0;
-	virtual void cnLib_FUNC SetArrangement(void)=0;
+	virtual void cnLib_FUNC ArrangeLayout(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SetArrangement(void)noexcept(true)=0;
 
-	virtual void cnLib_FUNC SetIncludeParentFrameMargin(bool Include)=0;
-	virtual cUIRectangle cnLib_FUNC GetFrameMargin(void)=0;
+	virtual void cnLib_FUNC SetIncludeParentFrameMargin(bool Include)noexcept(true)=0;
+	virtual cUIRectangle cnLib_FUNC GetFrameMargin(void)noexcept(true)=0;
 
 	// GetWindow
 	//	Get operating window for this view
-	virtual iUIArea* cnLib_FUNC GetWindow(void)=0;
+	virtual iUIArea* cnLib_FUNC GetWindow(void)noexcept(true)=0;
 
 	// GetParent
 	//	get parent of the view
-	virtual iUIView* cnLib_FUNC GetParent(void)=0;
+	virtual iUIView* cnLib_FUNC GetParent(void)noexcept(true)=0;
 
 
-	virtual bool cnLib_FUNC InsertView(iUIView *View)=0;
-	virtual bool cnLib_FUNC RemoveView(iUIView *View)=0;
+	virtual bool cnLib_FUNC InsertView(iUIView *View)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveView(iUIView *View)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIWindowHandler
 {
 public:
-	virtual void cnLib_FUNC ScreenChanged(void)=0;
-	virtual void cnLib_FUNC ParentChanged(void)=0;
-	virtual void cnLib_FUNC ContentScaleChanged(void)=0;
-	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)=0;
-	virtual void cnLib_FUNC ZPositionChanged(void)=0;
-	virtual void cnLib_FUNC VisibleChanged(void)=0;
-	virtual void cnLib_FUNC EnableChanged(void)=0;
+	virtual void cnLib_FUNC ScreenChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ParentChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)=0;
+	virtual void cnLib_FUNC ZPositionChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC VisibleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC EnableChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIWindow : public iUIArea
@@ -393,37 +393,37 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 		
-	virtual eUIState cnLib_FUNC GetUIState(void)=0;
-	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveStateHandler(iUIStateHandler *Handler)=0;
+	virtual eUIState cnLib_FUNC GetUIState(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveStateHandler(iUIStateHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC GetVisible(void)=0;
-	virtual bool cnLib_FUNC SetVisible(bool Visible)=0;
+	virtual bool cnLib_FUNC GetVisible(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetVisible(bool Visible)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC IsEnabled(void)=0;
-	virtual bool cnLib_FUNC GetEnable(void)=0;
-	virtual bool cnLib_FUNC SetEnable(bool Enable)=0;
+	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetEnable(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetEnable(bool Enable)noexcept(true)=0;
 
-	virtual iUIScreen* cnLib_FUNC GetScreen(void)=0;
+	virtual iUIScreen* cnLib_FUNC GetScreen(void)noexcept(true)=0;
 
 	// UI Tree
 
-	virtual iUIWindow* cnLib_FUNC GetParent(void)=0;
+	virtual iUIWindow* cnLib_FUNC GetParent(void)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveWindowHandler(iUIWindowHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveWindowHandler(iUIWindowHandler *Handler)noexcept(true)=0;
 
 	// Client
 
-	virtual iUIView* cnLib_FUNC GetClient(void)=0;
-	virtual bool cnLib_FUNC SetClient(iUIView *View)=0;
+	virtual iUIView* cnLib_FUNC GetClient(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetClient(iUIView *View)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iPrintPaperHandler
 {
 public:
-	virtual void cnLib_FUNC ContentScaleChanged(void)=0;
-	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)=0;
+	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iPrintPaper : public iUIArea
@@ -432,30 +432,30 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 		
-	virtual bool cnLib_FUNC InsertPrintPaperHandler(iPrintPaperHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemovePrintPaperHandler(iPrintPaperHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertPrintPaperHandler(iPrintPaperHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemovePrintPaperHandler(iPrintPaperHandler *Handler)noexcept(true)=0;
 
 	// Client
 
-	virtual iUIView* cnLib_FUNC GetClient(void)=0;
-	virtual bool cnLib_FUNC SetClient(iUIView *Area)=0;
+	virtual iUIView* cnLib_FUNC GetClient(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetClient(iUIView *Area)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUITextInputHandler
 {
 public:
-	virtual void cnLib_FUNC TextInput(const uChar16 *Text,uIntn Length)=0;
+	virtual void cnLib_FUNC TextInput(const uChar16 *Text,uIntn Length)noexcept(true)=0;
 
-	virtual void cnLib_FUNC TextCompositionStarted(void)=0;
-	virtual void cnLib_FUNC TextCompositionFinished(void)=0;
-	virtual void cnLib_FUNC TextCompositionUpdate(sfInt32 CaretPos,const uChar16 *Text,uIntn TextLength)=0;
+	virtual void cnLib_FUNC TextCompositionStarted(void)noexcept(true)=0;
+	virtual void cnLib_FUNC TextCompositionFinished(void)noexcept(true)=0;
+	virtual void cnLib_FUNC TextCompositionUpdate(sfInt32 CaretPos,const uChar16 *Text,uIntn TextLength)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUITextCompositionViewInfo
 {
 public:
-	virtual void cnLib_FUNC TextCompositionViewRect(cUIPoint &Position,cUIPoint &Size,Float32 &LineHeight)=0;
-	virtual cUIPoint cnLib_FUNC TextCompositionCaretPosition(uIntn CompositionTextIndex)=0;
+	virtual void cnLib_FUNC TextCompositionViewRect(cUIPoint &Position,cUIPoint &Size,Float32 &LineHeight)noexcept(true)=0;
+	virtual cUIPoint cnLib_FUNC TextCompositionCaretPosition(uIntn CompositionTextIndex)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,UIEventSourceType)
@@ -469,30 +469,30 @@ cnLib_ENUM_BEGIN(ufInt8,UIEventSourceType)
 class cnLib_INTERFACE iUIInputEvent
 {
 public:
-	virtual eUIEventSourceType cnLib_FUNC GetSourceType(void)=0;
-	virtual iUIView* cnLib_FUNC GetSourceView(void)=0;
-	virtual void cnLib_FUNC CancelEvent(void)=0;
-	virtual bool cnLib_FUNC IsCancelled(void)=0;
+	virtual eUIEventSourceType cnLib_FUNC GetSourceType(void)noexcept(true)=0;
+	virtual iUIView* cnLib_FUNC GetSourceView(void)noexcept(true)=0;
+	virtual void cnLib_FUNC CancelEvent(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsCancelled(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIKeyEvent : public iUIInputEvent
 {
 public:
-	virtual iUIKeyboard* cnLib_FUNC GetKeyboard(void)=0;
-	virtual bool cnLib_FUNC IsKeyDown(eKeyCode KeyCode)=0;
-	virtual bool cnLib_FUNC IsKeyToggled(eKeyCode KeyCode)=0;
+	virtual iUIKeyboard* cnLib_FUNC GetKeyboard(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsKeyDown(eKeyCode KeyCode)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsKeyToggled(eKeyCode KeyCode)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIKeyHandler
 {
 public:
-	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)=0;
-	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)=0;
-	virtual void cnLib_FUNC KeyFocusEnter(iUIKeyEvent *KeyEvent)=0;
-	virtual void cnLib_FUNC KeyFocusLeave(iUIKeyEvent *KeyEvent)=0;
-	virtual void cnLib_FUNC KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)=0;
-	virtual void cnLib_FUNC KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)=0;
-	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)=0;
+	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyFocusEnter(iUIKeyEvent *KeyEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyFocusLeave(iUIKeyEvent *KeyEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)=0;
+	virtual void cnLib_FUNC KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIKeyControl : public iInterface
@@ -501,44 +501,44 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual iUIView* cnLib_FUNC GetFocus(void)=0;
-	virtual void cnLib_FUNC SetFocus(bool ActivateWindow)=0;
+	virtual iUIView* cnLib_FUNC GetFocus(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SetFocus(bool ActivateWindow)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveKeyHandler(iUIKeyHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveKeyHandler(iUIKeyHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveKeyFilter(iUIKeyHandler *Filter)=0;
+	virtual bool cnLib_FUNC InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveKeyFilter(iUIKeyHandler *Filter)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC KeyAcquireExclusive(iUIKeyHandler *Handler)=0;
-	virtual bool cnLib_FUNC KeyReleaseExclusive(iUIKeyHandler *Handler)=0;
+	virtual bool cnLib_FUNC KeyAcquireExclusive(iUIKeyHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC KeyReleaseExclusive(iUIKeyHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveTextInputHandler(iUITextInputHandler *Handler)=0;
-	virtual bool cnLib_FUNC SetCompositionViewInfo(iUITextCompositionViewInfo *CompositionViewInfo)=0;
+	virtual bool cnLib_FUNC InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveTextInputHandler(iUITextInputHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetCompositionViewInfo(iUITextCompositionViewInfo *CompositionViewInfo)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIMouseEvent : public iUIInputEvent
 {
 public:
-	virtual iUIMouse* cnLib_FUNC GetMouse(void)=0;
-	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)=0;
-	virtual bool cnLib_FUNC IsButtonDown(eMouseButton Button)=0;
+	virtual iUIMouse* cnLib_FUNC GetMouse(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsButtonDown(eMouseButton Button)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUIMouseHandler
 {
 public:
-	virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)=0;
-	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)=0;
-	virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)=0;
-	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)=0;
-	virtual iInterface* cnLib_FUNC MouseGetCursor(iUIMouseEvent *MouseEvent)=0;
-	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)=0;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)=0;
-	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)=0;
-	virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)=0;
+	virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual iInterface* cnLib_FUNC MouseGetCursor(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,SysMouseCursor)
@@ -560,35 +560,35 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual void cnLib_FUNC MouseUpdateCursor(void)=0;
+	virtual void cnLib_FUNC MouseUpdateCursor(void)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveMouseHandler(iUIMouseHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveMouseHandler(iUIMouseHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveMouseFilter(iUIMouseHandler *Filter)=0;
+	virtual bool cnLib_FUNC InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveMouseFilter(iUIMouseHandler *Filter)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC MouseSetCaptrue(void)=0;
-	virtual void cnLib_FUNC MouseReleaseCaptrue(void)=0;
-	virtual bool cnLib_FUNC MouseIsCaptured(void)=0;
-	virtual bool cnLib_FUNC MouseAcquireExclusive(iUIMouseHandler *Handler)=0;
-	virtual bool cnLib_FUNC MouseReleaseExclusive(iUIMouseHandler *Handler)=0;
+	virtual bool cnLib_FUNC MouseSetCaptrue(void)noexcept(true)=0;
+	virtual void cnLib_FUNC MouseReleaseCaptrue(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC MouseIsCaptured(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC MouseAcquireExclusive(iUIMouseHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC MouseReleaseExclusive(iUIMouseHandler *Handler)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUITouchEvent : public iUIInputEvent
 {
 public:
-	virtual void* cnLib_FUNC GetTouchID(void)=0;
-	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)=0;
+	virtual void* cnLib_FUNC GetTouchID(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetPosition(iInterface *Relative,cUIPoint &Position)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUITouchHandler
 {
 public:
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *TouchEvent)=0;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *TouchEvent)=0;
-	virtual void cnLib_FUNC TouchLost(iUITouchEvent *TouchEvent)=0;
-	virtual void cnLib_FUNC TouchMove(iUITouchEvent *TouchEvent)=0;
+	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *TouchEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *TouchEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC TouchLost(iUITouchEvent *TouchEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC TouchMove(iUITouchEvent *TouchEvent)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iUITouchControl : public iInterface
@@ -597,65 +597,65 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual bool cnLib_FUNC InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveTouchHandler(iUITouchHandler *Handler)=0;
+	virtual bool cnLib_FUNC InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveTouchHandler(iUITouchHandler *Handler)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order=0)=0;
-	virtual bool cnLib_FUNC RemoveTouchFilter(iUITouchHandler *Filter)=0;
+	virtual bool cnLib_FUNC InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveTouchFilter(iUITouchHandler *Filter)noexcept(true)=0;
 
-	virtual bool cnLib_FUNC TouchAcquireExclusive(iUITouchHandler *Handler)=0;
-	virtual bool cnLib_FUNC TouchReleaseExclusive(iUITouchHandler *Handler)=0;
+	virtual bool cnLib_FUNC TouchAcquireExclusive(iUITouchHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC TouchReleaseExclusive(iUITouchHandler *Handler)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iPopupWindowControlCallback
 {
 public:
-	virtual void cnLib_FUNC PopupOnShow(void)=0;
-	virtual void cnLib_FUNC PopupOnHide(void)=0;
+	virtual void cnLib_FUNC PopupOnShow(void)noexcept(true)=0;
+	virtual void cnLib_FUNC PopupOnHide(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iPopupWindowControl : public iReference
 {
 public:
-	virtual void cnLib_FUNC SetCallback(iPopupWindowControlCallback *Callback)=0;
-	virtual iUIWindow* cnLib_FUNC GetUIWindow(void)=0;
-	virtual bool cnLib_FUNC SetupOwner(iUIView *View)=0;
-	virtual void cnLib_FUNC ShowPopup(void)=0;
-	virtual void cnLib_FUNC HidePopup(void)=0;
+	virtual void cnLib_FUNC SetCallback(iPopupWindowControlCallback *Callback)noexcept(true)=0;
+	virtual iUIWindow* cnLib_FUNC GetUIWindow(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetupOwner(iUIView *View)noexcept(true)=0;
+	virtual void cnLib_FUNC ShowPopup(void)noexcept(true)=0;
+	virtual void cnLib_FUNC HidePopup(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iClipboardReader : public iReference
 {
 public:
-	virtual iReadBuffer<uChar16>* cnLib_FUNC QueryText(void)=0;
+	virtual iReadBuffer<uChar16>* cnLib_FUNC QueryText(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iClipboardWriter : public iReference
 {
 public:
-	virtual bool cnLib_FUNC Submit(void)=0;
-	virtual bool cnLib_FUNC SetText(const uChar16 *Text,uIntn TextLength)=0;
-	virtual iWriteBuffer<uChar16>* cnLib_FUNC QueryText(void)=0;
+	virtual bool cnLib_FUNC Submit(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetText(const uChar16 *Text,uIntn TextLength)noexcept(true)=0;
+	virtual iWriteBuffer<uChar16>* cnLib_FUNC QueryText(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
 namespace CurrentUIThread{
 //---------------------------------------------------------------------------
-iUIThread* cnLib_FUNC GetUIThread(void);
-iDispatch* cnLib_FUNC GetDispatch(bool HighPriority);
-iUIKeyboard* cnLib_FUNC GetDefaultKeyboard(void);
-iUIMouse* cnLib_FUNC GetDefaultMouse(void);
+iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true);
+iDispatch* cnLib_FUNC GetDispatch(bool HighPriority)noexcept(true);
+iUIKeyboard* cnLib_FUNC GetDefaultKeyboard(void)noexcept(true);
+iUIMouse* cnLib_FUNC GetDefaultMouse(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace CurrentUIThread
 //---------------------------------------------------------------------------
-iPtr<iUIView>	cnLib_FUNC CreateUIView(void);
+iPtr<iUIView>	cnLib_FUNC CreateUIView(void)noexcept(true);
 
-rPtr<iPopupWindowControl>	cnLib_FUNC CreatePopupWindowControl(void);
+rPtr<iPopupWindowControl>	cnLib_FUNC CreatePopupWindowControl(void)noexcept(true);
 
-iInterface* cnLib_FUNC GetSysMouseCursor(eSysMouseCursor CursorID);
-rPtr<iClipboardReader> cnLib_FUNC QueryClipboardReader(iUIView *View);
-rPtr<iClipboardWriter> cnLib_FUNC QueryClipboardWriter(iUIView *View);
+iInterface* cnLib_FUNC GetSysMouseCursor(eSysMouseCursor CursorID)noexcept(true);
+rPtr<iClipboardReader> cnLib_FUNC QueryClipboardReader(iUIView *View)noexcept(true);
+rPtr<iClipboardWriter> cnLib_FUNC QueryClipboardWriter(iUIView *View)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------

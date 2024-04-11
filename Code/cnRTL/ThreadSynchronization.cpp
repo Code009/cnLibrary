@@ -7,22 +7,22 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWaitObject::cWaitObject()
+cWaitObject::cWaitObject()noexcept
 {
 	fRefCount=0;
 }
 //---------------------------------------------------------------------------
-cWaitObject::~cWaitObject()
+cWaitObject::~cWaitObject()noexcept
 {
 	cnLib_ASSERT(fRefCount==0);
 }
 //---------------------------------------------------------------------------
-void cWaitObject::Acquire(void)
+void cWaitObject::Acquire(void)noexcept
 {
 	fRefCount.Free++;
 }
 //---------------------------------------------------------------------------
-void cWaitObject::Release(void)
+void cWaitObject::Release(void)noexcept
 {
 	if(fRefCount.Free--==0){
 		if(fWaitThread!=nullptr){
@@ -31,12 +31,12 @@ void cWaitObject::Release(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool cWaitObject::Check(void)
+bool cWaitObject::Check(void)noexcept
 {
 	return fRefCount==0;
 }
 //---------------------------------------------------------------------------
-void cWaitObject::Wait(void)
+void cWaitObject::Wait(void)noexcept
 {
 	if(fRefCount==0)
 		return;
@@ -45,14 +45,14 @@ void cWaitObject::Wait(void)
 	fWaitThread=cnSystem::CurrentThread::GetThread();
 	if(fRefCount.Free--!=0){
 		while(fWaitFlag){
-			cnSystem::CurrentThread::SleepUntil(nullptr,0);
+			cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
 		}
 	}
 	fRefCount.Free++;
 	fWaitThread=nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWaitObject::WaitUntil(iTimepoint *Timepoint,sInt64 Delay)
+bool cWaitObject::WaitUntil(uInt64 SystemTime)noexcept
 {
 	if(fRefCount==0)
 		return true;
@@ -61,7 +61,7 @@ bool cWaitObject::WaitUntil(iTimepoint *Timepoint,sInt64 Delay)
 	fWaitThread=cnSystem::CurrentThread::GetThread();
 	if(fRefCount.Free--!=0){
 		while(fWaitFlag){
-			if(cnSystem::CurrentThread::SleepUntil(Timepoint,Delay)==false){
+			if(cnSystem::CurrentThread::SleepUntil(SystemTime)==false){
 				// timeout
 				if(++fRefCount.Free!=0){
 					// state reseted
@@ -79,63 +79,63 @@ bool cWaitObject::WaitUntil(iTimepoint *Timepoint,sInt64 Delay)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWaitReference::cWaitReference()
+cWaitReference::cWaitReference()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWaitReference::~cWaitReference()
+cWaitReference::~cWaitReference()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWaitReference::IncreaseReference(void)noexcept(true)
+void cWaitReference::IncreaseReference(void)noexcept
 {
 	Acquire();
 }
 //---------------------------------------------------------------------------
-void cWaitReference::DecreaseReference(void)noexcept(true)
+void cWaitReference::DecreaseReference(void)noexcept
 {
 	Release();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThreadOneTimeNotifier::cThreadOneTimeNotifier()
+cThreadOneTimeNotifier::cThreadOneTimeNotifier()noexcept
 {
 	Reset();
 }
 //---------------------------------------------------------------------------
-cThreadOneTimeNotifier::~cThreadOneTimeNotifier()
+cThreadOneTimeNotifier::~cThreadOneTimeNotifier()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Reset(void)
+void cThreadOneTimeNotifier::Reset(void)noexcept
 {
 	fNotifyThread=cnSystem::CurrentThread::GetThread();
 	fWaiting=true;
 }
 //---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Wait(void)
+void cThreadOneTimeNotifier::Wait(void)noexcept
 {
 	while(fWaiting){
-		cnSystem::CurrentThread::SleepUntil(nullptr,0);
+		cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
 	}
 }
 //---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Notify(void)
+void cThreadOneTimeNotifier::Notify(void)noexcept
 {
 	fNotifyThread->Wake(&fWaiting);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAffixedVariableSet::cAffixedVariableSet()
+cAffixedVariableSet::cAffixedVariableSet()noexcept
 	: fSetMutex(cnSystem::CreateMutexLock())
 {
 }
 //---------------------------------------------------------------------------
-cAffixedVariableSet::~cAffixedVariableSet()
+cAffixedVariableSet::~cAffixedVariableSet()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iVariable> cAffixedVariableSet::QueryAffixedVariable(const void *Token)noexcept(true)
+rPtr<iVariable> cAffixedVariableSet::QueryAffixedVariable(const void *Token)noexcept
 {
 	auto AutoLock=TakeLock(fSetMutex);
 
@@ -150,14 +150,14 @@ rPtr<iVariable> cAffixedVariableSet::QueryAffixedVariable(const void *Token)noex
 	return rPtr<iVariable>::TakeFromManual(NewItem);
 }
 //---------------------------------------------------------------------------
-void cAffixedVariableSet::VariableReleased(cVariable *Variable)
+void cAffixedVariableSet::VariableReleased(cVariable *Variable)noexcept
 {
 	auto AutoLock=TakeLock(fSetMutex);
 	fSet.Remove(Variable);
 	delete Variable;
 }
 //---------------------------------------------------------------------------
-cAffixedVariableSet::cVariable::cVariable(cAffixedVariableSet *Owner,const void *Token)noexcept(true)
+cAffixedVariableSet::cVariable::cVariable(cAffixedVariableSet *Owner,const void *Token)noexcept
 	: fOwner(Owner)
 	, fToken(Token)
 	, fValue(nullptr)
@@ -165,11 +165,11 @@ cAffixedVariableSet::cVariable::cVariable(cAffixedVariableSet *Owner,const void 
 {
 }
 //---------------------------------------------------------------------------
-cAffixedVariableSet::cVariable::~cVariable()noexcept(true)
+cAffixedVariableSet::cVariable::~cVariable()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cAffixedVariableSet::cVariable::MakeReference(void)
+bool cAffixedVariableSet::cVariable::MakeReference(void)noexcept
 {
 	if(fRefCount.Free++==0){
 		// is releasing by others
@@ -178,41 +178,41 @@ bool cAffixedVariableSet::cVariable::MakeReference(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cAffixedVariableSet::cVariable::IncreaseReference(void)noexcept(true)
+void cAffixedVariableSet::cVariable::IncreaseReference(void)noexcept
 {
 	++fRefCount.Free;
 }
 //---------------------------------------------------------------------------
-void cAffixedVariableSet::cVariable::DecreaseReference(void)noexcept(true)
+void cAffixedVariableSet::cVariable::DecreaseReference(void)noexcept
 {
 	if(--fRefCount.Free==0){
 		fOwner->VariableReleased(this);
 	}
 }
 //---------------------------------------------------------------------------
-void cAffixedVariableSet::cVariable::Clear(void)noexcept(true)
+void cAffixedVariableSet::cVariable::Clear(void)noexcept
 {
 	fReference=nullptr;
 	fValue=nullptr;
 }
 //---------------------------------------------------------------------------
-void* cAffixedVariableSet::cVariable::Get(void)noexcept(true)
+void* cAffixedVariableSet::cVariable::Get(void)noexcept
 {
 	return fValue;
 }
 //---------------------------------------------------------------------------
-void cAffixedVariableSet::cVariable::Set(iReference *Reference,void *Value)noexcept(true)
+void cAffixedVariableSet::cVariable::Set(iReference *Reference,void *Value)noexcept
 {
 	fReference=Reference;
 	fValue=Value;
 }
 //---------------------------------------------------------------------------
-sfInt8 cAffixedVariableSet::cVariable::cItemOrderOperator::Compare(const cVariable &Item,const cVariable &Value)noexcept(true)
+sfInt8 cAffixedVariableSet::cVariable::cItemOrderOperator::Compare(const cVariable &Item,const cVariable &Value)noexcept
 {
 	return Compare(Item,Value.fToken);
 }
 //---------------------------------------------------------------------------
-sfInt8 cAffixedVariableSet::cVariable::cItemOrderOperator::Compare(const cVariable &Item,const void *Token)noexcept(true)
+sfInt8 cAffixedVariableSet::cVariable::cItemOrderOperator::Compare(const cVariable &Item,const void *Token)noexcept
 {
 	if(Item.fToken<Token)
 		return -1;

@@ -82,9 +82,9 @@ struct cCountingStreamReadBuffer
 		, TotalRead(0)
 	{}
 
-	cArray<const tElement> GatherReadBuffer(uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer.GatherReadBuffer(Length)))
+	cArray<const tElement> GatherReadBuffer(uIntn Length)noexcept(noexcept(fReadBuffer.GatherReadBuffer(Length)))
 	{	return fReadBuffer.GatherReadBuffer(Length);	}
-	void DismissReadBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer.DismissReadBuffer(0)))
+	void DismissReadBuffer(uIntn Size)noexcept(noexcept(fReadBuffer.DismissReadBuffer(0)))
 	{
 		fReadBuffer.DismissReadBuffer(Size);
 		TotalRead+=Size;
@@ -109,9 +109,9 @@ struct cCountingStreamWriteBuffer
 		, TotalWritten(0)
 	{}
 
-	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer.ReserveWriteBuffer(Length)))
+	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(noexcept(fWriteBuffer.ReserveWriteBuffer(Length)))
 	{	return fWriteBuffer.ReserveWriteBuffer(Length);	}
-	void CommitWriteBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer.CommitWriteBuffer(0)))
+	void CommitWriteBuffer(uIntn Size)noexcept(noexcept(fWriteBuffer.CommitWriteBuffer(0)))
 	{
 		fWriteBuffer.CommitWriteBuffer(Size);
 		TotalWritten+=Size;
@@ -120,6 +120,52 @@ struct cCountingStreamWriteBuffer
 template<class TStreamWriteBuffer>
 cCountingStreamWriteBuffer<TStreamWriteBuffer> CountingStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
 {	return cCountingStreamWriteBuffer<TStreamWriteBuffer>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));	}
+
+//---------------------------------------------------------------------------
+template<class T>
+class cVoidStreamBuffer
+{
+public:
+	cVoidStreamBuffer()noexcept(true){}
+
+	// TElement
+	//	type of element in buffer
+	typedef T tElement;
+
+	// TStreamReadBuffer<T>
+
+	cArray<T> GatherReadBuffer(uIntn Length)noexcept(true){
+		cArray<T> Empty;
+		Empty.Pointer=nullptr;
+		Empty.Length=0;
+		return Empty;
+	}
+	void DismissReadBuffer(uIntn Length)noexcept(true){}
+		
+	// TStreamWriteBuffer<T>
+
+	cArray<T> ReserveWriteBuffer(uIntn Length)noexcept(true){
+		cArray<T> Empty;
+		Empty.Pointer=nullptr;
+		Empty.Length=0;
+		return Empty;
+	}
+	void CommitWriteBuffer(uIntn Length)noexcept(true){}
+};
+//---------------------------------------------------------------------------
+
+// ArrayStreamReadBuffer
+//	define an array read stream buffer from fixed length array
+// <T>			type of array element
+// <Length>		Length of array
+// [in]Pointer	pointer to array
+// return read stream object
+template<class T,uIntn Length>
+inline cVoidStreamBuffer<T> VoidStreamReadBuffer(void)noexcept(true)
+{	return cVoidStreamBuffer<T>();	}
+template<class T>
+inline cVoidStreamBuffer<T> VoidStreamWriteBuffer(void)noexcept(true)
+{	return cVoidStreamBuffer<T>();	}
 
 //---------------------------------------------------------------------------
 template<class T>
@@ -264,7 +310,7 @@ public:
 
 	// TStreamWriteBuffer<T>
 
-	cArray<tElement> ReserveWriteBuffer(uIntn QueryLength)noexcept(cnLib_NOEXCEPTEXPR(fStorage.GrowCapacityTo(0)))
+	cArray<tElement> ReserveWriteBuffer(uIntn QueryLength)noexcept(noexcept(fStorage.GrowCapacityTo(0)))
 	{
 
 		uIntn LengthAvailable=fStorage.Capacity-fStorage.Length;
@@ -335,7 +381,7 @@ public:
 
 	// TStreamReadBuffer<void>
 
-	cConstMemory GatherReadBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer->GatherReadBuffer(Size)))
+	cConstMemory GatherReadBuffer(uIntn Size)noexcept(noexcept(fReadBuffer->GatherReadBuffer(Size)))
 	{
 		typedef typename TStreamReadBuffer::tElement TUpstreamElement;
 		uIntn QueryLength=Size+fReadByteOffset;
@@ -348,7 +394,7 @@ public:
 		Buffer.Length=Array.Length*sizeof(TUpstreamElement)-fReadByteOffset;
 		return Buffer;
 	}
-	void DismissReadBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer->DismissReadBuffer(Size)))
+	void DismissReadBuffer(uIntn Size)noexcept(noexcept(fReadBuffer->DismissReadBuffer(Size)))
 	{
 		typedef typename TStreamReadBuffer::tElement TUpstreamElement;
 		Size+=fReadByteOffset;
@@ -375,7 +421,7 @@ public:
 
 	// TStreamWriteBuffer<void>
 
-	cMemory ReserveWriteBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer->ReserveWriteBuffer(Size)))
+	cMemory ReserveWriteBuffer(uIntn Size)noexcept(noexcept(fWriteBuffer->ReserveWriteBuffer(Size)))
 	{
 		typedef typename TStreamWrtieBuffer::tElement TUpstreamElement;
 		uIntn QueryLength=Size+fWriteByteOffset;
@@ -389,7 +435,7 @@ public:
 		Buffer.Length=Array.Length*sizeof(TUpstreamElement)-fWriteByteOffset;
 		return Buffer;
 	}
-	void CommitWriteBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer->CommitWriteBuffer(Size)))
+	void CommitWriteBuffer(uIntn Size)noexcept(noexcept(fWriteBuffer->CommitWriteBuffer(Size)))
 	{
 		typedef typename TStreamWrtieBuffer::tElement TUpstreamElement;
 		Size+=fWriteByteOffset;
@@ -430,7 +476,7 @@ public:
 	cCachedStreamReadBuffer(T cnLib_UREF ReadBuffer)noexcept(true)
 		: fReadBuffer(cnLib_UREFCAST(T)(ReadBuffer)),fCachedLength(0){}
 
-	cArray<const tElement> GatherReadBuffer(uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer.GatherReadBuffer(Length)))
+	cArray<const tElement> GatherReadBuffer(uIntn Length)noexcept(noexcept(fReadBuffer.GatherReadBuffer(Length)))
 	{
 		cArray<const tElement> RetArray;
 		if(fCachedLength==0){
@@ -495,7 +541,7 @@ PopupteNextBuffer:
 		RetArray.Length=Length;
 		return RetArray;
 	}
-	void DismissReadBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fReadBuffer.DismissReadBuffer(Size)))
+	void DismissReadBuffer(uIntn Size)noexcept(noexcept(fReadBuffer.DismissReadBuffer(Size)))
 	{
 		if(fCachedLength==IndexNotFound)
 			return;	// stream already ended
@@ -529,7 +575,7 @@ public:
 	cnLib_STATIC_ASSERT(cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
 	cnLib_STATIC_ASSERT(cnVar::TIsMoveAssignNoexcept<tElement>::Value,"noexcept move assignment required");
 #if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-	cnLib_STATIC_ASSERT(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer(0)),"noexcept CommitWriteBuffer required");
+	cnLib_STATIC_ASSERT(noexcept(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer(0)),"noexcept CommitWriteBuffer required");
 #endif // !cnLibrary_CPPEXCLUDE_NOEXCEPT
 
 
@@ -537,7 +583,7 @@ public:
 	cCachedStreamWriteBuffer(T cnLib_UREF WriteBuffer)noexcept(true)
 		: fWriteBuffer(cnLib_UREFCAST(T)(WriteBuffer)),fCachedLength(0){}
 
-	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer.ReserveWriteBuffer(Length)))
+	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(noexcept(fWriteBuffer.ReserveWriteBuffer(Length)))
 	{
 		if(fCachedLength!=0){
 			if(fCachedLength==IndexNotFound){
@@ -549,6 +595,10 @@ public:
 				return NullArray;
 		}
 		cArray<tElement> RetArray=fWriteBuffer.ReserveWriteBuffer(Length);
+		if(RetArray.Length==0){
+			fCachedLength=IndexNotFound;	// mark direct commit
+			return RetArray;
+		}
 		if(RetArray.Length>Length || RetArray.Length>=CacheLength){
 			fCachedLength=IndexNotFound;	// mark direct commit
 			return RetArray;
@@ -558,7 +608,7 @@ public:
 		RetArray.Length=CacheLength;
 		return RetArray;
 	}
-	void CommitWriteBuffer(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer.CommitWriteBuffer(Size)))
+	void CommitWriteBuffer(uIntn Size)noexcept(noexcept(fWriteBuffer.CommitWriteBuffer(Size)))
 	{
 		if(fCachedLength==IndexNotFound){
 			fCachedLength=0;
@@ -593,7 +643,7 @@ protected:
 	uIntn fCachedLength;
 	tElement fCache[CacheLength];
 
-	void CommitCached(void)noexcept(cnLib_NOEXCEPTEXPR(fWriteBuffer.ReserveWriteBuffer(fCachedLength)))
+	void CommitCached(void)noexcept(noexcept(fWriteBuffer.ReserveWriteBuffer(fCachedLength)))
 	{
 		uIntn CommitIndex=0;
 		uIntn CacheRemainLength=fCachedLength;
@@ -719,7 +769,7 @@ public:
 	cnLib_STATIC_ASSERT(cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
 	cnLib_STATIC_ASSERT(cnVar::TIsMoveAssignNoexcept<tElement>::Value,"noexcept move assignment required");
 #if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-	cnLib_STATIC_ASSERT(cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer),"noexcept CommitWriteBuffer required");
+	cnLib_STATIC_ASSERT(noexcept(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer),"noexcept CommitWriteBuffer required");
 #endif
 
 	cMemoryCachedStreamWriteBuffer(TStreamWriteBuffer *WriteBuffer)noexcept(true)

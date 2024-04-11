@@ -16,15 +16,15 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
-COLORREF COLORREFFromUIColor(const cUIColor &UIColor);
+COLORREF COLORREFFromUIColor(const cUIColor &UIColor)noexcept(true);
 //---------------------------------------------------------------------------
 struct cGDIBitmapBuffer
 {
-	cGDIBitmapBuffer();
-	~cGDIBitmapBuffer();
+	cGDIBitmapBuffer()noexcept(true);
+	~cGDIBitmapBuffer()noexcept(true);
 	
-	void Clear(void);
-	void Setup(HDC DC,int Width,int Height);
+	void Clear(void)noexcept(true);
+	void Setup(HDC DC,int Width,int Height)noexcept(true);
 
 	HBITMAP Bitmap;
 	int Width;
@@ -36,11 +36,11 @@ struct cGDIBitmapBuffer
 //---------------------------------------------------------------------------
 struct cGDIBitmapSection
 {
-	cGDIBitmapSection();
-	~cGDIBitmapSection();
+	cGDIBitmapSection()noexcept(true);
+	~cGDIBitmapSection()noexcept(true);
 	
-	void Clear(void);
-	void Setup(HDC DC,int NewWidth,int NewHeight);
+	void Clear(void)noexcept(true);
+	void Setup(HDC DC,int NewWidth,int NewHeight)noexcept(true);
 
 	HANDLE Section;
 	HBITMAP Bitmap;
@@ -54,37 +54,37 @@ struct cGDIBitmapSection
 class cGDIBitmap : public iUIBitmap, public iGDIBitmap
 {
 public:
-	cGDIBitmap(HBITMAP Bitmap=nullptr,bool HasAlpha=false);
-	~cGDIBitmap();
+	cGDIBitmap(HBITMAP Bitmap=nullptr,bool HasAlpha=false)noexcept(true);
+	~cGDIBitmap()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 	
 	// iUIBitmap
 
-	virtual cUIPoint cnLib_FUNC GetSize(void)override;
+	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)override;
 
 	// iGDIBitmap
 
-	virtual HBITMAP cnLib_FUNC GetBitmap(void)override;
-	virtual bool cnLib_FUNC HasAlpha(void)override;
+	virtual HBITMAP cnLib_FUNC GetBitmap(void)noexcept(true)override;
+	virtual bool cnLib_FUNC HasAlpha(void)noexcept(true)override;
 private:
 	HBITMAP fBitmap;
 	bool fHasAlpha;
 };
 //---------------------------------------------------------------------------
-bool GDIDrawBitmap(HDC DC,int DrawX,int DrawY,int DrawWidth,int DrawHeight,HDC MemDC,HBITMAP Bitmap,int BmpWidth,int BmpHeight,bool HasAlpha);
+bool GDIDrawBitmap(HDC DC,int DrawX,int DrawY,int DrawWidth,int DrawHeight,HDC MemDC,HBITMAP Bitmap,int BmpWidth,int BmpHeight,bool HasAlpha)noexcept(true);
 //---------------------------------------------------------------------------
-HBITMAP DCCreateBitmapFromSource(HDC DC,IWICBitmapSource *BitmapSource,bool &HasAlpha);
-HBITMAP DCCreateBitmapFromSource(HDC DC,iBitmapDataSource *Source,bool &HasAlpha);
+HBITMAP DCCreateBitmapFromSource(HDC DC,IWICBitmapSource *BitmapSource,bool &HasAlpha)noexcept(true);
+HBITMAP DCCreateBitmapFromSource(HDC DC,iBitmapDataSource *Source,bool &HasAlpha)noexcept(true);
 //---------------------------------------------------------------------------
 class cGDIDC : public iGDIDC
 {
 public:        
-	cGDIDC(HDC DC);
-	~cGDIDC();
+	cGDIDC(HDC DC)noexcept(true);
+	~cGDIDC()noexcept(true);
 
-	HDC GetHandle(void);
-	virtual HDC cnLib_FUNC GetDC(void)override;
+	HDC GetHandle(void)noexcept(true);
+	virtual HDC cnLib_FUNC GetDC(void)noexcept(true)override;
 
 protected:
 	HDC fDC;
@@ -93,10 +93,10 @@ protected:
 class cGDIFontHandle : public iGDIFontHandle
 {
 public:
-	cGDIFontHandle(HFONT FontHandle);
-	~cGDIFontHandle();
+	cGDIFontHandle(HFONT FontHandle)noexcept(true);
+	~cGDIFontHandle()noexcept(true);
 
-	virtual HFONT cnLib_FUNC GetFontHandle(void)override;
+	virtual HFONT cnLib_FUNC GetFontHandle(void)noexcept(true)override;
 
 protected:
 	HFONT fFontHandle;
@@ -105,19 +105,19 @@ protected:
 class cDCPaintDevice : public iDCPaintDevice
 {
 public:
-	cDCPaintDevice();
-	~cDCPaintDevice();
+	cDCPaintDevice()noexcept(true);
+	~cDCPaintDevice()noexcept(true);
 
-	HDC GetScreenICHandle(void);
-	cGDIDC* GetScreenIC(void);
-	rPtr<cGDIDC> QueryMemDC(void);
+	HDC GetScreenICHandle(void)noexcept(true);
+	cGDIDC* GetScreenIC(void)noexcept(true);
+	rPtr<cGDIDC> QueryMemDC(void)noexcept(true);
 
-	void UpdateDisplaySetting(void);
+	void UpdateDisplaySetting(void)noexcept(true);
 
-	virtual iGDIDC* cnLib_FUNC GetScreenInfomationDC(void)override;
-	virtual rPtr<iGDIDC> cnLib_FUNC QueryMemoryDC(void)override;
-	virtual rPtr<iGDIFontHandle> cnLib_FUNC QueryFont(const cUITextStyle &TextStyle)override;
-	virtual iPtr<iGDIBitmap> cnLib_FUNC CreateBitmapCopyFromSource(iBitmapDataSource *Source)override;
+	virtual iGDIDC* cnLib_FUNC GetScreenInfomationDC(void)noexcept(true)override;
+	virtual rPtr<iGDIDC> cnLib_FUNC QueryMemoryDC(void)noexcept(true)override;
+	virtual rPtr<iGDIFontHandle> cnLib_FUNC QueryFont(const cUITextStyle &TextStyle)noexcept(true)override;
+	virtual iPtr<iGDIBitmap> cnLib_FUNC CreateBitmapCopyFromSource(iBitmapDataSource *Source)noexcept(true)override;
 
 private:
 	// font
@@ -134,8 +134,8 @@ private:
 		};
 		cnRTL::cString<wchar_t> FontName;
 
-		bool operator <(const cFontIndex &Src)const;
-		bool operator ==(const cFontIndex &Src)const;
+		bool operator <(const cFontIndex &Src)const noexcept(true);
+		bool operator ==(const cFontIndex &Src)const noexcept(true);
 	};
 
 	DEVMODE fDM;
@@ -145,16 +145,16 @@ private:
 	iPtr<iUIThread> fUIThread;
 	cnRTL::cSeqMap<cFontIndex,rPtr<cGDIFontHandle> > fFontMap;
 
-	bool CheckThread(void);
+	bool CheckThread(void)noexcept(true);
 
 
 	class cMemDC : public cGDIDC
 	{
 	public:
-		cMemDC();
+		cMemDC()noexcept(true);
 
 
-		void SetupDC(HDC IC,uIntn DCNumber);
+		void SetupDC(HDC IC,uIntn DCNumber)noexcept(true);
 
 	protected:
 		uIntn fDCNumber;
@@ -164,11 +164,11 @@ private:
 	class cBitmap : public cGDIBitmap, public cnRTL::bcVirtualLifeCycle
 	{
 	public:
-		cBitmap(cDCPaintDevice *Owner,iBitmapDataSource *Source,HBITMAP Bitmap,bool HasAlpha);
-		iBitmapDataSource *GetSource(void)const;
+		cBitmap(cDCPaintDevice *Owner,iBitmapDataSource *Source,HBITMAP Bitmap,bool HasAlpha)noexcept(true);
+		iBitmapDataSource *GetSource(void)const noexcept(true);
 
 	protected:
-		void VirtualStopped(void);
+		void VirtualStopped(void)noexcept(true);
 
 		cDCPaintDevice *fOwner;
 		iBitmapDataSource *fSource;
@@ -176,9 +176,9 @@ private:
 	private:
 		class cThreadDeleteProcedure : public iProcedure
 		{
-			virtual void cnLib_FUNC Execute(void)override;
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 		}fThreadDeleteProcedure;
-		void ThreadDelete(void);
+		void ThreadDelete(void)noexcept(true);
 	};
 
 	cnRTL::cSeqMap<iBitmapDataSource*,cBitmap*> fBitmapCache;

@@ -4,7 +4,7 @@ using namespace cnLibrary;
 using namespace cnUI;
 
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> cnUI::CreateUIWindow(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle)
+iPtr<iWindowClient> cnUI::CreateUIWindow(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle)noexcept
 {
 	auto WindowClient=cnWindows::CreateWindowClient();
 	if(WindowClient==nullptr){
@@ -19,7 +19,7 @@ iPtr<iWindowClient> cnUI::CreateUIWindow(HWND Parent,const wchar_t *WindowText,D
 	return WindowClient;
 }
 //---------------------------------------------------------------------------
-static bool PointInWindow(HWND hWnd,LPARAM lParam){
+static bool PointInWindow(HWND hWnd,LPARAM lParam)noexcept{
 	auto &Pos=MAKEPOINTS(lParam);
 	RECT crc;
 	::GetClientRect(hWnd,&crc);
@@ -34,20 +34,20 @@ static bool PointInWindow(HWND hWnd,LPARAM lParam){
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-WindowComponent::WindowComponent()
+WindowComponent::WindowComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-WindowComponent::~WindowComponent()
+WindowComponent::~WindowComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iWindow* WindowComponent::GetWindow(void)const
+iWindow* WindowComponent::GetWindow(void)const noexcept
 {
 	return fWindow;
 }
 //---------------------------------------------------------------------------
-void WindowComponent::SetWindow(iWindow *Window)
+void WindowComponent::SetWindow(iWindow *Window)noexcept
 {
 	if(fWindow!=nullptr){
 		WindowClear();
@@ -59,172 +59,172 @@ void WindowComponent::SetWindow(iWindow *Window)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-WindowControl::WindowControl()
+WindowControl::WindowControl()noexcept
 {
 }
 //---------------------------------------------------------------------------
-WindowControl::~WindowControl()
+WindowControl::~WindowControl()noexcept
 {
 	SetWindow(nullptr);
 }
 //---------------------------------------------------------------------------
-void WindowControl::UpdateComponentOrder(void)
+void WindowControl::UpdateComponentOrder(void)noexcept
 {
 	if(fWindow!=nullptr){
 		fWindow->InsertMessageHandler(this,ComponentOrder);
 	}
 }
 //---------------------------------------------------------------------------
-void WindowControl::WindowSetup(void)
+void WindowControl::WindowSetup(void)noexcept
 {
 	fWindow->InsertMessageHandler(this,ComponentOrder);
 }
 //---------------------------------------------------------------------------
-void WindowControl::WindowClear(void)
+void WindowControl::WindowClear(void)noexcept
 {
 	fWindow->RemoveMessageHandler(this);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-WindowClient::WindowClient()
+WindowClient::WindowClient()noexcept
 {
 	fWindowClient=cnWindows::CreateWindowClient();
 }
 //---------------------------------------------------------------------------
-WindowClient::~WindowClient()
+WindowClient::~WindowClient()noexcept
 {
 	SetClientView(nullptr);
 	SetWindow(nullptr);
 }
 //---------------------------------------------------------------------------
-iWindowClient* WindowClient::GetWindowClient(void)const
+iWindowClient* WindowClient::GetWindowClient(void)const noexcept
 {
 	return fWindowClient;
 }
 //---------------------------------------------------------------------------
-iUIWindow* WindowClient::GetUIWindow(void)const
+iUIWindow* WindowClient::GetUIWindow(void)const noexcept
 {
 	return iCast<iUIWindow>(fWindowClient);
 }
 //---------------------------------------------------------------------------
-void WindowClient::WindowSetup(void)
+void WindowClient::WindowSetup(void)noexcept
 {
 	WindowComponent::WindowSetup();
 
 	fWindowClient->SetWindow(fWindow);
 }
 //---------------------------------------------------------------------------
-void WindowClient::WindowClear(void)
+void WindowClient::WindowClear(void)noexcept
 {
 	fWindowClient->SetWindow(nullptr);
 
 	WindowComponent::WindowClear();
 }
 //---------------------------------------------------------------------------
-iUIView* WindowClient::GetClientView(void)const
+iUIView* WindowClient::GetClientView(void)const noexcept
 {
 	auto Window=GetUIWindow();
 	return Window->GetClient();
 }
 //---------------------------------------------------------------------------
-void WindowClient::SetClientView(iUIView *View)
+void WindowClient::SetClientView(iUIView *View)noexcept
 {
 	auto Window=GetUIWindow();
 	Window->SetClient(View);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-WindowFrame::WindowFrame()
+WindowFrame::WindowFrame()noexcept
 {
 	fWindowFrame=cnWindows::CreateWindowFrame();
 }
 //---------------------------------------------------------------------------
-WindowFrame::~WindowFrame()
+WindowFrame::~WindowFrame()noexcept
 {
 	SetWindow(nullptr);
 }
 //---------------------------------------------------------------------------
-iWindowFrame* WindowFrame::GetWindowFrame(void)const
+iWindowFrame* WindowFrame::GetWindowFrame(void)const noexcept
 {
 	return fWindowFrame;
 }
 //---------------------------------------------------------------------------
-iUIWindow* WindowFrame::GetUIWindow(void)const
+iUIWindow* WindowFrame::GetUIWindow(void)const noexcept
 {
 	return iCast<iUIWindow>(fWindowFrame);
 }
 //---------------------------------------------------------------------------
-void WindowFrame::WindowSetup(void)
+void WindowFrame::WindowSetup(void)noexcept
 {
 	WindowComponent::WindowSetup();
 
 	fWindowFrame->SetWindow(fWindow);
 }
 //---------------------------------------------------------------------------
-void WindowFrame::WindowClear(void)
+void WindowFrame::WindowClear(void)noexcept
 {
 	fWindowFrame->SetWindow(nullptr);
 
 	WindowComponent::WindowClear();
 }
 //---------------------------------------------------------------------------
-iUIView* WindowFrame::GetClientView(void)const
+iUIView* WindowFrame::GetClientView(void)const noexcept
 {
 	auto Window=GetUIWindow();
 	return Window->GetClient();
 }
 //---------------------------------------------------------------------------
-void WindowFrame::SetClientView(iUIView *View)
+void WindowFrame::SetClientView(iUIView *View)noexcept
 {
 	auto Window=GetUIWindow();
 	Window->SetClient(View);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cPopupStaticWindow::cPopupStaticWindow()
+cPopupStaticWindow::cPopupStaticWindow()noexcept
 {
 	fWindowClient=cnWindows::CreateWindowClient();
 }
 //---------------------------------------------------------------------------
-cPopupStaticWindow::~cPopupStaticWindow()
+cPopupStaticWindow::~cPopupStaticWindow()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iWindow* cPopupStaticWindow::GetWindow(void)const
+iWindow* cPopupStaticWindow::GetWindow(void)const noexcept
 {
 	return fWindow;
 }
 //---------------------------------------------------------------------------
-HWND cPopupStaticWindow::GetWindowHandle(void)const
+HWND cPopupStaticWindow::GetWindowHandle(void)const noexcept
 {
 	if(fWindow==nullptr)
 		return nullptr;
 	return fWindow->GetWindowHandle();
 }
 //---------------------------------------------------------------------------
-iWindowClient* cPopupStaticWindow::GetWindowClient(void)const
+iWindowClient* cPopupStaticWindow::GetWindowClient(void)const noexcept
 {
 	return fWindowClient;
 }
 //---------------------------------------------------------------------------
-iUIWindow* cPopupStaticWindow::GetUIWindow(void)const
+iUIWindow* cPopupStaticWindow::GetUIWindow(void)const noexcept
 {
 	return iCast<iUIWindow>(fWindowClient);
 }
 //---------------------------------------------------------------------------
-iUIView* cPopupStaticWindow::GetClientView(void)const
+iUIView* cPopupStaticWindow::GetClientView(void)const noexcept
 {
 	auto Wnd=GetUIWindow();
 	return Wnd->GetClient();
 }
 //---------------------------------------------------------------------------
-bool cPopupStaticWindow::SetClientView(iUIView *View)
+bool cPopupStaticWindow::SetClientView(iUIView *View)noexcept
 {
 	auto Wnd=GetUIWindow();
 	return Wnd->SetClient(View);
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::SetupOwnerWindow(HWND OwnerWindowHandle)
+void cPopupStaticWindow::SetupOwnerWindow(HWND OwnerWindowHandle)noexcept
 {
 	if(fWindow==nullptr){
 		fWindow=cnWindows::CreateHWND(OwnerWindowHandle,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
@@ -236,13 +236,13 @@ void cPopupStaticWindow::SetupOwnerWindow(HWND OwnerWindowHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::SetupOwner(iUIView *Owner)
+void cPopupStaticWindow::SetupOwner(iUIView *Owner)noexcept
 {
 	HWND OwnerWindowHandle=GetWindowHandleFromUIView(Owner);
 	SetupOwnerWindow(OwnerWindowHandle);
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)
+void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -251,7 +251,7 @@ void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,
 	return MoveWindowAlign(WindowHandle,Relative,WindowSize,AlignPos,AlignSize,Align);
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)
+void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -264,7 +264,7 @@ void cPopupStaticWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const c
 	::MoveWindow(WindowHandle,ScreenPos.x+Pos.x,ScreenPos.y+Pos.y,Size.x,Size.y,FALSE);
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::ShowPopup(void)
+void cPopupStaticWindow::ShowPopup(void)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -274,7 +274,7 @@ void cPopupStaticWindow::ShowPopup(void)
 	::SetWindowPos(WindowHandle,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_SHOWWINDOW);
 }
 //---------------------------------------------------------------------------
-void cPopupStaticWindow::HidePopup(void)
+void cPopupStaticWindow::HidePopup(void)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -284,12 +284,12 @@ void cPopupStaticWindow::HidePopup(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cPopupWindow::cPopupWindow()
+cPopupWindow::cPopupWindow()noexcept
 {
 	fWindowClient=cnWindows::CreateOwnerFocusWindowClient();
 }
 //---------------------------------------------------------------------------
-cPopupWindow::~cPopupWindow()
+cPopupWindow::~cPopupWindow()noexcept
 {
 	if(fWindow!=nullptr){
 		fWindow->RemoveMessageHandler(this);
@@ -298,41 +298,41 @@ cPopupWindow::~cPopupWindow()
 	}
 }
 //---------------------------------------------------------------------------
-iWindow* cPopupWindow::GetWindow(void)const
+iWindow* cPopupWindow::GetWindow(void)const noexcept
 {
 	return fWindow;
 }
 //---------------------------------------------------------------------------
-HWND cPopupWindow::GetWindowHandle(void)const
+HWND cPopupWindow::GetWindowHandle(void)const noexcept
 {
 	if(fWindow==nullptr)
 		return nullptr;
 	return fWindow->GetWindowHandle();
 }
 //---------------------------------------------------------------------------
-iWindowClient* cPopupWindow::GetWindowClient(void)const
+iWindowClient* cPopupWindow::GetWindowClient(void)const noexcept
 {
 	return fWindowClient;
 }
 //---------------------------------------------------------------------------
-iUIWindow* cPopupWindow::GetUIWindow(void)const
+iUIWindow* cPopupWindow::GetUIWindow(void)const noexcept
 {
 	return iCast<iUIWindow>(fWindowClient);
 }
 //---------------------------------------------------------------------------
-iUIView* cPopupWindow::GetClientView(void)const
+iUIView* cPopupWindow::GetClientView(void)const noexcept
 {
 	auto Wnd=GetUIWindow();
 	return Wnd->GetClient();
 }
 //---------------------------------------------------------------------------
-bool cPopupWindow::SetClientView(iUIView *View)
+bool cPopupWindow::SetClientView(iUIView *View)noexcept
 {
 	auto Wnd=GetUIWindow();
 	return Wnd->SetClient(View);
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::SetupOwnerWindow(HWND OwnerWindow)
+void cPopupWindow::SetupOwnerWindow(HWND OwnerWindow)noexcept
 {
 	if(fWindow==nullptr){
 		fWindow=cnWindows::CreateHWND(OwnerWindow,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
@@ -349,13 +349,13 @@ void cPopupWindow::SetupOwnerWindow(HWND OwnerWindow)
 	}
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::SetupOwner(iUIView *Owner)
+void cPopupWindow::SetupOwner(iUIView *Owner)noexcept
 {
 	HWND OwnerWindowHandle=GetWindowHandleFromUIView(Owner);
 	SetupOwnerWindow(OwnerWindowHandle);
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)
+void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -364,7 +364,7 @@ void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const 
 	return MoveWindowAlign(WindowHandle,Relative,WindowSize,AlignPos,AlignSize,Align);
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)
+void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -377,7 +377,7 @@ void cPopupWindow::MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoin
 	::MoveWindow(WindowHandle,ScreenPos.x+Pos.x,ScreenPos.y+Pos.y,Size.x,Size.y,FALSE);
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::ShowPopup(void)
+void cPopupWindow::ShowPopup(void)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -387,7 +387,7 @@ void cPopupWindow::ShowPopup(void)
 	::SetWindowPos(WindowHandle,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_SHOWWINDOW);
 }
 //---------------------------------------------------------------------------
-void cPopupWindow::HidePopup(void)
+void cPopupWindow::HidePopup(void)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -396,7 +396,7 @@ void cPopupWindow::HidePopup(void)
 	::ShowWindow(WindowHandle,SW_HIDE);
 }
 //---------------------------------------------------------------------------
-bool cPopupWindow::IsPopuped(void)
+bool cPopupWindow::IsPopuped(void)noexcept
 {
 	HWND WindowHandle=GetWindowHandle();
 	if(WindowHandle==nullptr){
@@ -405,7 +405,7 @@ bool cPopupWindow::IsPopuped(void)
 	return FALSE!=::IsWindowVisible(WindowHandle);
 }
 //---------------------------------------------------------------------------
-bool cPopupWindow::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)
+bool cPopupWindow::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept
 {
 	HWND WindowHandle=fWindow->GetWindowHandle();
 	switch(MsgParam.Code){
@@ -443,7 +443,7 @@ bool cPopupWindow::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgP
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-ModalDialog::ModalDialog()
+ModalDialog::ModalDialog()noexcept
 {
 	fDialogProvider=cnWindows::CreateWindowProvider();
 
@@ -451,28 +451,28 @@ ModalDialog::ModalDialog()
 	DialogWindow->InsertMessageHandler(this);
 }
 //---------------------------------------------------------------------------
-ModalDialog::~ModalDialog()
+ModalDialog::~ModalDialog()noexcept
 {
 	auto DialogWindow=iCast<iWindow>(fDialogProvider);
 	DialogWindow->RemoveMessageHandler(this);
 }
 //---------------------------------------------------------------------------
-INT_PTR ModalDialog::Modal(HWND Parent,const wchar_t *WindowText,LONG X,LONG Y,LONG Width,LONG Height,DWORD Style,DWORD ExStyle)
+INT_PTR ModalDialog::Modal(HWND Parent,const wchar_t *WindowText,LONG X,LONG Y,LONG Width,LONG Height,DWORD Style,DWORD ExStyle)noexcept
 {
 	return fDialogProvider->ModalDialog(Parent,WindowText,X,Y,Width,Height,Style,ExStyle);
 }
 //---------------------------------------------------------------------------
-INT_PTR ModalDialog::Modal(HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName)
+INT_PTR ModalDialog::Modal(HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName)noexcept
 {
 	return fDialogProvider->ModalDialogTemplate(Parent,hInstance,TemplateName);
 }
 //---------------------------------------------------------------------------
-INT_PTR ModalDialog::Modal(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)
+INT_PTR ModalDialog::Modal(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)noexcept
 {
 	return fDialogProvider->ModalDialogTemplateIndirect(Parent,hInstance,DialogTemplate);
 }
 //---------------------------------------------------------------------------
-void ModalDialog::WindowAttached(void)
+void ModalDialog::WindowAttached(void)noexcept
 {
 	auto DialogWindow=iCast<iWindow>(fDialogProvider);
 	fWindowHandle=DialogWindow->GetWindowHandle();
@@ -481,12 +481,12 @@ void ModalDialog::WindowAttached(void)
 	ModalDialogCreateClient(fWindowHandle,crc.left,crc.top,crc.right,crc.bottom);
 }
 //---------------------------------------------------------------------------
-void ModalDialog::WindowDetached(void)
+void ModalDialog::WindowDetached(void)noexcept
 {
 	fWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-void ModalDialog::WindowMessageProcessed(LRESULT,const cWindowMessageParam &MsgParam)
+void ModalDialog::WindowMessageProcessed(LRESULT,const cWindowMessageParam &MsgParam)noexcept
 {
 	switch(MsgParam.Code){
 	case WM_WINDOWPOSCHANGED:
@@ -502,7 +502,7 @@ void ModalDialog::WindowMessageProcessed(LRESULT,const cWindowMessageParam &MsgP
 	}
 }
 //---------------------------------------------------------------------------
-bool ModalDialog::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)
+bool ModalDialog::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept
 {Result;
 	switch(MsgParam.Code){
 	case WM_CLOSE:
@@ -519,7 +519,7 @@ struct cShowModalWindowData
 	const wchar_t *Text;
 };
 //---------------------------------------------------------------------------
-static INT_PTR CALLBACK DialogProcedure_ShowModalWindow(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)
+static INT_PTR CALLBACK DialogProcedure_ShowModalWindow(HWND hDlg,UINT Msg,WPARAM wParam,LPARAM lParam)noexcept
 {wParam;
 	switch(Msg){
 	case WM_INITDIALOG:
@@ -558,7 +558,7 @@ static INT_PTR CALLBACK DialogProcedure_ShowModalWindow(HWND hDlg,UINT Msg,WPARA
 	return FALSE;
 }
 //---------------------------------------------------------------------------
-INT_PTR cnUI::ShowModalWindow(iWindowProvider *ClientProvider,HWND Parent,const wchar_t *Text,int x,int y,int w,int h,DWORD Style,DWORD ExStyle)
+INT_PTR cnUI::ShowModalWindow(iWindowProvider *ClientProvider,HWND Parent,const wchar_t *Text,int x,int y,int w,int h,DWORD Style,DWORD ExStyle)noexcept
 {
 	struct cDialogTemplateData{
 		DWORD Style;

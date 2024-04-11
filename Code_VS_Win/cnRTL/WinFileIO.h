@@ -19,23 +19,23 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
-HANDLE Win32FileOpenHandle(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag,DWORD Flag);
-uInt64 Win32FileGetSize(const wchar_t *FileName);
-bool Win32FileIsExists(const wchar_t *FileName);
+HANDLE Win32FileOpenHandle(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag,DWORD Flag)noexcept(true);
+uInt64 Win32FileGetSize(const wchar_t *FileName)noexcept(true);
+bool Win32FileIsExists(const wchar_t *FileName)noexcept(true);
 
 //---------------------------------------------------------------------------
-eStreamError Win32ErrorToStreamError(DWORD ErrorCode);
+eStreamError Win32ErrorToStreamError(DWORD ErrorCode)noexcept(true);
 //---------------------------------------------------------------------------
 struct cWin32FileHandle
 {
 	HANDLE Handle;
 
-	cWin32FileHandle();
-	cWin32FileHandle(HANDLE InitalHandle);
-	~cWin32FileHandle();
+	cWin32FileHandle()noexcept(true);
+	cWin32FileHandle(HANDLE InitalHandle)noexcept(true);
+	~cWin32FileHandle()noexcept(true);
 
-	void TransferHandle(HANDLE NewHandle);
-	void Close(void);
+	void TransferHandle(HANDLE NewHandle)noexcept(true);
+	void Close(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct cWin32FileMappingHandle
@@ -43,25 +43,25 @@ struct cWin32FileMappingHandle
 	HANDLE Handle;
 	aClsRef<cWin32FileHandle> FileHandle;
 
-	cWin32FileMappingHandle();
-	cWin32FileMappingHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle);
-	~cWin32FileMappingHandle();
+	cWin32FileMappingHandle()noexcept(true);
+	cWin32FileMappingHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle)noexcept(true);
+	~cWin32FileMappingHandle()noexcept(true);
 
-	void TransferHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle);
-	void Close(void);
+	void TransferHandle(HANDLE InitalHandle,aClsRef<cWin32FileHandle> InitialFileHandle)noexcept(true);
+	void Close(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cWin32FileMapping : public iSwapMemory
 {
 public:
-	cWin32FileMapping(aClsRef<cWin32FileMappingHandle> Handle,uInt64 Size,DWORD MapFlag);
-	~cWin32FileMapping();
+	cWin32FileMapping(aClsRef<cWin32FileMappingHandle> Handle,uInt64 Size,DWORD MapFlag)noexcept(true);
+	~cWin32FileMapping()noexcept(true);
 
-	static DWORD FileAccessToMapFlag(eFileAccess AccessMode);
+	static DWORD FileAccessToMapFlag(eFileAccess AccessMode)noexcept(true);
 
-	virtual uInt64	cnLib_FUNC GetSize(void)override;
-	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)override;
-	virtual bool	cnLib_FUNC Unmap(void *Address,uIntn Size)override;
+	virtual uInt64	cnLib_FUNC GetSize(void)noexcept(true)override;
+	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)noexcept(true)override;
+	virtual bool	cnLib_FUNC Unmap(void *Address,uIntn Size)noexcept(true)override;
 protected:
 	aClsRef<cWin32FileMappingHandle> fFileMappingHandle;
 	uInt64 fSize;
@@ -71,25 +71,25 @@ protected:
 class cWin32FileHandleSequenceStream : public iFileSyncStream, public iStreamErrorReport, public iWinFileHandle
 {
 public:
-	cWin32FileHandleSequenceStream(aClsRef<cWin32FileHandle> FileHandle);
-	~cWin32FileHandleSequenceStream();
+	cWin32FileHandleSequenceStream(aClsRef<cWin32FileHandle> FileHandle)noexcept(true);
+	~cWin32FileHandleSequenceStream()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
-	virtual HANDLE	cnLib_FUNC GetFileHandle(void)override;
+	virtual HANDLE	cnLib_FUNC GetFileHandle(void)noexcept(true)override;
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual bool cnLib_FUNC IsEndOfReading(void)override;
-	virtual bool cnLib_FUNC SetEndOfStream(void)override;
-	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)override;
-	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsEndOfReading(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetEndOfStream(void)noexcept(true)override;
+	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept(true)override;
+	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept(true)override;
 
-	virtual uInt64 cnLib_FUNC GetPointer(void)override;
-	virtual bool cnLib_FUNC MovePointerBegin(uInt64 Offset)override;
-	virtual bool cnLib_FUNC MovePointerCurrent(sInt64 Offset)override;
-	virtual bool cnLib_FUNC MovePointerEnd(sInt64 Offset)override;
+	virtual uInt64 cnLib_FUNC GetPointer(void)noexcept(true)override;
+	virtual bool cnLib_FUNC MovePointerBegin(uInt64 Offset)noexcept(true)override;
+	virtual bool cnLib_FUNC MovePointerCurrent(sInt64 Offset)noexcept(true)override;
+	virtual bool cnLib_FUNC MovePointerEnd(sInt64 Offset)noexcept(true)override;
 
-	virtual eStreamError cnLib_FUNC GetStreamError(void)override;
+	virtual eStreamError cnLib_FUNC GetStreamError(void)noexcept(true)override;
 protected:
 	aClsRef<cWin32FileHandle> fFileHandle;
 
@@ -97,14 +97,14 @@ protected:
 
 	uInt64 fFilePos;
 
-	void SetupFilePos(void);
+	void SetupFilePos(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcNTFileOverlappedIOHandle : public iReference
 {
 public:
-	bcNTFileOverlappedIOHandle();
-	~bcNTFileOverlappedIOHandle();
+	bcNTFileOverlappedIOHandle()noexcept(true);
+	~bcNTFileOverlappedIOHandle()noexcept(true);
 
 	HANDLE Handle;
 	
@@ -115,60 +115,60 @@ public:
 		DWORD BytesCompleted;
 		DWORD ErrorCode;
 
-		virtual void Completed(void)=0;
+		virtual void Completed(void)noexcept(true)=0;
 	};
-	virtual void Close(void)=0;
-	virtual void StartIO(void)=0;
-	virtual void CancelIO(void)=0;
-	virtual void CancelOperation(bcIOObject *Object)=0;
+	virtual void Close(void)noexcept(true)=0;
+	virtual void StartIO(void)noexcept(true)=0;
+	virtual void CancelIO(void)noexcept(true)=0;
+	virtual void CancelOperation(bcIOObject *Object)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cNTFileOverlappedIOHandleSyncIOObject : public bcNTFileOverlappedIOHandle::bcIOObject
 {
 public:
-	cNTFileOverlappedIOHandleSyncIOObject();
-	~cNTFileOverlappedIOHandleSyncIOObject();
+	cNTFileOverlappedIOHandleSyncIOObject()noexcept(true);
+	~cNTFileOverlappedIOHandleSyncIOObject()noexcept(true);
 
-	bool Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size);
-	bool Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size);
+	bool Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)noexcept(true);
+	bool Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)noexcept(true);
 
 protected:
 	cThreadOneTimeNotifier fNotifier;
 
-	virtual void Completed(void)override;
+	virtual void Completed(void)noexcept(true)override;
 
 };
 //---------------------------------------------------------------------------
 class cNTFileOverlappedIOHandleAsyncIOTask : public iStreamTask, public iStreamErrorReport,public bcNTFileOverlappedIOHandle::bcIOObject
 {
 public:
-	cNTFileOverlappedIOHandleAsyncIOTask();
-	~cNTFileOverlappedIOHandleAsyncIOTask();
+	cNTFileOverlappedIOHandleAsyncIOTask()noexcept(true);
+	~cNTFileOverlappedIOHandleAsyncIOTask()noexcept(true);
 
-	void SetupOverlapped(void);
-	void SetupOverlapped(uInt64 Offset);
-	bool Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size);
-	bool Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size);
+	void SetupOverlapped(void)noexcept(true);
+	void SetupOverlapped(uInt64 Offset)noexcept(true);
+	bool Read(bcNTFileOverlappedIOHandle *FileIO,void *Buffer,uIntn Size)noexcept(true);
+	bool Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
 	// iAsyncTask
 
-	virtual bool cnLib_FUNC IsDone(void)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
+	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
 
 	// iSteamTask
 
-	virtual void cnLib_FUNC Cancel(void)override;
-	virtual bool cnLib_FUNC GetResult(uIntn &SizeCompleted)override;
+	virtual void cnLib_FUNC Cancel(void)noexcept(true)override;
+	virtual bool cnLib_FUNC GetResult(uIntn &SizeCompleted)noexcept(true)override;
 
 	// iStreamErrorReport
 
-	virtual eStreamError cnLib_FUNC GetStreamError(void)override;
+	virtual eStreamError cnLib_FUNC GetStreamError(void)noexcept(true)override;
 protected:
 	rPtr<bcNTFileOverlappedIOHandle> fFileIO;
 
-	virtual void Completed(void)override;
+	virtual void Completed(void)noexcept(true)override;
 private:
 	cAsyncTaskState fTaskState;
 };
@@ -176,24 +176,24 @@ private:
 class cNTFileOverlappedIOHandleStream : public iStream, public iWinFileHandle
 {
 public:
-	cNTFileOverlappedIOHandleStream(rPtr<bcNTFileOverlappedIOHandle> FileIO);
-	~cNTFileOverlappedIOHandleStream();
+	cNTFileOverlappedIOHandleStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)noexcept(true);
+	~cNTFileOverlappedIOHandleStream()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
 // iWinFileHandle
 
-	virtual HANDLE cnLib_FUNC GetFileHandle(void)override;
+	virtual HANDLE cnLib_FUNC GetFileHandle(void)noexcept(true)override;
 
 // iStream
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual bool cnLib_FUNC IsEndOfReading(void)override;
-	virtual bool cnLib_FUNC SetEndOfStream(void)override;
-	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)override;
-	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)override;
-	virtual iPtr<iStreamTask> cnLib_FUNC ReadAsync(void *Buffer,uIntn Size)override;
-	virtual iPtr<iStreamTask> cnLib_FUNC WriteAsync(const void *Buffer,uIntn Size)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsEndOfReading(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetEndOfStream(void)noexcept(true)override;
+	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept(true)override;
+	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept(true)override;
+	virtual iPtr<iStreamTask> cnLib_FUNC ReadAsync(void *Buffer,uIntn Size)noexcept(true)override;
+	virtual iPtr<iStreamTask> cnLib_FUNC WriteAsync(const void *Buffer,uIntn Size)noexcept(true)override;
 private:
 	rPtr<bcNTFileOverlappedIOHandle> fFileIO;
 	bool fEOF;
@@ -202,36 +202,36 @@ private:
 	{
 	public:
 		iPtr<cNTFileOverlappedIOHandleStream> Host;
-		virtual void Completed(void)override;
+		virtual void Completed(void)noexcept(true)override;
 	};
 };
 //---------------------------------------------------------------------------
 class cNTFileOverlappedIOHandleFileStream : public iFileStream,public iStreamErrorReport,public iWinFileHandle
 {
 public:
-	cNTFileOverlappedIOHandleFileStream(rPtr<bcNTFileOverlappedIOHandle> FileIO);
-	~cNTFileOverlappedIOHandleFileStream();
+	cNTFileOverlappedIOHandleFileStream(rPtr<bcNTFileOverlappedIOHandle> FileIO)noexcept(true);
+	~cNTFileOverlappedIOHandleFileStream()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 
 // iWinFileHandle
 
-	virtual HANDLE	cnLib_FUNC GetFileHandle(void)override;
+	virtual HANDLE	cnLib_FUNC GetFileHandle(void)noexcept(true)override;
 
 // iStream
 	
-	virtual void cnLib_FUNC Close(void)override;
-	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)override;
-	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)override;
-	virtual iPtr<iStreamTask> cnLib_FUNC ReadAsync(void *Buffer,uIntn Size,uInt64 Offset)override;
-	virtual iPtr<iStreamTask> cnLib_FUNC WriteAsync(const void *Buffer,uIntn Size,uInt64 Offset)override;
-	virtual bool cnLib_FUNC GetSize(uInt64 &Size)override;
-	virtual bool cnLib_FUNC SetSize(uInt64 NewSize)override;
-	virtual bool cnLib_FUNC FlushBuffer(void)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual bool cnLib_FUNC Read(void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)noexcept(true)override;
+	virtual bool cnLib_FUNC Write(const void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeCompleted)noexcept(true)override;
+	virtual iPtr<iStreamTask> cnLib_FUNC ReadAsync(void *Buffer,uIntn Size,uInt64 Offset)noexcept(true)override;
+	virtual iPtr<iStreamTask> cnLib_FUNC WriteAsync(const void *Buffer,uIntn Size,uInt64 Offset)noexcept(true)override;
+	virtual bool cnLib_FUNC GetSize(uInt64 &Size)noexcept(true)override;
+	virtual bool cnLib_FUNC SetSize(uInt64 NewSize)noexcept(true)override;
+	virtual bool cnLib_FUNC FlushBuffer(void)noexcept(true)override;
 
 // iStreamErrorReport
 
-	virtual eStreamError cnLib_FUNC GetStreamError(void)override;
+	virtual eStreamError cnLib_FUNC GetStreamError(void)noexcept(true)override;
 protected:
 	rPtr<bcNTFileOverlappedIOHandle> fFileIO;
 };
@@ -239,28 +239,28 @@ protected:
 class cNTFolderOverlappedIOHandleFileWatcher : public bcAsyncNotification, public cDualReference
 {
 public:
-	cNTFolderOverlappedIOHandleFileWatcher(rPtr<bcNTFileOverlappedIOHandle> FolderIO);
-	~cNTFolderOverlappedIOHandleFileWatcher();
+	cNTFolderOverlappedIOHandleFileWatcher(rPtr<bcNTFileOverlappedIOHandle> FolderIO)noexcept(true);
+	~cNTFolderOverlappedIOHandleFileWatcher()noexcept(true);
 
 protected:
 
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 
-	virtual iReference* NotificationInnerReference(void)override;
-	virtual void NotificationStarted(void)override;
-	virtual CycleState NotificationCheckState(void)override;
-	virtual void AsyncQueueNotify(void)override;
+	virtual iReference* NotificationInnerReference(void)noexcept(true)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual CycleState NotificationCheckState(void)noexcept(true)override;
+	virtual void AsyncQueueNotify(void)noexcept(true)override;
 
 private:
 	rPtr<bcNTFileOverlappedIOHandle> fFolderIO;
 
 	class cDirectoryReadChangeObject : public bcNTFileOverlappedIOHandle::bcIOObject
 	{
-		cNTFolderOverlappedIOHandleFileWatcher* GetHost(void);
+		cNTFolderOverlappedIOHandleFileWatcher* GetHost(void)noexcept(true);
 	public:
-		bool Read(bcNTFileOverlappedIOHandle *FolderIO);
+		bool Read(bcNTFileOverlappedIOHandle *FolderIO)noexcept(true);
 
-		virtual void Completed(void)override;
+		virtual void Completed(void)noexcept(true)override;
 
 		
 		uInt8 ReadChangeBuffer[1024];
@@ -268,54 +268,55 @@ private:
 
 	cExclusiveFlag fReadChangeFlag;
 	bool fReadInProgress=false;
-	void ContinueRead(void);
+	void ContinueRead(void)noexcept(true);
 
-	void DirectoryReadCompleted(void);
+	void DirectoryReadCompleted(void)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cNTFolderOverlappedIOHandleFileObserver : public iFileObserver, public bcAsyncQueue, public cDualReference
 {
 public:
-	cNTFolderOverlappedIOHandleFileObserver(rPtr<bcNTFileOverlappedIOHandle> FolderIO,cString<wchar_t> Path,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path));
-	~cNTFolderOverlappedIOHandleFileObserver();
+	cNTFolderOverlappedIOHandleFileObserver(rPtr<bcNTFileOverlappedIOHandle> FolderIO,cString<wchar_t> Path,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path)noexcept(true))noexcept(true);
+	~cNTFolderOverlappedIOHandleFileObserver()noexcept(true);
 
 
 	// iAsyncNotification
 
-	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)override;
-	virtual void cnLib_FUNC StopNotify(void)override;
-	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)override;
-	virtual bool cnLib_FUNC IsClosed(void)override;
+	virtual bool cnLib_FUNC StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)override;
+	virtual void cnLib_FUNC StopNotify(void)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)noexcept(true)override;
+	virtual bool cnLib_FUNC IsClosed(void)noexcept(true)override;
 
 	// iFileObserver
 
-	virtual void cnLib_FUNC DiscardChanges(void)override;
-	virtual rPtr<iFileEnumerator> cnLib_FUNC EnumCurrentFiles(void)override;
-	virtual rPtr<iFileChangeEnumerator> cnLib_FUNC FetchFileChange(void)override;
+	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)override;
+	virtual rPtr<iFileEnumerator> cnLib_FUNC EnumCurrentFiles(void)noexcept(true)override;
+	virtual rPtr<iFileChangeEnumerator> cnLib_FUNC FetchFileChange(void)noexcept(true)override;
 
 protected:
 
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
-	virtual iReference* NotificationInnerReference(void)override;
-	virtual void NotificationStarted(void)override;
-	virtual void NotificationStopped(void)override;
-	virtual CycleState NotificationCheckState(void)override;
-	virtual void AsyncQueueNotify(void)override;
+	virtual iReference* NotificationInnerReference(void)noexcept(true)override;
+	virtual void NotificationStarted(void)noexcept(true)override;
+	virtual void NotificationStopped(void)noexcept(true)override;
+	virtual CycleState NotificationCheckState(void)noexcept(true)override;
+	virtual void AsyncQueueNotify(void)noexcept(true)override;
 
 	iAsyncNotificationCallback *fCallback;
 	rPtr<iReference> fCallbackReference;
 
-	static bool IsDot(const WIN32_FIND_DATA &fd);
-	static bool IsInvalidFile(const WIN32_FIND_DATA &fd);
-	cString<wchar_t> MakeFileName(const WIN32_FIND_DATA &fd);
+	static bool IsDot(const WIN32_FIND_DATA &fd)noexcept(true);
+	static bool IsInvalidFile(const WIN32_FIND_DATA &fd)noexcept(true);
+	cString<wchar_t> MakeFileName(const WIN32_FIND_DATA &fd)noexcept(true);
 
 private:
 	rPtr<bcNTFileOverlappedIOHandle> fFolderIO;
 	cString<wchar_t> fPath;
 	cString<wchar_t> fFindPath;
-	iPtr<iFileName> (*fCreateFileName)(cString<wchar_t> Path);
+	iPtr<iFileName> (*fCreateFileName)(cString<wchar_t> Path)noexcept(true);
 
 	struct cFileInfo
 	{
@@ -330,9 +331,9 @@ private:
 	class cFileEnum : public iFileEnumerator
 	{
 	public:
-		virtual bool cnLib_FUNC Fetch(void)override;
+		virtual bool cnLib_FUNC Fetch(void)noexcept(true)override;
 
-		virtual iFile*	cnLib_FUNC GetCurrentFile(void)override;
+		virtual iFile*	cnLib_FUNC GetCurrentFile(void)noexcept(true)override;
 		
 		cString<wchar_t> FolderPath;
 
@@ -342,26 +343,26 @@ private:
 		};
 		cSeqList<cFileItem> FileList;
 
-		iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path);
+		iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path)noexcept(true);
 		iPtr<iFileName> CurrentFile;
 		
 		uIntn EnumIndex=cnVar::TIntegerValue<uIntn>::Max;
 	
 	};
 
-	static void AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd);
-	void SetupFileInfo(cFileInfo &Info,const wchar_t *FileName);
-	void ReloadFileMap(void);
-	rPtr<iFileChangeEnumerator> CompareFileMap(void);
-	void RefreshFileMap(void);
+	static void AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd)noexcept(true);
+	void SetupFileInfo(cFileInfo &Info,const wchar_t *FileName)noexcept(true);
+	void ReloadFileMap(void)noexcept(true);
+	rPtr<iFileChangeEnumerator> CompareFileMap(void)noexcept(true);
+	void RefreshFileMap(void)noexcept(true);
 
 	class cDirectoryReadChangeObject : public bcNTFileOverlappedIOHandle::bcIOObject
 	{
-		cNTFolderOverlappedIOHandleFileObserver* GetHost(void);
+		cNTFolderOverlappedIOHandleFileObserver* GetHost(void)noexcept(true);
 	public:
-		bool Read(bcNTFileOverlappedIOHandle *FolderIO);
+		bool Read(bcNTFileOverlappedIOHandle *FolderIO)noexcept(true);
 
-		virtual void Completed(void)override;
+		virtual void Completed(void)noexcept(true)override;
 
 		
 		void *ReadChangeBuffer;
@@ -371,10 +372,10 @@ private:
 	cExclusiveFlag fReadChangeFlag;
 	bool fRestartTrack;
 	bool fReadInProgress=false;
-	void ContinueRead(void);
+	void ContinueRead(void)noexcept(true);
 
-	void DirectoryReadCompleted(void);
-	void DirectoryReadError(void);
+	void DirectoryReadCompleted(void)noexcept(true);
+	void DirectoryReadError(void)noexcept(true);
 	struct cPendingChangeItem : cRTLAllocator
 	{
 		cPendingChangeItem *Next;
@@ -382,15 +383,15 @@ private:
 		eFileChange Change;
 	};
 	cAtomicStackSO<cPendingChangeItem> fPendingChangeStack;
-	void DirectoryReadParse(void);
+	void DirectoryReadParse(void)noexcept(true);
 
 	class cFileChangeEnum : public iFileChangeEnumerator
 	{
 	public:
-		virtual bool cnLib_FUNC Fetch(void)override;
+		virtual bool cnLib_FUNC Fetch(void)noexcept(true)override;
 
-		virtual iFile*	cnLib_FUNC GetCurrentFile(void)override;
-		virtual eFileChange cnLib_FUNC GetChange(void)override;
+		virtual iFile*	cnLib_FUNC GetCurrentFile(void)noexcept(true)override;
+		virtual eFileChange cnLib_FUNC GetChange(void)noexcept(true)override;
 	
 		cString<wchar_t> FolderPath;
 
@@ -402,13 +403,13 @@ private:
 		};
 		cSeqList<cFileChangeInfo> ChangeList;
 
-		iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path);
+		iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path)noexcept(true);
 		iPtr<iFileName> CurrentFile;
 		
 		uIntn EnumIndex=cnVar::TIntegerValue<uIntn>::Max;
 		ufInt8 EnumPart=0;
 	};
-	void CommitPendingChanges(cFileChangeEnum *ChangeEnum);
+	void CommitPendingChanges(cFileChangeEnum *ChangeEnum)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
@@ -416,15 +417,15 @@ private:
 class cNT6ThreadPoolFileIOHandle : public bcNTFileOverlappedIOHandle
 {
 public:
-	cNT6ThreadPoolFileIOHandle();
-	~cNT6ThreadPoolFileIOHandle();
+	cNT6ThreadPoolFileIOHandle()noexcept(true);
+	~cNT6ThreadPoolFileIOHandle()noexcept(true);
 
-	bool Open(HANDLE FileHandle,PTP_CALLBACK_ENVIRON Environment=nullptr);
+	bool Open(HANDLE FileHandle,PTP_CALLBACK_ENVIRON Environment=nullptr)noexcept(true);
 
-	virtual void Close(void)override;
-	virtual void StartIO(void)override;
-	virtual void CancelIO(void)override;
-	virtual void CancelOperation(bcIOObject *Object)override;
+	virtual void Close(void)noexcept(true)override;
+	virtual void StartIO(void)noexcept(true)override;
+	virtual void CancelIO(void)noexcept(true)override;
+	virtual void CancelOperation(bcIOObject *Object)noexcept(true)override;
 
 protected:
 	PTP_IO fIOThreadPool;
@@ -436,7 +437,7 @@ protected:
 	  _In_        ULONG                 IoResult,
 	  _In_        ULONG_PTR             NumberOfBytesTransferred,
 	  _Inout_     PTP_IO                Io
-	);
+	)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #endif	// _WIN32_WINNT_VISTA

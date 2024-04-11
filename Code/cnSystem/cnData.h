@@ -10,11 +10,19 @@
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
+//- Timepoint ---------------------------------------------------------------
+class cnLib_INTERFACE iTimepoint : public iInterface
+{
+public:
+	//	nanoseconds since system epoch
+	virtual sInt64 cnLib_FUNC SystemTime(void)noexcept(true)=0;
+	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)noexcept(true)=0;
+};
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iTextEncodingConverter : public iReference
 {
 public:
-	virtual uIntn cnLib_FUNC Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)=0;
+	virtual uIntn cnLib_FUNC Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -23,8 +31,8 @@ class cnLib_INTERFACE iReadBuffer
 public:
 	typedef T tElement;
 
-	virtual cArray<const T> cnLib_FUNC GatherReadBuffer(uIntn Length)=0;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Length)=0;
+	virtual cArray<const T> cnLib_FUNC GatherReadBuffer(uIntn Length)noexcept(true)=0;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Length)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
@@ -34,8 +42,8 @@ class cnLib_INTERFACE iWriteBuffer
 public:
 	typedef T tElement;
 
-	virtual cArray<T> cnLib_FUNC ReserveWriteBuffer(uIntn Length)=0;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)=0;
+	virtual cArray<T> cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)=0;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iVariable : public iReference

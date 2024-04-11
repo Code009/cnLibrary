@@ -713,7 +713,7 @@ namespace cnMath{
 // [in]Addend
 // return: carry sign
 template<class T>
-inline bool MPUAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend,bool Carry=false)
+inline bool MPUAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend,bool Carry=false)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -732,7 +732,7 @@ inline bool MPUAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename c
 // [in]Addend
 // return: carry sign
 template<class T>
-inline bool MPSAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend)
+inline bool MPSAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename cnVar::TTypeDef<T>::Type Addend)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -751,7 +751,7 @@ inline bool MPSAdd(T &Result,typename cnVar::TTypeDef<T>::Type Augend,typename c
 // [in]Subtrahend
 // return: carry sign
 template<class T>
-inline bool MPUSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)
+inline bool MPUSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -771,7 +771,7 @@ inline bool MPUSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename 
 // [in]Subtrahend
 // return: carry sign
 template<class T>
-inline bool MPSSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)
+inline bool MPSSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename cnVar::TTypeDef<T>::Type Subtrahend,bool Carry=false)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -790,7 +790,7 @@ inline bool MPSSub(T &Result,typename cnVar::TTypeDef<T>::Type Minuend,typename 
 // [in]Multiplier
 // return: low part of result
 template<class T>
-inline T MPUMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
+inline T MPUMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -810,7 +810,7 @@ inline T MPUMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typ
 // [in]Multiplier
 // return: low part of result, unsigned
 template<class T>
-inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
+inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHigh,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),true>::Type tSInt;
 
@@ -827,7 +827,7 @@ inline typename cnVar::TIntegerOfSize<sizeof(T),false>::Type MPSMul(T &ResultHig
 // [in]Multiplier
 // return: high part of result
 template<class T>
-inline T MPUMulH(T Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
+inline T MPUMulH(T Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 
@@ -847,7 +847,7 @@ inline T MPUMulH(T Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier)
 // [in]Divisor
 //	return: quotient
 template<class T>
-inline T MPUDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)
+inline T MPUDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -871,7 +871,7 @@ inline T MPUDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Dividend_Lo,typen
 // [in]Divisor
 //	return: quotient
 template<class T>
-inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)
+inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Type Dividend_Lo,typename cnVar::TTypeDef<T>::Type Dividend_Hi,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -896,7 +896,7 @@ inline T MPSDiv(T &Remainder,typename cnVar::TIntegerOfSize<sizeof(T),false>::Ty
 // [in]Divisor
 // return: quotient
 template<class T>
-inline T MPUMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)
+inline T MPUMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -921,7 +921,7 @@ inline T MPUMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,t
 // [in]Divisor
 // return: quotient
 template<class T>
-inline T MPSMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)
+inline T MPSMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,typename cnVar::TTypeDef<T>::Type Multiplier,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
 {
 	cnLib_ASSERT(Divisor!=0);
 
@@ -939,7 +939,7 @@ inline T MPSMulDiv(T &Remainder,typename cnVar::TTypeDef<T>::Type Multiplicand,t
 
 
 template<class T>
-inline T MPUPowMod(T Base,uIntn Exponent,typename cnVar::TTypeDef<T>::Type Divisor)
+inline T MPUPowMod(T Base,uIntn Exponent,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
 {
 	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
 	typedef typename TKRuntime::TMultiprecisionInteger<sizeof(T)> tMPInteger;

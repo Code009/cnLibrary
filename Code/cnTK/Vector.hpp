@@ -25,12 +25,6 @@ struct tVectorOperatorEnumeration;
 // 	typedef cnVar::TTypePack<TVectorOperator...> tIntegerOperatorPack;
 //};
 
-//template<class TElement>
-//struct TVector;
-//{
-//};
-
-
 //---------------------------------------------------------------------------
 }	// namespace TKRuntime
 //---------------------------------------------------------------------------
@@ -79,6 +73,26 @@ class cVectorStorage
 {
 public:
 	typedef typename TVectorOperator::tElement tElement;
+	
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVectorStorage()=default;
+#else
+	cnLib_CONSTEXPR cVectorStorage()noexcept(true){}
+#endif
+
+	cVectorStorage(const cVectorStorage &Src)noexcept(true){
+		for(uIntn i=0;i<VectorCount;i++){
+			fVectors[i]=Src.fVectors[i];
+		}
+	}
+
+#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+
+	template<class...TArgs>
+	cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
+		: fVectors{v0,static_cast<TArgs&&>(v)...}{}
+
+#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
 
 	operator tElement*()noexcept(true){
 		return reinterpret_cast<tElement*>(fVectors);
@@ -129,7 +143,7 @@ protected:
 	typename TVectorOperator::tVector fVectors[VectorCount];
 
 	template<
-		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&)
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&)noexcept(true)
 	>
 	void UnaryOperator(const cVectorStorage &v)noexcept(true){
 		for(uIntn i=0;i<VectorCount;i++){
@@ -138,11 +152,20 @@ protected:
 	}
 
 	template<
-		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)noexcept(true)
 	>
 	void BinaryOperator(const cVectorStorage &v1,const cVectorStorage &v2)noexcept(true){
 		for(uIntn i=0;i<VectorCount;i++){
 			fVectors[i]=OpFunc(v1.fVectors[i],v2.fVectors[i]);
+		}
+	}
+
+	template<
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)noexcept(true)
+	>
+	void TernaryOperator(const cVectorStorage &v1,const cVectorStorage &v2,const cVectorStorage &v3)noexcept(true){
+		for(uIntn i=0;i<VectorCount;i++){
+			fVectors[i]=OpFunc(v1.fVectors[i],v2.fVectors[i],v3.fVectors[i]);
 		}
 	}
 };
@@ -155,6 +178,25 @@ class cVectorStorage<TVectorOperator,1>
 {
 public:
 	typedef typename TVectorOperator::tElement tElement;
+	
+
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVectorStorage()=default;
+#else
+	cnLib_CONSTEXPR cVectorStorage()noexcept(true){}
+#endif
+
+	cVectorStorage(const cVectorStorage &Src)noexcept(true)
+		: fVector(Src.fVector){}
+
+#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+
+	template<class...TArgs>
+	cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
+		: fVector{v0,static_cast<tElement>(v)...}{}
+
+#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+
 	
 	operator tElement*()noexcept(true){
 		return reinterpret_cast<tElement*>(&fVector);
@@ -193,17 +235,24 @@ protected:
 
 
 	template<
-		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&)
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&)noexcept(true)
 	>
 	void UnaryOperator(const cVectorStorage &v)noexcept(true){
 		fVector=OpFunc(v.fVector);
 	}
 
 	template<
-		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)noexcept(true)
 	>
 	void BinaryOperator(const cVectorStorage &v1,const cVectorStorage &v2)noexcept(true){
 		fVector=OpFunc(v1.fVector,v2.fVector);
+	}
+	
+	template<
+		typename TVectorOperator::tVector OpFunc(const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&,const typename TVectorOperator::tVector&)noexcept(true)
+	>
+	void TernaryOperator(const cVectorStorage &v1,const cVectorStorage &v2,const cVectorStorage &v3)noexcept(true){
+		fVector=OpFunc(v1.fVector,v2.fVector,v3.fVector);
 	}
 };
 
@@ -240,53 +289,62 @@ class cVector : public TVectorOperatorSelector<typename TKRuntime::tVectorOperat
 {
 public:
 	typedef TElement tElement;
-	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tFloatOperatorPack,TElement,ElementCount>::tVectorStorage tVectorStorage;
 	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tFloatOperatorPack,TElement,ElementCount>::tVectorOperator tVectorOperator;
+	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tFloatOperatorPack,TElement,ElementCount>::tVectorStorage tVectorStorage;
 
+	template<uIntn SrcElementCount>
+	cVector(const cVector<TElement,SrcElementCount> &Src)noexcept(true)
+		: tVectorStorage(Src){}
+
+#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
+	using tVectorStorage::tVectorStorage;
+#else
+	cnLib_CONSTEXPR_FUNC cIntegerVector()noexcept(true){}
+#endif
 	using tVectorStorage::operator =;
 
 	static cnLib_CONSTVAR uIntn PaddingLength=ElementCount%tVectorOperator::ElementCount;
 
-	cVector& operator += (const cVector &src)noexcept(true){
+	cVector& operator += (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Add>(*this,src);
 		return *this;
 	}
-	cVector& operator -= (const cVector &src)noexcept(true){
+	cVector& operator -= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Sub>(*this,src);
 		return *this;
 	}
-	cVector& operator *= (const cVector &src)noexcept(true){
+	cVector& operator *= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Mul>(*this,src);
 		return *this;
 	}
-	cVector& operator /= (const cVector &src)noexcept(true){
+	cVector& operator /= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Div>(*this,src);
 		return *this;
 	}
 
-	cVector operator + (const cVector &src)const noexcept(true){
+	cVector operator + (const tVectorStorage &src)const noexcept(true){
 		cVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Add>(*this,src);
 		return RetValue;
 	}
-	cVector operator - (const cVector &src)const noexcept(true){
+	cVector operator - (const tVectorStorage &src)const noexcept(true){
 		cVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Sub>(*this,src);
 		return RetValue;
 	}
-	cVector operator * (const cVector &src)const noexcept(true){
+	cVector operator * (const tVectorStorage &src)const noexcept(true){
 		cVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Mul>(*this,src);
 		return RetValue;
 	}
-	cVector operator / (const cVector &src)const noexcept(true){
+	cVector operator / (const tVectorStorage &src)const noexcept(true){
 		cVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Div>(*this,src);
 		return RetValue;
 	}
 
 	template<uIntn MulCount,class TLeftColumnAccessor>
-	void MatrixMultiplyL(TLeftColumnAccessor LeftColumns,const cVector *RightRows)noexcept(true){
+	void MatrixMultiplyL(TLeftColumnAccessor LeftColumns,const tVectorStorage *RightRows)noexcept(true){
 	/*
 		L0*R00+L1*R10+L2*R20	,	L0*R01+L1*R11+L2*R21	,	L0*R02+L1*R12+L2*R22	, ...
 
@@ -314,7 +372,7 @@ public:
 	}
 
 	template<uIntn MulCount,class TRightRowAccessor>
-	void MatrixMultiplyR(const cVector *LeftColumns,TRightRowAccessor RightRows)noexcept(true){
+	void MatrixMultiplyR(const tVectorStorage *LeftColumns,TRightRowAccessor RightRows)noexcept(true){
 	/*
 		L00*R0+L01*R1+L02*R2
 		L10*R0+L11*R1+L12*R2
@@ -360,7 +418,7 @@ public:
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cMatrixR()=default;
 #else
-	cnLib_CONSTEXPR_FUNC cMatrixR(){}
+	cnLib_CONSTEXPR_FUNC cMatrixR()noexcept(true){}
 #endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 
 
@@ -487,7 +545,7 @@ public:
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cMatrixC()=default;
 #else
-	cnLib_CONSTEXPR_FUNC cMatrixC(){}
+	cnLib_CONSTEXPR_FUNC cMatrixC()noexcept(true){}
 #endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
@@ -693,73 +751,85 @@ class cIntegerVector : public TVectorOperatorSelector<typename TKRuntime::tVecto
 public:
 	typedef TElement tElement;
 	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tIntegerOperatorPack,TElement,ElementCount>::tVectorOperator tVectorOperator;
+	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tIntegerOperatorPack,TElement,ElementCount>::tVectorStorage tVectorStorage;
+
+	template<uIntn SrcElementCount>
+	cIntegerVector(const cIntegerVector<TElement,SrcElementCount> &Src)noexcept(true)
+		: tVectorStorage(Src){}
+
+#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
+	using tVectorStorage::tVectorStorage;
+#else
+	cnLib_CONSTEXPR_FUNC cIntegerVector()noexcept(true){}
+#endif
+	using tVectorStorage::operator =;
 
 	static cnLib_CONSTVAR uIntn PaddingLength=ElementCount%tVectorOperator::ElementCount;
 
-	cIntegerVector& operator += (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator += (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Add>(*this,src);
 		return *this;
 	}
-	cIntegerVector& operator -= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator -= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Sub>(*this,src);
 		return *this;
 	}
-	cIntegerVector& operator *= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator *= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Mul>(*this,src);
 		return *this;
 	}
-	cIntegerVector& operator /= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator /= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Div>(*this,src);
 		return *this;
 	}
 
-	cIntegerVector operator + (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator + (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Add>(*this,src);
 		return RetValue;
 	}
-	cIntegerVector operator - (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator - (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Sub>(*this,src);
 		return RetValue;
 	}
-	cIntegerVector operator * (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator * (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Mul>(*this,src);
 		return RetValue;
 	}
-	cIntegerVector operator / (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator / (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Div>(*this,src);
 		return RetValue;
 	}
 	
 
-	cIntegerVector& operator ^= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator ^= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Xor>(*this,src);
 		return *this;
 	}
-	cIntegerVector operator ^ (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator ^ (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Xor>(*this,src);
 		return RetValue;
 	}
 
-	cIntegerVector& operator &= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator &= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::And>(*this,src);
 		return *this;
 	}
-	cIntegerVector operator & (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator & (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::And>(*this,src);
 		return RetValue;
 	}
 
-	cIntegerVector& operator |= (const cIntegerVector &src)noexcept(true){
+	cIntegerVector& operator |= (const tVectorStorage &src)noexcept(true){
 		this->template BinaryOperator<tVectorOperator::Or>(*this,src);
 		return *this;
 	}
-	cIntegerVector operator | (const cIntegerVector &src)const noexcept(true){
+	cIntegerVector operator | (const tVectorStorage &src)const noexcept(true){
 		cIntegerVector RetValue;
 		RetValue.template BinaryOperator<tVectorOperator::Or>(*this,src);
 		return RetValue;

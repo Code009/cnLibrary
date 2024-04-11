@@ -13,14 +13,14 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 struct cBSTROwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<BSTR>
 {
-	static void Release(const BSTR &Token);
+	static void Release(const BSTR &Token)noexcept(true);
 };
 typedef cnVar::cPtrOwner<cBSTROwnerTokenOperator> apBSTR;
 //---------------------------------------------------------------------------
-apBSTR MakeBSTR(const wchar_t *Text);
-BSTR* apBSTRRetPtr(apBSTR &Ptr);
+apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
+BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
 //---------------------------------------------------------------------------
-inline IUnknown* iCastCOM(iInterface *Interface){
+inline IUnknown* iCastCOM(iInterface *Interface)noexcept(true){
 	auto COMInterface=iCast<iCOMInterface>(Interface);
 	if(COMInterface==nullptr)
 		return nullptr;
@@ -28,13 +28,13 @@ inline IUnknown* iCastCOM(iInterface *Interface){
 }
 //---------------------------------------------------------------------------
 template<class T>
-bool impCOMQueryInterface(T*,REFIID,_COM_Outptr_ void **)
+bool impCOMQueryInterface(T*,REFIID,_COM_Outptr_ void **)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
 template<class TInterface,class...VT,class T>
-bool impCOMQueryInterface(T *Object,REFIID riid,_COM_Outptr_ void **ppvObject)
+bool impCOMQueryInterface(T *Object,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)
 {
 	if(__uuidof(TInterface)==riid){
 		*ppvObject=static_cast<TInterface*>(Object);
@@ -56,8 +56,8 @@ struct TCOMFunctionInfo<TRet (STDMETHODCALLTYPE TClass::*)(TArgs...)>
 template<class T>
 struct cCOMRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
 {
-	static void Acquire(T *Token){	if(Token!=nullptr)	Token->AddRef();	}
-	static void Release(T *Token){	if(Token!=nullptr)	Token->Release();	}
+	static void Acquire(T *Token)noexcept(true){	if(Token!=nullptr)	Token->AddRef();	}
+	static void Release(T *Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
 };
 
 template<class T>
@@ -65,59 +65,80 @@ using COMPtr=cnVar::cPtrReference< cCOMRefTokenOperator<T> >;
 
 //---------------------------------------------------------------------------
 template<class T>
-COMPtr<T> COMTake(T *Src)
+inline COMPtr<T> COMTake(T *Src)noexcept(true)
 {
 	return COMPtr<T>::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-T* COMExtract(COMPtr<T> &Src)
+inline T* COMExtract(COMPtr<T> &Src)noexcept(true)
 {
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
 template<class TDest,class T>
-TDest* COMExtractAs(COMPtr<T> &Src)
+inline TDest* COMExtractAs(COMPtr<T> &Src)noexcept(true)
 {
 	return static_cast<TDest*>(Src.ExtractToManual());
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline void** COMRetPtr(T* &Ptr){
+inline COMPtr<T> COMTake(T *Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
+	return COMPtr<T>::TakeFromManual(Src);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline T* COMExtract(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
+	return Src.ExtractToManual();
+}
+//---------------------------------------------------------------------------
+template<class TDest,class T>
+inline T* COMExtractAs(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
+	return static_cast<TDest*>(Src.ExtractToManual());
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline void** COMRetPtr(T* &Ptr)noexcept(true){
 	return reinterpret_cast<void**>(&Ptr);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline void** COMRetPtr(COMPtr<T> &Ptr){
+inline void** COMRetPtr(COMPtr<T> &Ptr)noexcept(true){
 	Ptr=nullptr;
 	return reinterpret_cast<void**>(&Ptr.Token());
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline T** COMRetPtrT(T* &Ptr){
+inline T** COMRetPtrT(T* &Ptr)noexcept(true){
 	return &Ptr;
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline T** COMRetPtrT(COMPtr<T> &Ptr){
+inline T** COMRetPtrT(COMPtr<T> &Ptr)noexcept(true){
 	Ptr=nullptr;
 	return &Ptr.Token();
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline REFIID COMUUID(T* &){
+inline REFIID COMUUID(T* &)noexcept(true){
 	return __uuidof(T);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline REFIID COMUUID(const COMPtr<T>&){
+inline REFIID COMUUID(const COMPtr<T>&)noexcept(true){
 	return __uuidof(T);
 }
 //---------------------------------------------------------------------------
 // COM
 //---------------------------------------------------------------------------
 template<class TDestInterface,class T>
-COMPtr<TDestInterface> COMQueryInterface(const T &Src)
+inline COMPtr<TDestInterface> COMQueryInterface(const T &Src)noexcept(true)
 {
 	if(Src==nullptr)
 		return nullptr;
@@ -144,7 +165,7 @@ public:
 	using TCOMInterface::TCOMInterface;
 	~cCOMImplementation()=default;
 
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)override{
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)override{
 		if(riid==IID_IUnknown){
 			*ppvObject=TCOMInterface::COMUnknown();
 			fRefCount.Free++;
@@ -158,12 +179,12 @@ public:
 		return E_NOINTERFACE;
 	}
 
-	virtual ULONG STDMETHODCALLTYPE AddRef(void)override{
+	virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true)override{
 		fRefCount.Free++;
 		return 0;
 	}
 
-	virtual ULONG STDMETHODCALLTYPE Release(void)override{
+	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
 		if(fRefCount.Free--==1){
 			delete this;
 		}
@@ -179,11 +200,11 @@ namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
 template<class T>
-COMPtr<T> COMCreate(void){
+inline COMPtr<T> COMCreate(void)noexcept(true){
 	return COMPtr<T>::TakeFromManual(new cnLib_THelper::RTL_TH::cCOMImplementation<T>);
 }
 template<class T,class...TArgs>
-COMPtr<T> COMCreate(TArgs&&...Args){
+inline COMPtr<T> COMCreate(TArgs&&...Args)noexcept(true){
 	return COMPtr<T>::TakeFromManual(new cnLib_THelper::RTL_TH::cCOMImplementation<T>(cnVar::Forward<TArgs>(Args)...));
 }
 //---------------------------------------------------------------------------
@@ -194,25 +215,20 @@ private:
 public:
 	IUnknown *Outter;
 
-#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using T::T;
-#else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
-	template<class...TArgs>
-	COMInnerObject(TArgs&&...Args):T(cnVar::Forward<TArgs>(Args)...){}
-#endif // cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
         /* [in] */ REFIID riid,
-        /* [iid_is][out] */ _COM_Outptr_ void **ppvObject)
+        /* [iid_is][out] */ _COM_Outptr_ void **ppvObject)noexcept(true)
 	{
 		return Outter->QueryInterface(riid,ppvObject);
 	}
 
-    virtual ULONG STDMETHODCALLTYPE AddRef(void){
+    virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true){
 		return Outter->AddRef();
 	}
 
-    virtual ULONG STDMETHODCALLTYPE Release(void){
+    virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true){
 		return Outter->Release();
 	}
 };
@@ -220,8 +236,8 @@ public:
 class iCOMInnerReference
 {
 public:
-	virtual void COMDelete(void)=0;
-	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)=0;
+	virtual void COMDelete(void)noexcept(true)=0;
+	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL
@@ -240,10 +256,10 @@ public:
 	using cnRTL::COMInnerObject<TCOMInterface>::COMInnerObject;
 	~cCOMInnerImplementation()=default;
 
-	virtual void COMDelete(void)override{
+	virtual void COMDelete(void)noexcept(true)override{
 		delete this;
 	}
-	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)override{
+	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)override{
 		return TCOMInterface::COMQueryInterface(riid,ppvObject);
 	}
 };
@@ -268,14 +284,14 @@ struct cCOMInnerOwnerTokenOperator
 	typedef T *TPtr;
 	typedef cCOMInnerOwnerToken<T> TOwnerToken;
 
-	static T* Pointer(const TOwnerToken &Token){	return Token.Pointer;	}
+	static T* Pointer(const TOwnerToken &Token)noexcept(true){	return Token.Pointer;	}
 
-	static TOwnerToken TokenNull(void){
+	static TOwnerToken TokenNull(void)noexcept(true){
 		TOwnerToken RetToke={nullptr,nullptr};
 		return RetToke;
 	}
 	template<class TImp>
-	static TOwnerToken TokenFrom(cnLib_THelper::RTL_TH::cCOMInnerImplementation<TImp> *p){
+	static TOwnerToken TokenFrom(cnLib_THelper::RTL_TH::cCOMInnerImplementation<TImp> *p)noexcept(true){
 		TOwnerToken RetToke={p,p};
 		return RetToke;
 	}
@@ -283,14 +299,14 @@ struct cCOMInnerOwnerTokenOperator
 	template<class TSrc>
 	static typename cnVar::TTypeConditional<TOwnerToken,
 		cnVar::TIsAssignableFrom<T*&,TSrc*>::Value
-	>::Type TokenFrom(cCOMInnerOwnerToken<TSrc> SrcToken){
+	>::Type TokenFrom(cCOMInnerOwnerToken<TSrc> SrcToken)noexcept(true){
 		TOwnerToken RetToken;
 		RetToken.Pointer=SrcToken.Pointer;
 		RetToken.Reference=SrcToken.Reference;
 		return RetToken;
 	}
 
-	static void Release(const TOwnerToken &Token){
+	static void Release(const TOwnerToken &Token)noexcept(true){
 		if(Token.Reference!=nullptr)
 			Token.Reference->COMDelete();
 	}
@@ -300,14 +316,14 @@ template<class T>
 using COMInnerPtr = cnVar::cPtrOwner< cCOMInnerOwnerTokenOperator<T> >;
 //---------------------------------------------------------------------------
 template<class T>
-COMInnerPtr<T> COMInnerPtrCreate(IUnknown *Outter){
+inline COMInnerPtr<T> COMInnerPtrCreate(IUnknown *Outter)noexcept(true){
 	auto Ptr=new cnLib_THelper::RTL_TH::cCOMInnerImplementation<T>;
 	Ptr->Outter=Outter;
 	return COMInnerPtr<T>::Take(Ptr);
 }
 //---------------------------------------------------------------------------
 template<class T>
-bool COMInnerPtrQueryInterface(const COMInnerPtr<T> &Ptr,REFIID riid,void **ppvObject){
+inline bool COMInnerPtrQueryInterface(const COMInnerPtr<T> &Ptr,REFIID riid,void **ppvObject)noexcept(true){
 	auto Ref=Ptr.Token().Reference;
 	return Ref->COMInnerQueryInterface(riid,ppvObject);
 }
@@ -317,18 +333,18 @@ namespace cnWinRTL{
 class cOLEModule
 {
 public:
-	cOLEModule(const wchar_t *ModuleName);
-	~cOLEModule();
+	cOLEModule(const wchar_t *ModuleName)noexcept(true);
+	~cOLEModule()noexcept(true);
 
-	HRESULT QueryFactory(REFCLSID rclsid,IClassFactory **Factory);
-	HRESULT CreateObject(REFCLSID rclsid,IUnknown *pUnkOuter, REFIID riid,LPVOID *ppvObj);
+	HRESULT QueryFactory(REFCLSID rclsid,IClassFactory **Factory)noexcept(true);
+	HRESULT CreateObject(REFCLSID rclsid,IUnknown *pUnkOuter, REFIID riid,LPVOID *ppvObj)noexcept(true);
 	
 
 
-	COMPtr<IClassFactory> QueryFactory(REFCLSID rclsid);
+	COMPtr<IClassFactory> QueryFactory(REFCLSID rclsid)noexcept(true);
 
 	template<class T>
-	COMPtr<T> CreateObject(REFCLSID rclsid){
+	COMPtr<T> CreateObject(REFCLSID rclsid)noexcept(true){
 		HRESULT hr;
 
 		COMPtr<T> Object;
@@ -340,7 +356,7 @@ public:
 		return Object;
 	}
 	template<class T>
-	COMPtr<T> CreateAggregateObject(REFCLSID rclsid,IUnknown *pUnkOuter){
+	COMPtr<T> CreateAggregateObject(REFCLSID rclsid,IUnknown *pUnkOuter)noexcept(true){
 		HRESULT hr;
 
 		COMPtr<T> Object;
@@ -357,43 +373,47 @@ private:
 	HMODULE fModuleHandle;
 	bool fLoadFailed;
 
-	bool SetupModule(void);
+	bool SetupModule(void)noexcept(true);
 
+#if cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+	typedef HRESULT CALLBACK ProcTypeDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppvObj)noexcept(true);
+#else
 	typedef HRESULT CALLBACK ProcTypeDllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppvObj);
+#endif
 	ProcTypeDllGetClassObject *fGetClassObjectProc;
 };
 //---------------------------------------------------------------------------
 class cCOMApartmentThreading : private iProcedure
 {
 protected:
-	cCOMApartmentThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch);
-	~cCOMApartmentThreading();
+	cCOMApartmentThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept(true);
+	~cCOMApartmentThreading()noexcept(true);
 
-	void OnDelete(void);
+	void OnDelete(void)noexcept(true);
 public:
-	void IncreaseReference(void);
-	void DecreaseReference(void);
+	void IncreaseReference(void)noexcept(true);
+	void DecreaseReference(void)noexcept(true);
 
-	iDispatch *GetDispatch(void);
+	iDispatch *GetDispatch(void)noexcept(true);
 
 private:
 	aClsRef<cWinTLS> fTLS;
 	iPtr<iDispatch> fDispatch;
 	cAtomicVar<uIntn> fRefCount;
 
-	virtual void cnLib_FUNC Execute(void)override;
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class cCOMApartmentThreadingModule
 {
 public:
-	cCOMApartmentThreadingModule();
-	~cCOMApartmentThreadingModule();
+	cCOMApartmentThreadingModule()noexcept(true);
+	~cCOMApartmentThreadingModule()noexcept(true);
 
 	class cThreading : public iCOMApartmentThreading, public cCOMApartmentThreading, public cRTLAllocator
 	{
 	public:
-		cThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch);
+		cThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept(true);
 
 		typedef cCOMApartmentThreading tReferenceInterface;
 		// iReference
@@ -402,16 +422,16 @@ public:
 
 		// iCOMApartmentThreading
 	
-		virtual iDispatch* cnLib_FUNC GetDispatch(void)override;
+		virtual iDispatch* cnLib_FUNC GetDispatch(void)noexcept(true)override;
 	private:
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	};
 
-	cCOMApartmentThreading* GetThreading(void);
-	rPtr<cCOMApartmentThreading> QueryThreading(iDispatch *Dispatch);
+	cCOMApartmentThreading* GetThreading(void)noexcept(true);
+	rPtr<cCOMApartmentThreading> QueryThreading(iDispatch *Dispatch)noexcept(true);
 
-	cThreading* Get(void);
-	rPtr<cThreading> Query(iDispatch *Dispatch);
+	cThreading* Get(void)noexcept(true);
+	rPtr<cThreading> Query(iDispatch *Dispatch)noexcept(true);
 private:
 	aClsRef<cWinTLS> fTLS;
 
@@ -421,33 +441,33 @@ private:
 		cThreading *NewModule;
 		aCls<cWinTLS> *TLS;
 		iDispatch *Dispatch;
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	};
 };
 //---------------------------------------------------------------------------
 class cWinRegisterInstaller
 {
 public:
-	cWinRegisterInstaller();
-	~cWinRegisterInstaller();
+	cWinRegisterInstaller()noexcept(true);
+	~cWinRegisterInstaller()noexcept(true);
 
-	operator HKEY()const;
-	DWORD GetMakeError(void)const;
-	bool WasnotCreated(void)const;
-
-	template<bool Create>
-	void Make(HKEY BaseKey,cString<wchar_t> Path);
+	operator HKEY()const noexcept(true);
+	DWORD GetMakeError(void)const noexcept(true);
+	bool WasnotCreated(void)const noexcept(true);
 
 	template<bool Create>
-	void Make(cWinRegisterInstaller &ParentItem,cString<wchar_t> Path);
+	void Make(HKEY BaseKey,cString<wchar_t> Path)noexcept(true);
 
-	LSTATUS Create(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|KEY_SET_VALUE);
-	LSTATUS Open(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|DELETE|KEY_SET_VALUE);
-	LSTATUS Create(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|KEY_SET_VALUE);
-	LSTATUS Open(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|DELETE|KEY_SET_VALUE);
+	template<bool Create>
+	void Make(cWinRegisterInstaller &ParentItem,cString<wchar_t> Path)noexcept(true);
 
-	void CloseTree(void);
-	bool DeleteTree(void);
+	LSTATUS Create(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|KEY_SET_VALUE)noexcept(true);
+	LSTATUS Open(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|DELETE|KEY_SET_VALUE)noexcept(true);
+	LSTATUS Create(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|KEY_SET_VALUE)noexcept(true);
+	LSTATUS Open(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired=KEY_CREATE_SUB_KEY|DELETE|KEY_SET_VALUE)noexcept(true);
+
+	void CloseTree(void)noexcept(true);
+	bool DeleteTree(void)noexcept(true);
 protected:
 	HKEY fBaseKey;
 	HKEY fKey;

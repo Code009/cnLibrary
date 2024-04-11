@@ -18,15 +18,15 @@ extern const wchar_t Win32FileNameInvalidFileChar[];
 extern const uIntn Win32FileNameInvalidFileCharCount;
 extern const uIntn Win32FileNameInvalidFilterCharCount;
 //---------------------------------------------------------------------------
-bool Win32FileNameCheckIsDot(const wchar_t *Name);
-DWORD Win32FileNameCheckFileName(const wchar_t *Name);
-cStringBuffer<wchar_t> NTFileNormalizeName(const wchar_t *Path,uIntn PathLength);
+bool Win32FileNameCheckIsDot(const wchar_t *Name)noexcept(true);
+DWORD Win32FileNameCheckFileName(const wchar_t *Name)noexcept(true);
+cStringBuffer<wchar_t> NTFileNormalizeName(const wchar_t *Path,uIntn PathLength)noexcept(true);
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement>::Value
->::Type Win32FileNameStreamAppend(TStreamWriteBuffer &&WriteBuffer,const wchar_t *Name)
+>::Type Win32FileNameStreamAppend(TStreamWriteBuffer &&WriteBuffer,const wchar_t *Name)noexcept(true)
 {
 	DWORD NameLength=Win32FileNameCheckFileName(Name);
 	if(NameLength==0)
@@ -44,15 +44,15 @@ typename cnVar::TTypeConditional<DWORD,
 	return 1+NameLength;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> Win32FileMakeName(const wchar_t *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth);
-cStringBuffer<wchar_t> Win32FileMakeFindName(const wchar_t *Path,uIntn PathLength,const wchar_t *Filter);
-cStringBuffer<wchar_t> Win32FileMakeTemporaryFileName(const wchar_t *FolderName,const wchar_t *Prefix);
-cStringBuffer<wchar_t> NTFileMakeTempFolderName(void);
+cStringBuffer<wchar_t> Win32FileMakeName(const wchar_t *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth)noexcept(true);
+cStringBuffer<wchar_t> Win32FileMakeFindName(const wchar_t *Path,uIntn PathLength,const wchar_t *Filter)noexcept(true);
+cStringBuffer<wchar_t> Win32FileMakeTemporaryFileName(const wchar_t *FolderName,const wchar_t *Prefix)noexcept(true);
+cStringBuffer<wchar_t> NTFileMakeTempFolderName(void)noexcept(true);
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename TStreamWriteBuffer::tElement>::Value
->::Type Win32FileNameStreamReserveModule(TStreamWriteBuffer&& WriteBuffer,cArray<typename TStreamWriteBuffer::tElement> &NameBuffer,HMODULE ModuleHandle)
+>::Type Win32FileNameStreamReserveModule(TStreamWriteBuffer&& WriteBuffer,cArray<typename TStreamWriteBuffer::tElement> &NameBuffer,HMODULE ModuleHandle)noexcept(true)
 {
 	uIntn BufferLength=cnMath::IntRoundUp(MAX_PATH,256);
 	DWORD PathLength=0;
@@ -82,9 +82,9 @@ typename cnVar::TTypeConditional<DWORD,
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename TStreamWriteBuffer::tElement>::Value
->::Type Win32FileNameStreamWriteModule(TStreamWriteBuffer&& WriteBuffer,HMODULE ModuleHandle)
+>::Type Win32FileNameStreamWriteModule(TStreamWriteBuffer&& WriteBuffer,HMODULE ModuleHandle)noexcept(true)
 {
 	cArray<typename TStreamWriteBuffer::tElement> NameBuffer;
 	DWORD PathLength=Win32FileNameStreamReserveModule(cnVar::Forward<TStreamWriteBuffer>(WriteBuffer),NameBuffer,ModuleHandle);
@@ -93,9 +93,9 @@ typename cnVar::TTypeConditional<DWORD,
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename TStreamWriteBuffer::tElement>::Value
->::Type Win32FileNameStreamWriteModuleFolder(TStreamWriteBuffer&& WriteBuffer,HMODULE ModuleHandle)
+>::Type Win32FileNameStreamWriteModuleFolder(TStreamWriteBuffer&& WriteBuffer,HMODULE ModuleHandle)noexcept(true)
 {
 	cArray<typename TStreamWriteBuffer::tElement> NameBuffer;
 	DWORD PathLength=Win32FileNameStreamReserveModule(cnVar::Forward<TStreamWriteBuffer>(WriteBuffer),NameBuffer,ModuleHandle);
@@ -112,49 +112,49 @@ typename cnVar::TTypeConditional<DWORD,
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename TStreamWriteBuffer::tElement>::Value
->::Type Win32FileNameStreamWriteApplication(TStreamWriteBuffer&& WriteBuffer)
+>::Type Win32FileNameStreamWriteApplication(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
 {
 	return Win32FileNameStreamWriteModule(cnVar::Forward<TStreamWriteBuffer>(WriteBuffer),nullptr);
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-typename cnVar::TTypeConditional<DWORD,
+inline typename cnVar::TTypeConditional<DWORD,
 	cnVar::TIsSame<wchar_t,typename TStreamWriteBuffer::tElement>::Value
->::Type Win32FileNameStreamWriteApplicationFolder(TStreamWriteBuffer&& WriteBuffer)
+>::Type Win32FileNameStreamWriteApplicationFolder(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
 {
 	return Win32FileNameStreamWriteModuleFolder(cnVar::Forward<TStreamWriteBuffer>(WriteBuffer),nullptr);
 }
 //---------------------------------------------------------------------------
-cnRTL::cStringBuffer<wchar_t> Win32FileMakeModuleName(HMODULE ModuleHandle);
-cStringBuffer<wchar_t> NTFileMakeApplicationFileName(void);
-cStringBuffer<wchar_t> NTFileMakeApplicationFolderName(void);
+cnRTL::cStringBuffer<wchar_t> Win32FileMakeModuleName(HMODULE ModuleHandle)noexcept(true);
+cStringBuffer<wchar_t> NTFileMakeApplicationFileName(void)noexcept(true);
+cStringBuffer<wchar_t> NTFileMakeApplicationFolderName(void)noexcept(true);
 //---------------------------------------------------------------------------
 class cWin32FileNameEnum : public iFileEnumerator
 {
 public:
-	cWin32FileNameEnum(cnRTL::cString<wchar_t> Path,cnRTL::cString<wchar_t> FindPath,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo));
-	~cWin32FileNameEnum();
+	cWin32FileNameEnum(cnRTL::cString<wchar_t> Path,cnRTL::cString<wchar_t> FindPath,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo)noexcept(true))noexcept(true);
+	~cWin32FileNameEnum()noexcept(true);
 
-	virtual bool cnLib_FUNC Fetch(void)override;
-	virtual iFile*	cnLib_FUNC GetCurrentFile(void)override;
+	virtual bool cnLib_FUNC Fetch(void)noexcept(true)override;
+	virtual iFile*	cnLib_FUNC GetCurrentFile(void)noexcept(true)override;
 
 protected:
-	static bool IsDot(const WIN32_FIND_DATA &fd);
-	static bool IsInvalidFile(const WIN32_FIND_DATA &fd);
-	cnRTL::cString<wchar_t> MakeFileName(const WIN32_FIND_DATA &fd);
+	static bool IsDot(const WIN32_FIND_DATA &fd)noexcept(true);
+	static bool IsInvalidFile(const WIN32_FIND_DATA &fd)noexcept(true);
+	cnRTL::cString<wchar_t> MakeFileName(const WIN32_FIND_DATA &fd)noexcept(true);
 
-	bool FindNext(WIN32_FIND_DATA &fd);
+	bool FindNext(WIN32_FIND_DATA &fd)noexcept(true);
 	
 	iPtr<iFileName> fCurrentFileName;
 
 private:
 	HANDLE fFindHandle;
-	iPtr<iFileName> (*fCreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo);
+	iPtr<iFileName> (*fCreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo)noexcept(true);
 	cnRTL::cString<wchar_t> fPath;
 	cnRTL::cString<wchar_t> fFindPath;
-	bool ProcessFindData(WIN32_FIND_DATA &fd);
+	bool ProcessFindData(WIN32_FIND_DATA &fd)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL

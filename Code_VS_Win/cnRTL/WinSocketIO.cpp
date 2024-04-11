@@ -18,7 +18,7 @@ using namespace cnWinRTL;
 	//::setsockopt(SocketIO->Handle,SOL_SOCKET,SO_RCVBUF,(char*)&opt,sizeof(opt));
 
 //---------------------------------------------------------------------------
-static eStreamError WinSocketErrorToStreamError(DWORD ErrorCode)
+static eStreamError WinSocketErrorToStreamError(DWORD ErrorCode)noexcept
 {
 	switch(ErrorCode){
 	default:
@@ -36,31 +36,31 @@ static eStreamError WinSocketErrorToStreamError(DWORD ErrorCode)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcSocketIOHandle::bcSocketIOHandle()
+bcSocketIOHandle::bcSocketIOHandle()noexcept
 	: Handle(INVALID_SOCKET)
 {
 }
 //---------------------------------------------------------------------------
-bcSocketIOHandle::~bcSocketIOHandle()
+bcSocketIOHandle::~bcSocketIOHandle()noexcept
 {
 	cnLib_ASSERT(Handle==INVALID_SOCKET);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleSyncIOObject::cNTSocketOverlappedIOHandleSyncIOObject()
+cNTSocketOverlappedIOHandleSyncIOObject::cNTSocketOverlappedIOHandleSyncIOObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleSyncIOObject::~cNTSocketOverlappedIOHandleSyncIOObject()
+cNTSocketOverlappedIOHandleSyncIOObject::~cNTSocketOverlappedIOHandleSyncIOObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleSyncIOObject::Completed(void)
+void cNTSocketOverlappedIOHandleSyncIOObject::Completed(void)noexcept
 {
 	fNotifier.Notify();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleSyncIOObject::Recv(bcNTSocketOverlappedIOHandle *SocketIO,void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleSyncIOObject::Recv(bcNTSocketOverlappedIOHandle *SocketIO,void *Buffer,uIntn Size)noexcept
 {
 	BytesCompleted=0;
 	Flags=0;
@@ -84,7 +84,7 @@ bool cNTSocketOverlappedIOHandleSyncIOObject::Recv(bcNTSocketOverlappedIOHandle 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleSyncIOObject::Send(bcNTSocketOverlappedIOHandle *SocketIO,const void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleSyncIOObject::Send(bcNTSocketOverlappedIOHandle *SocketIO,const void *Buffer,uIntn Size)noexcept
 {
 	BytesCompleted=0;
 	Flags=0;
@@ -109,7 +109,7 @@ bool cNTSocketOverlappedIOHandleSyncIOObject::Send(bcNTSocketOverlappedIOHandle 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleSyncIOObject::RecvFrom(bcNTSocketOverlappedIOHandle *SocketIO,cWin32SocketAddressBuffer &AddressBuffer,void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleSyncIOObject::RecvFrom(bcNTSocketOverlappedIOHandle *SocketIO,cWin32SocketAddressBuffer &AddressBuffer,void *Buffer,uIntn Size)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 	Flags=0;
@@ -135,7 +135,7 @@ bool cNTSocketOverlappedIOHandleSyncIOObject::RecvFrom(bcNTSocketOverlappedIOHan
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleSyncIOObject::SendTo(bcNTSocketOverlappedIOHandle *SocketIO,const sockaddr *addr,socklen_t addrlen,const void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleSyncIOObject::SendTo(bcNTSocketOverlappedIOHandle *SocketIO,const sockaddr *addr,socklen_t addrlen,const void *Buffer,uIntn Size)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 	Flags=0;
@@ -160,57 +160,57 @@ bool cNTSocketOverlappedIOHandleSyncIOObject::SendTo(bcNTSocketOverlappedIOHandl
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleStreamAsyncIOTask::cNTSocketOverlappedIOHandleStreamAsyncIOTask()
+cNTSocketOverlappedIOHandleStreamAsyncIOTask::cNTSocketOverlappedIOHandleStreamAsyncIOTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleStreamAsyncIOTask::~cNTSocketOverlappedIOHandleStreamAsyncIOTask()
+cNTSocketOverlappedIOHandleStreamAsyncIOTask::~cNTSocketOverlappedIOHandleStreamAsyncIOTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTSocketOverlappedIOHandleStreamAsyncIOTask::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTSocketOverlappedIOHandleStreamAsyncIOTask::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::IsDone(void)
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleStreamAsyncIOTask::Cancel(void)
+void cNTSocketOverlappedIOHandleStreamAsyncIOTask::Cancel(void)noexcept
 {
 	::CancelIoEx(reinterpret_cast<HANDLE>(fSocketIO->Handle),&Overlapped);
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::GetResult(uIntn &retSizeCompleted)
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::GetResult(uIntn &retSizeCompleted)noexcept
 {
 	retSizeCompleted=BytesCompleted;
 	return ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-eStreamError cNTSocketOverlappedIOHandleStreamAsyncIOTask::GetStreamError(void)
+eStreamError cNTSocketOverlappedIOHandleStreamAsyncIOTask::GetStreamError(void)noexcept
 {
 	return WinSocketErrorToStreamError(ErrorCode);
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleStreamAsyncIOTask::Completed(void)
+void cNTSocketOverlappedIOHandleStreamAsyncIOTask::Completed(void)noexcept
 {
 	NotifyCompletion();
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleStreamAsyncIOTask::NotifyCompletion(void)
+void cNTSocketOverlappedIOHandleStreamAsyncIOTask::NotifyCompletion(void)noexcept
 {
 	fTaskState.SetDone();
 	iDecReference(this,'task');
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Recv(bcNTSocketOverlappedIOHandle *SocketIO,void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Recv(bcNTSocketOverlappedIOHandle *SocketIO,void *Buffer,uIntn Size)noexcept
 {
 	fSocketIO=SocketIO;
 	BytesCompleted=0;
@@ -237,7 +237,7 @@ bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Recv(bcNTSocketOverlappedIOHa
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Send(bcNTSocketOverlappedIOHandle *SocketIO,const void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Send(bcNTSocketOverlappedIOHandle *SocketIO,const void *Buffer,uIntn Size)noexcept
 {
 	fSocketIO=SocketIO;
 	BytesCompleted=0;
@@ -266,37 +266,37 @@ bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Send(bcNTSocketOverlappedIOHa
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleStream::cNTSocketOverlappedIOHandleStream(rPtr<bcNTSocketOverlappedIOHandle> SocketIO)
+cNTSocketOverlappedIOHandleStream::cNTSocketOverlappedIOHandleStream(rPtr<bcNTSocketOverlappedIOHandle> SocketIO)noexcept
 	: fSocketIO(cnVar::MoveCast(SocketIO))
 {
 	fEOS=false;
 }
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleStream::~cNTSocketOverlappedIOHandleStream()
+cNTSocketOverlappedIOHandleStream::~cNTSocketOverlappedIOHandleStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTSocketOverlappedIOHandleStream::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTSocketOverlappedIOHandleStream::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iStream,iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleStream::Close(void)
+void cNTSocketOverlappedIOHandleStream::Close(void)noexcept
 {
 	fSocketIO->Close();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStream::IsEndOfReading(void)
+bool cNTSocketOverlappedIOHandleStream::IsEndOfReading(void)noexcept
 {
 	return fEOS;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStream::SetEndOfStream(void)
+bool cNTSocketOverlappedIOHandleStream::SetEndOfStream(void)noexcept
 {
 	return ShutdownSend();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStream::ShutdownSend(void)
+bool cNTSocketOverlappedIOHandleStream::ShutdownSend(void)noexcept
 {
 	if(::shutdown(fSocketIO->Handle,SD_SEND)==0){
 		return true;
@@ -305,13 +305,13 @@ bool cNTSocketOverlappedIOHandleStream::ShutdownSend(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-eStreamError cNTSocketOverlappedIOHandleStream::GetStreamError(void)
+eStreamError cNTSocketOverlappedIOHandleStream::GetStreamError(void)noexcept
 {
 	DWORD Error=::GetLastError();
 	return WinSocketErrorToStreamError(Error);
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTSocketOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTSocketOverlappedIOHandleSyncIOObject IOObject;
 	cnMemory::ZeroFill(IOObject.Overlapped);
@@ -331,7 +331,7 @@ bool cNTSocketOverlappedIOHandleStream::Read(void *Buffer,uIntn Size,uIntn &Size
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTSocketOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTSocketOverlappedIOHandleSyncIOObject IOObject;
 	cnMemory::ZeroFill(IOObject.Overlapped);
@@ -343,7 +343,7 @@ bool cNTSocketOverlappedIOHandleStream::Write(const void *Buffer,uIntn Size,uInt
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleStream::cReadTask::Completed(void)
+void cNTSocketOverlappedIOHandleStream::cReadTask::Completed(void)noexcept
 {
 	if(ErrorCode==ERROR_SUCCESS && BytesCompleted==0){
 		Host->fEOS=true;
@@ -356,7 +356,7 @@ void cNTSocketOverlappedIOHandleStream::cReadTask::Completed(void)
 	cNTSocketOverlappedIOHandleStreamAsyncIOTask::Completed();
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::ReadAsync(void *Buffer,uIntn Size)
+iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::ReadAsync(void *Buffer,uIntn Size)noexcept
 {
 	auto Task=iCreate<cReadTask>();
 	Task->Host=this;
@@ -367,7 +367,7 @@ iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::ReadAsync(void *Buffer,uInt
 	return Task;
 }
 //---------------------------------------------------------------------------
-iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::WriteAsync(const void *Buffer,uIntn Size)
+iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::WriteAsync(const void *Buffer,uIntn Size)noexcept
 {
 	auto Task=iCreate<cNTSocketOverlappedIOHandleStreamAsyncIOTask>();
 	cnMemory::ZeroFill(Task->Overlapped);
@@ -377,7 +377,7 @@ iPtr<iStreamTask> cNTSocketOverlappedIOHandleStream::WriteAsync(const void *Buff
 	return Task;
 }
 //---------------------------------------------------------------------------
-uIntn cNTSocketOverlappedIOHandleStream::GetBufferSizeMax(void)
+uIntn cNTSocketOverlappedIOHandleStream::GetBufferSizeMax(void)noexcept
 {
 	union{
 		char data;
@@ -391,58 +391,58 @@ uIntn cNTSocketOverlappedIOHandleStream::GetBufferSizeMax(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask()
+cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::~cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask()
+cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::~cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return ImpCastInterface<iStreamErrorReport>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::IsDone(void)
+bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SetNotify(iProcedure *NotifyProcedure)
+bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Cancel(void)
+void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Cancel(void)noexcept
 {
 	::CancelIoEx(reinterpret_cast<HANDLE>(fSocketIO->Handle),&Overlapped);
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetResult(uIntn &retSizeCompleted)
+bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetResult(uIntn &retSizeCompleted)noexcept
 {
 	retSizeCompleted=BytesCompleted;
 	return ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-eStreamError cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetStreamError(void)
+eStreamError cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetStreamError(void)noexcept
 {
 	return WinSocketErrorToStreamError(ErrorCode);
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Completed(void)
+void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Completed(void)noexcept
 {
 	NotifyCompletion();
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::NotifyCompletion(void)
+void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::NotifyCompletion(void)noexcept
 {
 	fTaskState.SetDone();
 	//fSocketIO=nullptr;
 	iDecReference(this,'task');
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SendTo(bcNTSocketOverlappedIOHandle *SocketIO,iAddress *RemoteAddress,const void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SendTo(bcNTSocketOverlappedIOHandle *SocketIO,iAddress *RemoteAddress,const void *Buffer,uIntn Size)noexcept
 {
 	auto saddr=fAddressBuffer.SetupSendAddress(RemoteAddress,fAddrLen);
 	if(saddr==nullptr)
@@ -474,13 +474,13 @@ bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SendTo(bcNTSocketOverla
 	return false;
 }
 //---------------------------------------------------------------------------
-iAddress* cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetRemoteAddress(void)
+iAddress* cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::GetRemoteAddress(void)noexcept
 {
 	return fRemoteAddress;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::RecvFrom(bcNTSocketOverlappedIOHandle *SocketIO,iSocketAddress *LocalAddress,void *Buffer,uIntn Size)
+bool cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::RecvFrom(bcNTSocketOverlappedIOHandle *SocketIO,iSocketAddress *LocalAddress,void *Buffer,uIntn Size)noexcept
 {
 	if(fAddressBuffer.SetupRecvAddress(LocalAddress)==false)
 		return false;
@@ -510,7 +510,7 @@ bool cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::RecvFrom(bcNTSocketOver
 	return false;
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::Completed(void)
+void cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::Completed(void)noexcept
 {
 	if(ErrorCode==ERROR_SUCCESS){
 		fAddressBuffer.SetSockAddrLen(fAddrLen);
@@ -522,43 +522,43 @@ void cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask::Completed(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleDatagramStream::cNTSocketOverlappedIOHandleDatagramStream(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iSocketAddress *LocalAddress)
+cNTSocketOverlappedIOHandleDatagramStream::cNTSocketOverlappedIOHandleDatagramStream(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iSocketAddress *LocalAddress)noexcept
 	: fSocketIO(cnVar::MoveCast(SocketIO))
 	, fLocalAddress(LocalAddress)
 {
 }
 //---------------------------------------------------------------------------
-cNTSocketOverlappedIOHandleDatagramStream::~cNTSocketOverlappedIOHandleDatagramStream()
+cNTSocketOverlappedIOHandleDatagramStream::~cNTSocketOverlappedIOHandleDatagramStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cNTSocketOverlappedIOHandleDatagramStream::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cNTSocketOverlappedIOHandleDatagramStream::CastInterface(iTypeID InterfaceID)noexcept
 {
 	return iStreamErrorReport::CastInterface(InterfaceID);
 }
 //---------------------------------------------------------------------------
-iSocketAddress*	cNTSocketOverlappedIOHandleDatagramStream::GetMessagePortAddress(void)
+iSocketAddress*	cNTSocketOverlappedIOHandleDatagramStream::GetMessagePortAddress(void)noexcept
 {
 	return fLocalAddress;
 }
 //---------------------------------------------------------------------------
-void cNTSocketOverlappedIOHandleDatagramStream::Close(void)
+void cNTSocketOverlappedIOHandleDatagramStream::Close(void)noexcept
 {
 	fSocketIO->Close();
 }
 //---------------------------------------------------------------------------
-eStreamError cNTSocketOverlappedIOHandleDatagramStream::GetStreamError(void)
+eStreamError cNTSocketOverlappedIOHandleDatagramStream::GetStreamError(void)noexcept
 {
 	DWORD Error=::GetLastError();
 	return WinSocketErrorToStreamError(Error);
 }
 //---------------------------------------------------------------------------
-iAddress* cNTSocketOverlappedIOHandleDatagramStream::GetLocalAddress(void)
+iAddress* cNTSocketOverlappedIOHandleDatagramStream::GetLocalAddress(void)noexcept
 {
 	return GetMessagePortAddress();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramStream::Read(iPtr<iAddress> &Address,void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTSocketOverlappedIOHandleDatagramStream::Read(iPtr<iAddress> &Address,void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTSocketOverlappedIOHandleSyncIOObject IOObject;
 	cnMemory::ZeroFill(IOObject.Overlapped);
@@ -576,7 +576,7 @@ bool cNTSocketOverlappedIOHandleDatagramStream::Read(iPtr<iAddress> &Address,voi
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramStream::Write(iAddress *Address,const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cNTSocketOverlappedIOHandleDatagramStream::Write(iAddress *Address,const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	cNTSocketOverlappedIOHandleSyncIOObject IOObject;
 
@@ -596,7 +596,7 @@ bool cNTSocketOverlappedIOHandleDatagramStream::Write(iAddress *Address,const vo
 	return IOObject.ErrorCode==ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::ReadAsync(void *Buffer,uIntn Size)
+iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::ReadAsync(void *Buffer,uIntn Size)noexcept
 {
 	auto Task=iCreate<cNTSocketOverlappedIOHandleDatagramAsyncIORecvTask>();
 	if(Task->RecvFrom(fSocketIO,fLocalAddress,Buffer,Size)==false)
@@ -605,7 +605,7 @@ iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::ReadAsync(void 
 	return Task;
 }
 //---------------------------------------------------------------------------
-iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::WriteAsync(const void *Buffer,uIntn Size,iAddress *Address)
+iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::WriteAsync(const void *Buffer,uIntn Size,iAddress *Address)noexcept
 {
 	auto Task=iCreate<cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask>();
 	if(Task->SendTo(fSocketIO,Address,Buffer,Size)==false)
@@ -614,7 +614,7 @@ iPtr<iMultipointTask> cNTSocketOverlappedIOHandleDatagramStream::WriteAsync(cons
 	return Task;
 }
 //---------------------------------------------------------------------------
-uIntn cNTSocketOverlappedIOHandleDatagramStream::GetMaxPacketSize(void)
+uIntn cNTSocketOverlappedIOHandleDatagramStream::GetMaxPacketSize(void)noexcept
 {
 	union{
 		char data;
@@ -630,7 +630,7 @@ uIntn cNTSocketOverlappedIOHandleDatagramStream::GetMaxPacketSize(void)
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleConnectorParameter::Setup(iAddress *ConnLocalAddress,iAddress *ConnRemoteAddress)
+bool cNTSocketOverlappedIOHandleConnectorParameter::Setup(iAddress *ConnLocalAddress,iAddress *ConnRemoteAddress)noexcept
 {
 	if(ConnLocalAddress==nullptr){
 		if(ConnRemoteAddress==nullptr)
@@ -659,7 +659,7 @@ bool cNTSocketOverlappedIOHandleConnectorParameter::Setup(iAddress *ConnLocalAdd
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-SOCKET cNTSocketOverlappedIOHandleListenerParameter::Setup(iAddress *Address,int Type,int Protocol,int Flag)
+SOCKET cNTSocketOverlappedIOHandleListenerParameter::Setup(iAddress *Address,int Type,int Protocol,int Flag)noexcept
 {
 	if(Address==nullptr)
 		return INVALID_SOCKET;
@@ -712,20 +712,20 @@ SOCKET cNTSocketOverlappedIOHandleListenerParameter::Setup(iAddress *Address,int
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::cSyncConnectObject()
+bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::cSyncConnectObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::~cSyncConnectObject()
+bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::~cSyncConnectObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::Completed(void)
+void bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::Completed(void)noexcept
 {
 	fNotifier.Notify();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::Connect(LPFN_CONNECTEX fpConnectEx,bcNTSocketOverlappedIOHandle *SocketIO,iSocketAddress *RemoteAddress)
+bool bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::Connect(LPFN_CONNECTEX fpConnectEx,bcNTSocketOverlappedIOHandle *SocketIO,iSocketAddress *RemoteAddress)noexcept
 {
 	SocketIO->StartIO();
 
@@ -744,31 +744,31 @@ bool bcNTSocketOverlappedIOHandleConnectionConnector::cSyncConnectObject::Connec
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::cAsyncConnectionTask(bcNTSocketOverlappedIOHandleConnectionConnector *Owner)
+bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::cAsyncConnectionTask(bcNTSocketOverlappedIOHandleConnectionConnector *Owner)noexcept
 	: fOwner(Owner)
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::~cAsyncConnectionTask()
+bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::~cAsyncConnectionTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::IsDone(void)
+bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::SetNotify(iProcedure *NotifyProcedure)
+bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-iConnection* bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::GetConnection(void)
+iConnection* bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::GetConnection(void)noexcept
 {
 	return fConnection;
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Cancel(void)
+void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Cancel(void)noexcept
 {
 	if(fTaskState.IsDone())
 		return;
@@ -776,7 +776,7 @@ void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Canc
 	::CancelIoEx(reinterpret_cast<HANDLE>(fSocketIO->Handle),&Overlapped);
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Connect(LPFN_CONNECTEX fpConnectEx,rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> RemoteAddress)
+bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Connect(LPFN_CONNECTEX fpConnectEx,rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> RemoteAddress)noexcept
 {
 	fSocketIO=cnVar::MoveCast(SocketIO);
 	fRemoteAddress=cnVar::MoveCast(RemoteAddress);
@@ -800,13 +800,13 @@ bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Conn
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::NotifyCompletion(void)
+void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::NotifyCompletion(void)noexcept
 {
 	fTaskState.SetDone();
 	iDecReference(this,'task');
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Completed(void)
+void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Completed(void)noexcept
 {
 	if(ErrorCode==ERROR_SUCCESS){
 		if(::setsockopt(fSocketIO->Handle,SOL_SOCKET,SO_UPDATE_CONNECT_CONTEXT,nullptr,0)!=0){
@@ -821,22 +821,22 @@ void bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Comp
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::bcNTSocketOverlappedIOHandleConnectionConnector(iPtr<iSocketAddress> BindAddress)
+bcNTSocketOverlappedIOHandleConnectionConnector::bcNTSocketOverlappedIOHandleConnectionConnector(iPtr<iSocketAddress> BindAddress)noexcept
 	: fBindAddress(cnVar::MoveCast(BindAddress))
 {
 	
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionConnector::~bcNTSocketOverlappedIOHandleConnectionConnector()
+bcNTSocketOverlappedIOHandleConnectionConnector::~bcNTSocketOverlappedIOHandleConnectionConnector()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iAddress* bcNTSocketOverlappedIOHandleConnectionConnector::GetLocalAddress(void)
+iAddress* bcNTSocketOverlappedIOHandleConnectionConnector::GetLocalAddress(void)noexcept
 {
 	return fBindAddress;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionConnector::Connect(iAddress *RemoteAddress)
+iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionConnector::Connect(iAddress *RemoteAddress)noexcept
 {
 	auto RemoteSocketAddress=Win32CreateCopySocketAddress(RemoteAddress);
 	if(RemoteSocketAddress==nullptr)
@@ -861,7 +861,7 @@ iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionConnector::Connect(iAddr
 	return ConnectorMakeConnection(cnVar::MoveCast(SocketIO),cnVar::MoveCast(RemoteSocketAddress));
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionConnector::ConnectAsync(iAddress *RemoteAddress)
+iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionConnector::ConnectAsync(iAddress *RemoteAddress)noexcept
 {
 	auto RemoteSocketAddress=Win32CreateCopySocketAddress(RemoteAddress);
 	if(RemoteSocketAddress==nullptr)
@@ -881,20 +881,20 @@ iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionConnector::ConnectAs
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::cSyncAcceptObject()
+bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::cSyncAcceptObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::~cSyncAcceptObject()
+bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::~cSyncAcceptObject()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::Completed(void)
+void bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::Completed(void)noexcept
 {
 	fNotifier.Notify();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::Accept(bcNTSocketOverlappedIOHandleConnectionListener *Owner,bcNTSocketOverlappedIOHandle *AcceptSocketIO,void *AddressBuffer,DWORD LocalAddressLength,DWORD RemoteAddressLength)
+bool bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::Accept(bcNTSocketOverlappedIOHandleConnectionListener *Owner,bcNTSocketOverlappedIOHandle *AcceptSocketIO,void *AddressBuffer,DWORD LocalAddressLength,DWORD RemoteAddressLength)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 
@@ -913,34 +913,34 @@ bool bcNTSocketOverlappedIOHandleConnectionListener::cSyncAcceptObject::Accept(b
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::cAsyncAcceptTask(bcNTSocketOverlappedIOHandleConnectionListener *Owner)
+bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::cAsyncAcceptTask(bcNTSocketOverlappedIOHandleConnectionListener *Owner)noexcept
 	: fOwner(Owner)
 {
 	fAcceptSocket=INVALID_SOCKET;
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::~cAsyncAcceptTask()
+bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::~cAsyncAcceptTask()noexcept
 {
 	if(fAcceptSocket!=INVALID_SOCKET)
 		::closesocket(fAcceptSocket);
 }
 //---------------------------------------------------------------------------
-bool	bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::IsDone(void)
+bool	bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::SetNotify(iProcedure *NotifyProcedure)
+bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-iConnection* bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::GetConnection(void)
+iConnection* bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::GetConnection(void)noexcept
 {
 	return fConnection;
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Cancel(void)
+void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Cancel(void)noexcept
 {
 	if(fTaskState.IsDone())
 		return;
@@ -948,7 +948,7 @@ void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Cancel(vo
 	::CancelIoEx(reinterpret_cast<HANDLE>(fOwner->fSocketIO->Handle),&Overlapped);
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Accept(rPtr<bcNTSocketOverlappedIOHandle> AcceptSocketIO,int LocalAddressLength)
+bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Accept(rPtr<bcNTSocketOverlappedIOHandle> AcceptSocketIO,int LocalAddressLength)noexcept
 {
 	fAcceptSocketIO=cnVar::MoveCast(AcceptSocketIO);
 
@@ -973,13 +973,13 @@ bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Accept(rP
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::NotifyCompletion(void)
+void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::NotifyCompletion(void)noexcept
 {
 	fTaskState.SetDone();
 	iDecReference(this,'task');
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Completed(void)
+void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Completed(void)noexcept
 {
 	if(ErrorCode==ERROR_SUCCESS){
 		fConnection=fOwner->MakeAcceptedConnection(cnVar::MoveCast(fAcceptSocketIO),fAddressBuffer,fLocalBufferLength,fRemoteBufferLength);
@@ -989,7 +989,7 @@ void bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Completed
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::bcNTSocketOverlappedIOHandleConnectionListener(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,cNTSocketOverlappedIOHandleListenerParameter &Parameter)
+bcNTSocketOverlappedIOHandleConnectionListener::bcNTSocketOverlappedIOHandleConnectionListener(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,cNTSocketOverlappedIOHandleListenerParameter &Parameter)noexcept
 	: fSocketIO(cnVar::MoveCast(SocketIO))
 	, fLocalAddress(cnVar::MoveCast(Parameter.BoundAddress))
 	, fAcceptEx(Parameter.AcceptEx)
@@ -997,23 +997,18 @@ bcNTSocketOverlappedIOHandleConnectionListener::bcNTSocketOverlappedIOHandleConn
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIOHandleConnectionListener::~bcNTSocketOverlappedIOHandleConnectionListener()
+bcNTSocketOverlappedIOHandleConnectionListener::~bcNTSocketOverlappedIOHandleConnectionListener()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIOHandleConnectionListener::VirtualStopped(void)
+void bcNTSocketOverlappedIOHandleConnectionListener::VirtualStopped(void)noexcept
 {
 	fSocketIO->Close();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void	bcNTSocketOverlappedIOHandleConnectionListener::Close(void)
-{
-	fSocketIO->Close();
-}
-//---------------------------------------------------------------------------
-iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::MakeAcceptedConnection(rPtr<bcNTSocketOverlappedIOHandle> AcceptSocketIO,void *AddressBuffer,int LocalAddressLength,int RemoteAddressLength)
+iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::MakeAcceptedConnection(rPtr<bcNTSocketOverlappedIOHandle> AcceptSocketIO,void *AddressBuffer,int LocalAddressLength,int RemoteAddressLength)noexcept
 {
 	sockaddr *laddr;
 	int laddrlen;
@@ -1033,12 +1028,12 @@ iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::MakeAcceptedCo
 	return ListenerMakeConnection(cnVar::MoveCast(AcceptSocketIO),cnVar::MoveCast(LocalAddress),cnVar::MoveCast(RemoteAddress));
 }
 //---------------------------------------------------------------------------
-iAddress* bcNTSocketOverlappedIOHandleConnectionListener::GetLocalAddress(void)
+iAddress* bcNTSocketOverlappedIOHandleConnectionListener::GetLocalAddress(void)noexcept
 {
 	return fLocalAddress;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::Accept(void)
+iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::Accept(void)noexcept
 {
 	auto AcceptSocketIO=ListenerQueryIOHandle();
 	if(AcceptSocketIO==nullptr)
@@ -1062,7 +1057,7 @@ iPtr<iConnection> bcNTSocketOverlappedIOHandleConnectionListener::Accept(void)
 	return MakeAcceptedConnection(cnVar::MoveCast(AcceptSocketIO),AddressBuffer,addrlen,addrlen);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionListener::AcceptAsync(void)
+iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionListener::AcceptAsync(void)noexcept
 {
 	auto AcceptSocketIO=ListenerQueryIOHandle();
 	if(AcceptSocketIO==nullptr)
@@ -1078,16 +1073,16 @@ iPtr<iConnectionTask> bcNTSocketOverlappedIOHandleConnectionListener::AcceptAsyn
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::cDisconnectTask(bcNTSocketOverlappedIORecyclableHandleManager *Owner)
+bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::cDisconnectTask(bcNTSocketOverlappedIORecyclableHandleManager *Owner)noexcept
 	: fOwner(Owner)
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::~cDisconnectTask()
+bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::~cDisconnectTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::Disconnect(void)
+bool bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::Disconnect(void)noexcept
 {
 	cnMemory::ZeroFill(Overlapped);
 	SocketIO->StartIO();
@@ -1105,23 +1100,23 @@ bool bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::Disconnect(
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::Completed(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::cDisconnectTask::Completed(void)noexcept
 {
 	fOwner->DisconnectTaskDone(this);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIORecyclableHandleManager::bcNTSocketOverlappedIORecyclableHandleManager()
+bcNTSocketOverlappedIORecyclableHandleManager::bcNTSocketOverlappedIORecyclableHandleManager()noexcept
 	: fClosed(false)
 {
 }
 //---------------------------------------------------------------------------
-bcNTSocketOverlappedIORecyclableHandleManager::~bcNTSocketOverlappedIORecyclableHandleManager()
+bcNTSocketOverlappedIORecyclableHandleManager::~bcNTSocketOverlappedIORecyclableHandleManager()noexcept
 {
 	cnLib_ASSERT(fDisconnectQueue.IsEmpty());
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::VirtualStopped(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::VirtualStopped(void)noexcept
 {
 	fClosed=true;
 	
@@ -1129,7 +1124,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::VirtualStopped(void)
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcedure(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcedure(void)noexcept
 {
 	if(fCheckQueueFlag.Acquire()==false)
 		return;
@@ -1153,7 +1148,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcedure(void)
 	InnerDecReference('chkq');
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDisconnect(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDisconnect(void)noexcept
 {
 	auto DisconnectTask=fDisconnectQueue.DequeueAll();
 	while(DisconnectTask!=nullptr){
@@ -1170,7 +1165,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDisconnect(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessCancel(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessCancel(void)noexcept
 {
 	auto DisconnectTask=fDisconnectQueue.DequeueAll();
 	while(DisconnectTask!=nullptr){
@@ -1186,7 +1181,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessCancel(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDone(void)
+void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDone(void)noexcept
 {
 	auto DisconnectTask=fDisconnectDoneQueue.DequeueAll();
 	while(DisconnectTask!=nullptr){
@@ -1206,7 +1201,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDone(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::DisconnectSocket(bcNTSocketOverlappedIOHandle *SocketIO,LPFN_DISCONNECTEX DisconnectEx)
+void bcNTSocketOverlappedIORecyclableHandleManager::DisconnectSocket(bcNTSocketOverlappedIOHandle *SocketIO,LPFN_DISCONNECTEX DisconnectEx)noexcept
 {
 	auto Task=new cDisconnectTask(this);
 	Task->SocketIO=SocketIO;
@@ -1215,19 +1210,19 @@ void bcNTSocketOverlappedIORecyclableHandleManager::DisconnectSocket(bcNTSocketO
 	QueueProcedure();
 }
 //---------------------------------------------------------------------------
-void bcNTSocketOverlappedIORecyclableHandleManager::DisconnectTaskDone(cDisconnectTask *Task)
+void bcNTSocketOverlappedIORecyclableHandleManager::DisconnectTaskDone(cDisconnectTask *Task)noexcept
 {
 	fDisconnectDoneQueue.Enqueue(Task);
 	QueueProcedure();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketIOHandle::cNT6ThreadPoolSocketIOHandle()
+cNT6ThreadPoolSocketIOHandle::cNT6ThreadPoolSocketIOHandle()noexcept
 	: fIOThreadPool(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketIOHandle::~cNT6ThreadPoolSocketIOHandle()
+cNT6ThreadPoolSocketIOHandle::~cNT6ThreadPoolSocketIOHandle()noexcept
 {
 	if(Handle!=INVALID_SOCKET){
 		::CloseThreadpoolIo(fIOThreadPool);
@@ -1236,7 +1231,7 @@ cNT6ThreadPoolSocketIOHandle::~cNT6ThreadPoolSocketIOHandle()
 	}
 }
 //---------------------------------------------------------------------------
-bool cNT6ThreadPoolSocketIOHandle::Open(SOCKET SocketHandle)
+bool cNT6ThreadPoolSocketIOHandle::Open(SOCKET SocketHandle)noexcept
 {
 	fIOThreadPool=::CreateThreadpoolIo(reinterpret_cast<HANDLE>(SocketHandle),IoCompletionCallback,this,nullptr);
 	if(fIOThreadPool==nullptr)
@@ -1246,7 +1241,7 @@ bool cNT6ThreadPoolSocketIOHandle::Open(SOCKET SocketHandle)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolSocketIOHandle::Close(void)
+void cNT6ThreadPoolSocketIOHandle::Close(void)noexcept
 {
 	cnLib_ASSERT(Handle!=INVALID_SOCKET);
 
@@ -1262,7 +1257,7 @@ VOID CALLBACK cNT6ThreadPoolSocketIOHandle::IoCompletionCallback(
 	_In_        ULONG                 IoResult,
 	_In_        ULONG_PTR             NumberOfBytesTransferred,
 	_Inout_     PTP_IO                Io
-){
+)noexcept{
 Instance,Context,Io;
 	auto IOObject=cnMemory::GetObjectFromMemberPointer(static_cast<OVERLAPPED*>(Overlapped),&bcIOObject::Overlapped);
 	IOObject->ErrorCode=IoResult;
@@ -1270,23 +1265,23 @@ Instance,Context,Io;
 	IOObject->Completed();
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolSocketIOHandle::StartIO(void)
+void cNT6ThreadPoolSocketIOHandle::StartIO(void)noexcept
 {
 	::StartThreadpoolIo(fIOThreadPool);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolSocketIOHandle::CancelIO(void)
+void cNT6ThreadPoolSocketIOHandle::CancelIO(void)noexcept
 {
 	::CancelThreadpoolIo(fIOThreadPool);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolSocketIOHandle::CancelOperation(bcIOObject *Object)
+void cNT6ThreadPoolSocketIOHandle::CancelOperation(bcIOObject *Object)noexcept
 {
 	::CancelIoEx(reinterpret_cast<HANDLE>(Handle),&Object->Overlapped);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeStreamConnection(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)
+iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeStreamConnection(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)noexcept
 {	
 	auto AggregableStream=iAggregableCreate<cNTSocketOverlappedIOHandleStream>(cnVar::MoveCast(SocketIO));
 	auto AggregableConnection=iAggregableCreate<cConnection>();
@@ -1296,7 +1291,7 @@ iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeStreamConnection(rPtr<cNT6Thr
 	return iCast<iConnection>(ConnectionAgg);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeEndpointConnection(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)
+iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeEndpointConnection(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)noexcept
 {
 	auto Stream=iCreate<cNTSocketOverlappedIOHandleStream>(cnVar::MoveCast(SocketIO));
 	auto AggregableEndpoint=iAggregableCreate<cEndpointFromStream>(iGetReference(Stream),Stream);
@@ -1308,7 +1303,7 @@ iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeEndpointConnection(rPtr<cNT6T
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cNT6ThreadPoolRecyclableSocketIOHandle::Open(SOCKET SocketHandle)
+bool cNT6ThreadPoolRecyclableSocketIOHandle::Open(SOCKET SocketHandle)noexcept
 {
 	GUID FuncID;
 	DWORD FuncPtrSize;
@@ -1323,7 +1318,7 @@ bool cNT6ThreadPoolRecyclableSocketIOHandle::Open(SOCKET SocketHandle)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cNT6ThreadPoolClientSocketIOHandle::Open(SOCKET SocketHandle)
+bool cNT6ThreadPoolClientSocketIOHandle::Open(SOCKET SocketHandle)noexcept
 {
 	GUID FuncID;
 	DWORD FuncPtrSize;
@@ -1338,7 +1333,7 @@ bool cNT6ThreadPoolClientSocketIOHandle::Open(SOCKET SocketHandle)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketConnectionConnector::cNT6ThreadPoolSocketConnectionConnector(iPtr<iSocketAddress> BindAddress,NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,int SocketAddressFamily,int SocketType,int SocketProtocol)
+cNT6ThreadPoolSocketConnectionConnector::cNT6ThreadPoolSocketConnectionConnector(iPtr<iSocketAddress> BindAddress,NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,int SocketAddressFamily,int SocketType,int SocketProtocol)noexcept
 	: bcNTSocketOverlappedIOHandleConnectionConnector(cnVar::MoveCast(BindAddress))
 	, fMakeConnectionFunction(MakeConnectionFunction)
 	, fSocketAddressFamily(SocketAddressFamily)
@@ -1347,11 +1342,11 @@ cNT6ThreadPoolSocketConnectionConnector::cNT6ThreadPoolSocketConnectionConnector
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketConnectionConnector::~cNT6ThreadPoolSocketConnectionConnector()
+cNT6ThreadPoolSocketConnectionConnector::~cNT6ThreadPoolSocketConnectionConnector()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionConnector::ConnectorQueryIOHandle(LPFN_CONNECTEX &fpConnectEx)
+rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionConnector::ConnectorQueryIOHandle(LPFN_CONNECTEX &fpConnectEx)noexcept
 {
 	// get cache
 	auto SocketIO=fSocketHandleRecyclePool.Query();
@@ -1381,7 +1376,7 @@ rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionConnector::Conn
 	return SocketIO;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cNT6ThreadPoolSocketConnectionConnector::ConnectorMakeConnection(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> RemoteAddress)
+iPtr<iConnection> cNT6ThreadPoolSocketConnectionConnector::ConnectorMakeConnection(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> RemoteAddress)noexcept
 {
 	auto RecyclableIOHandle=static_cast<cNT6ThreadPoolClientSocketIOHandle*>(SocketIO.Pointer());
 	RecyclableIOHandle->Connected=true;
@@ -1397,7 +1392,7 @@ iPtr<iConnection> cNT6ThreadPoolSocketConnectionConnector::ConnectorMakeConnecti
 //---------------------------------------------------------------------------
 cNT6ThreadPoolSocketConnectionListener::cNT6ThreadPoolSocketConnectionListener(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,cNTSocketOverlappedIOHandleListenerParameter &Parameter,
 	NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,int SocketType,int SocketProtocol
-)
+)noexcept
 	: bcNTSocketOverlappedIOHandleConnectionListener(cnVar::MoveCast(SocketIO),Parameter)
 	, fMakeConnectionFunction(MakeConnectionFunction)
 	, fSocketType(SocketType)
@@ -1405,11 +1400,11 @@ cNT6ThreadPoolSocketConnectionListener::cNT6ThreadPoolSocketConnectionListener(r
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketConnectionListener::~cNT6ThreadPoolSocketConnectionListener()
+cNT6ThreadPoolSocketConnectionListener::~cNT6ThreadPoolSocketConnectionListener()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionListener::ListenerQueryIOHandle(void)
+rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionListener::ListenerQueryIOHandle(void)noexcept
 {
 	// get cache
 	auto SocketIO=fSocketHandleRecyclePool.Query();
@@ -1432,7 +1427,7 @@ rPtr<bcNTSocketOverlappedIOHandle> cNT6ThreadPoolSocketConnectionListener::Liste
 	return SocketIO;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cNT6ThreadPoolSocketConnectionListener::ListenerMakeConnection(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)
+iPtr<iConnection> cNT6ThreadPoolSocketConnectionListener::ListenerMakeConnection(rPtr<bcNTSocketOverlappedIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)noexcept
 {
 	auto RecyclableIOHandle=static_cast<cNT6ThreadPoolRecyclableSocketIOHandle*>(SocketIO.Pointer());
 	RecyclableIOHandle->Connected=true;
@@ -1441,17 +1436,17 @@ iPtr<iConnection> cNT6ThreadPoolSocketConnectionListener::ListenerMakeConnection
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketStreamProtocol::cNT6ThreadPoolSocketStreamProtocol(int Type,int Protocol)
+cNT6ThreadPoolSocketStreamProtocol::cNT6ThreadPoolSocketStreamProtocol(int Type,int Protocol)noexcept
 	: fType(Type)
 	, fProtocol(Protocol)
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketStreamProtocol::~cNT6ThreadPoolSocketStreamProtocol()
+cNT6ThreadPoolSocketStreamProtocol::~cNT6ThreadPoolSocketStreamProtocol()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionConnector> cNT6ThreadPoolSocketStreamProtocol::MakeConnector(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnectionConnector> cNT6ThreadPoolSocketStreamProtocol::MakeConnector(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	iPtr<iSocketAddress> LocalSocketAddress;
 	int AddressFamily;
@@ -1483,17 +1478,17 @@ iPtr<iConnectionConnector> cNT6ThreadPoolSocketStreamProtocol::MakeConnector(NT6
 	return iCreate<cNT6ThreadPoolSocketConnectionConnector>(cnVar::MoveCast(LocalSocketAddress),MakeConnectionFunction,AddressFamily,fType,fProtocol);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionConnector>	cNT6ThreadPoolSocketStreamProtocol::CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnectionConnector>	cNT6ThreadPoolSocketStreamProtocol::CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	return MakeConnector(NT6ThreadPoolSocketMakeStreamConnection,LocalAddress,RemoteAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionConnector>	cNT6ThreadPoolSocketStreamProtocol::CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnectionConnector>	cNT6ThreadPoolSocketStreamProtocol::CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	return MakeConnector(NT6ThreadPoolSocketMakeEndpointConnection,LocalAddress,RemoteAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionListener> cNT6ThreadPoolSocketStreamProtocol::MakeListener(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress)
+iPtr<iConnectionListener> cNT6ThreadPoolSocketStreamProtocol::MakeListener(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress)noexcept
 {
 	cNTSocketOverlappedIOHandleListenerParameter ListenerParameter;
 
@@ -1509,49 +1504,32 @@ iPtr<iConnectionListener> cNT6ThreadPoolSocketStreamProtocol::MakeListener(NT6Th
 		return nullptr;
 	}
 
-	return iCreate<cNT6ThreadPoolSocketConnectionListener>(cnVar::MoveCast(SocketIO),ListenerParameter,MakeConnectionFunction,fType,fProtocol);
+	auto AsyncListener=rCreate<cNT6ThreadPoolSocketConnectionListener>(cnVar::MoveCast(SocketIO),ListenerParameter,MakeConnectionFunction,fType,fProtocol);
+	return iCreate<cConnectionListenerFromAsyncListener>(AsyncListener);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionListener>	cNT6ThreadPoolSocketStreamProtocol::CreateStreamListener(iAddress *LocalAddress)
+iPtr<iConnectionListener>	cNT6ThreadPoolSocketStreamProtocol::CreateStreamListener(iAddress *LocalAddress)noexcept
 {
 	return MakeListener(NT6ThreadPoolSocketMakeStreamConnection,LocalAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionListener>	cNT6ThreadPoolSocketStreamProtocol::CreateEndpointListener(iAddress *LocalAddress)
+iPtr<iConnectionListener>	cNT6ThreadPoolSocketStreamProtocol::CreateEndpointListener(iAddress *LocalAddress)noexcept
 {
 	return MakeListener(NT6ThreadPoolSocketMakeEndpointConnection,LocalAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionQueue>		cNT6ThreadPoolSocketStreamProtocol::CreateStreamConnectionQueue(iAddress *LocalAddress)
-{
-	auto Listener=MakeListener(NT6ThreadPoolSocketMakeStreamConnection,cnVar::MoveCast(LocalAddress));
-	if(Listener==nullptr)
-		return nullptr;
-
-	return iCreate<cConnectionQueueFromListener>(Listener);
-}
 //---------------------------------------------------------------------------
-iPtr<iConnectionQueue>		cNT6ThreadPoolSocketStreamProtocol::CreateEndpointConnectionQueue(iAddress *LocalAddress)
-{
-	auto Listener=MakeListener(NT6ThreadPoolSocketMakeEndpointConnection,cnVar::MoveCast(LocalAddress));
-	if(Listener==nullptr)
-		return nullptr;
-
-	return iCreate<cConnectionQueueFromListener>(Listener);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cNT6ThreadPoolSocketDatagramProtocol::cNT6ThreadPoolSocketDatagramProtocol(int Type,int Protocol)
+cNT6ThreadPoolSocketDatagramProtocol::cNT6ThreadPoolSocketDatagramProtocol(int Type,int Protocol)noexcept
 	: fType(Type)
 	, fProtocol(Protocol)
 {
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolSocketDatagramProtocol::~cNT6ThreadPoolSocketDatagramProtocol()
+cNT6ThreadPoolSocketDatagramProtocol::~cNT6ThreadPoolSocketDatagramProtocol()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cNT6ThreadPoolSocketDatagramProtocol::SetupAddress(SOCKET s,iSocketAddress *SocketAddress)
+bool cNT6ThreadPoolSocketDatagramProtocol::SetupAddress(SOCKET s,iSocketAddress *SocketAddress)noexcept
 {
 	auto AddrLen=SocketAddress->SockAddrLen();
 	auto Addr=SocketAddress->SockAddr();
@@ -1581,7 +1559,7 @@ bool cNT6ThreadPoolSocketDatagramProtocol::SetupAddress(SOCKET s,iSocketAddress 
 	return true;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cNT6ThreadPoolSocketDatagramProtocol::MakePair(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnection> cNT6ThreadPoolSocketDatagramProtocol::MakePair(NT6ThreadPoolSocketMakeConnectionFuction *MakeConnectionFunction,iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	cWin32SocketAddressBuffer RemoteAddressBuffer;
 
@@ -1626,17 +1604,17 @@ iPtr<iConnection> cNT6ThreadPoolSocketDatagramProtocol::MakePair(NT6ThreadPoolSo
 	return (*MakeConnectionFunction)(cnVar::MoveCast(SocketIO),cnVar::MoveCast(LocalSocketAddress),Win32CreateCopySocketAddress(RemoteAddr,RemoteAddrLen));
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection>	cNT6ThreadPoolSocketDatagramProtocol::CreateStreamPair(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnection>	cNT6ThreadPoolSocketDatagramProtocol::CreateStreamPair(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	return MakePair(NT6ThreadPoolSocketMakeStreamConnection,LocalAddress,RemoteAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection>	cNT6ThreadPoolSocketDatagramProtocol::CreateEndpointPair(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnection>	cNT6ThreadPoolSocketDatagramProtocol::CreateEndpointPair(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	return MakePair(NT6ThreadPoolSocketMakeEndpointConnection,LocalAddress,RemoteAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iMultipointStream> cNT6ThreadPoolSocketDatagramProtocol::MakeDatagramStream(iAddress *LocalAddress)
+iPtr<iMultipointStream> cNT6ThreadPoolSocketDatagramProtocol::MakeDatagramStream(iAddress *LocalAddress)noexcept
 {
 	cWin32SocketAddressBuffer AddressBuffer;
 	int addrlen;
@@ -1664,12 +1642,12 @@ iPtr<iMultipointStream> cNT6ThreadPoolSocketDatagramProtocol::MakeDatagramStream
 	return iCreate<cNTSocketOverlappedIOHandleDatagramStream>(cnVar::MoveCast(SocketIO),Win32CreateCopySocketAddress(addr,addrlen));
 }
 //---------------------------------------------------------------------------
-iPtr<iMultipointStream>	cNT6ThreadPoolSocketDatagramProtocol::OpenStream(iAddress *LocalAddress)
+iPtr<iMultipointStream>	cNT6ThreadPoolSocketDatagramProtocol::OpenStream(iAddress *LocalAddress)noexcept
 {
 	return MakeDatagramStream(LocalAddress);
 }
 //---------------------------------------------------------------------------
-iPtr<iMultipointQueue>	cNT6ThreadPoolSocketDatagramProtocol::OpenQueue(iAddress *LocalAddress)
+iPtr<iMultipointQueue>	cNT6ThreadPoolSocketDatagramProtocol::OpenQueue(iAddress *LocalAddress)noexcept
 {
 	auto Stream=MakeDatagramStream(LocalAddress);
 	if(Stream==nullptr)

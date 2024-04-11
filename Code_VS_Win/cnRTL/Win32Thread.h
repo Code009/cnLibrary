@@ -19,9 +19,9 @@ class cSRWLockByCriticalSection : public cCriticalSection
 {
 public:
 
-	void AcquireShared(void);
-	bool TryAcquireShared(void);
-	void ReleaseShared(void);
+	void AcquireShared(void)noexcept(true);
+	bool TryAcquireShared(void)noexcept(true);
+	void ReleaseShared(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL

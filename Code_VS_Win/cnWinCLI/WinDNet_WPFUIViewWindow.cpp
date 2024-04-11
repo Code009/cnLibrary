@@ -10,7 +10,7 @@ using namespace cnWin;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iWindow> cnWin::DNetCreateWPFWindow(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)
+iPtr<iWindow> cnWin::DNetCreateWPFWindow(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept
 {ChildID;
 	auto UIThread=cDNetUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
@@ -24,18 +24,18 @@ iPtr<iWindow> cnWin::DNetCreateWPFWindow(HWND Parent,const wchar_t *WindowText,D
 	return Window;
 }
 //---------------------------------------------------------------------------
-iPtr<iUIWindow> cnWin::DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)
+iPtr<iUIWindow> cnWin::DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
 {
 	return iCreate<cWPFWindowAsWindowClient>(static_cast<cDNetUIThread*>(Dispatcher),Parameter);
 }
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> cnWin::DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)
+iPtr<iWindowClient> cnWin::DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
 {
 	return iCreate<cWPFWindowClient>(static_cast<cDNetUIThread*>(Dispatcher),Parameter);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::nDispatcherFinishNotify(bool Shutdown)
+void mcWPFViewRoot::nDispatcherFinishNotify(bool Shutdown)noexcept
 {
 	if(Shutdown==false){
 		// called by VirtualStopped
@@ -44,29 +44,29 @@ void mcWPFViewRoot::nDispatcherFinishNotify(bool Shutdown)
 	}
 }
 //---------------------------------------------------------------------------
-iUIWindow* mcWPFViewRoot::nGetUIWindowInterface(void)
+iUIWindow* mcWPFViewRoot::nGetUIWindowInterface(void)noexcept
 {
 	return static_cast<cWPFUIWindow*>(this);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUIWindow::cWPFUIWindow(cDNetUIThread *UIThread,mcConstructParameter &Parameter)
+cWPFUIWindow::cWPFUIWindow(cDNetUIThread *UIThread,mcConstructParameter &Parameter)noexcept
 	: fUIThread(UIThread)
 	, mcWPFViewRoot(Parameter)
 {
 	cnLib_ASSERT(fUIThread->mIsCurrent());
 }
 //---------------------------------------------------------------------------
-cWPFUIWindow::~cWPFUIWindow()
+cWPFUIWindow::~cWPFUIWindow()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWPFUIWindow::VirtualStarted(void)
+void cWPFUIWindow::VirtualStarted(void)noexcept
 {
 	fUIThread->mAttachDispatcher(&fDispatcherFinishNotify);
 }
 //---------------------------------------------------------------------------
-void cWPFUIWindow::VirtualStopped(void)
+void cWPFUIWindow::VirtualStopped(void)noexcept
 {
 	if(fUIThread->mDetachDispatcher(&fDispatcherFinishNotify)){
 		// wait for notification
@@ -77,132 +77,132 @@ void cWPFUIWindow::VirtualStopped(void)
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-void* cWPFUIWindow::CastInterface(iTypeID IID)noexcept(true)
+void* cWPFUIWindow::CastInterface(iTypeID IID)noexcept
 {
 	return ImpCastInterface<iUIWindow,iCLIObject,iWindowClient>(this,IID);
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::CheckThread(void)
+bool cWPFUIWindow::CheckThread(void)noexcept
 {
 	return fUIThread->IsCurrent();
 }
 //---------------------------------------------------------------------------
-iUIThread* cWPFUIWindow::GetUIThread(void)
+iUIThread* cWPFUIWindow::GetUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-cGCRef& cWPFUIWindow::GetObjecHandle(void)
+cGCRef& cWPFUIWindow::GetObjecHandle(void)noexcept
 {
 	return fWPFRoot;
 }
 //---------------------------------------------------------------------------
-eUIState cWPFUIWindow::GetUIState(void)
+eUIState cWPFUIWindow::GetUIState(void)noexcept
 {
 	return fWindowState;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)
+bool cWPFUIWindow::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::RemoveStateHandler(iUIStateHandler *Handler)
+bool cWPFUIWindow::RemoveStateHandler(iUIStateHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::GetVisible(void)
+bool cWPFUIWindow::GetVisible(void)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::SetVisible(bool Visible)
+bool cWPFUIWindow::SetVisible(bool Visible)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::IsEnabled(void)
+bool cWPFUIWindow::IsEnabled(void)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::GetEnable(void)
+bool cWPFUIWindow::GetEnable(void)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::SetEnable(bool Enable)
+bool cWPFUIWindow::SetEnable(bool Enable)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::TranslatePointTo(iInterface *Relative,cUIPoint &Position)
+bool cWPFUIWindow::TranslatePointTo(iInterface *Relative,cUIPoint &Position)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::MoveTo(iInterface *Relative,cUIPoint Position)
+bool cWPFUIWindow::MoveTo(iInterface *Relative,cUIPoint Position)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFUIWindow::GetSize(void)
+cUIPoint cWPFUIWindow::GetSize(void)noexcept
 {
 	return {0,0};
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::SetSize(cUIPoint Size)
+bool cWPFUIWindow::SetSize(cUIPoint Size)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)
+bool cWPFUIWindow::ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIWindow::GetZPosition(void)
+Float32 cWPFUIWindow::GetZPosition(void)noexcept
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::SetZPosition(Float32)
+bool cWPFUIWindow::SetZPosition(Float32)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIWindow::GetContentScale(void)
+Float32 cWPFUIWindow::GetContentScale(void)noexcept
 {
 	return 1.f;
 }
 //---------------------------------------------------------------------------
-iUIScreen* cWPFUIWindow::GetScreen(void)
+iUIScreen* cWPFUIWindow::GetScreen(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iUIWindow* cWPFUIWindow::GetParent(void)
+iUIWindow* cWPFUIWindow::GetParent(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order)
+bool cWPFUIWindow::InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::RemoveWindowHandler(iUIWindowHandler *Handler)
+bool cWPFUIWindow::RemoveWindowHandler(iUIWindowHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-iUIView* cWPFUIWindow::GetClient(void)
+iUIView* cWPFUIWindow::GetClient(void)noexcept
 {
 	return fClientView;
 }
 //---------------------------------------------------------------------------
-bool cWPFUIWindow::SetClient(iUIView *View)
+bool cWPFUIWindow::SetClient(iUIView *View)noexcept
 {
 	if(CheckThread()==false)
 		return false;
@@ -227,7 +227,7 @@ bool cWPFUIWindow::SetClient(iUIView *View)
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFUIWindow::SetBackgroundColor(COLORREF Color)
+void cWPFUIWindow::SetBackgroundColor(COLORREF Color)noexcept
 {
 	if(CheckThread()==false)
 		return;
@@ -237,12 +237,12 @@ void cWPFUIWindow::SetBackgroundColor(COLORREF Color)
 	mWPFViewRoot_SetBackgroundColor(fWPFRoot,r,g,b);
 }
 //---------------------------------------------------------------------------
-iWindowClient* cWPFUIWindow::WPFWindowGetInterface(void)
+iWindowClient* cWPFUIWindow::WPFWindowGetInterface(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-void cWPFUIWindow::WPFWindowStateChanged(UIState State)
+void cWPFUIWindow::WPFWindowStateChanged(UIState State)noexcept
 {
 	if(fWindowState==State)
 		return;
@@ -253,7 +253,7 @@ void cWPFUIWindow::WPFWindowStateChanged(UIState State)
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFUIWindow::WPFWindowDPIChanged(Float32 NewScale)
+void cWPFUIWindow::WPFWindowDPIChanged(Float32 NewScale)noexcept
 {
 	fContentScale=NewScale;
 	if(fClient!=nullptr){
@@ -261,44 +261,44 @@ void cWPFUIWindow::WPFWindowDPIChanged(Float32 NewScale)
 	}
 }
 //---------------------------------------------------------------------------
-eUIState cWPFUIWindow::WPFParentGetState(void)
+eUIState cWPFUIWindow::WPFParentGetState(void)noexcept
 {
 	return fWindowState;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIWindow::WPFParentGetContentScale(void)
+Float32 cWPFUIWindow::WPFParentGetContentScale(void)noexcept
 {
 	return fContentScale;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIWindow::WPFParentGetLayoutScale(void)
+Float32 cWPFUIWindow::WPFParentGetLayoutScale(void)noexcept
 {
 	return 1.f;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFWindowAsWindowClient::cWPFWindowAsWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)
+cWPFWindowAsWindowClient::cWPFWindowAsWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
 	: cWPFUIWindow(UIThread,Parameter)
 {
 }
 //---------------------------------------------------------------------------
-cWPFWindowAsWindowClient::~cWPFWindowAsWindowClient()
+cWPFWindowAsWindowClient::~cWPFWindowAsWindowClient()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iWindow* cWPFWindowAsWindowClient::GetWindow(void)
+iWindow* cWPFWindowAsWindowClient::GetWindow(void)noexcept
 {
 	return nullptr;
 	//return fWindowHost;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindowAsWindowClient::SetWindow(iWindow *)
+bool cWPFWindowAsWindowClient::SetWindow(iWindow *)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFWindow::nDispatcherFinishNotify(bool Shutdown)
+void mcWPFWindow::nDispatcherFinishNotify(bool Shutdown)noexcept
 {
 	if(Shutdown==false){
 		// called by VirtualStopped
@@ -307,7 +307,7 @@ void mcWPFWindow::nDispatcherFinishNotify(bool Shutdown)
 	}
 }
 //---------------------------------------------------------------------------
-SIZE mcWPFWindow::GetClientSize(void)
+SIZE mcWPFWindow::GetClientSize(void)noexcept
 {
 	RECT rc;
 	if(::GetClientRect(fWindowHandle,&rc)){
@@ -316,19 +316,19 @@ SIZE mcWPFWindow::GetClientSize(void)
 	return {0,0};
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::nWPFSourceAttach(void)
+void mcWPFWindow::nWPFSourceAttach(void)noexcept
 {
 	auto Window=static_cast<cWPFWindow*>(this);
 	Window->WindowAttach();
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::nWPFSourceDetach(void)
+void mcWPFWindow::nWPFSourceDetach(void)noexcept
 {
 	auto Window=static_cast<cWPFWindow*>(this);
 	Window->WindowDetach();
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+bool mcWPFWindow::nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)noexcept
 {
 	auto Window=static_cast<cWPFWindow*>(this);
 
@@ -336,7 +336,7 @@ bool mcWPFWindow::nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFWindow::cWPFWindow(cDNetUIThread *UIThread)
+cWPFWindow::cWPFWindow(cDNetUIThread *UIThread)noexcept
 	: fUIThread(UIThread)
 	//, fWindowDPI(96)
 {
@@ -344,18 +344,18 @@ cWPFWindow::cWPFWindow(cDNetUIThread *UIThread)
 	Registration->Register(this);
 }
 //---------------------------------------------------------------------------
-cWPFWindow::~cWPFWindow()
+cWPFWindow::~cWPFWindow()noexcept
 {
 	auto Registration=cnSystem::GetSystemDependentRegistration();
 	Registration->Unregister(this);
 }
 //---------------------------------------------------------------------------
-void cWPFWindow::VirtualStarted(void)
+void cWPFWindow::VirtualStarted(void)noexcept
 {
 	fUIThread->mAttachDispatcher(&fDispatcherFinishNotify);
 }
 //---------------------------------------------------------------------------
-void cWPFWindow::VirtualStopped(void)
+void cWPFWindow::VirtualStopped(void)noexcept
 {
 	if(fUIThread->mDetachDispatcher(&fDispatcherFinishNotify)){
 		// wait for notification
@@ -365,37 +365,37 @@ void cWPFWindow::VirtualStopped(void)
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cWPFWindow::DependentCreateDescription(void)
+rPtr< iArrayReference<const uChar16> > cWPFWindow::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Desc=cnRTL::CreateStringFormat(u"cWPFWindow %p",this);
 	return Desc.Token();
 }
 //---------------------------------------------------------------------------
-void cWPFWindow::DependentShutdownNotification(void)
+void cWPFWindow::DependentShutdownNotification(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cWPFWindow::CastInterface(iTypeID IID)noexcept(true)
+void* cWPFWindow::CastInterface(iTypeID IID)noexcept
 {
 	return ImpCastInterface<iCLIObject,iWindow>(this,IID);
 }
 //---------------------------------------------------------------------------
-HWND cWPFWindow::GetHandle(void)
+HWND cWPFWindow::GetHandle(void)noexcept
 {
 	return fWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindow::CheckThread(void)
+bool cWPFWindow::CheckThread(void)noexcept
 {
 	return fUIThread->IsCurrent();
 }
 //---------------------------------------------------------------------------
-cGCRef& cWPFWindow::GetObjecHandle(void)
+cGCRef& cWPFWindow::GetObjecHandle(void)noexcept
 {
 	return fWPFWindow;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+bool cWPFWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)noexcept
 {
 	switch(msg){
 	case WM_DPICHANGED:
@@ -445,7 +445,7 @@ bool cWPFWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM 
 	return Processed;
 }
 //---------------------------------------------------------------------------
-void cWPFWindow::WindowAttach(void)
+void cWPFWindow::WindowAttach(void)noexcept
 {
 	fWindowState.WindowAttached(fWindowHandle);
 	fWindowDPI=GetWindowDPI(fWindowHandle);
@@ -456,7 +456,7 @@ void cWPFWindow::WindowAttach(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFWindow::WindowDetach(void)
+void cWPFWindow::WindowDetach(void)noexcept
 {
 	fWindowState.WindowDetached();
 
@@ -465,38 +465,38 @@ void cWPFWindow::WindowDetach(void)
 	}
 }
 //---------------------------------------------------------------------------
-cDNetUIThread* cWPFWindow::GetWPFUIThread(void)
+cDNetUIThread* cWPFWindow::GetWPFUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-iUIThread* cWPFWindow::GetUIThread(void)
+iUIThread* cWPFWindow::GetUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-eUIState cWPFWindow::GetUIState(void)const
+eUIState cWPFWindow::GetUIState(void)const noexcept
 {
 	return fWindowState.GetUIState();
 }
 //---------------------------------------------------------------------------
-Float32 cWPFWindow::GetLayoutScale(void)const
+Float32 cWPFWindow::GetLayoutScale(void)const noexcept
 {
 	return fWindowLayoutScale;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFWindow::GetContentScale(void)const
+Float32 cWPFWindow::GetContentScale(void)const noexcept
 {
 	return fWindowLayoutScale;
 ;
 }
 //---------------------------------------------------------------------------
-HWND cWPFWindow::GetWindowHandle(void)
+HWND cWPFWindow::GetWindowHandle(void)noexcept
 {
 	return fWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindow::InsertMessageHandler(iWindowMessageHandler *Handler,sfInt8 Order)
+bool cWPFWindow::InsertMessageHandler(iWindowMessageHandler *Handler,sfInt8 Order)noexcept
 {
 	if(CheckThread()==false)
 		return false;
@@ -509,7 +509,7 @@ bool cWPFWindow::InsertMessageHandler(iWindowMessageHandler *Handler,sfInt8 Orde
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindow::RemoveMessageHandler(iWindowMessageHandler *Handler)
+bool cWPFWindow::RemoveMessageHandler(iWindowMessageHandler *Handler)noexcept
 {
 	if(CheckThread()==false)
 		return false;
@@ -521,7 +521,7 @@ bool cWPFWindow::RemoveMessageHandler(iWindowMessageHandler *Handler)
 	return false;
 }
 //---------------------------------------------------------------------------
-iWindowClient* cWPFWindow::GetClient(void)
+iWindowClient* cWPFWindow::GetClient(void)noexcept
 {
 	if(fWindowClient!=nullptr)
 		return fWindowClient->WPFWindowGetInterface();
@@ -529,32 +529,32 @@ iWindowClient* cWPFWindow::GetClient(void)
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iWindowFrame* cWPFWindow::GetFrame(void)
+iWindowFrame* cWPFWindow::GetFrame(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iVariable> cWPFWindow::QueryAffixedVariable(const void *Token)
+rPtr<iVariable> cWPFWindow::QueryAffixedVariable(const void *Token)noexcept
 {
 	return fAffixedVariableSet.QueryAffixedVariable(Token);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFWindowClient::cWPFWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)
+cWPFWindowClient::cWPFWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
 	: cWPFUIWindow(UIThread,Parameter)
 {
 }
 //---------------------------------------------------------------------------
-cWPFWindowClient::~cWPFWindowClient()
+cWPFWindowClient::~cWPFWindowClient()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iWindow* cWPFWindowClient::GetWindow(void)
+iWindow* cWPFWindowClient::GetWindow(void)noexcept
 {
 	return fWindowHost;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindowClient::SetWindow(iWindow *Window)
+bool cWPFWindowClient::SetWindow(iWindow *Window)noexcept
 {
 	if(fUIThread->IsCurrent()==false)
 		return false;
@@ -572,7 +572,7 @@ bool cWPFWindowClient::SetWindow(iWindow *Window)
 	return WPFSetupWindow(DNetObject);
 }
 //---------------------------------------------------------------------------
-bool cWPFWindowClient::WPFSetupWindow(iCLIObject *Object)
+bool cWPFWindowClient::WPFSetupWindow(iCLIObject *Object)noexcept
 {
 	fWindowHost=static_cast<cWPFWindow*>(mcWPFWindow::mWindowAttachClient(Object->GetObjecHandle(),this,this));
 	if(fWindowHost==nullptr){
@@ -586,7 +586,7 @@ bool cWPFWindowClient::WPFSetupWindow(iCLIObject *Object)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cWPFWindowClient::WPFClearWindow(void)
+bool cWPFWindowClient::WPFClearWindow(void)noexcept
 {
 	if(fWindowHost==nullptr)
 		return true;
@@ -594,7 +594,7 @@ bool cWPFWindowClient::WPFClearWindow(void)
 	return fWindowHost->mWindowDetachClient(this);
 }
 //---------------------------------------------------------------------------
-void cWPFWindowClient::WPFWindowStateChanged(eUIState NewState)
+void cWPFWindowClient::WPFWindowStateChanged(eUIState NewState)noexcept
 {
 	cWPFUIWindow::WPFWindowStateChanged(NewState);
 
@@ -603,7 +603,7 @@ void cWPFWindowClient::WPFWindowStateChanged(eUIState NewState)
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFWindowClient::WPFWindowDPIChanged(Float32 NewScale)
+void cWPFWindowClient::WPFWindowDPIChanged(Float32 NewScale)noexcept
 {
 	cWPFUIWindow::WPFWindowDPIChanged(NewScale);
 
@@ -612,7 +612,7 @@ void cWPFWindowClient::WPFWindowDPIChanged(Float32 NewScale)
 	}
 }
 //---------------------------------------------------------------------------
-SIZE cWPFWindowClient::GetClientSize(void)
+SIZE cWPFWindowClient::GetClientSize(void)noexcept
 {
 	auto WindowHandle=fWindowHost->GetHandle();
 	
@@ -623,7 +623,7 @@ SIZE cWPFWindowClient::GetClientSize(void)
 	return {0,0};
 }
 //---------------------------------------------------------------------------
-Float32 cWPFWindowClient::WPFParentGetLayoutScale(void)
+Float32 cWPFWindowClient::WPFParentGetLayoutScale(void)noexcept
 {
 	if(fWindowHost==nullptr)
 		return 1.f;

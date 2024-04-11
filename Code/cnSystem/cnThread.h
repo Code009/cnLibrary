@@ -24,18 +24,11 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-static cnLib_CONSTVAR sInt64 Time_1s	=1000000000;
-static cnLib_CONSTVAR sInt64 Time_1ms	=1000000;
-static cnLib_CONSTVAR sInt64 Time_1us	=1000;
-static cnLib_CONSTVAR sInt64 Time_1ns	=1;
-//- Timepoint ---------------------------------------------------------------
-class cnLib_INTERFACE iTimepoint : public iInterface
-{
-public:
-	//	nanoseconds since system epoch
-	virtual sInt64 cnLib_FUNC SystemTime(void)=0;
-	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)=0;
-};
+static cnLib_CONSTVAR uInt64 Time_1s	=1000000000;
+static cnLib_CONSTVAR uInt64 Time_1ms	=1000000;
+static cnLib_CONSTVAR uInt64 Time_1us	=1000;
+static cnLib_CONSTVAR uInt64 Time_1ns	=1;
+static cnLib_CONSTVAR uInt64 SystemTime_Never	=0xFFFFFFFFFFFFFFFF;
 //---------------------------------------------------------------------------
 struct cDateTime
 {
@@ -55,11 +48,11 @@ public:
 	// IsDone
 	//	check if the operation is done
 	// return true if operation is done, or false is in progress
-	virtual bool cnLib_FUNC IsDone(void)=0;
+	virtual bool cnLib_FUNC IsDone(void)noexcept(true)=0;
 
 	// SetNotify
 	// return true if notification registered, or false if the task is already done
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)=0;
+	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TResult>
@@ -67,9 +60,9 @@ class cnLib_INTERFACE iAsyncFunction : public iAsyncTask
 {
 public:
 	// Cancel
-	virtual void cnLib_FUNC Cancel(void)=0;
+	virtual void cnLib_FUNC Cancel(void)noexcept(true)=0;
 
-	virtual TResult cnLib_FUNC GetResult(void)=0;
+	virtual TResult cnLib_FUNC GetResult(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iMutex : public iReference
@@ -77,13 +70,13 @@ class cnLib_INTERFACE iMutex : public iReference
 public:
 	// Acquire
 	//	Acquires the lock in exclusive mode
-	virtual void cnLib_FUNC Acquire(void)=0;
+	virtual void cnLib_FUNC Acquire(void)noexcept(true)=0;
 	// TryAcquire
 	//	Attempts to acquires the lock in exclusive mode
-	virtual bool cnLib_FUNC TryAcquire(void)=0;
+	virtual bool cnLib_FUNC TryAcquire(void)noexcept(true)=0;
 	// Release
 	//	Release the lock in exclusive mode
-	virtual void cnLib_FUNC Release(void)=0;
+	virtual void cnLib_FUNC Release(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iSharedMutex : public iMutex
@@ -91,16 +84,16 @@ class cnLib_INTERFACE iSharedMutex : public iMutex
 public:
 	// Acquire
 	//	Acquires the lock in shared mode
-	virtual void cnLib_FUNC AcquireShared(void)=0;
+	virtual void cnLib_FUNC AcquireShared(void)noexcept(true)=0;
 	// TryAcquire
 	//	Attempts to acquires the lock in shared mode
-	virtual bool cnLib_FUNC TryAcquireShared(void)=0;
+	virtual bool cnLib_FUNC TryAcquireShared(void)noexcept(true)=0;
 	// Release
 	//	Release the lock in shared mode
-	virtual void cnLib_FUNC ReleaseShared(void)=0;
+	virtual void cnLib_FUNC ReleaseShared(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-typedef iFunction<void (rPtr<iReference>,void*)> iThreadExitNotifyProc;
+typedef iFunction<void (rPtr<iReference>,void*)noexcept(true)> iThreadExitNotifyProc;
 class cnLib_INTERFACE iThreadLocalVariable : public iVariable
 {
 public:
@@ -116,27 +109,27 @@ public:
 	// Wake
 	//	wake thread on sleep
 	// [in]ResetVal		pointer to bool value to reset zero before thread awakes
-	virtual void cnLib_FUNC Wake(bool *ResetVal)=0;
+	virtual void cnLib_FUNC Wake(bool *ResetVal)noexcept(true)=0;
 	// SetPriority
 	//	Sets the priority value for the thread
 	// [in]Priority		priority value
 	// return true if priority is set
-	virtual bool cnLib_FUNC SetPriority(sInt8 Priority)=0;
+	virtual bool cnLib_FUNC SetPriority(sInt8 Priority)noexcept(true)=0;
 	// GetPriority
 	//	Retrieves the priority value for the thread
 	// [out]Priority	priority value
 	// return true if priority is get
-	virtual bool cnLib_FUNC GetPriority(sInt8 &Priority)=0;
+	virtual bool cnLib_FUNC GetPriority(sInt8 &Priority)noexcept(true)=0;
 
 	// IsCurrentThread
 	//	check if the calling thread is the thread
-	virtual bool cnLib_FUNC IsCurrentThread(void)=0;
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iAsyncProcedure : public iReference
 {
 public:
-	virtual void cnLib_FUNC Start(void)=0;
+	virtual void cnLib_FUNC Start(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iAsyncTimer : public iReference
@@ -144,13 +137,12 @@ class cnLib_INTERFACE iAsyncTimer : public iReference
 public:
 	// Start
 	//	start timer
-	// [in]DueTime		When the timer to be hit. should not be nullptr
-	// [in]DueTimeDelay	The amount of time to delay the timer hitting, in nanoseconds.
+	// [in]DueTime		When the timer to be hit
 	// [in]Period		The timer period, in nanoseconds. 0 if not to hit periodly
-	virtual void cnLib_FUNC Start(iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)=0;
+	virtual void cnLib_FUNC Start(uInt64 DueTime,uInt64 Period)noexcept(true)=0;
 	// Stop
 	//	stop timer
-	virtual void cnLib_FUNC Stop(void)=0;
+	virtual void cnLib_FUNC Stop(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iAsyncExecution : public iInterface
@@ -160,19 +152,19 @@ public:
 	//	execute procedure in execution unit.
 	// Reference		Reference to the procedure
 	// Procedure		procedure to be called
-	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)=0;
+	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)noexcept(true)=0;
 
 	// CreateWork
 	//	Creates a work execute in execution unit.
 	// [in]ThreadProcedure	Work thread procedure, thread pool object will hold a weak reference to the procedure
 	// return: new object
-	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)=0;
+	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)=0;
 
 	// CreateTimer
 	//	Creates a timer execute in execution unit.
 	// [in]ThreadProcedure	timer thread procedure, thread pool object will hold a weak reference to the procedure
 	// return: new object
-	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)=0;
+	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
@@ -184,76 +176,75 @@ public:
 class cnLib_INTERFACE iDispatch : public iAsyncExecution
 {
 public:
-	virtual bool cnLib_FUNC IsCurrentThread(void)=0;
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)=0;
 
 	// ExecuteSync
 	//	execute procedure in dispatch thread and wait for its completion
 	// Procedure		procedure to be called
-	virtual void cnLib_FUNC ExecuteSync(iProcedure *Procedure)=0;
+	virtual void cnLib_FUNC ExecuteSync(iProcedure *Procedure)noexcept(true)=0;
 
 	// ExecuteAsync
 	//	execute procedure in dispatch thread
 	// Reference		Reference to the procedure
 	// Procedure		procedure to be called
 	// return: task for the procedure
-	virtual iPtr<iAsyncTask> cnLib_FUNC ExecuteAsync(iReference *Reference,iProcedure *Procedure)=0;
+	virtual iPtr<iAsyncTask> cnLib_FUNC ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
 extern const sInt64 SystemTimeEpochSecondsSinceUnixEpoch;
-sInt64 cnLib_FUNC GetSystemTimeNow(void);
+uInt64 cnLib_FUNC GetSystemTimeNow(void)noexcept(true);
 
-bool cnLib_FUNC UTCGregorianDateFromSystemTime(cDateTime &DateTime,sInt64 SystemTime);
-bool cnLib_FUNC UTCGregorianDateToSystemTime(sInt64 &SystemTime,const cDateTime &DateTime);
+bool cnLib_FUNC UTCGregorianDateFromSystemTime(cDateTime &DateTime,uInt64 SystemTime)noexcept(true);
+bool cnLib_FUNC UTCGregorianDateToSystemTime(uInt64 &SystemTime,const cDateTime &DateTime)noexcept(true);
 
 //---------------------------------------------------------------------------
 
 // sync
 
-rPtr<iMutex> cnLib_FUNC CreateMutexLock(void);
-rPtr<iMutex> cnLib_FUNC CreateRecursiveLock(void);
-rPtr<iSharedMutex> cnLib_FUNC CreateSharedLock(void);
+rPtr<iMutex> cnLib_FUNC CreateMutexLock(void)noexcept(true);
+rPtr<iMutex> cnLib_FUNC CreateRecursiveLock(void)noexcept(true);
+rPtr<iSharedMutex> cnLib_FUNC CreateSharedLock(void)noexcept(true);
 
 //---------------------------------------------------------------------------
 namespace CurrentThread{
 //---------------------------------------------------------------------------
 // SwitchThread
 //	yield execution to another thread that is ready to run
-void cnLib_FUNC SwitchThread(void);
+void cnLib_FUNC SwitchThread(void)noexcept(true);
 
 // SuspendFor
 //	Suspends the execution of the current thread until the time passed
 // [in]Delay	nanoseconds to suspend
-void cnLib_FUNC SuspendFor(uInt64 Delay);
+void cnLib_FUNC SuspendFor(uInt64 Delay)noexcept(true);
 
 // SleepUntil
 //	Suspends the execution of the current thread until the time arraied or by other threads
-// [in]Time		woke time,	nullptr means never wake by time
-// [in]Delay	nanoseconds adds to Time
+// [in]Time		wake time, -1 means never wake
 // return true if it is woke by other threads, or false if it is the time
-bool cnLib_FUNC SleepUntil(iTimepoint *Time,sInt64 Delay);
+bool cnLib_FUNC SleepUntil(uInt64 Time)noexcept(true);
 
 // GetThread
 //	get thread interface for other thread use
 // return thread object
-iThread*	cnLib_FUNC GetThread(void);
+iThread*	cnLib_FUNC GetThread(void)noexcept(true);
 
 // SetPriority
 //	Sets the priority value for the thread
 // [in]Priority		priority value
-bool cnLib_FUNC SetPriority(sInt8 Priority);
+bool cnLib_FUNC SetPriority(sInt8 Priority)noexcept(true);
 // GetPriority
 //	Retrieves the priority value for the thread
 // return: priority value
-sInt8 cnLib_FUNC GetPriority(void);
+sInt8 cnLib_FUNC GetPriority(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace CurrentThread
 //---------------------------------------------------------------------------
 // thread
-rPtr<iThreadLocalVariable>	cnLib_FUNC CreateThreadLocalVariable(void);
-iPtr<iThread>				cnLib_FUNC StartThread(iProcedure *ThreadProcedure);
-iPtr<iDispatch>				cnLib_FUNC CreateDispatchThread(void);
+rPtr<iThreadLocalVariable>	cnLib_FUNC CreateThreadLocalVariable(void)noexcept(true);
+iPtr<iThread>				cnLib_FUNC StartThread(iProcedure *ThreadProcedure)noexcept(true);
+iPtr<iDispatch>				cnLib_FUNC CreateDispatchThread(void)noexcept(true);
 //- Thread pool -------------------------------------------------------------
 extern iThreadPool*const DefaultThreadPool;
 //---------------------------------------------------------------------------
@@ -265,9 +256,9 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual bool cnLib_FUNC IsCached(void)=0;
-	virtual void cnLib_FUNC Cache(void)=0;
-	virtual iPtr<iAsyncTask> cnLib_FUNC CacheAsync(void)=0;
+	virtual bool cnLib_FUNC IsCached(void)noexcept(true)=0;
+	virtual void cnLib_FUNC Cache(void)noexcept(true)=0;
+	virtual iPtr<iAsyncTask> cnLib_FUNC CacheAsync(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary

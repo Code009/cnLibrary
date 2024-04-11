@@ -6,28 +6,28 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWaitForTaskProcedure::Execute(void)
+void cWaitForTaskProcedure::Execute(void)noexcept
 {
 	Notify();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncTaskState::cAsyncTaskState()
+cAsyncTaskState::cAsyncTaskState()noexcept
 {
 	Reset();
 }
 //---------------------------------------------------------------------------
-cAsyncTaskState::~cAsyncTaskState()
+cAsyncTaskState::~cAsyncTaskState()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cAsyncTaskState::Reset(void)
+void cAsyncTaskState::Reset(void)noexcept
 {
 	fNotified=false;
 	fNotifyProcedure=nullptr;
 }
 //---------------------------------------------------------------------------
-void cAsyncTaskState::SetDone(void)
+void cAsyncTaskState::SetDone(void)noexcept
 {
 	if(fNotified.Acquire.Xchg(true)==false){
 		auto NotifyProc=fNotifyProcedure.Acquire.Xchg(nullptr);
@@ -37,12 +37,12 @@ void cAsyncTaskState::SetDone(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool cAsyncTaskState::IsDone(void)const
+bool cAsyncTaskState::IsDone(void)const noexcept
 {
 	return fNotified;
 }
 //---------------------------------------------------------------------------
-bool cAsyncTaskState::SetNotify(iProcedure *NotifyProcedure)
+bool cAsyncTaskState::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	if(NotifyProcedure==nullptr)
 		return false;
@@ -60,71 +60,71 @@ bool cAsyncTaskState::SetNotify(iProcedure *NotifyProcedure)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncTask::cAsyncTask()
+cAsyncTask::cAsyncTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cAsyncTask::~cAsyncTask()
+cAsyncTask::~cAsyncTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cAsyncTask::IsDone(void)
+bool cAsyncTask::IsDone(void)noexcept
 {
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cAsyncTask::SetNotify(iProcedure *NotifyProcedure)
+bool cAsyncTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return fTaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cManualAsyncTask::cManualAsyncTask()
+cManualAsyncTask::cManualAsyncTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cManualAsyncTask::~cManualAsyncTask()
+cManualAsyncTask::~cManualAsyncTask()noexcept
 {
 }
-void cManualAsyncTask::Reset(void)
+void cManualAsyncTask::Reset(void)noexcept
 {
 	return fTaskState.Reset();
 }
-void cManualAsyncTask::SetDone(void)
+void cManualAsyncTask::SetDone(void)noexcept
 {
 	return fTaskState.SetDone();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDelayTask::cDelayTask()
+cDelayTask::cDelayTask()noexcept
 {
 	fTimer=cnSystem::DefaultThreadPool->CreateTimer(this,&fTimerProc);
 }
 //---------------------------------------------------------------------------
-cDelayTask::~cDelayTask()
+cDelayTask::~cDelayTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cDelayTask::cTimerHitProcedure::Execute(void)
+void cDelayTask::cTimerHitProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDelayTask::fTimerProc);
 	Host->TimerHit();
 }
 //---------------------------------------------------------------------------
-void cDelayTask::SetTimer(uInt64 NS)
+void cDelayTask::SetTimer(uInt64 NS)noexcept
 {
-	cTime TimeNow;
-	TimeNow.SetTimeNow();
-	fTimer->Start(&TimeNow,NS,0);
+	uInt64 TimeNow=cnSystem::GetSystemTimeNow();
+	TimeNow+=NS;
+	fTimer->Start(TimeNow,0);
 }
 //---------------------------------------------------------------------------
-void cDelayTask::TimerHit(void)
+void cDelayTask::TimerHit(void)noexcept
 {
 	fTaskState.SetDone();
 	fTimer->Stop();
 }
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> cnRTL::DelayTask(uInt64 NS)
+iPtr<iAsyncTask> cnRTL::DelayTask(uInt64 NS)noexcept
 {
 	auto Task=cnRTL::iCreate<cDelayTask>();
 	Task->SetTimer(NS);
@@ -132,7 +132,7 @@ iPtr<iAsyncTask> cnRTL::DelayTask(uInt64 NS)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine::impAsyncTask::impAsyncTask(cCoroutine<void>::pPtr &&Promise)
+cAsyncTaskCoroutine::impAsyncTask::impAsyncTask(cCoroutine<void>::pPtr &&Promise)noexcept
 	: Promise(cnVar::MoveCast(Promise))
 {
 	if(Promise->SetupAwait(this)==false){
@@ -140,79 +140,79 @@ cAsyncTaskCoroutine::impAsyncTask::impAsyncTask(cCoroutine<void>::pPtr &&Promise
 	}
 }
 //---------------------------------------------------------------------------
-bool cAsyncTaskCoroutine::impAsyncTask::IsDone(void)
+bool cAsyncTaskCoroutine::impAsyncTask::IsDone(void)noexcept
 {
 	return State.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cAsyncTaskCoroutine::impAsyncTask::SetNotify(iProcedure *NotifyProcedure)
+bool cAsyncTaskCoroutine::impAsyncTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return State.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cAsyncTaskCoroutine::impAsyncTask::NotifyCompletion(void)noexcept(true)
+void cAsyncTaskCoroutine::impAsyncTask::NotifyCompletion(void)noexcept
 {
 	State.SetDone();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine::cAsyncTaskCoroutine(cCoroutine<void> &&Src)noexcept(true)
+cAsyncTaskCoroutine::cAsyncTaskCoroutine(cCoroutine<void> &&Src)noexcept
 	: iPtr<iAsyncTask>(iCreate<impAsyncTask>(Src.TakePromise()))
 {
 }
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine::cAsyncTaskCoroutine(cAsyncTaskCoroutine &&Src)
+cAsyncTaskCoroutine::cAsyncTaskCoroutine(cAsyncTaskCoroutine &&Src)noexcept
 	: iPtr<iAsyncTask>(cnVar::MoveCast(Src))
 {
 }
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine& cAsyncTaskCoroutine::operator=(cAsyncTaskCoroutine &&Src)
+cAsyncTaskCoroutine& cAsyncTaskCoroutine::operator=(cAsyncTaskCoroutine &&Src)noexcept
 {
 	this->iPtr<iAsyncTask>::operator=(cnVar::MoveCast(Src));
 	return *this;
 }
 //---------------------------------------------------------------------------
-cAsyncTaskCoroutine::~cAsyncTaskCoroutine()
+cAsyncTaskCoroutine::~cAsyncTaskCoroutine()noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTaskQueue::cTask::cTask()
+cTaskQueue::cTask::cTask()noexcept
 {
 	fCancelFlag.Reset();
 }
 //---------------------------------------------------------------------------
-cTaskQueue::cTask::~cTask()
+cTaskQueue::cTask::~cTask()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cTaskQueue::cTask::IsCancelled(void)const
+bool cTaskQueue::cTask::IsCancelled(void)const noexcept
 {
 	return fCancelFlag.IsCancelled();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTaskQueue::cTaskQueue()
+cTaskQueue::cTaskQueue()noexcept
 {
 	fCompleteTaskProc=&cTaskQueue::CompleteTaskProc_Run;
 }
 //---------------------------------------------------------------------------
-cTaskQueue::~cTaskQueue()
+cTaskQueue::~cTaskQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cTaskQueue::IsEmpty(void)const
+bool cTaskQueue::IsEmpty(void)const noexcept
 {
 	return fTaskQueue.IsEmpty();
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::EnqueueTask(cTask *Task)
+void cTaskQueue::EnqueueTask(cTask *Task)noexcept
 {
 	rIncReference(Task,'queu');
 	fTaskQueue.Enqueue(Task);
 }
 //---------------------------------------------------------------------------
-rPtr<cTaskQueue::cTask> cTaskQueue::DequeueTask(void)
+rPtr<cTaskQueue::cTask> cTaskQueue::DequeueTask(void)noexcept
 {
 	for(auto pTask=fTaskQueue.Dequeue();pTask!=nullptr;pTask=fTaskQueue.Dequeue()){
 		// mark the item as processing
@@ -230,7 +230,7 @@ rPtr<cTaskQueue::cTask> cTaskQueue::DequeueTask(void)
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::CreateTaskCompletionWork(iReference *ThreadReference,iThreadPool *ThreadPool)
+void cTaskQueue::CreateTaskCompletionWork(iReference *ThreadReference,iThreadPool *ThreadPool)noexcept
 {
 	if(fCompleteTaskProcWork!=nullptr)
 		return;
@@ -238,28 +238,28 @@ void cTaskQueue::CreateTaskCompletionWork(iReference *ThreadReference,iThreadPoo
 	fCompleteTaskProc=&cTaskQueue::CompleteTaskProc_Async;
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::CompleteTaskProc_Run(void)
+void cTaskQueue::CompleteTaskProc_Run(void)noexcept
 {
 	fCompleteTaskProcedure.Run();
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::CompleteTaskProc_Async(void)
+void cTaskQueue::CompleteTaskProc_Async(void)noexcept
 {
 	fCompleteTaskProcedure.RunAsyncAfter(fCompleteTaskProcWork,1);
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::UpdateCompleteTaskQueue(void)
+void cTaskQueue::UpdateCompleteTaskQueue(void)noexcept
 {
 	(this->*fCompleteTaskProc)();
 }
 //---------------------------------------------------------------------------
-bool cTaskQueue::cCompleteTaskProcedure::Procedure(void)
+bool cTaskQueue::cCompleteTaskProcedure::Procedure(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cTaskQueue::fCompleteTaskProcedure);
 	return Host->CompleteTaskProcedure();
 }
 //---------------------------------------------------------------------------
-bool cTaskQueue::CompleteTaskProcedure(void)
+bool cTaskQueue::CompleteTaskProcedure(void)noexcept
 {
 	auto CompletedTask=fTaskCompleteQueue.DequeueAll();
 	while(CompletedTask!=nullptr){
@@ -270,20 +270,20 @@ bool cTaskQueue::CompleteTaskProcedure(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::CompleteTask(rPtr<cTask> Task)
+void cTaskQueue::CompleteTask(rPtr<cTask> Task)noexcept
 {
 	auto pTask=rExtract(Task,'comp');
 	fTaskCompleteQueue.Enqueue(pTask);
 	UpdateCompleteTaskQueue();
 }
 //---------------------------------------------------------------------------
-void cTaskQueue::CancelTask(cTask *Task)
+void cTaskQueue::CancelTask(cTask *Task)noexcept
 {
 	Task->fCancelFlag.Cancel();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNotificationCycle::bcNotificationCycle()
+bcNotificationCycle::bcNotificationCycle()noexcept
 	: fNotificationCloseState(0)
 	, fNotificationAction(0)
 	, fNotificationStarted(false)
@@ -291,11 +291,11 @@ bcNotificationCycle::bcNotificationCycle()
 {
 }
 //---------------------------------------------------------------------------
-bcNotificationCycle::~bcNotificationCycle()
+bcNotificationCycle::~bcNotificationCycle()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::RunNotifyCycle(void)
+bool bcNotificationCycle::RunNotifyCycle(void)noexcept
 {
 	if(fNotificationStarted){
 		return RunNotifyCycle_Running();
@@ -305,7 +305,7 @@ bool bcNotificationCycle::RunNotifyCycle(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::RunNotifyCycle_Running(void)
+bool bcNotificationCycle::RunNotifyCycle_Running(void)noexcept
 {
 	if(fNotificationAction.Acquire.CmpStore(3,4)){
 		iReference *Reference=NotificationInnerReference();
@@ -343,7 +343,7 @@ bool bcNotificationCycle::RunNotifyCycle_Running(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::RunNotifyCycle_Idle(void)
+bool bcNotificationCycle::RunNotifyCycle_Idle(void)noexcept
 {
 	if(fNotificationAction.Acquire.CmpStore(1,4)){
 		iReference *Reference=NotificationInnerReference();
@@ -389,33 +389,33 @@ bool bcNotificationCycle::RunNotifyCycle_Idle(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::IsNotificationClosed(void)const
+bool bcNotificationCycle::IsNotificationClosed(void)const noexcept
 {
 	return fNotificationCloseState!=0;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::IsNotificationStarted(void)const
+bool bcNotificationCycle::IsNotificationStarted(void)const noexcept
 {
 	return fNotificationStarted;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::IsNotificationEnded(void)const
+bool bcNotificationCycle::IsNotificationEnded(void)const noexcept
 {
 	return fNotificationIsEnded;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::PrepareStartNotify(void)
+bool bcNotificationCycle::PrepareStartNotify(void)noexcept
 {
 	return fNotificationAction.Free.CmpStore(0,1);
 }
 //---------------------------------------------------------------------------
-void bcNotificationCycle::CancelStartNotify(void)
+void bcNotificationCycle::CancelStartNotify(void)noexcept
 {
 	cnLib_ASSERT(fNotificationAction==1);
 	fNotificationAction.Release.Store(0);
 }
 //---------------------------------------------------------------------------
-void bcNotificationCycle::ConfirmStartNotify(void)
+void bcNotificationCycle::ConfirmStartNotify(void)noexcept
 {
 	cnLib_ASSERT(fNotificationAction==1);
 
@@ -423,7 +423,7 @@ void bcNotificationCycle::ConfirmStartNotify(void)
 	rIncReference(Reference,'star');
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::StopNotify(void)
+bool bcNotificationCycle::StopNotify(void)noexcept
 {
 	if(fNotificationAction.Free.CmpStore(2,3)){
 		iReference *Reference=NotificationInnerReference();
@@ -433,7 +433,7 @@ bool bcNotificationCycle::StopNotify(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool bcNotificationCycle::CloseNotify(void)
+bool bcNotificationCycle::CloseNotify(void)noexcept
 {
 	if(fNotificationCloseState.Free.CmpStore(0,1)==false){
 		return false;
@@ -736,23 +736,23 @@ void bcAsyncSignal::NotifyClose(void)
 #endif
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcAsyncNotificationProcessor::bcAsyncNotificationProcessor(iAsyncNotification *Queue)
+bcAsyncNotificationProcessor::bcAsyncNotificationProcessor(iAsyncNotification *Queue)noexcept
 	: fAsyncNotification(Queue)
 	, fNotificationActive(false)
 	, fActiveMutex(false)
 {
 }
 //---------------------------------------------------------------------------
-bcAsyncNotificationProcessor::~bcAsyncNotificationProcessor()
+bcAsyncNotificationProcessor::~bcAsyncNotificationProcessor()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iAsyncNotification* bcAsyncNotificationProcessor::GetAsyncNotification(void)const
+iAsyncNotification* bcAsyncNotificationProcessor::GetAsyncNotification(void)const noexcept
 {
 	return fAsyncNotification;
 }
 //---------------------------------------------------------------------------
-bool bcAsyncNotificationProcessor::SetAsyncNotification(iAsyncNotification *Notification)
+bool bcAsyncNotificationProcessor::SetAsyncNotification(iAsyncNotification *Notification)noexcept
 {
 	if(fActiveMutex.Acquire.Xchg(true)==true){
 		return false;
@@ -765,12 +765,12 @@ bool bcAsyncNotificationProcessor::SetAsyncNotification(iAsyncNotification *Noti
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcAsyncNotificationProcessor::IsActive(void)const
+bool bcAsyncNotificationProcessor::IsActive(void)const noexcept
 {
 	return fNotificationActive;
 }
 //---------------------------------------------------------------------------
-bool bcAsyncNotificationProcessor::Start(iReference *Reference)
+bool bcAsyncNotificationProcessor::Start(iReference *Reference)noexcept
 {
 	if(fAsyncNotification==nullptr){
 		return false;
@@ -789,7 +789,7 @@ bool bcAsyncNotificationProcessor::Start(iReference *Reference)
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotificationProcessor::Stop(void)
+void bcAsyncNotificationProcessor::Stop(void)noexcept
 {
 	if(fAsyncNotification!=nullptr){
 		if(fNotificationActive){
@@ -798,54 +798,54 @@ void bcAsyncNotificationProcessor::Stop(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotificationProcessor::AsyncStarted(void)
+void bcAsyncNotificationProcessor::AsyncStarted(void)noexcept
 {
 	fNotificationActive=true;
 	fActiveMutex.Release.Store(false);
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotificationProcessor::AsyncStopped(void)
+void bcAsyncNotificationProcessor::AsyncStopped(void)noexcept
 {
 	fNotificationActive=false;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcAsyncQueue::bcAsyncQueue()
+bcAsyncQueue::bcAsyncQueue()noexcept
 	: fAsyncQueueNotifyType(0)
 	, fAsyncQueueAvailable(false)
 {
 	fAsyncQueueUpdateStateProc=&bcAsyncQueue::AsyncQueueUpdateStateProc_Run;
 }
 //---------------------------------------------------------------------------
-bcAsyncQueue::~bcAsyncQueue()
+bcAsyncQueue::~bcAsyncQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::CreateQueueWork(iAsyncExecution *AsyncExecution,bool DisableUpdateThreadLoop)
+void bcAsyncQueue::CreateQueueWork(iAsyncExecution *AsyncExecution,bool RestrictInAsyncExecution)noexcept
 {
 	if(fAsyncQueueProcWork!=nullptr)
 		return;
 
 	fAsyncQueueProcWork=AsyncExecution->CreateWork(NotificationInnerReference(),fAsyncQueueStateProcedure);
-	if(DisableUpdateThreadLoop){
-		fAsyncQueueUpdateStateProc=&bcAsyncQueue::AsyncQueueUpdateStateProc_DisableUpdateThreadLoop;
+	if(RestrictInAsyncExecution){
+		fAsyncQueueUpdateStateProc=&bcAsyncQueue::AsyncQueueUpdateStateProc_RestrictInAsyncExecution;
 	}
 	else{
 		fAsyncQueueUpdateStateProc=&bcAsyncQueue::AsyncQueueUpdateStateProc_Async;
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::AsyncQueueUpdateStateProc_Run(bool)
+void bcAsyncQueue::AsyncQueueUpdateStateProc_Run(bool)noexcept
 {
 	fAsyncQueueStateProcedure.Run();
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::AsyncQueueUpdateStateProc_DisableUpdateThreadLoop(bool)
+void bcAsyncQueue::AsyncQueueUpdateStateProc_RestrictInAsyncExecution(bool)noexcept
 {
 	fAsyncQueueStateProcedure.RunAsync(fAsyncQueueProcWork);
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::AsyncQueueUpdateStateProc_Async(bool AsyncNotify)
+void bcAsyncQueue::AsyncQueueUpdateStateProc_Async(bool AsyncNotify)noexcept
 {
 	if(AsyncNotify){
 		fAsyncQueueStateProcedure.RunAsync(fAsyncQueueProcWork);
@@ -855,35 +855,35 @@ void bcAsyncQueue::AsyncQueueUpdateStateProc_Async(bool AsyncNotify)
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::UpdateQueueState(bool AsyncNotify)
+void bcAsyncQueue::UpdateQueueState(bool AsyncNotify)noexcept
 {
 	(this->*fAsyncQueueUpdateStateProc)(AsyncNotify);
 }
 //---------------------------------------------------------------------------
-bool bcAsyncQueue::cAsyncQueueStateProcedure::Procedure(void)
+bool bcAsyncQueue::cAsyncQueueStateProcedure::Procedure(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcAsyncQueue::fAsyncQueueStateProcedure);
 	return Host->RunNotifyCycle();
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::NotificationStarted(void)
+void bcAsyncQueue::NotificationStarted(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::NotificationStopped(void)
+void bcAsyncQueue::NotificationStopped(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::NotificationClosed(void)
+void bcAsyncQueue::NotificationClosed(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcAsyncQueue::CycleState bcAsyncQueue::NotificationCheckState(void)
+bcAsyncQueue::CycleState bcAsyncQueue::NotificationCheckState(void)noexcept
 {
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::NotificationProcedure(void)
+void bcAsyncQueue::NotificationProcedure(void)noexcept
 {
 	if(IsNotificationClosed()){
 		AsyncQueueNotify();
@@ -906,7 +906,7 @@ void bcAsyncQueue::NotificationProcedure(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::NotifyQueue(bool IdleNotify)
+void bcAsyncQueue::NotifyQueue(bool IdleNotify)noexcept
 {
 	if(IdleNotify){
 		if(fAsyncQueueNotifyType<2){
@@ -922,14 +922,14 @@ void bcAsyncQueue::NotifyQueue(bool IdleNotify)
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::CloseQueue(void)
+void bcAsyncQueue::CloseQueue(void)noexcept
 {
 	if(CloseNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncQueue::AsyncQueueSetAvailable(bool AsyncNotify)
+void bcAsyncQueue::AsyncQueueSetAvailable(bool AsyncNotify)noexcept
 {
 	if(fAsyncQueueAvailable==false){
 		fAsyncQueueAvailable=true;
@@ -938,16 +938,16 @@ void bcAsyncQueue::AsyncQueueSetAvailable(bool AsyncNotify)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcAsyncNotification::bcAsyncNotification()
+bcAsyncNotification::bcAsyncNotification()noexcept
 {
 	fAsyncNotificationCallback=nullptr;
 }
 //---------------------------------------------------------------------------
-bcAsyncNotification::~bcAsyncNotification()
+bcAsyncNotification::~bcAsyncNotification()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool bcAsyncNotification::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)
+bool bcAsyncNotification::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -959,30 +959,30 @@ bool bcAsyncNotification::StartNotify(iReference *Reference,iAsyncNotificationCa
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotification::StopNotify(void)
+void bcAsyncNotification::StopNotify(void)noexcept
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotification::NotifyCallback(bool IdleNotify)
+void bcAsyncNotification::NotifyCallback(bool IdleNotify)noexcept
 {
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool bcAsyncNotification::IsClosed(void)
+bool bcAsyncNotification::IsClosed(void)noexcept
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotification::NotificationStarted(void)
+void bcAsyncNotification::NotificationStarted(void)noexcept
 {
 	rIncReference(this,'asnt');
 	fAsyncNotificationCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotification::NotificationStopped(void)
+void bcAsyncNotification::NotificationStopped(void)noexcept
 {
 	auto CallbackReference=cnVar::MoveCast(fAsyncNotificationReference);
 	auto Callback=fAsyncNotificationCallback;
@@ -991,7 +991,7 @@ void bcAsyncNotification::NotificationStopped(void)
 	rDecReference(this,'asnt');
 }
 //---------------------------------------------------------------------------
-void bcAsyncNotification::AsyncQueueNotify(void)
+void bcAsyncNotification::AsyncQueueNotify(void)noexcept
 {
 	fAsyncNotificationCallback->AsyncNotify();
 }

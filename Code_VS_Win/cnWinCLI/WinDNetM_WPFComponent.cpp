@@ -56,16 +56,16 @@ System::IntPtr rcWPFHwndSource::WindowMessageHook(System::IntPtr hwnd, int msg, 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFHwndSource::mcWPFHwndSource()
+mcWPFHwndSource::mcWPFHwndSource()noexcept
 	: fWPFHwnd(gcnew rcWPFHwndSource(this))
 {
 }
 //---------------------------------------------------------------------------
-mcWPFHwndSource::~mcWPFHwndSource()
+mcWPFHwndSource::~mcWPFHwndSource()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void mcWPFHwndSource::WPFSourceAttach(rcWPFHwndSource ^WPFHwnd)
+void mcWPFHwndSource::WPFSourceAttach(rcWPFHwndSource ^WPFHwnd)noexcept
 {
 	HWND WindowHandle=static_cast<HWND>(WPFHwnd->Source->Handle.ToPointer());
 
@@ -75,30 +75,30 @@ void mcWPFHwndSource::WPFSourceAttach(rcWPFHwndSource ^WPFHwnd)
 	WindowAttach();
 }
 //---------------------------------------------------------------------------
-void mcWPFHwndSource::WPFSourceDetach(void)
+void mcWPFHwndSource::WPFSourceDetach(void)noexcept
 {
 	WindowDetach();
 	fWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-System::IntPtr mcWPFHwndSource::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)
+System::IntPtr mcWPFHwndSource::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept
 {
 	LRESULT Result=0;
 	handled=WindowMessage(Result,hwnd,msg,wParam,lParam);
 	return System::IntPtr::IntPtr(Result);
 }
 //---------------------------------------------------------------------------
-void mcWPFHwndSource::WPFDispatcherFinishNotify(bool Shutdown)
+void mcWPFHwndSource::WPFDispatcherFinishNotify(bool Shutdown)noexcept
 {
 	WindowShutdownFinished(Shutdown);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFHwndSourceAsWindow::mcWPFHwndSourceAsWindow()
+mcWPFHwndSourceAsWindow::mcWPFHwndSourceAsWindow()noexcept
 {
 }
 //---------------------------------------------------------------------------
-mcWPFHwndSourceAsWindow::~mcWPFHwndSourceAsWindow()
+mcWPFHwndSourceAsWindow::~mcWPFHwndSourceAsWindow()noexcept
 {
 }
 //---------------------------------------------------------------------------

@@ -16,41 +16,41 @@ namespace cnNet{
 class cEndpointFromProtocol : public iEndpoint,/*public cnRTL::cInnerReference,*/ public iReadQueue, public iWriteQueue, public iProtocolProcessor
 {
 public:
-	cEndpointFromProtocol(void);
+	cEndpointFromProtocol(void)noexcept(true);
 
-	bool Connect(iProtocolProvider *Host);
+	bool Connect(iProtocolProvider *Host)noexcept(true);
 	
 private:
 	rPtr<iProtocolProvider> fHost;
 
-	virtual void ProtocolStarted(void)override;
-	virtual void ProtocolStopped(void)override;
-	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual void ProtocolInputClosed(bool GracefulClose)=0;
-	virtual void ProtocolOutputClosed(bool GracefulClose)=0;
+	virtual void ProtocolStarted(void)noexcept(true)override;
+	virtual void ProtocolStopped(void)noexcept(true)override;
+	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual void ProtocolInputClosed(bool GracefulClose)noexcept(true)=0;
+	virtual void ProtocolOutputClosed(bool GracefulClose)noexcept(true)=0;
 
 	iReadQueueCallback *fReadCallback=nullptr;
 	iWriteQueueCallback *fWriteCallback=nullptr;
 
-	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)override;
-	virtual void cnLib_FUNC StopWrite(bool Terminate)override;
-	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)override;
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)override;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
-	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)override;
+	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)noexcept(true)override;
+	virtual void cnLib_FUNC StopWrite(bool Terminate)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)noexcept(true)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
+	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)noexcept(true)override;
 
-	virtual bool cnLib_FUNC StartRead(iReference *Reference,iReadQueueCallback *Callback)override;
-	virtual void cnLib_FUNC StopRead(void)override;
-	virtual void cnLib_FUNC NotifyRead(uIntn SizeToNotify)override;
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn QuerySize)override;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
-	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)override;
+	virtual bool cnLib_FUNC StartRead(iReference *Reference,iReadQueueCallback *Callback)noexcept(true)override;
+	virtual void cnLib_FUNC StopRead(void)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyRead(uIntn SizeToNotify)noexcept(true)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn QuerySize)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
+	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)noexcept(true)override;
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
-	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
+	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 };
 //---------------------------------------------------------------------------

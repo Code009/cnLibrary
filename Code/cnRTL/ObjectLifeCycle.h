@@ -206,8 +206,8 @@ struct cCPPLifeCycleRecyclableInstance
 template<class T>
 struct cRecyclableObjectAllocator
 {
-	static T* New(void)noexcept(cnLib_NOEXCEPTEXPR(new T)){	return new T;	}
-	static void Delete(T *p)noexcept(cnLib_NOEXCEPTEXPR(delete p)){	delete p;	}
+	static T* New(void)noexcept(noexcept(new T)){	return new T;	}
+	static void Delete(T *p)noexcept(noexcept(delete p)){	delete p;	}
 };
 //---------------------------------------------------------------------------
 template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
@@ -235,7 +235,7 @@ public:
 			return static_cast<tLifeCycleObject*>(reinterpret_cast<cCPPLifeCycleRecyclableInstance*>(&Link));
 		}
 		static const tLifeCycleObject* LinkNode(const tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<cCPPLifeCycleRecyclableInstance*>(&Link));
+			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<const cCPPLifeCycleRecyclableInstance*>(&Link));
 		}
 
 		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
@@ -255,7 +255,7 @@ public:
 		return LCObject;
 	}
 
-	tLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new tLifeCycleObject)){
+	tLifeCycleObject* Query(void)noexcept(noexcept(new tLifeCycleObject)){
 		auto LCObject=fRecycleStack.Pop();
 		if(LCObject==nullptr){
 			LCObject=TRecyclableObjectAllocator::New();
@@ -386,7 +386,7 @@ public:
 			return static_cast<tLifeCycleObject*>(reinterpret_cast<cVirtualLifeCycleRecyclableInstance*>(&Link));
 		}
 		static const tLifeCycleObject* LinkNode(const tLinkInstance &Link)noexcept(true){
-			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<cVirtualLifeCycleRecyclableInstance*>(&Link));
+			return reinterpret_cast<const tLifeCycleObject*>(reinterpret_cast<const cVirtualLifeCycleRecyclableInstance*>(&Link));
 		}
 
 		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
@@ -407,7 +407,7 @@ public:
 		return LCObject;
 	}
 
-	tLifeCycleObject* Query(void)noexcept(cnLib_NOEXCEPTEXPR(new tLifeCycleObject)){
+	tLifeCycleObject* Query(void)noexcept(noexcept(new tLifeCycleObject)){
 		auto LCObject=fRecycleStack.Pop();
 		if(LCObject==nullptr){
 			LCObject=TRecyclableObjectAllocator::New();
@@ -498,52 +498,6 @@ public:
 		rDecReference(this,'lcle');
 	}
 };
-//---------------------------------------------------------------------------
-class cDualReference : public bcVirtualLifeCycle
-{
-public:
-	template<class T>
-	struct cRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
-	{
-		static void Acquire(T *Token)noexcept(true){	if(Token!=nullptr)	Token->fInnerReference.Inc();	}
-		static void Release(T *Token)noexcept(true){	if(Token!=nullptr)	Token->fInnerReference.Dec();	}
-	};
-protected:
-	class cInner : public iReference
-	{
-	public:
-		cAtomicVar<uIntn> Ref=0;
-		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
-		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
-
-		void Inc(void)noexcept(true);
-		void Dec(void)noexcept(true);
-	}fInnerReference;
-
-	cDualReference()noexcept(true){}
-
-	void InnerIncReference(uInt32 Tag)noexcept(true){
-		cnRTL_DEBUG_LOG_REFERENCE_INC(this,Tag);
-		return fInnerReference.Inc();
-	}
-	void InnerDecReference(uInt32 Tag)noexcept(true){
-		cnRTL_DEBUG_LOG_REFERENCE_DEC(this,Tag);
-		return fInnerReference.Dec();
-	}
-
-	// override virtual life cycle start to increase inner reference
-	void VirtualStarted(void)noexcept(true){
-		cnLib_ASSERT(fInnerReference.Ref==0);
-		InnerIncReference('self');
-	}
-	// override virtual life cycle stop to decrease inner reference
-	void VirtualStopped(void)noexcept(true){
-		InnerDecReference('self');
-	}
-};
-//---------------------------------------------------------------------------
-template<class T>
-using rInnerPtr = cnVar::cPtrReference< cDualReference::cRefTokenOperator<T> >;
 //---------------------------------------------------------------------------
 }   // namespace cnRTL
 //---------------------------------------------------------------------------

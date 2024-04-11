@@ -13,26 +13,26 @@ static constexpr DWORD CurrentThreadExitCode=0;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThread::cThread()
+cThread::cThread()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cThread::~cThread()
+cThread::~cThread()noexcept
 {
 	::CloseHandle(fThreadHandle);
 }
 //---------------------------------------------------------------------------
-void cThread::TLSSetExitNotify(void)
+void cThread::TLSSetExitNotify(void)noexcept
 {
 	gTLS->SetThreadExitNotify(cnVar::StaticInitializedSinglton<cThreadExitNotifyProc>());
 }
 //---------------------------------------------------------------------------
-void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *Thread)
+void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *Thread)noexcept
 {
 	static_cast<cThread*>(Thread)->fThreadRunning=false;
 }
 //---------------------------------------------------------------------------
-iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)
+iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)noexcept
 {
 	auto NewThread=iCreate<cThread>();
 	auto Param=new cThreadCreateParameter;
@@ -48,7 +48,7 @@ iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)
 	return NewThread;
 }
 //---------------------------------------------------------------------------
-DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)
+DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept
 {
 	iPtr<cThread> Thread;
 	iProcedure *Procedure;
@@ -78,7 +78,7 @@ DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)
 	return 0;
 }
 //---------------------------------------------------------------------------
-cThread* cThread::QueryCurrent(void)
+cThread* cThread::QueryCurrent(void)noexcept
 {
 	auto CurrentThreadObject=gTLS->Get();
 	if(CurrentThreadObject!=nullptr){
@@ -100,12 +100,12 @@ cThread* cThread::QueryCurrent(void)
 	return NewThread;
 }
 //---------------------------------------------------------------------------
-bool cThread::IsRunning(void)
+bool cThread::IsRunning(void)noexcept
 {
 	return fThreadRunning;
 }
 //---------------------------------------------------------------------------
-void cThread::DependentShutdownNotification(void)
+void cThread::DependentShutdownNotification(void)noexcept
 {
 	cThreadHandle::DependentShutdownNotification();
 	auto CurrentThreadObject=gTLS->Get();
@@ -115,7 +115,7 @@ void cThread::DependentShutdownNotification(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cErrorReportRecord::cErrorReportRecord(iErrorReport *NextReport,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)
+cErrorReportRecord::cErrorReportRecord(iErrorReport *NextReport,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
 	: iErrorReport(NextReport
 		, {fStringContent,Function.Length}
 		, {fStringContent+Function.Length+1,Action.Length}
@@ -135,19 +135,19 @@ cErrorReportRecord::cErrorReportRecord(iErrorReport *NextReport,cArray<const uCh
 	*pStringContent++=0;
 }
 //---------------------------------------------------------------------------
-cErrorReportRecord::~cErrorReportRecord()
+cErrorReportRecord::~cErrorReportRecord()noexcept
 {
 	if(Next!=nullptr){
 		rDecReference(Next,'recd');
 	}
 }
 //---------------------------------------------------------------------------
-void cErrorReportRecord::IncreaseReference(void)noexcept(true)
+void cErrorReportRecord::IncreaseReference(void)noexcept
 {
 	++fRefCount.Free;
 }
 //---------------------------------------------------------------------------
-void cErrorReportRecord::DecreaseReference(void)noexcept(true)
+void cErrorReportRecord::DecreaseReference(void)noexcept
 {
 	if(--fRefCount.Free==0){
 		this->~cErrorReportRecord();
@@ -157,7 +157,7 @@ void cErrorReportRecord::DecreaseReference(void)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-rPtr<cErrorReportRecord> cErrorReportRecord::Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+rPtr<cErrorReportRecord> cErrorReportRecord::Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
 {
 	uIntn StringLength=Function.Length+Action.Length+Error.Length+3;
 	uIntn RecordSize=sizeof(cErrorReportRecord)+StringLength*2-4;
@@ -167,7 +167,7 @@ rPtr<cErrorReportRecord> cErrorReportRecord::Make(rPtr<iErrorReport> Next,cArray
 	return rPtr<cErrorReportRecord>::TakeFromManual(Record);
 }
 //---------------------------------------------------------------------------
-void cnSystem::ErrorReportManager::Clear(void)noexcept(true)
+void cnSystem::ErrorReportManager::Clear(void)noexcept
 {
 	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
 	if(TLSObject!=nullptr){
@@ -175,18 +175,18 @@ void cnSystem::ErrorReportManager::Clear(void)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void cnSystem::ErrorReportManager::Report(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+void cnSystem::ErrorReportManager::Report(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
 {
 	auto Record=Make(Function,Action,Error);
 	cErrorReportRecord::gTLSRecord->Set(cnVar::MoveCast(Record),Record);
 }
 //---------------------------------------------------------------------------
-rPtr<iErrorReport> cnSystem::ErrorReportManager::Make(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
+rPtr<iErrorReport> cnSystem::ErrorReportManager::Make(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
 {
 	return cErrorReportRecord::Make(Fetch(),Function,Action,Error);
 }
 //---------------------------------------------------------------------------
-rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept(true)
+rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept
 {
 	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
 	rPtr<iErrorReport> RetReport;
@@ -201,16 +201,16 @@ rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept(true)
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //- Thread pool -------------------------------------------------------------
 //- Thread pool -------------------------------------------------------------
-cDefaultThreadPool::cDefaultThreadPool()
+cDefaultThreadPool::cDefaultThreadPool()noexcept
 	: bcNT6ThreadPoolEnvironment(nullptr)
 {
 }
 //- Thread pool -------------------------------------------------------------
-cDefaultThreadPool::~cDefaultThreadPool()
+cDefaultThreadPool::~cDefaultThreadPool()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)
+rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept> *Callback)noexcept
 {
 	return rCreate<cHandleWaiter>(nullptr,Reference,Callback);
 }

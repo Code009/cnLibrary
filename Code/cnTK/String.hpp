@@ -58,7 +58,7 @@ inline uIntn ViewCopy(TDestPtr Dest,uIntn DestLength,TSrcPtr Src)noexcept(true)
 //					return true if matches, false if unmatch
 // Return:	the index of the first matched data, or -1 if the Dest not found
 template<class TPtr,class TComparison>
-inline uIntn ViewSearch(TPtr Src,uIntn MaxLength,TComparison cnLib_UREF Comparison)noexcept(cnLib_NOEXCEPTEXPR(Comparison(*Src)))
+inline uIntn ViewSearch(TPtr Src,uIntn MaxLength,TComparison cnLib_UREF Comparison)noexcept(noexcept(Comparison(*Src)))
 {
 	for(uIntn Index=0;Index<MaxLength;Index++){
 		if(*Src==0)
@@ -78,7 +78,7 @@ inline uIntn ViewSearch(TPtr Src,uIntn MaxLength,TComparison cnLib_UREF Comparis
 //	[in]Str2	string to be subtracted
 //	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
 template<class TPtr1,class TPtr2>
-inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(noexcept(*Str1==*Str2) && noexcept(*Str1==0))
 {
 	for(uIntn i=0;i<MaxLength;i++){
 		if(!(*Str1==*Str2)){
@@ -99,7 +99,7 @@ inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_NOEXC
 //	[in]Str2	string to be subtracted
 //	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
 template<class TPtr1,class TPtr2>
-inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(noexcept(*Str1==*Str2) && noexcept(*Str1==0))
 {
 	for(uIntn i=0;i<MaxLength;i++){
 		if(!(*Str1==*Str2)){
@@ -123,7 +123,7 @@ inline bool ViewEqual(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)n
 //	[in]Str2	string to be subtracted
 //	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
 template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(noexcept(*Str1<*Str2) && noexcept(*Str1==*Str2) && noexcept(*Str1==0))
 {
 	for(uIntn i=0;i<MaxLength;i++){
 		if(!(*Str1==*Str2)){
@@ -144,7 +144,7 @@ inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength)noexcept(cnLib_N
 //	[in]Str2	string to be subtracted
 //	return:	0 if matched, 1 if Str1>Str2 , -1 if Str1<Str2
 template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(cnLib_NOEXCEPTEXPR(*Str1<*Str2) && cnLib_NOEXCEPTEXPR(*Str1==*Str2) && cnLib_NOEXCEPTEXPR(*Str1==0))
+inline sfInt8 ViewCompare(TPtr1 Str1,TPtr2 Str2,uIntn MaxLength,uIntn &MatchLength)noexcept(noexcept(*Str1<*Str2) && noexcept(*Str1==*Str2) && noexcept(*Str1==0))
 {
 	for(uIntn i=0;i<MaxLength;i++){
 		if(!(*Str1==*Str2)){
@@ -797,7 +797,7 @@ struct cStringStorage : cArrayAllocation<TAllocationOperator,TCharacter>
 		else{
 			uIntn InitialCapacity=TAMFunc::RoundUpCapacity(Src.Length+1);
 			this->Capacity=InitialCapacity;
-			this->Pointer=TAMFunc::Allocate(InitialCapacity,1);
+			this->Pointer=TAMFunc::Allocate(InitialCapacity);
 			this->Length=Src.Length;
 			TKRuntime::TMemory<sizeof(tElement)>::Copy(this->Pointer,Src.Pointer,Src.Length);
 		}

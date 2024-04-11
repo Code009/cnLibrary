@@ -11,95 +11,95 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnUI{
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> CreateUIWindow(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0);
+iPtr<iWindowClient> CreateUIWindow(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0)noexcept(true);
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 class WindowComponent
 {
 public:
-	WindowComponent();
-	~WindowComponent();
+	WindowComponent()noexcept(true);
+	~WindowComponent()noexcept(true);
 
-	iWindow* GetWindow(void)const;
-	void SetWindow(iWindow *Window);
+	iWindow* GetWindow(void)const noexcept(true);
+	void SetWindow(iWindow *Window)noexcept(true);
 
 protected:
 	iPtr<iWindow> fWindow;
 
-	virtual void WindowSetup(void){}
-	virtual void WindowClear(void){}
+	virtual void WindowSetup(void)noexcept(true){}
+	virtual void WindowClear(void)noexcept(true){}
 };
 //---------------------------------------------------------------------------
 class WindowControl : public WindowComponent, public WindowMessageHandler
 {
 public:
-	WindowControl();
-	~WindowControl();
+	WindowControl()noexcept(true);
+	~WindowControl()noexcept(true);
 
 	uInt8 ComponentOrder=0;
-	void UpdateComponentOrder(void);
+	void UpdateComponentOrder(void)noexcept(true);
 
 protected:
-	virtual void WindowSetup(void)override;
-	virtual void WindowClear(void)override;
+	virtual void WindowSetup(void)noexcept(true)override;
+	virtual void WindowClear(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class WindowClient : public WindowComponent
 {
 public:
-	WindowClient();
-	~WindowClient();
+	WindowClient()noexcept(true);
+	~WindowClient()noexcept(true);
 
-	iWindowClient* GetWindowClient(void)const;
-	iUIWindow* GetUIWindow(void)const;
+	iWindowClient* GetWindowClient(void)const noexcept(true);
+	iUIWindow* GetUIWindow(void)const noexcept(true);
 
-	iUIView* GetClientView(void)const;
-	void SetClientView(iUIView *View);
+	iUIView* GetClientView(void)const noexcept(true);
+	void SetClientView(iUIView *View)noexcept(true);
 protected:
 	iPtr<iWindowClient> fWindowClient;
 
-	virtual void WindowSetup(void);
-	virtual void WindowClear(void);
+	virtual void WindowSetup(void)noexcept(true);
+	virtual void WindowClear(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class WindowFrame : public WindowComponent
 {
 public:
-	WindowFrame();
-	~WindowFrame();
+	WindowFrame()noexcept(true);
+	~WindowFrame()noexcept(true);
 
-	iWindowFrame* GetWindowFrame(void)const;
-	iUIWindow* GetUIWindow(void)const;
+	iWindowFrame* GetWindowFrame(void)const noexcept(true);
+	iUIWindow* GetUIWindow(void)const noexcept(true);
 
-	iUIView* GetClientView(void)const;
-	void SetClientView(iUIView *View);
+	iUIView* GetClientView(void)const noexcept(true);
+	void SetClientView(iUIView *View)noexcept(true);
 protected:
 	iPtr<iWindowFrame> fWindowFrame;
 
-	virtual void WindowSetup(void)override;
-	virtual void WindowClear(void)override;
+	virtual void WindowSetup(void)noexcept(true)override;
+	virtual void WindowClear(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline bool WindowControlSetPos(T &WindowControl,iUIArea *Relative,const cUIPoint &Pos)
+inline bool WindowControlSetPos(T &WindowControl,iUIArea *Relative,const cUIPoint &Pos)noexcept(true)
 {
 	return ViewSetPos(WindowControl.GetUIWindow(),Relative,Pos);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline bool WindowControlSetSize(T &WindowControl,const cUIPoint &Size)
+inline bool WindowControlSetSize(T &WindowControl,const cUIPoint &Size)noexcept(true)
 {
 	return ViewSetSize(WindowControl.GetUIWindow(),Size);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline bool WindowControlSetRect(T &WindowControl,iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)
+inline bool WindowControlSetRect(T &WindowControl,iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept(true)
 {
 	return ViewSetRect(WindowControl.GetUIWindow(),Relative,Pos,Size);
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline bool WindowControlSetRect(T &WindowControl,iUIArea *Relative,const cUIRect &Rect)
+inline bool WindowControlSetRect(T &WindowControl,iUIArea *Relative,const cUIRect &Rect)noexcept(true)
 {
 	return ViewSetRect(WindowControl.GetUIWindow(),Relative,Rect);
 }
@@ -107,28 +107,28 @@ inline bool WindowControlSetRect(T &WindowControl,iUIArea *Relative,const cUIRec
 class cPopupStaticWindow
 {
 public:
-	cPopupStaticWindow();
-	~cPopupStaticWindow();
+	cPopupStaticWindow()noexcept(true);
+	~cPopupStaticWindow()noexcept(true);
 
-	iWindow* GetWindow(void)const;
-	HWND GetWindowHandle(void)const;
+	iWindow* GetWindow(void)const noexcept(true);
+	HWND GetWindowHandle(void)const noexcept(true);
 
-	iWindowClient* GetWindowClient(void)const;
-	iUIWindow* GetUIWindow(void)const;
-	iUIView* GetClientView(void)const;
-	bool SetClientView(iUIView *View);
+	iWindowClient* GetWindowClient(void)const noexcept(true);
+	iUIWindow* GetUIWindow(void)const noexcept(true);
+	iUIView* GetClientView(void)const noexcept(true);
+	bool SetClientView(iUIView *View)noexcept(true);
 
 	cnRTL::cString<wchar_t> WindowTitle;
 	DWORD WindowStyle=WS_OVERLAPPED|WS_DISABLED;
 	DWORD WindowExStyle=WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE;
 
-	void SetupOwnerWindow(HWND OwnerWindow);
-	void SetupOwner(iUIView *Owner);
+	void SetupOwnerWindow(HWND OwnerWindow)noexcept(true);
+	void SetupOwner(iUIView *Owner)noexcept(true);
 
-	void MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align);
-	void MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size);
-	void ShowPopup(void);
-	void HidePopup(void);
+	void MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept(true);
+	void MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept(true);
+	void ShowPopup(void)noexcept(true);
+	void HidePopup(void)noexcept(true);
 
 protected:
 	iPtr<iWindowClient> fWindowClient;
@@ -138,62 +138,62 @@ protected:
 class cPopupWindow : public WindowMessageHandler
 {
 public:
-	cPopupWindow();
-	~cPopupWindow();
+	cPopupWindow()noexcept(true);
+	~cPopupWindow()noexcept(true);
 	
-	iWindow* GetWindow(void)const;
-	HWND GetWindowHandle(void)const;
+	iWindow* GetWindow(void)const noexcept(true);
+	HWND GetWindowHandle(void)const noexcept(true);
 
-	iWindowClient* GetWindowClient(void)const;
-	iUIWindow* GetUIWindow(void)const;
-	iUIView* GetClientView(void)const;
-	bool SetClientView(iUIView *View);
+	iWindowClient* GetWindowClient(void)const noexcept(true);
+	iUIWindow* GetUIWindow(void)const noexcept(true);
+	iUIView* GetClientView(void)const noexcept(true);
+	bool SetClientView(iUIView *View)noexcept(true);
 
 	cnRTL::cString<wchar_t> WindowTitle;
 	DWORD WindowStyle=WS_OVERLAPPED;
 	DWORD WindowExStyle=WS_EX_TOOLWINDOW|WS_EX_NOACTIVATE;
 
-	void SetupOwnerWindow(HWND OwnerWindow);
-	void SetupOwner(iUIView *Owner);
+	void SetupOwnerWindow(HWND OwnerWindow)noexcept(true);
+	void SetupOwner(iUIView *Owner)noexcept(true);
 
-	void MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align);
-	void MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size);
-	void ShowPopup(void);
-	void HidePopup(void);
+	void MovePopup(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept(true);
+	void MovePopup(iUIArea *Relative,const cUIPoint &Pos,const cUIPoint &Size)noexcept(true);
+	void ShowPopup(void)noexcept(true);
+	void HidePopup(void)noexcept(true);
 
-	bool IsPopuped(void);
+	bool IsPopuped(void)noexcept(true);
 
 protected:
 	iPtr<iWindow> fWindow;
 	iPtr<iOwnerFocusWindowClient> fWindowClient;
 	
-	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)override;
+	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class ModalDialog : protected WindowMessageHandler
 {
 public:
-	ModalDialog();
-	~ModalDialog();
+	ModalDialog()noexcept(true);
+	~ModalDialog()noexcept(true);
 
-	INT_PTR Modal(HWND Parent,const wchar_t *WindowText,LONG X=0,LONG Y=0,LONG Width=0,LONG Height=0,DWORD Style=WS_CAPTION|WS_SYSMENU|WS_DLGFRAME,DWORD ExStyle=WS_EX_DLGMODALFRAME);
-	INT_PTR Modal(HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName);
-	INT_PTR Modal(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate);
+	INT_PTR Modal(HWND Parent,const wchar_t *WindowText,LONG X=0,LONG Y=0,LONG Width=0,LONG Height=0,DWORD Style=WS_CAPTION|WS_SYSMENU|WS_DLGFRAME,DWORD ExStyle=WS_EX_DLGMODALFRAME)noexcept(true);
+	INT_PTR Modal(HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName)noexcept(true);
+	INT_PTR Modal(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)noexcept(true);
 
 protected:
 	iPtr<iWindowProvider> fDialogProvider;
 	HWND fWindowHandle;
 
-	virtual void cnLib_FUNC WindowAttached(void)override;
-	virtual void cnLib_FUNC WindowDetached(void)override;
-	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)override;
-	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &MsgParam)override;
+	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
+	virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
+	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept(true)override;
+	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &MsgParam)noexcept(true)override;
 
-	virtual void ModalDialogCreateClient(HWND Parent,int x,int y,int w,int h)=0;
-	virtual void ModalDialogMoveClient(int x,int y,int w,int h)=0;
+	virtual void ModalDialogCreateClient(HWND Parent,int x,int y,int w,int h)noexcept(true)=0;
+	virtual void ModalDialogMoveClient(int x,int y,int w,int h)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-INT_PTR ShowModalWindow(iWindowProvider *ClientProvider,HWND Parent,const wchar_t *Text,int x=0,int y=0,int w=0,int h=0,DWORD Style=WS_CAPTION|WS_SYSMENU,DWORD ExStyle=WS_EX_DLGMODALFRAME);
+INT_PTR ShowModalWindow(iWindowProvider *ClientProvider,HWND Parent,const wchar_t *Text,int x=0,int y=0,int w=0,int h=0,DWORD Style=WS_CAPTION|WS_SYSMENU,DWORD ExStyle=WS_EX_DLGMODALFRAME)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnUI
 }	// namespace cnLibrary

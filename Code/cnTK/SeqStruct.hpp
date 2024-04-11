@@ -827,7 +827,7 @@ public:
 	typedef cArrayAllocation<TKeyAllocationOperator,TKey> tKeyArrayAllocation;
 	typedef cArrayAllocation<TValueAllocationOperator,TValue> tValueArrayAllocation;
 	typedef cMultiArrayAllocation<tKeyArrayAllocation,tValueArrayAllocation> tArrayAllocation;
-	typedef cMultiArrayMemoryFunction<typename cnVar::cVarPack<TKey*,TValue*>::tAllAccessor,tKeyArrayAllocation,tValueArrayAllocation> TMAMFunc;
+	typedef cMultiArrayMemoryFunction<typename cnVar::cVarPack<TKey*,TValue*>::tAllAccessor,typename cnVar::cVarPack<const TKey*,const TValue*>::tAllConstAccessor,tKeyArrayAllocation,tValueArrayAllocation> TMAMFunc;
 	typedef cMultiArrayStorage<tKeyArrayAllocation,tValueArrayAllocation> tMultiArrayStorage;
 
 	typedef cSeqMapIterator<tKey,tValue> tIterator;
@@ -1279,14 +1279,14 @@ template<class...VTArrayAllocation>
 class cSeqMultiList
 {
 public:
-
-	typedef cMultiArrayMemoryFunction<VTArrayAllocation...> TMAMFunc;
-	typedef cMultiArrayAllocation<VTArrayAllocation...> tMultiArrayAllocation;
 	typedef cMultiArray<typename VTArrayAllocation::tElement...> tArray;
 	typedef cMultiArray<typename VTArrayAllocation::tElement const...> tConstArray;
 
-	typedef typename TMAMFunc::tPointer tPointer;
-	typedef typename TMAMFunc::tConstPointer tConstPointer;
+	typedef cnVar::cVarPack<typename VTArrayAllocation::tElement*...> tPointer;
+	typedef cnVar::cVarPack<typename VTArrayAllocation::tElement const*...> tConstPointer;
+
+	typedef cMultiArrayMemoryFunction<typename tPointer::tAllAccessor,typename tConstPointer::tAllConstAccessor,VTArrayAllocation...> TMAMFunc;
+	typedef cMultiArrayAllocation<VTArrayAllocation...> tMultiArrayAllocation;
 
 	typedef cSeqMultiListIterator<typename VTArrayAllocation::tElement...> tIterator;
 

@@ -80,11 +80,11 @@ struct Decl
 	static cnLib_CONSTVAR bool IsMatch=false;
 
 	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(static_cast<TMatch>(Value))))
+	static TInt Cast(T Value)noexcept(noexcept(static_cast<TInt>(static_cast<TMatch>(Value))))
 	{	return static_cast<TInt>(static_cast<TMatch>(Value));	}
 
 	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(static_cast<TMatch>(*static_cast<T*>(Value)))))
+	static TInt rtCast(void *Value)noexcept(noexcept(static_cast<TInt>(static_cast<TMatch>(*static_cast<T*>(Value)))))
 	{	return static_cast<TInt>(static_cast<TMatch>(*static_cast<T*>(Value)));	}
 };
 
@@ -98,11 +98,11 @@ struct Decl<T,T>
 	static cnLib_CONSTVAR bool IsMatch=true;
 
 	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(Value)))
+	static TInt Cast(T Value)noexcept(noexcept(static_cast<TInt>(Value)))
 	{	return static_cast<TInt>(Value);	}
 
 	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(*static_cast<T*>(Value))))
+	static TInt rtCast(void *Value)noexcept(noexcept(static_cast<TInt>(*static_cast<T*>(Value))))
 	{	return static_cast<TInt>(*static_cast<T*>(Value));	}
 };
 
@@ -136,11 +136,11 @@ struct DeclUnconvertible<T,TDistinct*>
 	static cnLib_CONSTVAR bool IsMatch=false;
 
 	template<class TInt>
-	static TInt Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(reinterpret_cast<uIntn>(Value))))
+	static TInt Cast(T Value)noexcept(noexcept(static_cast<TInt>(reinterpret_cast<uIntn>(Value))))
 	{	return static_cast<TInt>(reinterpret_cast<uIntn>(Value));	}
 
 	template<class TInt>
-	static TInt rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TInt>(*static_cast<const uIntn*>(Value))))
+	static TInt rtCast(void *Value)noexcept(noexcept(static_cast<TInt>(*static_cast<const uIntn*>(Value))))
 	{	return static_cast<TInt>(*static_cast<const uIntn*>(Value));	}
 };
 
@@ -231,11 +231,11 @@ struct Decl
 	static cnLib_CONSTVAR bool IsMatch=false;
 
 	template<class TFloat>
-	static TFloat Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(static_cast<TMatch>(Value))))
+	static TFloat Cast(T Value)noexcept(noexcept(static_cast<TFloat>(static_cast<TMatch>(Value))))
 	{	return static_cast<TFloat>(static_cast<TMatch>(Value));	}
 
 	template<class TFloat>
-	static TFloat rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(static_cast<TMatch>(*static_cast<T*>(Value)))))
+	static TFloat rtCast(void *Value)noexcept(noexcept(static_cast<TFloat>(static_cast<TMatch>(*static_cast<T*>(Value)))))
 	{	return static_cast<TFloat>(static_cast<TMatch>(*static_cast<T*>(Value)));	}
 };
 
@@ -249,11 +249,11 @@ struct Decl<T,T>
 	static cnLib_CONSTVAR bool IsMatch=true;
 
 	template<class TFloat>
-	static TFloat Cast(T Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(Value)))
+	static TFloat Cast(T Value)noexcept(noexcept(static_cast<TFloat>(Value)))
 	{	return static_cast<TFloat>(Value);	}
 
 	template<class TFloat>
-	static TFloat rtCast(void *Value)noexcept(cnLib_NOEXCEPTEXPR(static_cast<TFloat>(*static_cast<T*>(Value))))
+	static TFloat rtCast(void *Value)noexcept(noexcept(static_cast<TFloat>(*static_cast<T*>(Value))))
 	{	return static_cast<TFloat>(*static_cast<T*>(Value));	}
 };
 
@@ -904,7 +904,7 @@ namespace Math_TH{
 	struct Abs
 	{
 		template<class T>
-		static T Call(T Value)noexcept(cnLib_NOEXCEPTEXPR(Value>=0) && cnLib_NOEXCEPTEXPR(T(-Value)))
+		static T Call(T Value)noexcept(noexcept(Value>=0) && noexcept(T(-Value)))
 		{
 			if(Value<0)
 				return -Value;
@@ -912,7 +912,7 @@ namespace Math_TH{
 		}
 
 		template<class T>
-		static bool Set(T Value)noexcept(cnLib_NOEXCEPTEXPR(Value>=0) && cnLib_NOEXCEPTEXPR(Value=-Value))
+		static bool Set(T Value)noexcept(noexcept(Value>=0) && noexcept(Value=-Value))
 		{
 			if(Value<0){
 				Value=-Value;
@@ -966,20 +966,20 @@ struct TFloatConstant
 
 //---------------------------------------------------------------------------
 template<class T>
-inline T Absolute(T Value)noexcept(cnLib_NOEXCEPTEXPR(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
+inline T Absolute(T Value)noexcept(noexcept(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
 {	return cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value);	}
 
 template<class T>
-inline bool SetAbsolute(T &Value)noexcept(cnLib_NOEXCEPTEXPR(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
+inline bool SetAbsolute(T &Value)noexcept(noexcept(cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Call(Value)))
 {	return cnLib_THelper::Math_TH::Abs<cnVar::TIsSigned<T>::Value>::Set(Value);	}
 //---------------------------------------------------------------------------
 template<class T>
-inline const T& Min(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Value2)noexcept(cnLib_NOEXCEPTEXPR(Value1<Value2))
+inline const T& Min(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Value2)noexcept(noexcept(Value1<Value2))
 {
 	return Value1<Value2 ? Value1 : Value2;
 }
 template<class T>
-inline const T& Max(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Value2)noexcept(cnLib_NOEXCEPTEXPR(Value1>Value2))
+inline const T& Max(const T &Value1,typename cnVar::TTypeDef<T>::Type const &Value2)noexcept(noexcept(Value1>Value2))
 {
 	return Value1>Value2 ? Value1 : Value2;
 }
@@ -990,7 +990,16 @@ namespace TKRuntime{
 //---------------------------------------------------------------------------
 
 template<uIntn FloatSize>
-struct TMathFloat;
+struct TFloatSpecialConstant;
+//{
+//	static const tFloat Max;
+//	static const tFloat InfP;
+//	static const tFloat InfN;
+//	static const tFloat NaN;
+//};
+
+template<uIntn FloatSize>
+struct TFloatMath;
 //{
 //	static tFloat Absolute(tFloat n)noexcept;
 //	static tFloat RoundNearest(tFloat n)noexcept;
@@ -1020,7 +1029,7 @@ namespace CPPRuntime{
 //---------------------------------------------------------------------------
 
 template<uIntn FloatSize>
-struct TMathFloat
+struct TFloatMath
 {
 	typedef typename cnVar::TFloatOfSize<FloatSize>::Type tFloat;
 
@@ -1084,84 +1093,84 @@ namespace cnMath{
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatAbsolute(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Absolute(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Absolute(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundNearest(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundNearest(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::RoundNearest(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundTruncate(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundTruncate(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::RoundTruncate(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundNegative(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundNegative(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::RoundNegative(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatRoundPositive(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::RoundPositive(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::RoundPositive(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatSplitExponent(T n,sfInt16 &Exponent)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::SplitExponent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n),Exponent);	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::SplitExponent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n),Exponent);	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatModulo(const T &Dividend,typename cnVar::TTypeDef<T>::Type Divisor)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Modulo(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Dividend),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Divisor));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Modulo(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Dividend),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Divisor));	}
 
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatSquareRoot(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::SquareRoot(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::SquareRoot(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatNaturalLogarithm(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::NaturalLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::NaturalLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatBinaryLogarithm(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::BinaryLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::BinaryLogarithm(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatNaturalExponential(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::NaturalExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::NaturalExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatBinaryExponential(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::BinaryExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::BinaryExponential(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatPower(const T &Base,typename cnVar::TTypeDef<T>::Type Exponent)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Power(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Base),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Exponent));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Power(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Base),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(Exponent));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatSine(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Sine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Sine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatCosine(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Cosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Cosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatTangent(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Tangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::Tangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatArcSine(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcSine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::ArcSine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatArcCosine(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcCosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::ArcCosine(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
 inline typename cnVar::TFloatConversion<T>::tMatch FloatArcTangent(const T &n)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::ArcTangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::ArcTangent(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(n));	}
 
 template<class T>
-inline typename cnVar::TFloatConversion<T>::tMatch FloatArcTangentFloatArcTangent2(const T &y,typename cnVar::TTypeDef<T>::Type x)noexcept(true)
-{	return TKRuntime::TMathFloat<cnVar::TFloatConversion<T>::MatchSize>::Power(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(y),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(x));	}
+inline typename cnVar::TFloatConversion<T>::tMatch FloatArcTangent2(const T &y,typename cnVar::TTypeDef<T>::Type x)noexcept(true)
+{	return TKRuntime::TFloatMath<cnVar::TFloatConversion<T>::MatchSize>::ArcTangent2(static_cast<typename cnVar::TFloatConversion<T>::tMatch>(y),static_cast<typename cnVar::TFloatConversion<T>::tMatch>(x));	}
 
 //---------------------------------------------------------------------------
 }	//	namespace cnMath

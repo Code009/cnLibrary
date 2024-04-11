@@ -32,10 +32,10 @@ namespace cnWin{
 #if _MANAGED
 //---------------------------------------------------------------------------
 template<class T>
-T* mPassMemberPtr(interior_ptr<T> v){	return v;	}
+T* mPassMemberPtr(interior_ptr<T> v)noexcept(true){	return v;	}
 //---------------------------------------------------------------------------
 template<class T>
-inline T* __clrcall ManagedToPointer(interior_ptr<T> p)
+inline T* __clrcall ManagedToPointer(interior_ptr<T> p)noexcept(true)
 {
 	return static_cast<T*>(*reinterpret_cast<void**>(&p));
 }
@@ -62,28 +62,28 @@ class cGCHandle
 {
 #if _MANAGED
 public:
-	cGCHandle():GCHandleStorage{0}{}
+	cGCHandle()noexcept(true):GCHandleStorage{0}{}
 #ifdef cnLib_DEBUG
-	~cGCHandle(){	cnLib_ASSERT(RefHandle().IsAllocated==false);	}
+	~cGCHandle()noexcept(true){	cnLib_ASSERT(RefHandle().IsAllocated==false);	}
 #endif // cnLib_DEBUG
 
-	__clrcall operator System::Object^(void)const{
+	__clrcall operator System::Object^(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		return Handle.Target;
 	}
 
 	template<class T>
-	T^ __clrcall Cast(void)const{
+	T^ __clrcall Cast(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		return static_cast<T^>(Handle.Target);
 	}
 	template<class T>
-	T^ __clrcall DynamicCast(void)const{
+	T^ __clrcall DynamicCast(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		return dynamic_cast<T^>(Handle.Target);
 	}
 
-	System::Runtime::InteropServices::GCHandle& RefHandle(void)const{
+	System::Runtime::InteropServices::GCHandle& RefHandle(void)const noexcept(true){
 		return reinterpret_cast<System::Runtime::InteropServices::GCHandle&>(const_cast<cGCHandle*>(this)->GCHandleStorage);
 	}
 
@@ -92,7 +92,7 @@ public:
 protected:
 	void* GCHandleStorage[1];
 
-	void Reset(void){
+	void Reset(void)noexcept(true){
 		for(void* &p : GCHandleStorage){
 			p=0;
 		}
@@ -117,20 +117,20 @@ class mcGCHandleT : public cGCHandle
 {
 public:
 
-	void __clrcall Alloc(T ^Object){
+	void __clrcall Alloc(T ^Object)noexcept(true){
 		auto &Handle=RefHandle();
 		cnLib_ASSERT(!Handle.IsAllocated);
 		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object);
 	}
 
-	void __clrcall Free(void){
+	void __clrcall Free(void)noexcept(true){
 		auto &Handle=RefHandle();
 		cnLib_ASSERT(Handle.IsAllocated);
 		Handle.Free();
 	}
 
 	template<class...VT>
-	T^ __clrcall Create(VT...Args){
+	T^ __clrcall Create(VT...Args)noexcept(true){
 		auto &Handle=RefHandle();
 		cnLib_ASSERT(!Handle.IsAllocated);
 		T ^Object=gcnew T(Args...);
@@ -138,7 +138,7 @@ public:
 		return Object;
 	}
 
-	T^ __clrcall Discard(void){
+	T^ __clrcall Discard(void)noexcept(true){
 		auto &Handle=RefHandle();
 		if(Handle.IsAllocated){
 			T ^RetTarget=static_cast<T^>(Handle.Target);
@@ -148,7 +148,7 @@ public:
 		return nullptr;
 	}
 
-	void __clrcall Store(T^ Object){
+	void __clrcall Store(T^ Object)noexcept(true){
 		auto &Handle=RefHandle();
 		if(Handle.IsAllocated){
 			Handle.Target=Object;
@@ -158,20 +158,20 @@ public:
 		}
 	}
 
-	T^ __clrcall Get(void)const{
+	T^ __clrcall Get(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		cnLib_ASSERT(Handle.IsAllocated);
 		return static_cast<T^>(Handle.Target);
 	}
 
-	void __clrcall Set(T ^Object){
+	void __clrcall Set(T ^Object)noexcept(true){
 		auto &Handle=RefHandle();
 		cnLib_ASSERT(Handle.IsAllocated);
 		return Handle.Target=Object;
 	}
 
-	__clrcall operator T^(void)const{	return Get();	}
-	void __clrcall operator =(T^ Object){	return Set(Object);	}
+	__clrcall operator T^(void)const noexcept(true){	return Get();	}
+	void __clrcall operator =(T^ Object)noexcept(true){	return Set(Object);	}
 };
 //---------------------------------------------------------------------------
 #endif // _MANAGED
@@ -182,29 +182,29 @@ class cGCReference : public cGCHandle
 #if _MANAGED
 public:
 
-	cGCReference(){
+	cGCReference()noexcept(true){
 		auto &Handle=RefHandle();
 		Handle=System::Runtime::InteropServices::GCHandle::Alloc(nullptr,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
 	}
 
-	~cGCReference(){
+	~cGCReference()noexcept(true){
 		auto &Handle=RefHandle();
 		Handle.Free();
 	}
 
-	cGCReference(const cGCReference &Src){
+	cGCReference(const cGCReference &Src)noexcept(true){
 		auto &Handle=RefHandle();
 		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Src,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
 	}
 
-	cGCReference(cGCReference &&Src){
+	cGCReference(cGCReference &&Src)noexcept(true){
 		auto &Handle=RefHandle();
 		auto &SrcHandle=Src.RefHandle();
 		Handle=SrcHandle;
 		SrcHandle=System::Runtime::InteropServices::GCHandle::Alloc(nullptr,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
 	}
 
-	__clrcall cGCReference(System::Object ^Object){
+	__clrcall cGCReference(System::Object ^Object)noexcept(true){
 		auto &Handle=RefHandle();
 		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
 	}
@@ -212,8 +212,8 @@ public:
 #else
 	// !_MANAGED
 protected:
-	cGCReference();
-	~cGCReference();
+	cGCReference()noexcept(true);
+	~cGCReference()noexcept(true);
 #endif // !_MANAGED
 
 };
@@ -230,33 +230,33 @@ class mcGCReferenceT : public cGCReference<RefType>
 {
 public:
 
-	__clrcall mcGCReferenceT(TManaged ^Object=nullptr)	: cGCRef(Object){}
+	__clrcall mcGCReferenceT(TManaged ^Object=nullptr)noexcept(true)	: cGCRef(Object){}
 
-	__clrcall mcGCReferenceT(const mcGCReferenceT &Src)	: cGCRef(Src){}
-	__clrcall mcGCReferenceT(mcGCReferenceT &&Src)		: cGCRef(static_cast<mcGCReferenceT&&>(Src)){}
+	__clrcall mcGCReferenceT(const mcGCReferenceT &Src)noexcept(true)	: cGCRef(Src){}
+	__clrcall mcGCReferenceT(mcGCReferenceT &&Src)noexcept(true)		: cGCRef(static_cast<mcGCReferenceT&&>(Src)){}
 
 	template<class TManagedSrc>
-	__clrcall mcGCReferenceT(mcGCReferenceT<TManagedSrc,RefType> &&Src)
+	__clrcall mcGCReferenceT(mcGCReferenceT<TManagedSrc,RefType> &&Src)noexcept(true)
 		: cGCRef(static_cast<mcGCReferenceT<TManagedSrc,RefType>&&>(Src))
 	{
 		static_cast<TManaged^>(static_cast<TManagedSrc^>(Src));
 	}
 
-	__clrcall operator TManaged^(void)const{
+	__clrcall operator TManaged^(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		return static_cast<TManaged^>(Handle.Target);
 	}
-	void __clrcall operator =(TManaged^ Object){
+	void __clrcall operator =(TManaged^ Object)noexcept(true){
 		auto &Handle=RefHandle();
 		Handle.Target=Object;
 	}
 
-	TManaged^ __clrcall Get(void)const{
+	TManaged^ __clrcall Get(void)const noexcept(true){
 		auto &Handle=RefHandle();
 		return static_cast<TManaged^>(Handle.Target);
 	}
 
-	void __clrcall Set(TManaged^ Target){
+	void __clrcall Set(TManaged^ Target)noexcept(true){
 		auto &Handle=RefHandle();
 		Handle.Target=Target;
 	}
@@ -291,7 +291,7 @@ public:
 
 #endif // cnLib_DEBUG
 
-	void __clrcall Initialize(void){
+	void __clrcall Initialize(void)noexcept(true){
 		*reinterpret_cast<TManaged*>(this)=TManaged();
 	}
 

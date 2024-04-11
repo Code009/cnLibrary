@@ -10,7 +10,7 @@ const wchar_t cnWinRTL::Win32FileNameInvalidFileChar[]={'<','>',':','"','/','\\'
 const uIntn cnWinRTL::Win32FileNameInvalidFileCharCount=cnMemory::ArrayLength(Win32FileNameInvalidFileChar);
 const uIntn cnWinRTL::Win32FileNameInvalidFilterCharCount=Win32FileNameInvalidFileCharCount-2;
 //---------------------------------------------------------------------------
-bool cnWinRTL::Win32FileNameCheckIsDot(const wchar_t *Name)
+bool cnWinRTL::Win32FileNameCheckIsDot(const wchar_t *Name)noexcept
 {
 	if(Name==nullptr)
 		return false;
@@ -20,7 +20,7 @@ bool cnWinRTL::Win32FileNameCheckIsDot(const wchar_t *Name)
 	return *Name==0;
 }
 //---------------------------------------------------------------------------
-DWORD cnWinRTL::Win32FileNameCheckFileName(const wchar_t *Name)
+DWORD cnWinRTL::Win32FileNameCheckFileName(const wchar_t *Name)noexcept
 {
 	if(Name==nullptr || Name[0]==0)
 		return 0;
@@ -42,7 +42,7 @@ DWORD cnWinRTL::Win32FileNameCheckFileName(const wchar_t *Name)
 	return Index;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::NTFileNormalizeName(const wchar_t *Path,uIntn PathLength)
+cStringBuffer<wchar_t> cnWinRTL::NTFileNormalizeName(const wchar_t *Path,uIntn PathLength)noexcept
 {
 	static const wchar_t Prefix[3]={'\\','\\','?'};
 	cStringBuffer<wchar_t> Result;
@@ -93,7 +93,7 @@ cStringBuffer<wchar_t> cnWinRTL::NTFileNormalizeName(const wchar_t *Path,uIntn P
 	return Result;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeName(const wchar_t *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth)
+cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeName(const wchar_t *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth)noexcept
 {
 	cStringBuffer<wchar_t> Dest(BasePath,BasePathLength);
 	// get lengths
@@ -110,7 +110,7 @@ cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeName(const wchar_t *BasePath,uIntn
 	return Dest;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeFindName(const wchar_t *Path,uIntn PathLength,const wchar_t *Filter)
+cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeFindName(const wchar_t *Path,uIntn PathLength,const wchar_t *Filter)noexcept
 {
 	uIntn AcceptableLength=0;
 	if(Filter!=nullptr){
@@ -135,7 +135,7 @@ cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeFindName(const wchar_t *Path,uIntn
 	return FindPath;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeTemporaryFileName(const wchar_t *FolderName,const wchar_t *Prefix)
+cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeTemporaryFileName(const wchar_t *FolderName,const wchar_t *Prefix)noexcept
 {
 	wchar_t TempFileName[MAX_PATH+1];
 	const wchar_t *TempPrefix=Prefix;
@@ -151,7 +151,7 @@ cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeTemporaryFileName(const wchar_t *F
 	return Name;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::NTFileMakeTempFolderName(void)
+cStringBuffer<wchar_t> cnWinRTL::NTFileMakeTempFolderName(void)noexcept
 {
 	wchar_t TempPath[MAX_PATH+1];
 
@@ -160,7 +160,7 @@ cStringBuffer<wchar_t> cnWinRTL::NTFileMakeTempFolderName(void)
 	return NTFileNormalizeName(TempPath,TempPathLength);
 }
 //---------------------------------------------------------------------------
-cnRTL::cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeModuleName(HMODULE ModuleHandle)
+cnRTL::cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeModuleName(HMODULE ModuleHandle)noexcept
 {
 	cStringBuffer<wchar_t> Path;
 	uIntn PathLength;
@@ -180,13 +180,13 @@ cnRTL::cStringBuffer<wchar_t> cnWinRTL::Win32FileMakeModuleName(HMODULE ModuleHa
 	return Path;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::NTFileMakeApplicationFileName(void)
+cStringBuffer<wchar_t> cnWinRTL::NTFileMakeApplicationFileName(void)noexcept
 {
 	cStringBuffer<wchar_t> Path=Win32FileMakeModuleName(nullptr);
 	return NTFileNormalizeName(Path->Pointer,Path->Length);
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> cnWinRTL::NTFileMakeApplicationFolderName(void)
+cStringBuffer<wchar_t> cnWinRTL::NTFileMakeApplicationFolderName(void)noexcept
 {
 	cStringBuffer<wchar_t> Path=Win32FileMakeModuleName(nullptr);
 	for(uIntn i=Path->Length;i>0;i--){
@@ -200,7 +200,7 @@ cStringBuffer<wchar_t> cnWinRTL::NTFileMakeApplicationFolderName(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileNameEnum::cWin32FileNameEnum(cnRTL::cString<wchar_t> Path,cnRTL::cString<wchar_t> FindPath,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo))
+cWin32FileNameEnum::cWin32FileNameEnum(cnRTL::cString<wchar_t> Path,cnRTL::cString<wchar_t> FindPath,iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path,const WIN32_FIND_DATA &CacheFileInfo)noexcept)noexcept
 	: fPath(cnVar::MoveCast(Path))
 	, fFindPath(cnVar::MoveCast(FindPath))
 	, fFindHandle(INVALID_HANDLE_VALUE)
@@ -208,13 +208,13 @@ cWin32FileNameEnum::cWin32FileNameEnum(cnRTL::cString<wchar_t> Path,cnRTL::cStri
 {
 }
 //---------------------------------------------------------------------------
-cWin32FileNameEnum::~cWin32FileNameEnum()
+cWin32FileNameEnum::~cWin32FileNameEnum()noexcept
 {
 	if(fFindHandle!=INVALID_HANDLE_VALUE)
 		FindClose(fFindHandle);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileNameEnum::IsDot(const WIN32_FIND_DATA &fd)
+bool cWin32FileNameEnum::IsDot(const WIN32_FIND_DATA &fd)noexcept
 {
 	if((fd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0)
 		return false;
@@ -234,21 +234,21 @@ bool cWin32FileNameEnum::IsDot(const WIN32_FIND_DATA &fd)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileNameEnum::IsInvalidFile(const WIN32_FIND_DATA &fd)
+bool cWin32FileNameEnum::IsInvalidFile(const WIN32_FIND_DATA &fd)noexcept
 {
 	if(IsDot(fd))
 		return true;
 	return false;
 }
 //---------------------------------------------------------------------------
-cnRTL::cString<wchar_t> cWin32FileNameEnum::MakeFileName(const WIN32_FIND_DATA &fd)
+cnRTL::cString<wchar_t> cWin32FileNameEnum::MakeFileName(const WIN32_FIND_DATA &fd)noexcept
 {
 	// create file name
 	auto pFileName=wtou(fd.cFileName);
 	return Win32FileMakeName(fPath,fPath.GetLength(),&pFileName,1);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileNameEnum::ProcessFindData(WIN32_FIND_DATA &fd)
+bool cWin32FileNameEnum::ProcessFindData(WIN32_FIND_DATA &fd)noexcept
 {
 	// supress . and ..
 	while(IsInvalidFile(fd)){
@@ -259,7 +259,7 @@ bool cWin32FileNameEnum::ProcessFindData(WIN32_FIND_DATA &fd)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileNameEnum::FindNext(WIN32_FIND_DATA &fd)
+bool cWin32FileNameEnum::FindNext(WIN32_FIND_DATA &fd)noexcept
 {
 	if(fFindHandle==INVALID_HANDLE_VALUE){
 		fFindHandle=FindFirstFileW(fFindPath,&fd);
@@ -275,7 +275,7 @@ bool cWin32FileNameEnum::FindNext(WIN32_FIND_DATA &fd)
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileNameEnum::Fetch(void)
+bool cWin32FileNameEnum::Fetch(void)noexcept
 {
 	WIN32_FIND_DATA FindData;
 
@@ -288,7 +288,7 @@ bool cWin32FileNameEnum::Fetch(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-iFile*	cWin32FileNameEnum::GetCurrentFile(void)
+iFile*	cWin32FileNameEnum::GetCurrentFile(void)noexcept
 {
 	return fCurrentFileName;
 }

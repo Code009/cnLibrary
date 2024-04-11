@@ -64,12 +64,7 @@ private:
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override{}
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override{}
 public:
-#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using TImplementation::TImplementation;
-#else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
-	template<class...VT>
-	cReferenceStaticImplementT(VT&&...Args):TImplementation(Forward<VT>(Args)...){}
-#endif	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS
 
 	~cReferenceStaticImplementT()=default;
 };
@@ -93,12 +88,7 @@ private:
 		return TImplementation::CastInterface(InterfaceID);
 	}
 public:
-#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using TImplementation::TImplementation;
-#else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
-	template<class...VT>
-	cInterfaceStaticImplementT(VT&&...Args)noexcept(true):TImplementation(Forward<VT>(Args)...){}
-#endif // cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS
 
 	~cInterfaceStaticImplementT()=default;
 };
@@ -108,7 +98,7 @@ struct cSortablePtrItemOrderOperator
 {
 
 	template<class TValue>
-	static auto Compare(const T &Item,const TValue &Value) -> decltype(Item->Compare(Value)){
+	static auto Compare(const T &Item,const TValue &Value)noexcept(true) -> decltype(Item->Compare(Value)){
 		return Item->Compare(Value);
 	}
 };
@@ -116,34 +106,34 @@ template<class T>
 class cSortablePtr
 {
 public:
-	cSortablePtr():fPtr(nullptr){}
-	cSortablePtr(T *p):fPtr(p){}
+	cSortablePtr()noexcept(true):fPtr(nullptr){}
+	cSortablePtr(T *p)noexcept(true):fPtr(p){}
 
-	cSortablePtr(const cSortablePtr &Src):fPtr(Src.fPtr){}
+	cSortablePtr(const cSortablePtr &Src)noexcept(true):fPtr(Src.fPtr){}
 
-	cSortablePtr& operator =(const cSortablePtr &Src){
+	cSortablePtr& operator =(const cSortablePtr &Src)noexcept(true){
 		fPtr=Src.fPtr;
 		return *this;
 	}
-	cSortablePtr& operator =(T *p){
+	cSortablePtr& operator =(T *p)noexcept(true){
 		fPtr=p;
 		return *this;
 	}
 	
-	eiOrdering Compare(const cSortablePtr &Cmp)const{	return fPtr->Compare(Cmp.fPtr);	}
-	eiOrdering Compare(T *Cmp)const{	return fPtr->Compare(Cmp);	}
+	eiOrdering Compare(const cSortablePtr &Cmp)const noexcept(true){	return fPtr->Compare(Cmp.fPtr);	}
+	eiOrdering Compare(T *Cmp)const noexcept(true){	return fPtr->Compare(Cmp);	}
 
-	bool operator == (const cSortablePtr &Cmp)const
+	bool operator == (const cSortablePtr &Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp.fPtr)==iOrdering::Equal;	}
-	bool operator != (const cSortablePtr &Cmp)const
+	bool operator != (const cSortablePtr &Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp.fPtr)!=iOrdering::Equal;	}
 
 	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cSortablePtr &,Compare)
 
 
-	bool operator == (T *Cmp)const
+	bool operator == (T *Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp)==iOrdering::Equal;	}
-	bool operator != (T *Cmp)const
+	bool operator != (T *Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp)!=iOrdering::Equal;	}
 
 	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(T*,Compare)
@@ -167,7 +157,7 @@ public:
 template<class T>
 struct cAggregableOwnerToken : cnVar::bcPointerOwnerTokenOperator<T*>
 {
-	static void Release(T *Token){
+	static void Release(T *Token)noexcept(true){
 		if(Token!=nullptr)
 			Token->AggregableRelease();
 	}
@@ -180,18 +170,9 @@ template<class TInterfaceImplementation>
 class impInterfaceAggregable : public TInterfaceImplementation, public bcAggregable
 {
 public:
-#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using TInterfaceImplementation::TInterfaceImplementation;
-#else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
-	template<class...VT>
-	impInterfaceAggregable(VT&&...Args):TInterfaceImplementation(static_cast<VT&&>(Args)...){}
-#endif // cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS
 
-#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	~impInterfaceAggregable()=default;
-#else
-	~impInterfaceAggregable(){}
-#endif
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override{
 		return this->HostAggregate->CastInterface(InterfaceID);
@@ -255,7 +236,7 @@ public:
 private:
 	cAggregablePtr<bcAggregable> fAggregables[AggregableCount];
 
-	void AssignAggregable(uIntn){}
+	void AssignAggregable(uIntn)noexcept(true){}
 	template<class TAggregable,class...VTAggregables>
 	void AssignAggregable(uIntn Index,TAggregable&& Aggregable,VTAggregables&&...Aggregables)noexcept(true){
 		Aggregable->HostAggregate=this;
@@ -266,13 +247,13 @@ private:
 
 //---------------------------------------------------------------------------
 template<class...TAggregable>
-iPtr<iInterface> iAggregateCreate(TAggregable&&...Aggregables)
+inline iPtr<iInterface> iAggregateCreate(TAggregable&&...Aggregables)noexcept(true)
 {
 	return iCreate< cInterfaceAggregate<sizeof...(TAggregable)> >(cnVar::Forward<TAggregable>(Aggregables)...);
 }
 //---------------------------------------------------------------------------
 template<class TInterfaceImplementation>
-cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(void)
+inline cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(void)noexcept(true)
 {
 	typedef impInterfaceAggregable<TInterfaceImplementation> tAggregable;
 	typedef typename tAggregable::tLifeCycleManager tLifeCycleManager;
@@ -283,7 +264,7 @@ cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCr
 }
 //---------------------------------------------------------------------------
 template<class TInterfaceImplementation,class...TArgs>
-cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(TArgs&&...Args)
+inline cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef impInterfaceAggregable<TInterfaceImplementation> tAggregable;
 	typedef typename tAggregable::tLifeCycleManager tLifeCycleManager;

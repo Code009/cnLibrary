@@ -510,7 +510,7 @@ public:
 
 		template<class T>
 		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(T cnLib_UREF Value)
-			noexcept(cnLib_NOEXCEPTEXPR(fReturnValue=cnLib_UREFCAST(T)(Value)))
+			noexcept(noexcept(fReturnValue=cnLib_UREFCAST(T)(Value)))
 		{
 			fReturnValue=cnLib_UREFCAST(T)(Value);
 			return this->YieldSuspend();
@@ -518,7 +518,7 @@ public:
 
 		template<class T>
 		void return_value(T cnLib_UREF Value)
-			noexcept(cnLib_NOEXCEPTEXPR(fReturnValue=cnLib_UREFCAST(T)(Value)))
+			noexcept(noexcept(fReturnValue=cnLib_UREFCAST(T)(Value)))
 		{
 			fReturnValue=cnLib_UREFCAST(T)(Value);			
 		}

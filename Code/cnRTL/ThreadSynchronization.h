@@ -25,15 +25,15 @@ namespace cnRTL{
 class cWaitObject
 {
 public:
-	cWaitObject();
-	~cWaitObject();
+	cWaitObject()noexcept(true);
+	~cWaitObject()noexcept(true);
 
-	void Acquire(void);
-	void Release(void);
+	void Acquire(void)noexcept(true);
+	void Release(void)noexcept(true);
 
-	bool Check(void);
-	void Wait(void);
-	bool WaitUntil(iTimepoint *Timepoint,sInt64 Delay);
+	bool Check(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	bool WaitUntil(uInt64 SystemTime)noexcept(true);
 private:
 	cAtomicVar<uIntn> fRefCount;
 	iThread *fWaitThread=nullptr;
@@ -43,8 +43,8 @@ private:
 class cWaitReference : public iReference, public cWaitObject
 {
 public:
-	cWaitReference();
-	~cWaitReference();
+	cWaitReference()noexcept(true);
+	~cWaitReference()noexcept(true);
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
@@ -52,12 +52,12 @@ public:
 class cThreadOneTimeNotifier
 {
 public:
-	cThreadOneTimeNotifier();
-	~cThreadOneTimeNotifier();
+	cThreadOneTimeNotifier()noexcept(true);
+	~cThreadOneTimeNotifier()noexcept(true);
 
-	void Reset(void);
-	void Wait(void);
-	void Notify(void);
+	void Reset(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	void Notify(void)noexcept(true);
 protected:
 	iThread *fNotifyThread;
 	bool fWaiting;
@@ -66,8 +66,8 @@ protected:
 class cAffixedVariableSet
 {
 public:
-	cAffixedVariableSet();
-	~cAffixedVariableSet();
+	cAffixedVariableSet()noexcept(true);
+	~cAffixedVariableSet()noexcept(true);
 	
 	rPtr<iVariable> QueryAffixedVariable(const void *Token)noexcept(true);
 
@@ -86,7 +86,7 @@ private:
 		cVariable(cAffixedVariableSet *Owner,const void *Token)noexcept(true);
 		~cVariable()noexcept(true);
 
-		bool MakeReference(void);
+		bool MakeReference(void)noexcept(true);
 		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 
@@ -111,7 +111,7 @@ private:
 	rPtr<iMutex> fSetMutex;
 	cnRTL::cLinkItemSet<cVariable,cVariable::cItemOrderOperator> fSet;
 
-	void VariableReleased(cVariable *Variable);
+	void VariableReleased(cVariable *Variable)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL

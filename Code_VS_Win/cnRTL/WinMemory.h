@@ -18,14 +18,14 @@ namespace cnWinRTL{
 class cCRTDebugMemoryHeap : public iMemoryHeap
 {
 public:
-	cCRTDebugMemoryHeap();
-	~cCRTDebugMemoryHeap();
+	cCRTDebugMemoryHeap()noexcept(true);
+	~cCRTDebugMemoryHeap()noexcept(true);
 
-	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)override;
-	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)override;
-	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)override;
-	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)override;
-	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)override;
+	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)noexcept(true)override;
+	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept(true)override;
+	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept(true)override;
+	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept(true)override;
+	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)noexcept(true)override;
 };
 #endif // cnLib_DEBUG
 //---------------------------------------------------------------------------
@@ -33,13 +33,13 @@ public:
 class bcWinMemoryHeap : public iMemoryHeap
 {
 public:
-	bcWinMemoryHeap(HANDLE Heap);
+	bcWinMemoryHeap(HANDLE Heap)noexcept(true);
 
-	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)override;
-	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)override;
-	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)override;
-	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)override;
-	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)override;
+	virtual void* cnLib_FUNC Alloc(uIntn Size,uIntn Alignment)noexcept(true)override;
+	virtual bool cnLib_FUNC Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept(true)override;
+	virtual bool cnLib_FUNC Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept(true)override;
+	virtual void* cnLib_FUNC Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept(true)override;
+	virtual uIntn cnLib_FUNC SizeOf(void *Pointer)noexcept(true)override;
 
 protected:
 	HANDLE fHeap;
@@ -49,9 +49,9 @@ protected:
 class cWinMemoryHeap : public bcWinMemoryHeap
 {
 public:
-	cWinMemoryHeap(HANDLE Heap);
-	cWinMemoryHeap(DWORD Options,SIZE_T InitialSize,SIZE_T MaximumSize);
-	~cWinMemoryHeap();
+	cWinMemoryHeap(HANDLE Heap)noexcept(true);
+	cWinMemoryHeap(DWORD Options,SIZE_T InitialSize,SIZE_T MaximumSize)noexcept(true);
+	~cWinMemoryHeap()noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL

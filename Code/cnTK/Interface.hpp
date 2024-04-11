@@ -767,7 +767,7 @@ template<class TRet,class...TArgs>
 class cnLib_INTERFACE iFunction<TRet (TArgs...)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(TArgs...)=0;
+	virtual TRet cnLib_FUNC Execute(TArgs...)noexcept(true)=0;
 };
 
 #endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
@@ -816,35 +816,35 @@ template<class TRet>
 class cnLib_INTERFACE iFunction<TRet (void)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(void)=0;
+	virtual TRet cnLib_FUNC Execute(void)noexcept(true)=0;
 };
 
 template<class TRet,class T0>
 class cnLib_INTERFACE iFunction<TRet (T0)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(T0)=0;
+	virtual TRet cnLib_FUNC Execute(T0)noexcept(true)=0;
 };
 
 template<class TRet,class T0,class T1>
 class cnLib_INTERFACE iFunction<TRet (T0,T1)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(T0,T1)=0;
+	virtual TRet cnLib_FUNC Execute(T0,T1)noexcept(true)=0;
 };
 
 template<class TRet,class T0,class T1,class T2>
 class cnLib_INTERFACE iFunction<TRet (T0,T1,T2)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(T0,T1,T2)=0;
+	virtual TRet cnLib_FUNC Execute(T0,T1,T2)noexcept(true)=0;
 };
 
 template<class TRet,class T0,class T1,class T2,class T3>
 class cnLib_INTERFACE iFunction<TRet (T0,T1,T2,T3)noexcept>
 {
 public:
-	virtual TRet cnLib_FUNC Execute(T0,T1,T2,T3)=0;
+	virtual TRet cnLib_FUNC Execute(T0,T1,T2,T3)noexcept(true)=0;
 };
 
 #endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L

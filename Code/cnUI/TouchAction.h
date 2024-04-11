@@ -18,11 +18,11 @@ protected:
 	iUITouchControl *fViewTouch;
 
 public:
-	cUITouchFilter();
-	~cUITouchFilter();
+	cUITouchFilter()noexcept(true);
+	~cUITouchFilter()noexcept(true);
 
-	iUIView* GetView(void);
-	void SetView(iUIView *View);
+	iUIView* GetView(void)noexcept(true);
+	void SetView(iUIView *View)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cUITouchDistanceDetect
@@ -30,28 +30,28 @@ class cUITouchDistanceDetect
 private:
 	cnRTL::cSeqMap<void*,cUIPoint> fBeginMap;
 public:
-	bool Begin(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative);
-	bool Move(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative);
-	void End(iUITouchEvent *TouchEvent);
-	void Clear(void);
+	bool Begin(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept(true);
+	bool Move(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept(true);
+	void End(iUITouchEvent *TouchEvent)noexcept(true);
+	void Clear(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cUITouchActionTap : public cUITouchFilter
 {
 private:
 	void* fTouchID;
-	cnRTL::cTime fTapTime;
+	uInt64 fTapTime;
 public:
-	cUITouchActionTap();
-	~cUITouchActionTap();
+	cUITouchActionTap()noexcept(true);
+	~cUITouchActionTap()noexcept(true);
 
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)override;
+	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
 
 	cUIPoint TapPos;
 	uIntn TapCount;
-	cFunction<void (void)> OnTap;
+	cFunction<void (void)noexcept(true)> OnTap;
 };
 typedef cUITouchActionTap cTouchActionTap;
 //---------------------------------------------------------------------------
@@ -63,23 +63,23 @@ private:
 
 	class cTimerProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fTimerProcedure;
-	void TimerHit(void);
+	void TimerHit(void)noexcept(true);
 public:
-	cUITouchActionLongPress();
-	~cUITouchActionLongPress();
+	cUITouchActionLongPress()noexcept(true);
+	~cUITouchActionLongPress()noexcept(true);
 
 
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)override;
+	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)noexcept(true)override;
 
 	uIntn DurationNS;
 
 	cUIPoint TapPos;
-	cFunction<void (void)> OnPress;
+	cFunction<void (void)noexcept(true)> OnPress;
 };
 //---------------------------------------------------------------------------
 class cUITouchActionPan : public cUITouchFilter
@@ -88,25 +88,25 @@ private:
 	void* fPanTouchID;
 	cUITouchDistanceDetect fPointMoveDetect;
 
-	void Start(iUITouchEvent *Event,const cUIPoint &Pos);
-	void Stop(iUITouchEvent *Event);
+	void Start(iUITouchEvent *Event,const cUIPoint &Pos)noexcept(true);
+	void Stop(iUITouchEvent *Event)noexcept(true);
 protected:
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)override;
-	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)override;
+	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)noexcept(true)override;
 public:
-	cUITouchActionPan();
-	~cUITouchActionPan();
+	cUITouchActionPan()noexcept(true);
+	~cUITouchActionPan()noexcept(true);
 
 
 	sInt32 DelayLength=0;
 
-	cFunction<bool (const cUIPoint &Pos)> OnStart;
-	cFunction<void (void)> OnPan;
-	cFunction<void (void)> OnExit;
+	cFunction<bool (const cUIPoint &Pos)noexcept(true)> OnStart;
+	cFunction<void (void)noexcept(true)> OnPan;
+	cFunction<void (void)noexcept(true)> OnExit;
 
-	void* GetTouchID(void);
+	void* GetTouchID(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

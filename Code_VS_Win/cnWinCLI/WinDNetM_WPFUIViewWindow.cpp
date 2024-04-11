@@ -11,7 +11,7 @@ using namespace DNet;
 
 
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> cnWin::DNetCreateWindowClient(void)
+iPtr<iWindowClient> cnWin::DNetCreateWindowClient(void)noexcept
 {
 	auto DispatchFrame=mcDNetUIThreadDispatcher::mCurrentUIDispatcher();
 	if(DispatchFrame==nullptr)
@@ -24,7 +24,7 @@ iPtr<iWindowClient> cnWin::DNetCreateWindowClient(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFViewRoot::mcWPFViewRoot(mcConstructParameter &Parameter)
+mcWPFViewRoot::mcWPFViewRoot(mcConstructParameter &Parameter)noexcept
 	: fWPFRoot(cnVar::MoveCast(Parameter.WPFRoot))
 {
 	fDispatcherFinishNotify.NotifyProcedure=DispatcherFinishNotify;
@@ -33,18 +33,18 @@ mcWPFViewRoot::mcWPFViewRoot(mcConstructParameter &Parameter)
 	WPF->CPPAttach(this);
 }
 //---------------------------------------------------------------------------
-mcWPFViewRoot::~mcWPFViewRoot()
+mcWPFViewRoot::~mcWPFViewRoot()noexcept
 {
 	auto WPF=fWPFRoot.Get();
 	WPF->CPPDetach(this);
 }
 //---------------------------------------------------------------------------
-System::Object^ mcWPFViewRoot::mGetWPFRootObject(void)
+System::Object^ mcWPFViewRoot::mGetWPFRootObject(void)noexcept
 {
 	return fWPFRoot;
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::CleanupWPF(void)
+void mcWPFViewRoot::CleanupWPF(void)noexcept
 {
 	if(fClient!=nullptr){
 		mResetClient();
@@ -54,19 +54,19 @@ void mcWPFViewRoot::CleanupWPF(void)
 	WPFRoot->DispatcherFinishCleanup();
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)
+void mcWPFViewRoot::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(Notify,&mcWPFViewRoot::fDispatcherFinishNotify);
 	return Host->DispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::DispatcherFinishNotify(bool Shutdown)
+void mcWPFViewRoot::DispatcherFinishNotify(bool Shutdown)noexcept
 {
 	CleanupWPF();
 	nDispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-bool mcWPFViewRoot::mSetClient(cGCRef &ObjectHandle)
+bool mcWPFViewRoot::mSetClient(cGCRef &ObjectHandle)noexcept
 {
 	auto WPFViewClient=ObjectHandle.Cast<IWPFView>();
 	if(WPFViewClient==nullptr)
@@ -92,7 +92,7 @@ bool mcWPFViewRoot::mSetClient(cGCRef &ObjectHandle)
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::mResetClient(void)
+void mcWPFViewRoot::mResetClient(void)noexcept
 {
 	if(fClient==nullptr)
 		return;
@@ -107,7 +107,7 @@ void mcWPFViewRoot::mResetClient(void)
 	fClientView=nullptr;
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::WPFUIWindowRemoveSubview(IWPFView ^Subview)
+void mcWPFViewRoot::WPFUIWindowRemoveSubview(IWPFView ^Subview)noexcept
 {
 	if(fClient!=Subview->ChildInterface)
 		return;
@@ -245,7 +245,7 @@ void WPFViewRoot::DispatcherFinishCleanup(void)
 {
 }
 //---------------------------------------------------------------------------
-void cnWin::mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)
+void cnWin::mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)noexcept
 {
 	auto WPFRoot=ViewRoot.Cast<WPFViewRoot>();
 	WPFRoot->BackgroundColor=System::Windows::Media::Color::FromRgb(r,g,b);
@@ -292,22 +292,22 @@ System::IntPtr rcWPFWindow::WindowMessageHook(System::IntPtr hwnd, int msg, Syst
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFWindow::mcWPFWindow()
+mcWPFWindow::mcWPFWindow()noexcept
 	: fWPFWindow(gcnew rcWPFWindow(this))
 {
 	fDispatcherFinishNotify.NotifyProcedure=DispatcherFinishNotify;
 }
 //---------------------------------------------------------------------------
-mcWPFWindow::~mcWPFWindow()
+mcWPFWindow::~mcWPFWindow()noexcept
 {
 }
 //---------------------------------------------------------------------------
-HWND mcWPFWindow::mGetHandle(void)
+HWND mcWPFWindow::mGetHandle(void)noexcept
 {
 	return fWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::Create(HWND ParentWindowHandle,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height)
+bool mcWPFWindow::Create(HWND ParentWindowHandle,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height)noexcept
 {
 	auto WPFWnd=fWPFWindow.Get();
 
@@ -323,7 +323,7 @@ bool mcWPFWindow::Create(HWND ParentWindowHandle,const wchar_t *WindowText,DWORD
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::ClientAttach(WPFViewRoot ^ViewRoot,iWPFWindowClient *WindowClient)
+bool mcWPFWindow::ClientAttach(WPFViewRoot ^ViewRoot,iWPFWindowClient *WindowClient)noexcept
 {
 	auto WPFWnd=fWPFWindow.Get();
 	auto Source=WPFWnd->Source;
@@ -342,7 +342,7 @@ bool mcWPFWindow::ClientAttach(WPFViewRoot ^ViewRoot,iWPFWindowClient *WindowCli
 	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::ClearClient(void)
+void mcWPFWindow::ClearClient(void)noexcept
 {
 	auto WPFWnd=fWPFWindow.Get();
 	auto Source=WPFWnd->Source;
@@ -353,7 +353,7 @@ void mcWPFWindow::ClearClient(void)
 		Source->RootVisual=nullptr;
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::WPFSourceAttach(rcWPFWindow ^WPFWnd)
+void mcWPFWindow::WPFSourceAttach(rcWPFWindow ^WPFWnd)noexcept
 {
 	HWND WindowHandle=static_cast<HWND>(WPFWnd->Source->Handle.ToPointer());
 
@@ -363,13 +363,13 @@ void mcWPFWindow::WPFSourceAttach(rcWPFWindow ^WPFWnd)
 	nWPFSourceAttach();
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::WPFSourceDetach(void)
+void mcWPFWindow::WPFSourceDetach(void)noexcept
 {
 	nWPFSourceDetach();
 	fWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-System::IntPtr mcWPFWindow::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)
+System::IntPtr mcWPFWindow::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept
 {
 	switch(msg){
 	case WM_WINDOWPOSCHANGED:
@@ -387,25 +387,25 @@ System::IntPtr mcWPFWindow::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, 
 	return System::IntPtr::IntPtr(Result);
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)
+void mcWPFWindow::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(Notify,&mcWPFWindow::fDispatcherFinishNotify);
 	return Host->DispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::DispatcherFinishNotify(bool Shutdown)
+void mcWPFWindow::DispatcherFinishNotify(bool Shutdown)noexcept
 {
 	CleanupWPF();
 	nDispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::CleanupWPF(void)
+void mcWPFWindow::CleanupWPF(void)noexcept
 {
 	auto WPFWnd=fWPFWindow.Get();
 	WPFWnd->Destroy();
 }
 //---------------------------------------------------------------------------
-mcWPFWindow* mcWPFWindow::mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)
+mcWPFWindow* mcWPFWindow::mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept
 {
 	auto WPFWnd=WindowCLIHandle.DynamicCast<rcWPFWindow>();
 	if(WPFWnd==nullptr)
@@ -418,7 +418,7 @@ mcWPFWindow* mcWPFWindow::mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFVi
 	return CPP;
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)
+bool mcWPFWindow::mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept
 {
 	if(static_cast<System::Object^>(fWPFViewRoot)!=nullptr){
 		return false;
@@ -431,7 +431,7 @@ bool mcWPFWindow::mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *
 	return ClientAttach(Root,WindowClient);
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::mWindowDetachClient(mcWPFViewRoot *ViewRoot)
+bool mcWPFWindow::mWindowDetachClient(mcWPFViewRoot *ViewRoot)noexcept
 {
 	auto Root=dynamic_cast<WPFViewRoot^>(ViewRoot->mGetWPFRootObject());
 	if(Root==nullptr)

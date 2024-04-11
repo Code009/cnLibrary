@@ -17,43 +17,65 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
+class cnLib_INTERFACE iProtocolSessionProcessor
+{
+public:
+	virtual void ProtocolStarted(void)noexcept(true)=0;
+	virtual void ProtocolStopped(void)noexcept(true)=0;
+	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize)noexcept(true)=0;
+	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iProtocolSession : public iReference
+{
+public:
+	virtual iConnection* GetConnecton(void)noexcept(true)=0;
+	virtual bool StartProcessor(iReference *Reference,iProtocolSessionProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)=0;
+	virtual void StopProcessor(bool Terminate)noexcept(true)=0;
+	virtual void NotifyInput(void)noexcept(true)=0;
+	virtual void NotifyOutput(void)noexcept(true)=0;
+	virtual void SetEndOfOutput(void)noexcept(true)=0;
+	virtual bool IsInputEnded(void)noexcept(true)=0;
+	virtual bool IsOutputEnded(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolProcessor
 {
 public:
-	virtual void ProtocolStarted(void)=0;
-	virtual void ProtocolStopped(void)=0;
-	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)=0;
-	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)=0;
-	virtual void ProtocolInputEnd(void)=0;
-	virtual void ProtocolOutputEnd(void)=0;
+	virtual void ProtocolStarted(void)noexcept(true)=0;
+	virtual void ProtocolStopped(void)noexcept(true)=0;
+	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)=0;
+	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)=0;
+	virtual void ProtocolInputEnd(void)noexcept(true)=0;
+	virtual void ProtocolOutputEnd(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolProvider : public iReference
 {
 public:
-	virtual iConnection* GetConnecton(void)=0;
-	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)=0;
-	virtual void StopProcessor(bool Terminate)=0;
-	virtual void NotifyInput(uIntn LeastSizeNeeded=0)=0;
-	virtual void NotifyOutput(uIntn LeastSizeNeeded=0)=0;
-	virtual void SetEndOfOutput(void)=0;
-	virtual bool IsInputEnded(void)=0;
-	virtual bool IsOutputEnded(void)=0;
+	virtual iConnection* GetConnecton(void)noexcept(true)=0;
+	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)=0;
+	virtual void StopProcessor(bool Terminate)noexcept(true)=0;
+	virtual void NotifyInput(uIntn LeastSizeNeeded=0)noexcept(true)=0;
+	virtual void NotifyOutput(uIntn LeastSizeNeeded=0)noexcept(true)=0;
+	virtual void SetEndOfOutput(void)noexcept(true)=0;
+	virtual bool IsInputEnded(void)noexcept(true)=0;
+	virtual bool IsOutputEnded(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class bcProtocolProcessor : protected iProtocolProcessor
 {
 public:
-	bcProtocolProcessor(iProtocolProvider *ProtocolProvider=nullptr,bool SingleThreaded=false);
-	~bcProtocolProcessor();
+	bcProtocolProcessor()noexcept(true);
+	~bcProtocolProcessor()noexcept(true);
 
-	iProtocolProvider* GetProvider(void)const;
-	bool SetProvider(iProtocolProvider *ProtocolProvider,bool SingleThreaded);
+	iProtocolProvider* GetProvider(void)const noexcept(true);
+	bool SetProvider(iProtocolProvider *ProtocolProvider,bool SingleThreaded)noexcept(true);
 
-	bool IsActive(void)const;
-	bool Start(void);
-	void Stop(void);
-	void Terminate(void);
+	bool IsActive(void)const noexcept(true);
+	bool Start(iReference *Reference)noexcept(true);
+	void Stop(void)noexcept(true);
+	void Terminate(void)noexcept(true);
 
 protected:
 	rPtr<iProtocolProvider> fProtocolProvider;
@@ -61,12 +83,10 @@ protected:
 	bool fProtocolActive;
 	bool fSingleThreaded;
 
-	virtual iReference* ProcessorReference(void)=0;
-
-	virtual void ProtocolStarted(void)override;
-	virtual void ProtocolStopped(void)override;
-	virtual void ProtocolInputEnd(void)override{}
-	virtual void ProtocolOutputEnd(void)override{}
+	virtual void ProtocolStarted(void)noexcept(true)override;
+	virtual void ProtocolStopped(void)noexcept(true)override;
+	virtual void ProtocolInputEnd(void)noexcept(true)override{}
+	virtual void ProtocolOutputEnd(void)noexcept(true)override{}
 };
 //---------------------------------------------------------------------------
 #if 0
@@ -150,26 +170,26 @@ private:
 class cProtocolProviderFromRWQueue : public iProtocolProvider, public cDualReference, protected iWriteQueueCallback, protected iReadQueueCallback
 {
 public:
-	cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue);
-	~cProtocolProviderFromRWQueue();
+	cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept(true);
+	~cProtocolProviderFromRWQueue()noexcept(true);
 
-	void CloseProvider(void);
+	void CloseProvider(void)noexcept(true);
 
-	virtual iConnection* GetConnecton(void)override;
-	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)override;
-	virtual void StopProcessor(bool Terminate)override;
-	virtual void NotifyInput(uIntn LeastSizeNeeded)override;
-	virtual void NotifyOutput(uIntn LeastSizeNeeded)override;
-	virtual void SetEndOfOutput(void)override;
-	virtual bool IsInputEnded(void)override;
-	virtual bool IsOutputEnded(void)override;
+	virtual iConnection* GetConnecton(void)noexcept(true)override;
+	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)override;
+	virtual void StopProcessor(bool Terminate)noexcept(true)override;
+	virtual void NotifyInput(uIntn LeastSizeNeeded)noexcept(true)override;
+	virtual void NotifyOutput(uIntn LeastSizeNeeded)noexcept(true)override;
+	virtual void SetEndOfOutput(void)noexcept(true)override;
+	virtual bool IsInputEnded(void)noexcept(true)override;
+	virtual bool IsOutputEnded(void)noexcept(true)override;
 
-	void NotifyInput(void);
-	void NotifyOutput(void);
+	void NotifyInput(void)noexcept(true);
+	void NotifyOutput(void)noexcept(true);
 
 protected:
-	void VirtualStarted(void);
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 	
 	iPtr<iConnection> fConnection;
 	rPtr<iReadQueue> fReadQueue;
@@ -177,15 +197,15 @@ protected:
 
 	// iReadQueueCallback
 
-	virtual void cnLib_FUNC ReadStarted(void)override;
-	virtual void cnLib_FUNC ReadStopped(void)override;
-	virtual void cnLib_FUNC ReadNotify(void)override;
+	virtual void cnLib_FUNC ReadStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReadNotify(void)noexcept(true)override;
 
 	// iWriteQueueCallback
 
-	virtual void cnLib_FUNC WriteStarted(void)override;
-	virtual void cnLib_FUNC WriteStopped(void)override;
-	virtual void cnLib_FUNC WriteNotify(void)override;
+	virtual void cnLib_FUNC WriteStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteStopped(void)noexcept(true)override;
+	virtual void cnLib_FUNC WriteNotify(void)noexcept(true)override;
 
 
 private:
@@ -194,12 +214,12 @@ private:
 
 	uIntn fInputNeedSize;
 	cLoopbackStreamBuffer fInputPacker;
-	bool QueryReadBuffer(cConstMemory &Buffer);
-	void AdvanceReadBuffer(uIntn Size);
+	bool QueryReadBuffer(cConstMemory &Buffer)noexcept(true);
+	void AdvanceReadBuffer(uIntn Size)noexcept(true);
 
 	uIntn fOutputNeedSize;
-	bool QueryWriteBuffer(cMemory &Buffer);
-	void AdvanceWriteBuffer(uIntn Size);
+	bool QueryWriteBuffer(cMemory &Buffer)noexcept(true);
+	void AdvanceWriteBuffer(uIntn Size)noexcept(true);
 	
 	cExclusiveFlag fProcessorStateFlag;
 	cExclusiveFlag fReadStateFlag;
@@ -213,8 +233,8 @@ private:
 	bool fProcessorStateStarted		:1;
 
 
-	void ProcessorStateProcedure(void);
-	void ProcessorStateProcess(void);
+	void ProcessorStateProcedure(void)noexcept(true);
+	void ProcessorStateProcess(void)noexcept(true);
 
 	bool fReadStopped		:1;
 	bool fReadEnded			:1;
@@ -230,75 +250,75 @@ private:
 	bool fSetWriteEnd;
 
 
-	void SingleThreadStateProcedure(void);
-	void ReadThreadStateProcedure(void);
-	void WriteThreadStateProcedure(void);
+	void SingleThreadStateProcedure(void)noexcept(true);
+	void ReadThreadStateProcedure(void)noexcept(true);
+	void WriteThreadStateProcedure(void)noexcept(true);
 
-	void ReadQueueProcess(void);
-	void WriteQueueProcess(void);
+	void ReadQueueProcess(void)noexcept(true);
+	void WriteQueueProcess(void)noexcept(true);
 
 
 };
 //---------------------------------------------------------------------------
-rPtr<cProtocolProviderFromRWQueue> CreateProtocolProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint);
+rPtr<cProtocolProviderFromRWQueue> CreateProtocolProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolQueueProcessor
 {
 public:
-	virtual void ProtocolQueueStarted(void)=0;
-	virtual void ProtocolQueueStopped(void)=0;
-	virtual void ProtocolQueueConnected(iProtocolProvider *Provider)=0;
+	virtual void ProtocolQueueStarted(void)noexcept(true)=0;
+	virtual void ProtocolQueueStopped(void)noexcept(true)=0;
+	virtual void ProtocolQueueConnected(iProtocolProvider *Provider)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolQueueProvider : public iReference
 {
 public:
-	virtual bool StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)=0;
-	virtual void StopQueue(void)=0;
-	virtual void MakeConnection(void)=0;
+	virtual bool StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)noexcept(true)=0;
+	virtual void StopQueue(void)noexcept(true)=0;
+	virtual void MakeConnection(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class bcProtocolQueueProcessor : protected iProtocolQueueProcessor, protected iProtocolProcessor
 {
 public:
-	bcProtocolQueueProcessor();
-	~bcProtocolQueueProcessor();
+	bcProtocolQueueProcessor()noexcept(true);
+	~bcProtocolQueueProcessor()noexcept(true);
 
-	iProtocolQueueProvider* GetQueueProvider(void)const;
-	bool SetQueueProvider(iProtocolQueueProvider *QueueProvider,bool ProtocolSingleThreaded);
+	iProtocolQueueProvider* GetQueueProvider(void)const noexcept(true);
+	bool SetQueueProvider(iProtocolQueueProvider *QueueProvider,bool ProtocolSingleThreaded)noexcept(true);
 
-	bool IsConnected(void)const;
+	bool IsConnected(void)const noexcept(true);
 
-	bool IsActive(void)const;
-	bool Start(void);
-	void Stop(void);
-	void Terminate(void);
-	void DiscardConnection(void);
+	bool IsActive(void)const noexcept(true);
+	bool Start(void)noexcept(true);
+	void Stop(void)noexcept(true);
+	void Terminate(void)noexcept(true);
+	void DiscardConnection(void)noexcept(true);
 
 protected:
 
-	virtual iReference* ProcessorReference(void)=0;
+	virtual iReference* ProcessorReference(void)noexcept(true)=0;
 
 	// iProtocolQueueProcessor
 
 	rPtr<iProtocolQueueProvider> fProtocolQueueProvider;
-	virtual void ProtocolQueueStarted(void)override;
-	virtual void ProtocolQueueStopped(void)override;
-	virtual void ProtocolQueueConnected(iProtocolProvider *Provider)override;
+	virtual void ProtocolQueueStarted(void)noexcept(true)override;
+	virtual void ProtocolQueueStopped(void)noexcept(true)override;
+	virtual void ProtocolQueueConnected(iProtocolProvider *Provider)noexcept(true)override;
 
 	// iProtocolProcessor
 
-	virtual void ProtocolStarted(void)override;
-	virtual void ProtocolStopped(void)override;
-	virtual void ProtocolInputEnd(void)override{}
-	virtual void ProtocolOutputEnd(void)override{}
+	virtual void ProtocolStarted(void)noexcept(true)override;
+	virtual void ProtocolStopped(void)noexcept(true)override;
+	virtual void ProtocolInputEnd(void)noexcept(true)override{}
+	virtual void ProtocolOutputEnd(void)noexcept(true)override{}
 
 	rPtr<iProtocolProvider> fProtocolProvider;
 
-	void ProviderNotifyInput(uIntn LeastSizeNeeded=0);
-	void ProviderNotifyOutput(uIntn LeastSizeNeeded=0);
-	void ProviderSetEndOfOutput(void);
-	void ProviderSetEndOfQueue(void);
+	void ProviderNotifyInput(uIntn LeastSizeNeeded=0)noexcept(true);
+	void ProviderNotifyOutput(uIntn LeastSizeNeeded=0)noexcept(true);
+	void ProviderSetEndOfOutput(void)noexcept(true);
+	void ProviderSetEndOfQueue(void)noexcept(true);
 
 	cAtomicVar<bool> fActiveMutex;
 	bool fSingleThreaded;
@@ -330,35 +350,35 @@ private:
 	bool fProcessorSingleThreaded	:1;
 	bool							:0;
 
-	void ProviderStateProcedure(void);
-	void ProviderStateThreadProc(void);
-	void ProviderStateProcess(void);
-	void ProviderNotification(void);
+	void ProviderStateProcedure(void)noexcept(true);
+	void ProviderStateThreadProc(void)noexcept(true);
+	void ProviderStateProcess(void)noexcept(true);
+	void ProviderNotification(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcProtocolQueueProvider : public iProtocolQueueProvider
 {
 public:
-	bcProtocolQueueProvider();
-	~bcProtocolQueueProvider();
+	bcProtocolQueueProvider()noexcept(true);
+	~bcProtocolQueueProvider()noexcept(true);
 
-	virtual bool StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)override;
-	virtual void StopQueue(void)override;
-	virtual void MakeConnection(void)override;
+	virtual bool StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)noexcept(true)override;
+	virtual void StopQueue(void)noexcept(true)override;
+	virtual void MakeConnection(void)noexcept(true)override;
 
-	void CloseQueue(void);
-	void MarkQueueEnd(void);
+	void CloseQueue(void)noexcept(true);
+	void MarkQueueEnd(void)noexcept(true);
 protected:
 
 	rPtr<iReference> fQueueProcessorReference;
 	iProtocolQueueProcessor *fQueueProcessor;
 
-	virtual void ProtocolQueueStarted(void){}
-	virtual void ProtocolQueueStopped(void){}
-	virtual void ProtocolQueueClosed(void){}
-	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)=0;
+	virtual void ProtocolQueueStarted(void)noexcept(true){}
+	virtual void ProtocolQueueStopped(void)noexcept(true){}
+	virtual void ProtocolQueueClosed(void)noexcept(true){}
+	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)noexcept(true)=0;
 
-	void ProtocolQueueNotify(void);
+	void ProtocolQueueNotify(void)noexcept(true);
 
 
 private:
@@ -373,24 +393,24 @@ private:
 	bool fProcessorStarted;
 	bool fProcessorNeedConnection;
 
-	void ProcessorStarted(void);
-	void ProcessorStopped(void);
+	void ProcessorStarted(void)noexcept(true);
+	void ProcessorStopped(void)noexcept(true);
 
-	void ProviderQueueStateProcedure(void);
-	void ProviderQueueStateProcess(void);
+	void ProviderQueueStateProcedure(void)noexcept(true);
+	void ProviderQueueStateProcess(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cProtocolQueueFromEndpoints : public bcProtocolQueueProvider
 {
 public:
-	cProtocolQueueFromEndpoints();
-	~cProtocolQueueFromEndpoints();
+	cProtocolQueueFromEndpoints()noexcept(true);
+	~cProtocolQueueFromEndpoints()noexcept(true);
 
-	void QueueEndpoint(iEndpoint *Endpoint);
-	void QueueEndpoint(iConnection *Connection,iEndpoint *Endpoint);
+	void QueueEndpoint(iEndpoint *Endpoint)noexcept(true);
+	void QueueEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true);
 
 protected:
-	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)override;
+	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)noexcept(true)override;
 
 private:
 
@@ -404,27 +424,28 @@ private:
 	cAtomicQueueSO<cEndpointItem> fEndpointQueue;
 };
 //---------------------------------------------------------------------------
-rPtr<cProtocolQueueFromEndpoints> CreateProtocolQueueProviderFromEndpoint(iEndpoint *Endpoint);
-rPtr<cProtocolQueueFromEndpoints> CreateProtocolQueueProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint);
+rPtr<cProtocolQueueFromEndpoints> CreateProtocolQueueProviderFromEndpoint(iEndpoint *Endpoint)noexcept(true);
+rPtr<cProtocolQueueFromEndpoints> CreateProtocolQueueProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true);
 //---------------------------------------------------------------------------
 class cProtocolQueueFromConnector : public bcProtocolQueueProvider, public cDualReference
 {
 public:
-	cProtocolQueueFromConnector(iConnectionConnector *Connector,iAddress *RemoteAddress);
-	~cProtocolQueueFromConnector();
+	cProtocolQueueFromConnector(iConnectionConnector *Connector,iAddress *RemoteAddress)noexcept(true);
+	~cProtocolQueueFromConnector()noexcept(true);
 
 	//ufInt8 ConnectRetryLimit=0;			// 0=no limit
 	//ufInt8 ConnectRetryDelaySeconds=0;	// seconds
 	//uIntn GetConnectionState(void)const;
-	void SetRetryLimit(ufInt8 RetryCount);	// RetryLimit default to 0xFF(unlimited)
+	void SetRetryLimit(ufInt8 RetryCount)noexcept(true);	// RetryLimit default to 0xFF(unlimited)
 
 protected:
-	void VirtualStopped(void);
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
 
 	iPtr<iConnectionConnector> fConnector;
 	iPtr<iAddress> fRemoteAddress;
 
-	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)override;
+	virtual rPtr<iProtocolProvider> ProtocolQueueFetch(void)noexcept(true)override;
 
 private:
 	cExclusiveFlag fConnectFlag;
@@ -435,12 +456,12 @@ private:
 
 	iPtr<iConnectionTask> fConnectTask;
 
-	void SetupConnectTask(void);
-	void TaskCompleted(void);
+	void SetupConnectTask(void)noexcept(true);
+	void TaskCompleted(void)noexcept(true);
 	
 	class cConnectTaskCompleteProcedure : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fConnectTaskCompleteProcedure;
 };
 //---------------------------------------------------------------------------

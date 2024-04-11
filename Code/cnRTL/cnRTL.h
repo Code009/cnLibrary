@@ -3,60 +3,7 @@
 
 #include <cnRTL/cnRTLCore.h>
 
-#define	cnLibrary_AVAILABLE_RTL
-
-#ifdef cnLibrary_CPPEXCLUDE_NULLPTR
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 nullptr to compile")
-#endif
-
-#ifdef cnLibrary_CPPEXCLUDE_VIRTUAL_OVERRIDE
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 virtual override to compile")
-#endif
-
-#ifdef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DELETE
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 class member deleted to compile")
-#endif
-
-#ifdef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 Default template arguments for function templates to compile")
-#endif
-
-
-#if cnLibrary_CPPFEATURE_DECLTYPE < 200707L
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 decltype to compile")
-#endif
-
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 variadic template to compile")
-#endif
-
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 rvalue references to compile")
-#endif
-
-#if cnLibrary_CPPFEATURE_ALIAS_TEMPLATES < 200704L
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 alias template to compile")
-#endif
-
-#if cnLibrary_CPPFEATURE_NSDMI < 200809L
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 Non-static data member initializers to compile")
-#endif // cnLibrary_CPPFEATURE_NSDMI < 200809L
-
-#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 100
-#undef	cnLibrary_AVAILABLE_RTL
-#pragma message("cnRTL needs c++11 Inheriting constructors to compile")
-
-#endif
-
+#include <cnRTL/cnRTLHeader.h>
 #include <cnRTL/RuntimeFunction.h>
 #include <cnRTL/String.h>
 #include <cnRTL/ObjectLifeCycle.h>

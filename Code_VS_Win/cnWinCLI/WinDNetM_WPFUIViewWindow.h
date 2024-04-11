@@ -21,14 +21,14 @@ class iWindowClient;
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> DNetCreateWindowClient(void);
+iPtr<iWindowClient> DNetCreateWindowClient(void)noexcept(true);
 //---------------------------------------------------------------------------
 class iWPFWindowClient
 {
 public:
-	virtual iWindowClient* WPFWindowGetInterface(void)=0;
-	virtual void WPFWindowStateChanged(eUIState NewState)=0;
-	virtual void WPFWindowDPIChanged(Float32 NewScale)=0;
+	virtual iWindowClient* WPFWindowGetInterface(void)noexcept(true)=0;
+	virtual void WPFWindowStateChanged(eUIState NewState)noexcept(true)=0;
+	virtual void WPFWindowDPIChanged(Float32 NewScale)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class mcWPFViewRoot;
@@ -80,12 +80,12 @@ public:
 #endif
 	};
 
-	virtual void WPFWindowStateChanged(eUIState NewState)=0;
+	virtual void WPFWindowStateChanged(eUIState NewState)noexcept(true)=0;
 private:
 	friend cWPFUIWindow;
 
-	mcWPFViewRoot(mcConstructParameter &Parameter);
-	~mcWPFViewRoot();
+	mcWPFViewRoot(mcConstructParameter &Parameter)noexcept(true);
+	~mcWPFViewRoot()noexcept(true);
 
 protected:
 #if _MANAGED
@@ -104,33 +104,33 @@ private:
 	mcDNetUIThreadDispatcher::cDispatcherFinishNotify fDispatcherFinishNotify;
 #if _MANAGED
 
-	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown);
-	void __clrcall DispatcherFinishNotify(bool Shutdown);
-	void __clrcall CleanupWPF(void);
+	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept(true);
+	void __clrcall DispatcherFinishNotify(bool Shutdown)noexcept(true);
+	void __clrcall CleanupWPF(void)noexcept(true);
 	
 #endif // _MANAGED
 
-	void nDispatcherFinishNotify(bool Shutdown);
+	void nDispatcherFinishNotify(bool Shutdown)noexcept(true);
 
 public:
 #if _MANAGED
-	System::Object^ mGetWPFRootObject(void);
+	System::Object^ mGetWPFRootObject(void)noexcept(true);
 #endif // _MANAGED
 	
-	iUIWindow* nGetUIWindowInterface(void);
+	iUIWindow* nGetUIWindowInterface(void)noexcept(true);
 
-	bool mSetClient(cGCRef &ObjectHandle);
-	void mResetClient(void);
+	bool mSetClient(cGCRef &ObjectHandle)noexcept(true);
+	void mResetClient(void)noexcept(true);
 
 	// WPF Notification
 
 #if _MANAGED
-	void __clrcall WPFUIWindowRemoveSubview(DNet::IWPFView ^Subview);
+	void __clrcall WPFUIWindowRemoveSubview(DNet::IWPFView ^Subview)noexcept(true);
 #endif
 
 };
 //---------------------------------------------------------------------------
-iPtr<iUIWindow> DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter);
+iPtr<iUIWindow> DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------
@@ -203,7 +203,7 @@ protected:
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-void mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b);
+void mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)noexcept(true);
 //---------------------------------------------------------------------------
 class cWPFWindow;
 class mcWPFWindow;
@@ -239,22 +239,22 @@ protected:
 class mcWPFWindow
 {
 	friend cWPFWindow;
-	mcWPFWindow();
-	~mcWPFWindow();
+	mcWPFWindow()noexcept(true);
+	~mcWPFWindow()noexcept(true);
 public:
 #if _MANAGED
-	HWND __clrcall mGetHandle(void);
+	HWND __clrcall mGetHandle(void)noexcept(true);
 
 #endif // _MANAGED
 
-	bool Create(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height);
+	bool Create(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height)noexcept(true);
 
-	SIZE GetClientSize(void);
+	SIZE GetClientSize(void)noexcept(true);
 
 
-	static mcWPFWindow* mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient);
-	bool mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient);
-	bool mWindowDetachClient(mcWPFViewRoot *ViewRoot);
+	static mcWPFWindow* mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept(true);
+	bool mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept(true);
+	bool mWindowDetachClient(mcWPFViewRoot *ViewRoot)noexcept(true);
 
 protected:
 #if _MANAGED
@@ -275,29 +275,29 @@ private:
 #if _MANAGED
 	friend rcWPFWindow;
 
-	void __clrcall WPFSourceAttach(rcWPFWindow ^Window);
-	void __clrcall WPFSourceDetach(void);
-	System::IntPtr WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled);
+	void __clrcall WPFSourceAttach(rcWPFWindow ^Window)noexcept(true);
+	void __clrcall WPFSourceDetach(void)noexcept(true);
+	System::IntPtr WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept(true);
 
-	bool __clrcall ClientAttach(DNet::WPFViewRoot ^Client,iWPFWindowClient *WindowClient);
-	void __clrcall ClearClient(void);
+	bool __clrcall ClientAttach(DNet::WPFViewRoot ^Client,iWPFWindowClient *WindowClient)noexcept(true);
+	void __clrcall ClearClient(void)noexcept(true);
 
-	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown);
-	void __clrcall DispatcherFinishNotify(bool Shutdown);
-	void CleanupWPF(void);
+	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept(true);
+	void __clrcall DispatcherFinishNotify(bool Shutdown)noexcept(true);
+	void CleanupWPF(void)noexcept(true);
 	
 #endif // _MANAGED
 
-	void nWPFSourceAttach(void);
-	void nWPFSourceDetach(void);
-	bool nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	void nDispatcherFinishNotify(bool Shutdown);
+	void nWPFSourceAttach(void)noexcept(true);
+	void nWPFSourceDetach(void)noexcept(true);
+	bool nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)noexcept(true);
+	void nDispatcherFinishNotify(bool Shutdown)noexcept(true);
 };
 //---------------------------------------------------------------------------
  
 
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter);
+iPtr<iWindowClient> DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
 
 //---------------------------------------------------------------------------
 }	// namespace cnWin

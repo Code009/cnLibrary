@@ -5,7 +5,7 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-eStreamError cnRTL::GetStreamError(iInterface *Stream)
+eStreamError cnRTL::GetStreamError(iInterface *Stream)noexcept
 {
 	//auto ErrorReport=iCast<iStreamErrorReport>(Stream);
 	//if(ErrorReport==nullptr){
@@ -15,21 +15,21 @@ eStreamError cnRTL::GetStreamError(iInterface *Stream)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cStreamFromEndpoint::cStreamFromEndpoint()
+cStreamFromEndpoint::cStreamFromEndpoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cStreamFromEndpoint::~cStreamFromEndpoint()
+cStreamFromEndpoint::~cStreamFromEndpoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::VirtualStopped(void)
+void cStreamFromEndpoint::VirtualStopped(void)noexcept
 {
 	StreamClose();
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
-void* cStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept
 {
 	void* Ret=bcStream::CastInterface(InterfaceID);
 	if(Ret!=nullptr){
@@ -38,7 +38,7 @@ void* cStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept(true)
 	return fEndpoint->CastInterface(InterfaceID);
 }
 //---------------------------------------------------------------------------
-bool cStreamFromEndpoint::Connect(iEndpoint *Endpoint)
+bool cStreamFromEndpoint::Connect(iEndpoint *Endpoint)noexcept
 {
 	if(fReadQueue!=nullptr || fWriteQueue!=nullptr)
 		return false;
@@ -61,7 +61,7 @@ bool cStreamFromEndpoint::Connect(iEndpoint *Endpoint)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessReadTask(void)
+void cStreamFromEndpoint::StreamProcessReadTask(void)noexcept
 {
 	if(!fReadActive){
 		return;
@@ -98,7 +98,7 @@ void cStreamFromEndpoint::StreamProcessReadTask(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessReadEnd(void)
+void cStreamFromEndpoint::StreamProcessReadEnd(void)noexcept
 {
 	if(fReadQueue!=nullptr){
 		fReadQueue->StopRead();
@@ -106,23 +106,23 @@ void cStreamFromEndpoint::StreamProcessReadEnd(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::ReadStarted(void)
+void cStreamFromEndpoint::ReadStarted(void)noexcept
 {
 	fReadActive=true;
 	fReadQueue->NotifyRead(1);
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::ReadStopped(void)
+void cStreamFromEndpoint::ReadStopped(void)noexcept
 {
 	fReadActive=false;
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::ReadNotify(void)
+void cStreamFromEndpoint::ReadNotify(void)noexcept
 {
 	UpdateReadTaskQueue();
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessWriteTask(void)
+void cStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 {
 	if(!fWriteActive){
 		return;
@@ -163,14 +163,14 @@ void cStreamFromEndpoint::StreamProcessWriteTask(void)
 	fWriteQueue->NotifyWrite(1);
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessWriteSetEnd(void)
+void cStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept
 {
 	if(fWriteActive){
 		fWriteQueue->StopWrite(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessWriteEnd(void)
+void cStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept
 {
 	if(fWriteQueue!=nullptr){
 		fWriteQueue->StopWrite(true);
@@ -178,38 +178,38 @@ void cStreamFromEndpoint::StreamProcessWriteEnd(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::WriteStarted(void)
+void cStreamFromEndpoint::WriteStarted(void)noexcept
 {
 	fWriteActive=true;
 	fWriteQueue->NotifyWrite(1);
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::WriteStopped(void)
+void cStreamFromEndpoint::WriteStopped(void)noexcept
 {
 	fWriteActive=false;
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::WriteNotify(void)
+void cStreamFromEndpoint::WriteNotify(void)noexcept
 {
 	UpdateWriteTaskQueue();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cPacketStreamFromEndpoint::cPacketStreamFromEndpoint()
+cPacketStreamFromEndpoint::cPacketStreamFromEndpoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cPacketStreamFromEndpoint::~cPacketStreamFromEndpoint()
+cPacketStreamFromEndpoint::~cPacketStreamFromEndpoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::VirtualStopped(void)
+void cPacketStreamFromEndpoint::VirtualStopped(void)noexcept
 {
 	StreamClose();
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
-void* cPacketStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept(true)
+void* cPacketStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept
 {
 	void* Ret=bcStream::CastInterface(InterfaceID);
 	if(Ret!=nullptr){
@@ -218,7 +218,7 @@ void* cPacketStreamFromEndpoint::CastInterface(iTypeID InterfaceID)noexcept(true
 	return fEndpoint->CastInterface(InterfaceID);
 }
 //---------------------------------------------------------------------------
-bool cPacketStreamFromEndpoint::Connect(iEndpoint *Endpoint)
+bool cPacketStreamFromEndpoint::Connect(iEndpoint *Endpoint)noexcept
 {
 	if(fReadQueue!=nullptr || fWriteQueue!=nullptr)
 		return false;
@@ -241,7 +241,7 @@ bool cPacketStreamFromEndpoint::Connect(iEndpoint *Endpoint)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessReadTask(void)
+void cPacketStreamFromEndpoint::StreamProcessReadTask(void)noexcept
 {
 	if(!fReadActive){
 		return;
@@ -283,7 +283,7 @@ void cPacketStreamFromEndpoint::StreamProcessReadTask(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessReadEnd(void)
+void cPacketStreamFromEndpoint::StreamProcessReadEnd(void)noexcept
 {
 	if(fReadActive){
 		fReadQueue->StopRead();
@@ -291,23 +291,23 @@ void cPacketStreamFromEndpoint::StreamProcessReadEnd(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::ReadStarted(void)
+void cPacketStreamFromEndpoint::ReadStarted(void)noexcept
 {
 	fReadActive=true;
 	fReadQueue->NotifyRead(1);
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::ReadStopped(void)
+void cPacketStreamFromEndpoint::ReadStopped(void)noexcept
 {
 	fReadActive=false;
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::ReadNotify(void)
+void cPacketStreamFromEndpoint::ReadNotify(void)noexcept
 {
 	UpdateReadTaskQueue();
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)
+void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 {
 	if(!fWriteActive){
 		return;
@@ -344,7 +344,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)
 	fWriteQueue->NotifyWrite(1);
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)
+void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept
 {
 	if(fWriteActive){
 		fWriteQueue->StopWrite(false);
@@ -352,7 +352,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)
 	} 
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessWriteEnd(void)
+void cPacketStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept
 {
 	if(fWriteActive){
 		fWriteQueue->StopWrite(true);
@@ -360,24 +360,24 @@ void cPacketStreamFromEndpoint::StreamProcessWriteEnd(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::WriteStarted(void)
+void cPacketStreamFromEndpoint::WriteStarted(void)noexcept
 {
 	fWriteActive=true;
 	fWriteQueue->NotifyWrite(1);
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::WriteStopped(void)
+void cPacketStreamFromEndpoint::WriteStopped(void)noexcept
 {
 	fWriteActive=false;
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::WriteNotify(void)
+void cPacketStreamFromEndpoint::WriteNotify(void)noexcept
 {
 	UpdateWriteTaskQueue();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iStream> cnRTL::CreateStreamFromEndpoint(iEndpoint *Endpoint,bool KeepBoundary)
+iPtr<iStream> cnRTL::CreateStreamFromEndpoint(iEndpoint *Endpoint,bool KeepBoundary)noexcept
 {
 	if(KeepBoundary){
 		auto sStream=iCreate<cPacketStreamFromEndpoint>();
@@ -392,7 +392,7 @@ iPtr<iStream> cnRTL::CreateStreamFromEndpoint(iEndpoint *Endpoint,bool KeepBound
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcReadQueueFromStream::bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferSize)
+bcReadQueueFromStream::bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferSize)noexcept
 	: fReadItem{{nullptr,nullptr,0},{nullptr,nullptr,0}}
 {
 	fReadBufferSize=PacketBufferSize;
@@ -406,20 +406,20 @@ bcReadQueueFromStream::bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferS
 	fReadItemRing.Reset();
 }
 //---------------------------------------------------------------------------
-bcReadQueueFromStream::~bcReadQueueFromStream()
+bcReadQueueFromStream::~bcReadQueueFromStream()noexcept
 {
 	cnSystem::DefaultHeap::Free(fReadItem[0].Buffer,fReadBufferSize,0);
 	cnSystem::DefaultHeap::Free(fReadItem[1].Buffer,fReadBufferSize,0);
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::NotificationStarted(void)
+void bcReadQueueFromStream::NotificationStarted(void)noexcept
 {
 	bcReadQueue::NotificationStarted();
 
 	OnStartRead();
 }
 //---------------------------------------------------------------------------
-cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)
+cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)noexcept
 {	UnusedParameter(QuerySize);	// ignore query size, just return whatever available
 
 	uInt8 ItemIndex;
@@ -446,7 +446,7 @@ cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)
 	return NullArray;
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::DismissReadBuffer(uIntn Size)
+void bcReadQueueFromStream::DismissReadBuffer(uIntn Size)noexcept
 {
 	fCurReadOffset+=Size;
 	uInt8 ItemIndex;
@@ -461,7 +461,7 @@ void bcReadQueueFromStream::DismissReadBuffer(uIntn Size)
 	}
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::NotificationClosed(void)
+void bcReadQueueFromStream::NotificationClosed(void)noexcept
 {
 	bcReadQueue::NotificationClosed();
 
@@ -472,7 +472,7 @@ void bcReadQueueFromStream::NotificationClosed(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::OnStartRead(void)
+void bcReadQueueFromStream::OnStartRead(void)noexcept
 {
 	// start read
 	while(fStream->IsEndOfReading()==false){
@@ -504,7 +504,7 @@ void bcReadQueueFromStream::OnStartRead(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::ProcessTask(void)
+void bcReadQueueFromStream::ProcessTask(void)noexcept
 {
 	if(fProcessTaskExclusiveFlag.Acquire()==false)
 		return;
@@ -556,7 +556,7 @@ void bcReadQueueFromStream::ProcessTask(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcReadQueueFromStream::cTaskProcedure::Execute(void)
+void bcReadQueueFromStream::cTaskProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcReadQueueFromStream::fTaskProcedure);
 	Host->ProcessTask();
@@ -567,7 +567,7 @@ void bcReadQueueFromStream::cTaskProcedure::Execute(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcWriteQueueFromStream::bcWriteQueueFromStream(iStream *Stream)
+bcWriteQueueFromStream::bcWriteQueueFromStream(iStream *Stream)noexcept
 {
 	cnLib_ASSERT(Stream!=nullptr);
 	fStream=Stream;
@@ -581,14 +581,14 @@ bcWriteQueueFromStream::bcWriteQueueFromStream(iStream *Stream)
 	WriteQueueReportBufferAvailable(false);
 }
 //---------------------------------------------------------------------------
-bcWriteQueueFromStream::~bcWriteQueueFromStream()
+bcWriteQueueFromStream::~bcWriteQueueFromStream()noexcept
 {
 	for(auto &Item : fWriteItem){
 		cnSystem::DefaultHeap::Free(Item.SourceBuffer,SourceBufferTotalSize,0);
 	}
 }
 //---------------------------------------------------------------------------
-void bcWriteQueueFromStream::NotificationClosed(void)
+void bcWriteQueueFromStream::NotificationClosed(void)noexcept
 {
 	bcWriteQueue::NotificationClosed();
 
@@ -603,7 +603,7 @@ void bcWriteQueueFromStream::NotificationClosed(void)
 	}
 }
 //---------------------------------------------------------------------------
-cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)
+cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {	UnusedParameter(QuerySize);	// ignore query size, just return whatever
 #pragma message (cnLib_FILE_LINE ": TODO dynamic expand buffer")
 
@@ -622,7 +622,7 @@ cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-void bcWriteQueueFromStream::CommitWriteBuffer(uIntn Size)
+void bcWriteQueueFromStream::CommitWriteBuffer(uIntn Size)noexcept
 {
 	uInt8 ItemIndex;
 	if(fWriteItemRing.ReserveItem<0>(ItemIndex)==false){
@@ -635,7 +635,7 @@ void bcWriteQueueFromStream::CommitWriteBuffer(uIntn Size)
 	SendWriteBuffer(Item);
 }
 //---------------------------------------------------------------------------
-void bcWriteQueueFromStream::SendWriteBuffer(cWriteItem &Item)
+void bcWriteQueueFromStream::SendWriteBuffer(cWriteItem &Item)noexcept
 {
 	// send to write
 	auto Task=fStream->WriteAsync(Item.SourceBuffer,Item.SourceBufferSize);
@@ -664,7 +664,7 @@ void bcWriteQueueFromStream::SendWriteBuffer(cWriteItem &Item)
 	}
 }
 //---------------------------------------------------------------------------
-void bcWriteQueueFromStream::ProcessTask(void)
+void bcWriteQueueFromStream::ProcessTask(void)noexcept
 {
 	if(fProcessTaskExclusiveFlag.Acquire()==false)
 		return;
@@ -696,7 +696,7 @@ void bcWriteQueueFromStream::ProcessTask(void)
 	}
 }
 //---------------------------------------------------------------------------
-void bcWriteQueueFromStream::cTaskProcedure::Execute(void)
+void bcWriteQueueFromStream::cTaskProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcWriteQueueFromStream::fTaskProcedure);
 
@@ -709,7 +709,7 @@ void bcWriteQueueFromStream::cTaskProcedure::Execute(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cEndpointFromStream::cReadQueue::cReadQueue(iStream *Stream,uIntn PacketBufferSize,iThreadPool *ThreadPool)
+cEndpointFromStream::cReadQueue::cReadQueue(iStream *Stream,uIntn PacketBufferSize,iThreadPool *ThreadPool)noexcept
 	: bcReadQueueFromStream(Stream,PacketBufferSize)
 {
 	if(ThreadPool==nullptr){
@@ -718,27 +718,27 @@ cEndpointFromStream::cReadQueue::cReadQueue(iStream *Stream,uIntn PacketBufferSi
 	CreateQueueWork(ThreadPool,false);
 }
 //---------------------------------------------------------------------------
-cEndpointFromStream* cEndpointFromStream::cReadQueue::GetHost(void)
+cEndpointFromStream* cEndpointFromStream::cReadQueue::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cEndpointFromStream::fReadQueue);
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::cReadQueue::IncreaseReference(void)noexcept(true)
+void cEndpointFromStream::cReadQueue::IncreaseReference(void)noexcept
 {
 	rIncReference(GetHost(),'read');
 }
-void cEndpointFromStream::cReadQueue::DecreaseReference(void)noexcept(true)
+void cEndpointFromStream::cReadQueue::DecreaseReference(void)noexcept
 {
 	rDecReference(GetHost(),'read');
 }
 //---------------------------------------------------------------------------
-iReference* cEndpointFromStream::cReadQueue::NotificationInnerReference(void)
+iReference* cEndpointFromStream::cReadQueue::NotificationInnerReference(void)noexcept
 {
 	return &GetHost()->fInnerReference;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cEndpointFromStream::cWriteQueue::cWriteQueue(iStream *Stream,iThreadPool *ThreadPool)
+cEndpointFromStream::cWriteQueue::cWriteQueue(iStream *Stream,iThreadPool *ThreadPool)noexcept
 	: bcWriteQueueFromStream(Stream)
 {
 	if(ThreadPool==nullptr){
@@ -747,26 +747,26 @@ cEndpointFromStream::cWriteQueue::cWriteQueue(iStream *Stream,iThreadPool *Threa
 	CreateQueueWork(ThreadPool,false);
 }
 //---------------------------------------------------------------------------
-cEndpointFromStream* cEndpointFromStream::cWriteQueue::GetHost(void)
+cEndpointFromStream* cEndpointFromStream::cWriteQueue::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cEndpointFromStream::fWriteQueue);
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::cWriteQueue::IncreaseReference(void)noexcept(true)
+void cEndpointFromStream::cWriteQueue::IncreaseReference(void)noexcept
 {
 	rIncReference(GetHost(),'writ');
 }
-void cEndpointFromStream::cWriteQueue::DecreaseReference(void)noexcept(true)
+void cEndpointFromStream::cWriteQueue::DecreaseReference(void)noexcept
 {
 	rDecReference(GetHost(),'writ');
 }
 //---------------------------------------------------------------------------
-iReference* cEndpointFromStream::cWriteQueue::NotificationInnerReference(void)
+iReference* cEndpointFromStream::cWriteQueue::NotificationInnerReference(void)noexcept
 {
 	return &GetHost()->fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::cWriteQueue::NotificationClosed(void)
+void cEndpointFromStream::cWriteQueue::NotificationClosed(void)noexcept
 {
 	bcWriteQueueFromStream::NotificationClosed();
 
@@ -777,51 +777,56 @@ void cEndpointFromStream::cWriteQueue::NotificationClosed(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cEndpointFromStream::cEndpointFromStream(rPtr<iReference> StreamReference,iStream *Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)
+cEndpointFromStream::cEndpointFromStream(rPtr<iReference> StreamReference,iStream *Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)noexcept
 	: fStreamReference(cnVar::MoveCast(StreamReference))
 	, fReadQueue(Stream,ReadBufferSize,ThreadPool)
 	, fWriteQueue(Stream,ThreadPool)
 {
 }
 //---------------------------------------------------------------------------
-cEndpointFromStream::~cEndpointFromStream()
+cEndpointFromStream::~cEndpointFromStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::VirtualStopped(void)
+void cEndpointFromStream::VirtualStarted(void)noexcept
+{
+	InnerActivate('self');
+}
+//---------------------------------------------------------------------------
+void cEndpointFromStream::VirtualStopped(void)noexcept
 {
 	Close();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::Close(void)
+void cEndpointFromStream::Close(void)noexcept
 {
 	fReadQueue.CloseQueue();
 	fWriteQueue.CloseQueue();
 }
 //---------------------------------------------------------------------------
-iReadQueue* cEndpointFromStream::GetReadQueue(void)
+iReadQueue* cEndpointFromStream::GetReadQueue(void)noexcept
 {
 	return &fReadQueue;
 }
 //---------------------------------------------------------------------------
-iWriteQueue* cEndpointFromStream::GetWriteQueue(void)
+iWriteQueue* cEndpointFromStream::GetWriteQueue(void)noexcept
 {
 	return &fWriteQueue;
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::SetWriteEndMode(eEndpointWriteEndMode EndMode)
+void cEndpointFromStream::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
 {
 	fWriteQueue.WriteQueueSetEndMode(EndMode);
 }
 //---------------------------------------------------------------------------
-void cEndpointFromStream::WriteQueueTerminated(void)
+void cEndpointFromStream::WriteQueueTerminated(void)noexcept
 {
 	fReadQueue.CloseQueue();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iEndpoint> cnRTL::CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)
+iPtr<iEndpoint> cnRTL::CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)noexcept
 {
 	iReference *StreamRef=iGetReference(Stream);
 	iStream *StreamPtr=Stream.ExtractToManual();
@@ -837,7 +842,7 @@ iPtr<iEndpoint> cnRTL::CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBu
 //}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cConnectionQueueFromListener::cConnectionQueueFromListener(iConnectionListener *Listener)
+cConnectionListenerFromAsyncListener::cConnectionListenerFromAsyncListener(iAsyncListener *Listener)noexcept
 	: fListener(Listener)
 {
 	for(uIntn i=0;i<cnMemory::ArrayLength(fAcceptTasks);i++){
@@ -845,23 +850,28 @@ cConnectionQueueFromListener::cConnectionQueueFromListener(iConnectionListener *
 	}
 }
 //---------------------------------------------------------------------------
-cConnectionQueueFromListener::~cConnectionQueueFromListener()
+cConnectionListenerFromAsyncListener::~cConnectionListenerFromAsyncListener()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::VirtualStopped(void)
+void cConnectionListenerFromAsyncListener::VirtualStarted(void)noexcept
+{
+	InnerActivate('self');
+}
+//---------------------------------------------------------------------------
+void cConnectionListenerFromAsyncListener::VirtualStopped(void)noexcept
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-iAddress* cConnectionQueueFromListener::GetLocalAddress(void)
+iAddress* cConnectionListenerFromAsyncListener::GetLocalAddress(void)noexcept
 {
 	return fListener->GetLocalAddress();
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cConnectionQueueFromListener::FetchConnection(void)
+iPtr<iConnection> cConnectionListenerFromAsyncListener::FetchConnection(void)noexcept
 {
 	uInt8 TaskItemIndex;
 	if(fTaskRingIndex.ReserveItem<2>(TaskItemIndex)==false){
@@ -880,25 +890,25 @@ iPtr<iConnection> cConnectionQueueFromListener::FetchConnection(void)
 	return Connection;
 }
 //---------------------------------------------------------------------------
-iReference* cConnectionQueueFromListener::NotificationInnerReference(void)
+iReference* cConnectionListenerFromAsyncListener::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::NotificationStarted(void)
+void cConnectionListenerFromAsyncListener::NotificationStarted(void)noexcept
 {
-	bcConnectionQueue::NotificationStarted();
+	bcConnectionListener::NotificationStarted();
 	QueueTask();
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::NotificationStopped(void)
+void cConnectionListenerFromAsyncListener::NotificationStopped(void)noexcept
 {
-	bcConnectionQueue::NotificationStopped();
+	bcConnectionListener::NotificationStopped();
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::NotificationClosed(void)
+void cConnectionListenerFromAsyncListener::NotificationClosed(void)noexcept
 {
-	bcConnectionQueue::NotificationClosed();
+	bcConnectionListener::NotificationClosed();
 
 	for(auto &Item : fAcceptTasks){
 		if(Item.AcceptTask!=nullptr){
@@ -907,7 +917,7 @@ void cConnectionQueueFromListener::NotificationClosed(void)
 	}
 }
 //---------------------------------------------------------------------------
-cConnectionQueueFromListener::CycleState cConnectionQueueFromListener::NotificationCheckState(void)
+cConnectionListenerFromAsyncListener::CycleState cConnectionListenerFromAsyncListener::NotificationCheckState(void)noexcept
 {
 	if(fQueueTerminated){
 		return CycleState::Terminated;
@@ -916,7 +926,7 @@ cConnectionQueueFromListener::CycleState cConnectionQueueFromListener::Notificat
 
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::QueueTask(void)
+void cConnectionListenerFromAsyncListener::QueueTask(void)noexcept
 {
 	if(fTaskQueueExclusiveFlag.Acquire()==false)
 		return;
@@ -959,7 +969,7 @@ void cConnectionQueueFromListener::QueueTask(void)
 	}while(fTaskQueueExclusiveFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::TaskCompletionProcess(void)
+void cConnectionListenerFromAsyncListener::TaskCompletionProcess(void)noexcept
 {
 	if(fTaskCompletionExclusiveFlag.Acquire()==false)
 		return;
@@ -986,10 +996,10 @@ void cConnectionQueueFromListener::TaskCompletionProcess(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cConnectionQueueFromListener::cTaskItem::Execute(void)
+void cConnectionListenerFromAsyncListener::cTaskItem::Execute(void)noexcept
 {
 	auto *pAcceptTasks=reinterpret_cast<cTaskItem(*)[TaskRingSize]>(this-TaskIndex);
-	auto Host=cnMemory::GetObjectFromMemberPointer(pAcceptTasks,&cConnectionQueueFromListener::fAcceptTasks);
+	auto Host=cnMemory::GetObjectFromMemberPointer(pAcceptTasks,&cConnectionListenerFromAsyncListener::fAcceptTasks);
 
 	Host->TaskCompletionProcess();
 	auto Reference=Host->NotificationInnerReference();
@@ -998,63 +1008,8 @@ void cConnectionQueueFromListener::cTaskItem::Execute(void)
 	}
 }
 //---------------------------------------------------------------------------
-cConnectionListenerFromQueue::cConnectionListenerFromQueue(iConnectionQueue *ConnectionQueue)
-	: bcConnectionQueueProcessor(ConnectionQueue)
-{
-}
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cConnectionListenerFromQueue::~cConnectionListenerFromQueue()
-{
-}
-//---------------------------------------------------------------------------
-void cConnectionListenerFromQueue::VirtualStarted(void)
-{
-	InnerIncReference('self');
-	Start(&fInnerReference);
-}
-//---------------------------------------------------------------------------
-void cConnectionListenerFromQueue::VirtualStopped(void)
-{
-	Stop();
-	InnerDecReference('self');
-}
-//---------------------------------------------------------------------------
-iAddress* cConnectionListenerFromQueue::GetLocalAddress(void)
-{
-	return fConnectionQueue->GetLocalAddress();
-}
-//---------------------------------------------------------------------------
-void cConnectionListenerFromQueue::AsyncNotify(void)
-{
-	UpdateAcceptTaskQueue();
-}
-//---------------------------------------------------------------------------
-void cConnectionListenerFromQueue::ConnectionProcessTask(void)
-{
-	if(fCurrentConnection==nullptr){
-		fCurrentConnection=fConnectionQueue->FetchConnection();
-		if(fCurrentConnection==nullptr)
-			return;
-	}
-
-	//rPtr<cAcceptTask> AcceptingTask;
-	auto AcceptingTask=QueryAcceptTask();
-	if(AcceptingTask==nullptr)
-		return;
-
-	AcceptingTask->Connection=cnVar::MoveCast(fCurrentConnection);
-
-	CompleteAcceptTask(cnVar::MoveCast(AcceptingTask));
-}
-//---------------------------------------------------------------------------
-void cConnectionListenerFromQueue::ConnectionProcessEnd(void)
-{
-	Stop();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cMultipointQueueFromStream::cMultipointQueueFromStream(iMultipointStream *Stream)
+cMultipointQueueFromStream::cMultipointQueueFromStream(iMultipointStream *Stream)noexcept
 	: fStream(Stream)
 {
 	//fPacketSizeMax=fPortStream->GetMaxPacketSize();
@@ -1080,7 +1035,7 @@ cMultipointQueueFromStream::cMultipointQueueFromStream(iMultipointStream *Stream
 	fIOWork=cnSystem::DefaultThreadPool->CreateWork(&fInnerReference,fIOProcedure);
 }
 //---------------------------------------------------------------------------
-cMultipointQueueFromStream::~cMultipointQueueFromStream()
+cMultipointQueueFromStream::~cMultipointQueueFromStream()noexcept
 {
 	for(uIntn i=0;i<fReceiveItemCount;i++){
 		cnSystem::DefaultHeap::Free(fReceiveItem[i].ReadBuffer,fPacketSizeMax,0);
@@ -1090,34 +1045,35 @@ cMultipointQueueFromStream::~cMultipointQueueFromStream()
 	}
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::VirtualStarted(void)
+void cMultipointQueueFromStream::VirtualStarted(void)noexcept
 {
+	InnerActivate('self');
 	CreateMultipointQueueStateWriteWork(cnSystem::DefaultThreadPool,false);
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::VirtualStopped(void)
+void cMultipointQueueFromStream::VirtualStopped(void)noexcept
 {
 	CloseMultipointQueue();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-iReference* cMultipointQueueFromStream::MultipointQueueInnerReference(void)
+iReference* cMultipointQueueFromStream::MultipointQueueInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::MultipointQueueStarted(void)
+void cMultipointQueueFromStream::MultipointQueueStarted(void)noexcept
 {
 	bcMultipointQueue::MultipointQueueStarted();
 	fIOProcedure.RunAsync(fIOWork);
 }
 //---------------------------------------------------------------------------
-iAddress*	cMultipointQueueFromStream::GetLocalAddress(void)
+iAddress*	cMultipointQueueFromStream::GetLocalAddress(void)noexcept
 {
 	return fStream->GetLocalAddress();
 }
 //---------------------------------------------------------------------------
-cConstMemory cMultipointQueueFromStream::GatherReadBuffer(iPtr<iAddress> &Address)
+cConstMemory cMultipointQueueFromStream::GatherReadBuffer(iPtr<iAddress> &Address)noexcept
 {
 	if(MultipointQueueIsClosed())
 		return NullArray;
@@ -1145,7 +1101,7 @@ cConstMemory cMultipointQueueFromStream::GatherReadBuffer(iPtr<iAddress> &Addres
 	return NullArray;
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::DismissReadBuffer(bool Dismiss)
+void cMultipointQueueFromStream::DismissReadBuffer(bool Dismiss)noexcept
 {
 	if(Dismiss==false)
 		return;
@@ -1157,7 +1113,7 @@ void cMultipointQueueFromStream::DismissReadBuffer(bool Dismiss)
 	fIOProcedure.Run();
 }
 //---------------------------------------------------------------------------
-cMemory cMultipointQueueFromStream::ReserveWriteBuffer(uIntn)
+cMemory cMultipointQueueFromStream::ReserveWriteBuffer(uIntn)noexcept
 {
 	if(MultipointQueueIsClosed())
 		return NullArray;
@@ -1177,7 +1133,7 @@ cMemory cMultipointQueueFromStream::ReserveWriteBuffer(uIntn)
 	return NullArray;
 }
 //---------------------------------------------------------------------------
-bool cMultipointQueueFromStream::CommitWriteBuffer(iAddress *Address,uIntn Length)
+bool cMultipointQueueFromStream::CommitWriteBuffer(iAddress *Address,uIntn Length)noexcept
 {
 	auto &Item=fSendItem[fCurSendItemIndex];
 
@@ -1193,13 +1149,13 @@ bool cMultipointQueueFromStream::CommitWriteBuffer(iAddress *Address,uIntn Lengt
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cMultipointQueueFromStream::cIOProcedure::Procedure(void)
+bool cMultipointQueueFromStream::cIOProcedure::Procedure(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cMultipointQueueFromStream::fIOProcedure);
 	return Host->IOProcedure();
 }
 //---------------------------------------------------------------------------
-bool cMultipointQueueFromStream::IOProcedure(void)
+bool cMultipointQueueFromStream::IOProcedure(void)noexcept
 {
 	if(MultipointQueueIsClosed())
 		return false;
@@ -1237,12 +1193,12 @@ bool cMultipointQueueFromStream::IOProcedure(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::cSendItem::Execute(void)
+void cMultipointQueueFromStream::cSendItem::Execute(void)noexcept
 {
 	Owner->SendItemCompletionNotify(this);
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::SendItemSetNotify(cSendItem &Item)
+void cMultipointQueueFromStream::SendItemSetNotify(cSendItem &Item)noexcept
 {
 	InnerIncReference('stsk');
 	if(Item.Task->SetNotify(&Item)==false){
@@ -1250,7 +1206,7 @@ void cMultipointQueueFromStream::SendItemSetNotify(cSendItem &Item)
 	}
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::SendItemCompletionNotify(cSendItem *Item)
+void cMultipointQueueFromStream::SendItemCompletionNotify(cSendItem *Item)noexcept
 {
 	Item->State=cSendItem::sCompleted;
 
@@ -1259,12 +1215,12 @@ void cMultipointQueueFromStream::SendItemCompletionNotify(cSendItem *Item)
 	InnerDecReference('stsk');
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::cReceiveItem::Execute(void)
+void cMultipointQueueFromStream::cReceiveItem::Execute(void)noexcept
 {
 	Owner->ReceiveItemCompletionNotify(this);
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::ReceiveItemSetNotify(cReceiveItem &Item)
+void cMultipointQueueFromStream::ReceiveItemSetNotify(cReceiveItem &Item)noexcept
 {
 	InnerIncReference('rtsk');
 	if(Item.Task->SetNotify(&Item)==false){
@@ -1272,7 +1228,7 @@ void cMultipointQueueFromStream::ReceiveItemSetNotify(cReceiveItem &Item)
 	}
 }
 //---------------------------------------------------------------------------
-void cMultipointQueueFromStream::ReceiveItemCompletionNotify(cReceiveItem *Item)
+void cMultipointQueueFromStream::ReceiveItemCompletionNotify(cReceiveItem *Item)noexcept
 {
 	Item->State=cReceiveItem::sPush;
 

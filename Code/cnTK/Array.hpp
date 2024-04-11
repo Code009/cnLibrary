@@ -21,7 +21,7 @@ namespace cnMemory{
 //---------------------------------------------------------------------------
 
 template<class TPtr1,class TPtr2>
-inline bool ViewEqual(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1==*Array2) && cnLib_NOEXCEPTEXPR(++Array1) && cnLib_NOEXCEPTEXPR(++Array2))
+inline bool ViewEqual(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(noexcept(*Array1==*Array2) && noexcept(++Array1) && noexcept(++Array2))
 {
 	for(uIntn i=0;i<Length;i++){
 		if(!(*Array1==*Array2)){
@@ -40,7 +40,7 @@ inline bool ViewEqual(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEX
 //	[in]Length	length of first characters in string to compare
 //	return:	the differ of first differnet char, 0 if two strings matched
 template<class TPtr1,class TPtr2>
-inline sfInt8 ViewCompare(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1==*Array2) && cnLib_NOEXCEPTEXPR(*Array1<*Array2) && cnLib_NOEXCEPTEXPR(++Array1) && cnLib_NOEXCEPTEXPR(++Array2))
+inline sfInt8 ViewCompare(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(noexcept(*Array1==*Array2) && noexcept(*Array1<*Array2) && noexcept(++Array1) && noexcept(++Array2))
 {
 	for(uIntn i=0;i<Length;i++){
 		if(!(*Array1==*Array2)){
@@ -60,7 +60,7 @@ inline sfInt8 ViewCompare(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_
 //	[in]Length	length to compare
 //	return:	the length of matched elements
 //template<class TPtr1,class TPtr2>
-//inline uIntn ViewMatchLength(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(cnLib_NOEXCEPTEXPR(*Array1!=*Array2))
+//inline uIntn ViewMatchLength(TPtr1 Array1,TPtr2 Array2,uIntn Length)noexcept(noexcept(*Array1!=*Array2))
 //{
 //	for(uIntn i=0;i<Length;i++){
 //		if(Array1[i]!=Array2[i]){
@@ -833,7 +833,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Capacity=0;
 	}
 
-	void ResetDuplicate(tConstPointer SrcPointer,uIntn SrcLength,uIntn NewCapacity)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0))){
+	void ResetDuplicate(tConstPointer SrcPointer,uIntn SrcLength,uIntn NewCapacity)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0))){
 		if(SrcLength==0){
 			Reset();
 			return;
@@ -848,40 +848,40 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Length=SrcLength;
 		TAMFunc::CopyConstruct(this->Pointer,0,SrcPointer,0,SrcLength);
 	}
-	void ResetDuplicate(tConstPointer SrcPointer,uIntn SrcLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0))){
+	void ResetDuplicate(tConstPointer SrcPointer,uIntn SrcLength)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0))){
 		return ResetDuplicate(SrcPointer,SrcLength,SrcLength);
 	}
 
 	cArrayStorage()noexcept(true){	Reset();	}
-    ~cArrayStorage()noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+    ~cArrayStorage()noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		if(this->Length!=0)
 			TAMFunc::Destruct(this->Pointer,0,this->Length);
 		if(this->Capacity!=0)
 			TAMFunc::Deallocate(this->Pointer,this->Capacity);
 	}
 
-	cArrayStorage(tConstPointer SrcData,uIntn SrcLength,uIntn InitialCapacity=0)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0))){
+	cArrayStorage(tConstPointer SrcData,uIntn SrcLength,uIntn InitialCapacity=0)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0))){
 		if(InitialCapacity<SrcLength){
 			InitialCapacity=SrcLength;
 		}
 		ResetDuplicate(SrcData,SrcLength,InitialCapacity);
 	}
 	
-	cArrayStorage(const cArrayStorage &Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0))){
+	cArrayStorage(const cArrayStorage &Src)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0))){
 		ResetDuplicate(Src.Pointer,Src.Length);
 	}
 
-	cArrayStorage(const tConstArray &Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0))){
+	cArrayStorage(const tConstArray &Src)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0))){
 		ResetDuplicate(Src.Pointer,Src.Length);
 	}
-	cArrayStorage& operator =(const cArrayStorage &Src)noexcept(cnLib_NOEXCEPTEXPR(Copy(0,0))){
+	cArrayStorage& operator =(const cArrayStorage &Src)noexcept(noexcept(Copy(0,0))){
 		if(this!=cnMemory::AddressOf(Src)){
 			Copy(Src.Pointer,Src.Length);
 		}
 		return *this;
 	}
 	
-	cArrayStorage& operator =(const tConstArray &Src)noexcept(cnLib_NOEXCEPTEXPR(Copy(0,0))){
+	cArrayStorage& operator =(const tConstArray &Src)noexcept(noexcept(Copy(0,0))){
 		if(ArrayCast<tConstArray>(this)!=&Src){
 			Copy(Src.Pointer,Src.Length);
 		}
@@ -906,11 +906,11 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		Src.Capacity=0;
 	}
 
-	cArrayStorage& operator =(cArrayStorage &&Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	cArrayStorage& operator =(cArrayStorage &&Src)noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		return operator=(static_cast<tArrayAllocation&&>(Src));
 	}
 	
-	cArrayStorage& operator =(tArrayAllocation &&Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	cArrayStorage& operator =(tArrayAllocation &&Src)noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		if(this->Capacity!=0){
 			if(this->Length!=0){
 				TAMFunc::Destruct(this->Pointer,0,this->Length);
@@ -927,7 +927,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	cArrayStorage Relocate(uIntn NewCapacity)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	cArrayStorage Relocate(uIntn NewCapacity)noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		cArrayStorage PreviousArray;
 		NewCapacity=TAllocationOperator::RoundUpCapacity(NewCapacity);
 	
@@ -949,14 +949,14 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		return PreviousArray;
 	}
 
-	void Clear(void)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	void Clear(void)noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		if(this->Length!=0){
 			TAMFunc::Destruct(this->Pointer,0,this->Length);
 			this->Length=0;
 		}
 	}
 
-	void GrowCapacityTo(uIntn NewCapacity)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::MoveConstruct(0,0,0,0,0))){
+	void GrowCapacityTo(uIntn NewCapacity)noexcept(noexcept(TAMFunc::MoveConstruct(0,0,0,0,0))){
 		cnLib_ASSERT(NewCapacity>this->Capacity);
 		NewCapacity=TAMFunc::RoundUpCapacity(NewCapacity);
 		if(this->Capacity==0){
@@ -976,7 +976,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Capacity=NewCapacity;
 	}
 
-	void Truncate(uIntn RemoveLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	void Truncate(uIntn RemoveLength)noexcept(noexcept(TAMFunc::Destruct(0,0,0))){
 		if(RemoveLength>=this->Length){
 			// delete all
 			Clear();
@@ -989,7 +989,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 			TAMFunc::Destruct(this->Pointer,this->Length,OldLength);
 		}
 	}
-	void Remove(uIntn Index,uIntn RemoveLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::MoveInArray(0,0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	void Remove(uIntn Index,uIntn RemoveLength)noexcept(noexcept(TAMFunc::MoveInArray(0,0,0,0)) && noexcept(TAMFunc::Destruct(0,0,0))){
 		if(RemoveLength==0)
 			return;
 		uIntn CopySrc=Index+RemoveLength;
@@ -1012,7 +1012,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		TAMFunc::Destruct(this->Pointer,this->Length,OldLength);
 	}
 	
-	void SetLength(uIntn NewLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Construct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	void SetLength(uIntn NewLength)noexcept(noexcept(TAMFunc::Construct(0,0,0)) && noexcept(TAMFunc::Destruct(0,0,0))){
 		if(NewLength==this->Length)
 			return;
 		if(NewLength<this->Length){
@@ -1031,7 +1031,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Length=NewLength;
 	}
 
-	void SetCapacity(uIntn NewCapacity)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Construct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::MoveConstruct(0,0,0,0,0))){
+	void SetCapacity(uIntn NewCapacity)noexcept(noexcept(TAMFunc::Construct(0,0,0)) && noexcept(TAMFunc::Destruct(0,0,0)) && noexcept(TAMFunc::MoveConstruct(0,0,0,0,0))){
 		if(this->Capacity==NewCapacity)
 			return;
 		if(NewCapacity>this->Capacity){
@@ -1063,7 +1063,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Capacity=NewCapacity;
 	}
 
-	void ReplaceWithUninitialized(uIntn Index,uIntn ReplaceLength,uIntn ReplacementLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::MoveConstruct(0,0,0,0,0))){
+	void ReplaceWithUninitialized(uIntn Index,uIntn ReplaceLength,uIntn ReplacementLength)noexcept(noexcept(TAMFunc::Destruct(0,0,0)) && noexcept(TAMFunc::MoveConstruct(0,0,0,0,0))){
 		cnLib_ASSERT(Index<=this->Length);
 		uIntn TailSrc=Index+ReplaceLength;
 		uIntn TailDest=Index+ReplacementLength;
@@ -1137,7 +1137,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		this->Length=NewLength;
 	}
 
-	void SetRange(uIntn Index,uIntn CopyLength,tConstPointer Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::CopyHeadConstructTail(0,0,0,0,0))){
+	void SetRange(uIntn Index,uIntn CopyLength,tConstPointer Src)noexcept(noexcept(TAMFunc::Destruct(0,0,0)) && noexcept(TAMFunc::CopyHeadConstructTail(0,0,0,0,0))){
 		if(Index>this->Length){
 			return;
 		}
@@ -1146,7 +1146,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 
 		TAMFunc::CopyConstruct(this->Pointer,Index,Src,0,CopyLength);
 	}
-	void Copy(tConstPointer Src,uIntn SrcLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0)) && cnLib_NOEXCEPTEXPR(TAMFunc::CopyHeadConstructTail(0,0,0,0,0,0))){
+	void Copy(tConstPointer Src,uIntn SrcLength)noexcept(noexcept(TAMFunc::Destruct(0,0,0)) && noexcept(TAMFunc::CopyHeadConstructTail(0,0,0,0,0,0))){
 		if(SrcLength==0)
 			return;
 		if(this->Length==0){
@@ -1181,7 +1181,7 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		}
 	}
 
-	void MoveRange(uIntn Index,uIntn CopyLength,tPointer Src,uIntn SrcIndex)noexcept(cnLib_NOEXCEPTEXPR(ReplaceWithUninitialized(0,0,0))){
+	void MoveRange(uIntn Index,uIntn CopyLength,tPointer Src,uIntn SrcIndex)noexcept(noexcept(ReplaceWithUninitialized(0,0,0))){
 		if(Index>this->Length){
 			return;
 		}
@@ -1190,14 +1190,14 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 
 		TAMFunc::MoveConstruct(this->Pointer,Index,Src,SrcIndex,CopyLength);
 	}
-	void Move(tPointer Src,uIntn SrcLength)noexcept(cnLib_NOEXCEPTEXPR(ReplaceWithUninitialized(0,0,0))){
+	void Move(tPointer Src,uIntn SrcLength)noexcept(noexcept(ReplaceWithUninitialized(0,0,0))){
 		ReplaceWithUninitialized(0,SrcLength,SrcLength);
 
 		TAMFunc::MoveConstruct(this->Pointer,0,Src,0,SrcLength);
 	}
 
 
-	void Replace(uIntn Index,uIntn ReplaceLength,uIntn ReplacementLength)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Construct(0,0,0)) && cnLib_NOEXCEPTEXPR(ReplaceWithUninitialized(0,0,0))){
+	void Replace(uIntn Index,uIntn ReplaceLength,uIntn ReplacementLength)noexcept(noexcept(TAMFunc::Construct(0,0,0)) && noexcept(ReplaceWithUninitialized(0,0,0))){
 		ReplaceWithUninitialized(Index,ReplaceLength,ReplacementLength);
 
 		TAMFunc::Construct(this->Pointer,Index,Index+ReplacementLength);
@@ -1229,12 +1229,12 @@ public:
 #endif	// !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT) && cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
 
 	cArrayBuffer()noexcept(true){}
-    ~cArrayBuffer()noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){}
-	cArrayBuffer(tConstPointer Data,uIntn Size,uIntn InitialCapacity=0)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0)))
+    ~cArrayBuffer()noexcept(noexcept(TAMFunc::Destruct(0,0,0))){}
+	cArrayBuffer(tConstPointer Data,uIntn Size,uIntn InitialCapacity=0)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0)))
 		:fArray(Data,Size,InitialCapacity){}
-	cArrayBuffer(const cArrayBuffer &Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0)))
+	cArrayBuffer(const cArrayBuffer &Src)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0)))
 		:fArray(Src.fArray){}
-	cArrayBuffer(const tConstArray &Src)noexcept(cnLib_NOEXCEPTEXPR(TAMFunc::CopyConstruct(0,0,0,0,0)))
+	cArrayBuffer(const tConstArray &Src)noexcept(noexcept(TAMFunc::CopyConstruct(0,0,0,0,0)))
 		:fArray(Src){}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
@@ -1242,13 +1242,13 @@ public:
 	cArrayBuffer(tArrayAllocation &&Src)noexcept(true):fArray(static_cast<tArrayAllocation&&>(Src)){}
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-    cArrayBuffer& operator =(const cArrayBuffer &Src)noexcept(cnLib_NOEXCEPTEXPR(fArray.Copy(0,0))){
+    cArrayBuffer& operator =(const cArrayBuffer &Src)noexcept(noexcept(fArray.Copy(0,0))){
 		if(this==&Src)
 			return *this;
 		fArray=Src.fArray;
 		return *this;
 	}
-    cArrayBuffer& operator =(const tConstArray &Memory)noexcept(cnLib_NOEXCEPTEXPR(fArray.Copy(0,0))){
+    cArrayBuffer& operator =(const tConstArray &Memory)noexcept(noexcept(fArray.Copy(0,0))){
 		if(ArrayCast<tConstArray>(&fArray)!=&Memory){
 			fArray=Memory;
 		}
@@ -1298,23 +1298,23 @@ public:
     //  total bytes of buffer used
     uIntn GetSize(void)const noexcept(true){				return fArray.Length;	}
 	// SetSize
-	void SetSize(uIntn NewSize)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetLength(0))){			return fArray.SetLength(NewSize);		}
+	void SetSize(uIntn NewSize)noexcept(noexcept(fArray.SetLength(0))){			return fArray.SetLength(NewSize);		}
     // GetCapacity
     //  total bytes of buffer capacity
     uIntn GetCapacity(void)const noexcept(true){			return fArray.Capacity;	}
 	// SetCapacity
-	void SetCapacity(uIntn NewCapacity)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetCapacity(0))){	return fArray.SetCapacity(NewCapacity);	}
+	void SetCapacity(uIntn NewCapacity)noexcept(noexcept(fArray.SetCapacity(0))){	return fArray.SetCapacity(NewCapacity);	}
 
 	// Edit
-	void Copy(tConstPointer Data,uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fArray.Copy(Data,Size)))
+	void Copy(tConstPointer Data,uIntn Size)noexcept(noexcept(fArray.Copy(Data,Size)))
 	{	return fArray.Copy(Data,Size);	}
 
-	void Replace(uIntn Offset,uIntn ReplaceSize,uIntn ReplacementSize)noexcept(cnLib_NOEXCEPTEXPR(fArray.Replace(Offset,ReplaceSize,ReplacementSize)))
+	void Replace(uIntn Offset,uIntn ReplaceSize,uIntn ReplacementSize)noexcept(noexcept(fArray.Replace(Offset,ReplaceSize,ReplacementSize)))
 	{	return fArray.Replace(Offset,ReplaceSize,ReplacementSize);	}
 
-	void Append(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetLength(fArray.Length+Size)))
+	void Append(uIntn Size)noexcept(noexcept(fArray.SetLength(fArray.Length+Size)))
 	{	return fArray.SetLength(fArray.Length+Size);	}
-	void Append(tConstPointer Data,uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetLength(0)) && cnLib_NOEXCEPTEXPR(TAMFunc::Copy(0,0,0,0,0))){
+	void Append(tConstPointer Data,uIntn Size)noexcept(noexcept(fArray.SetLength(0)) && noexcept(TAMFunc::Copy(0,0,0,0,0))){
 		uIntn WriteIndex=fArray.Length;
 		fArray.SetLength(fArray.Length+Size);
 		TAMFunc::Copy(fArray.Pointer,WriteIndex,Data,0,fArray.Length-WriteIndex);
@@ -1324,12 +1324,12 @@ public:
 #if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
 		, decltype(cnVar::DeclVal<typename TArrayElement<TElement>::Type&>()=cnVar::DeclVal<const T&>())
 #endif // cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-	>::Type AppendMake(const T &Data)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetLength(0))){
+	>::Type AppendMake(const T &Data)noexcept(noexcept(fArray.SetLength(0))){
 		uIntn WriteIndex=fArray.Length;
 		fArray.SetLength(fArray.Length+1);
 		static_cast<typename TArrayElement<TElement>::Type*>(fArray.Pointer)[WriteIndex]=Data;
 	}
-	void Truncate(uIntn Size)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetLength(0)) && cnLib_NOEXCEPTEXPR(TAMFunc::Destruct(0,0,0))){
+	void Truncate(uIntn Size)noexcept(noexcept(fArray.SetLength(0)) && noexcept(TAMFunc::Destruct(0,0,0))){
 		if(Size>fArray.Length)
 			fArray.Clear();
 		else
@@ -1338,12 +1338,12 @@ public:
 
 	// Compact
     //  Reduce the buffer size to the number of bytes used
-	void Compact(void)noexcept(cnLib_NOEXCEPTEXPR(fArray.SetCapacity(fArray.Length)))
+	void Compact(void)noexcept(noexcept(fArray.SetCapacity(fArray.Length)))
 	{	return fArray.SetCapacity(fArray.Length);	}
 
 	// Clear
     //  Clear the buffer
-	void Clear(void)noexcept(cnLib_NOEXCEPTEXPR(fArray.Clear()))
+	void Clear(void)noexcept(noexcept(fArray.Clear()))
 	{	return fArray.Clear();	}
 
 protected:
@@ -1361,7 +1361,7 @@ struct cMultiArrayAllocation : cMultiArray<typename VTArrayAllocation::tElement.
 	uIntn Capacity;
 };
 
-template<class TVarPackAccessor,class...VTArrayAllocation>
+template<class TVarPackAccessor,class TConstVarPackAccessor,class...VTArrayAllocation>
 struct cMultiArrayMemoryFunction
 {
 	typedef typename cnVar::TSelect<TVarPackAccessor::AccessIndex,VTArrayAllocation...>::Type tArrayAllocation;
@@ -1370,49 +1370,49 @@ struct cMultiArrayMemoryFunction
 
 	static uIntn RoundUpCapacity(uIntn Value)noexcept(true){
 		Value=TAMFunc::RoundUpCapacity(Value);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::RoundUpCapacity(Value);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::RoundUpCapacity(Value);
 	}
 
 
 	static void Allocate(const TVarPackAccessor &Accessor,uIntn AllocateLength)noexcept(true){
 		*Accessor=TAMFunc::Allocate(AllocateLength);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Allocate(+Accessor,AllocateLength);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Allocate(+Accessor,AllocateLength);
 	}
 	static void Deallocate(const TVarPackAccessor &Accessor,uIntn Capacity)noexcept(true){
 		TAMFunc::Deallocate(*Accessor,Capacity);
 
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Deallocate(+Accessor,Capacity);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Deallocate(+Accessor,Capacity);
 	}
 
 	static void Relocate(const TVarPackAccessor &RelocatedAccessor,const TVarPackAccessor &Accessor,uIntn Capacity,uIntn NewLength,bool *ManualCopy)noexcept(true){
 		*RelocatedAccessor=TAMFunc::Relocate(*Accessor,Capacity,NewLength,*ManualCopy);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Relocate(+RelocatedAccessor,+Accessor,Capacity,NewLength,ManualCopy+1);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Relocate(+RelocatedAccessor,+Accessor,Capacity,NewLength,ManualCopy+1);
 	}
 
 	static void ResetPointer(const TVarPackAccessor &Accessor)noexcept(true){
 		*Accessor=nullptr;
-		cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::ResetPointer(+Accessor);
+		cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::ResetPointer(+Accessor);
 	}
 
 
 	static void Construct(const TVarPackAccessor &Accessor,uIntn Index,uIntn EndIndex)noexcept(true){
 		TAMFunc::Construct(*Accessor,Index,EndIndex);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Construct(+Accessor,Index,EndIndex);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Construct(+Accessor,Index,EndIndex);
 	}
 
 	static void Destruct(const TVarPackAccessor &Accessor,uIntn Index,uIntn EndIndex)noexcept(true){
 		TAMFunc::Destruct(*Accessor,Index,EndIndex);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Destruct(+Accessor,Index,EndIndex);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Destruct(+Accessor,Index,EndIndex);
 	}
 
-	static void CopyConstruct(const TVarPackAccessor &DestAccessor,uIntn Index,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
+	static void CopyConstruct(const TVarPackAccessor &DestAccessor,uIntn Index,const TConstVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
 		if(*SrcAccessor!=nullptr){
 			TAMFunc::CopyConstruct(*DestAccessor,Index,*SrcAccessor,SrcIndex,Length);
 		}
 		else{
 			TAMFunc::Construct(*DestAccessor,Index,Index+Length);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::CopyConstruct(+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::CopyConstruct(+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
 	}
 
 	static void MoveConstruct(const TVarPackAccessor &DestAccessor,uIntn Index,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
@@ -1422,26 +1422,26 @@ struct cMultiArrayMemoryFunction
 		else{
 			TAMFunc::Construct(*DestAccessor,Index,Index+Length);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MoveConstruct(+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MoveConstruct(+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
 	}
 
-	static void Copy(const TVarPackAccessor &DestAccessor,uIntn Index,uIntn Length,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex)noexcept(true){
+	static void Copy(const TVarPackAccessor &DestAccessor,uIntn Index,uIntn Length,const TConstVarPackAccessor &SrcAccessor,uIntn SrcIndex)noexcept(true){
 		if(*DestAccessor!=nullptr && *SrcAccessor!=nullptr){
 			TAMFunc::Copy(*DestAccessor,Index,*SrcAccessor,SrcIndex,Length);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::Copy(+DestAccessor,Index,Length,+SrcAccessor,SrcIndex);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::Copy(+DestAccessor,Index,Length,+SrcAccessor,SrcIndex);
 	}
 
-	static void CopyHeadConstructTail(const TVarPackAccessor &DestAccessor,uIntn ArrayIndex,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn HeadLength,uIntn TotalLength)noexcept(true){
+	static void CopyHeadConstructTail(const TVarPackAccessor &DestAccessor,uIntn ArrayIndex,const TConstVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn HeadLength,uIntn TotalLength)noexcept(true){
 		if(*SrcAccessor!=nullptr){
 			TAMFunc::CopyHeadConstructTail(*DestAccessor,ArrayIndex,*SrcAccessor,SrcIndex,HeadLength,TotalLength);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::CopyHeadConstructTail(+DestAccessor,ArrayIndex,+SrcAccessor,SrcIndex,HeadLength,TotalLength);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::CopyHeadConstructTail(+DestAccessor,ArrayIndex,+SrcAccessor,SrcIndex,HeadLength,TotalLength);
 	}
 
 	static void MoveInArray(const TVarPackAccessor &Accessor,uIntn DestIndex,uIntn SrcIndex,uIntn Length)noexcept(true){
 		TAMFunc::MoveInArray(*Accessor,DestIndex,SrcIndex,Length);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MoveInArray(+Accessor,DestIndex,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MoveInArray(+Accessor,DestIndex,SrcIndex,Length);
 	}
 
 
@@ -1449,11 +1449,11 @@ struct cMultiArrayMemoryFunction
 
 	static void MaskByNullptr(bool *Mask,const TVarPackAccessor &Accessor)noexcept(true){
 		*Mask=(*Accessor==nullptr);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskByNullptr(+Accessor,Mask+1);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskByNullptr(+Accessor,Mask+1);
 	}
 	static void MaskByNotNullptr(bool *Mask,const TVarPackAccessor &Accessor)noexcept(true){
 		*Mask=(*Accessor!=nullptr);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskByNotNullptr(+Accessor,Mask+1);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskByNotNullptr(+Accessor,Mask+1);
 	}
 	static bool MaskIsAnySet(const bool *Mask)noexcept(true){
 		for(uIntn i=0;i<sizeof...(VTArrayAllocation);i++){
@@ -1474,31 +1474,31 @@ struct cMultiArrayMemoryFunction
 		if(*Mask){
 			*Accessor=TAMFunc::Allocate(AllocateLength);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskAllocate(Mask+1,+Accessor,AllocateLength);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskAllocate(Mask+1,+Accessor,AllocateLength);
 	}
 	static void MaskDeallocate(const bool *Mask,const TVarPackAccessor &Accessor,uIntn Capacity)noexcept(true){
 		if(*Mask){
 			TAMFunc::Deallocate(*Accessor,Capacity);
 		}
 
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskDeallocate(Mask+1,+Accessor,Capacity);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskDeallocate(Mask+1,+Accessor,Capacity);
 	}
 
 	static void MaskConstruct(const bool *Mask,const TVarPackAccessor &Accessor,uIntn Index,uIntn EndIndex)noexcept(true){
 		if(*Mask){
 			TAMFunc::Construct(*Accessor,Index,EndIndex);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskConstruct(Mask+1,+Accessor,Index,EndIndex);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskConstruct(Mask+1,+Accessor,Index,EndIndex);
 	}
 
 	static void MaskDestruct(const bool *Mask,const TVarPackAccessor &Accessor,uIntn Index,uIntn EndIndex)noexcept(true){
 		if(*Mask){
 			TAMFunc::Destruct(*Accessor,Index,EndIndex);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskDestruct(Mask+1,+Accessor,Index,EndIndex);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskDestruct(Mask+1,+Accessor,Index,EndIndex);
 	}
 
-	static void MaskCopyConstruct(const bool *Mask,const TVarPackAccessor &DestAccessor,uIntn Index,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
+	static void MaskCopyConstruct(const bool *Mask,const TVarPackAccessor &DestAccessor,uIntn Index,const TConstVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
 		if(*Mask){
 			if(*SrcAccessor!=nullptr){
 				TAMFunc::CopyConstruct(*DestAccessor,Index,*SrcAccessor,SrcIndex,Length);
@@ -1507,7 +1507,7 @@ struct cMultiArrayMemoryFunction
 				TAMFunc::Construct(*DestAccessor,Index,Index+Length);
 			}
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskCopyConstruct(Mask+1,+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskCopyConstruct(Mask+1,+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
 	}
 
 	static void MaskMoveConstruct(const bool *Mask,const TVarPackAccessor &DestAccessor,uIntn Index,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn Length)noexcept(true){
@@ -1519,47 +1519,47 @@ struct cMultiArrayMemoryFunction
 				TAMFunc::Construct(*DestAccessor,Index,Index+Length);
 			}
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveConstruct(Mask+1,+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveConstruct(Mask+1,+DestAccessor,Index,+SrcAccessor,SrcIndex,Length);
 	}
 
-	static void MaskCopyHeadConstructTail(const bool *Mask,const TVarPackAccessor &DestAccessor,uIntn ArrayIndex,const TVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn HeadLength,uIntn TotalLength)noexcept(true){
+	static void MaskCopyHeadConstructTail(const bool *Mask,const TVarPackAccessor &DestAccessor,uIntn ArrayIndex,const TConstVarPackAccessor &SrcAccessor,uIntn SrcIndex,uIntn HeadLength,uIntn TotalLength)noexcept(true){
 		if(*Mask && *SrcAccessor!=nullptr){
 			TAMFunc::CopyHeadConstructTail(*DestAccessor,ArrayIndex,*SrcAccessor,SrcIndex,HeadLength,TotalLength);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskCopyHeadConstructTail(Mask+1,+DestAccessor,ArrayIndex,+SrcAccessor,SrcIndex,HeadLength,TotalLength);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskCopyHeadConstructTail(Mask+1,+DestAccessor,ArrayIndex,+SrcAccessor,SrcIndex,HeadLength,TotalLength);
 	}
 
 	static void MaskMoveHeadConstructTailInArray(const bool *Mask,const TVarPackAccessor &Accessor,uIntn ArrayLength,uIntn DestIndex,uIntn MoveLength)noexcept(true){
 		if(*Mask){
 			TAMFunc::MoveHeadConstructTailInArray(*Accessor,ArrayLength,DestIndex,MoveLength);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveHeadConstructTailInArray(Mask+1,+Accessor,ArrayLength,DestIndex,MoveLength);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveHeadConstructTailInArray(Mask+1,+Accessor,ArrayLength,DestIndex,MoveLength);
 	}
 
 	static void MaskMoveInArray(const bool *Mask,const TVarPackAccessor &Accessor,uIntn DestIndex,uIntn SrcIndex,uIntn Length)noexcept(true){
 		if(*Mask){
 			TAMFunc::MoveInArray(*Accessor,DestIndex,SrcIndex,Length);
 		}
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveInArray(Mask+1,+Accessor,DestIndex,SrcIndex,Length);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::MaskMoveInArray(Mask+1,+Accessor,DestIndex,SrcIndex,Length);
 	}
 
 	// helper function
 
 	static void ConstructElement(const TVarPackAccessor &Accessor,uIntn Index)noexcept(true){
 		cnVar::ManualConstruct((*Accessor)[Index]);
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index);
 	}
 
 	template<class TArg,class...TArgs>
 	static void ConstructElement(const TVarPackAccessor &Accessor,uIntn Index,TArg cnLib_UREF Arg,TArgs cnLib_UREF...Args)noexcept(true){
 		cnVar::ManualConstruct((*Accessor)[Index],cnLib_UREFCAST(TArg)(Arg));
-		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index,cnLib_UREFCAST(TArgs)(Args)...);
+		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index,cnLib_UREFCAST(TArgs)(Args)...);
 	}
 
 };
 
 template<class...VTArrayAllocation>
-struct cMultiArrayMemoryFunction<cnVar::cVarPackNoAccess,VTArrayAllocation...>
+struct cMultiArrayMemoryFunction<cnVar::cVarPackNoAccess,cnVar::cVarPackNoAccess,VTArrayAllocation...>
 {
 	static uIntn RoundUpCapacity(uIntn Value){	return Value;	}
 
@@ -1614,7 +1614,7 @@ struct cMultiArrayStorage
 {
 	typedef cnVar::cVarPack<typename VTArrayAllocation::tElement*...> tPointer;
 	typedef cnVar::cVarPack<typename VTArrayAllocation::tElement const*...> tConstPointer;
-	typedef cMultiArrayMemoryFunction<typename tPointer::tAllAccessor,VTArrayAllocation...> TMAMFunc;
+	typedef cMultiArrayMemoryFunction<typename tPointer::tAllAccessor,typename tConstPointer::tAllConstAccessor,VTArrayAllocation...> TMAMFunc;
 	typedef cMultiArray<typename VTArrayAllocation::tElement...> tArray;
 	typedef cMultiArray<typename VTArrayAllocation::tElement const...> tConstArray;
 	typedef cMultiArrayAllocation<VTArrayAllocation...> tMultiArrayAllocation;
@@ -1657,7 +1657,7 @@ struct cMultiArrayStorage
 
 		// data
 		this->Length=Src.Length;
-		TMAMFunc::CopyConstruct(this->Pointer.All(),0,Src.Pointer,0,this->Length);
+		TMAMFunc::CopyConstruct(this->Pointer.All(),0,Src.Pointer.All(),0,this->Length);
 	}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L

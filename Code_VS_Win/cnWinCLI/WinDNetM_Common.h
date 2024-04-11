@@ -20,17 +20,17 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
-	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)=0;
+	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)noexcept(true)=0;
 
 #if _MANAGED
 
-	System::Object^ __clrcall Get(void){
+	System::Object^ __clrcall Get(void)noexcept(true){
 		auto &Handle=GetObjecHandle();
 		return Handle;
 	}
 
 	template<class T>
-	T __clrcall Get(void)
+	T __clrcall Get(void)noexcept(true)
 	{
 		System::Object^ Target=GetObjecHandle();
 		return dynamic_cast<T>(Target);
@@ -63,8 +63,8 @@ private:
 //---------------------------------------------------------------------------
 #endif	// _MANAGED
 //---------------------------------------------------------------------------
-void rcRefProcedureCaller_RefProc(iReference *Reference);
-void rcRefProcedureCaller_CallProc(iReference *Reference,iProcedure *Procedure);
+void rcRefProcedureCaller_RefProc(iReference *Reference)noexcept(true);
+void rcRefProcedureCaller_CallProc(iReference *Reference,iProcedure *Procedure)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL/cnRTLHeader.h>
 /*-------------------------------------------------------------------------*/
-#if	cnLibrary_CPPFEATURELEVEL >= 1
+#if	__cplusplus
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
@@ -39,28 +39,29 @@ namespace cnMemory{
 
 // ZeroFill
 // [in]Data		array to fill
-inline void ZeroFill(void *Data,uIntn Size){	return TKRuntime::TMemory<1>::ZeroFill(Data,Size);	}
+inline void ZeroFill(void *Data,uIntn Size)noexcept(true){	return TKRuntime::TMemory<1>::ZeroFill(Data,Size);	}
 
 // ZeroFill
 // [in]Data		array to fill
 template<class T>
-inline void ZeroFill(T &Data){	return ZeroFill(&Data,sizeof(T));	}
+inline void ZeroFill(T &Data)noexcept(true){	return ZeroFill(&Data,sizeof(T));	}
 
 // ZeroFill
 // [in]Data		array to fill
 template<class T,uIntn DataLength>
-inline void ZeroFill(T (&Data)[DataLength]){	return ZeroFill(&Data,sizeof(T)*DataLength);	}
+inline void ZeroFill(T (&Data)[DataLength])noexcept(true){	return ZeroFill(&Data,sizeof(T)*DataLength);	}
 
 
-inline void Copy(void *Dest,const void *Src,uIntn Size){	return TKRuntime::TMemory<1>::Copy(Dest,Src,Size);	}
-inline void CopyO(void *Dest,const void *Src,uIntn Size){	return TKRuntime::TMemory<1>::CopyOverlapped(Dest,Src,Size);	}
+inline void Copy(void *Dest,const void *Src,uIntn Size)noexcept(true){	return TKRuntime::TMemory<1>::Copy(Dest,Src,Size);	}
+inline void CopyO(void *Dest,const void *Src,uIntn Size)noexcept(true){	return TKRuntime::TMemory<1>::CopyOverlapped(Dest,Src,Size);	}
 
 
-inline bool IsEqual(const void *Mem1,const void *Mem2,uIntn Size){
+inline bool IsEqual(const void *Mem1,const void *Mem2,uIntn Size)noexcept(true)
+{
 	return TKRuntime::TMemory<1>::Equal(Mem1,Mem2,Size);
 }
 
-inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)
+inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)noexcept(true)
 {
 	return TKRuntime::TMemory<1>::Compare(Mem1,Mem2,Size);
 }
@@ -68,12 +69,6 @@ inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)
 
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
-//---------------------------------------------------------------------------
-namespace cnString{
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-}	// namespace cnString
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
@@ -148,21 +143,21 @@ const cnVar::cMetaClass *const cMetaClassDefinition<T>::Value=&Class;
 //	Reverse bits in byte
 // [in]Src
 // return: reversed data
-extern uInt8 BitReverse(uInt8 Src);
+extern uInt8 BitReverse(uInt8 Src)noexcept(true);
 
 //---------------------------------------------------------------------------
 template<class TEnum>
-inline bool BitsAllZero(TEnum v){
+inline bool BitsAllZero(TEnum v)noexcept(true){
 	return v==static_cast<TEnum>(0);
 }
 //---------------------------------------------------------------------------
 template<class TEnum>
-inline bool BitsNonZero(TEnum v){
+inline bool BitsNonZero(TEnum v)noexcept(true){
 	return v!=static_cast<TEnum>(0);
 }
 //---------------------------------------------------------------------------
 template<class TEnum>
-inline bool BitsContains(TEnum v,typename cnVar::TTypeDef<TEnum>::Type Bits){
+inline bool BitsContains(TEnum v,typename cnVar::TTypeDef<TEnum>::Type Bits)noexcept(true){
 	return (v&Bits)!=static_cast<TEnum>(0);
 }
 
@@ -176,12 +171,12 @@ struct cVariantTypeOperator
 	template<uIntn TypeIndex>	struct tTypeByIndex : cnVar::TSelect<TypeIndex,VT...>{};
 	
 	static const tTypeID TypeIDList[];
-	static tTypeID GetTypeID(uIntn TypeIndex){
+	static tTypeID GetTypeID(uIntn TypeIndex)noexcept(true){
 		return TypeIDList[TypeIndex];
 	}
 
 	static const rtTypeInfo TypeInfoList[];
-	static rtTypeInfo GetTypeInfo(uIntn TypeIndex){
+	static rtTypeInfo GetTypeInfo(uIntn TypeIndex)noexcept(true){
 		return TypeInfoList[TypeIndex];
 	}
 
@@ -213,19 +208,27 @@ using cVariant=cnVar::cVariant< cVariantTypeOperator<VT...> >;
 class cVectorZeroValue
 {
 public:
+	template<class TVectorOperator,uIntn VectorCount>
+	operator cnVar::cVectorStorage<TVectorOperator,VectorCount> ()const noexcept(true){
+		cnVar::cVectorStorage<TVectorOperator,VectorCount> RetValue;
+		RetValue.Zero();
+		return RetValue;
+	}
+
 	template<class TElement,uIntn ElementCount>
-	operator cnVar::cVector<TElement,ElementCount> ()const{
+	operator cnVar::cVector<TElement,ElementCount> ()const noexcept(true){
 		cnVar::cVector<TElement,ElementCount> RetValue;
 		RetValue.Zero();
 		return RetValue;
 	}
 
 	template<class TElement,uIntn ElementCount>
-	operator cnVar::cIntegerVector<TElement,ElementCount> ()const{
+	operator cnVar::cIntegerVector<TElement,ElementCount> ()const noexcept(true){
 		cnVar::cIntegerVector<TElement,ElementCount> RetValue;
 		RetValue.Zero();
 		return RetValue;
 	}
+
 };
 extern const cVectorZeroValue VectorZeroValue;
 //---------------------------------------------------------------------------
@@ -233,33 +236,41 @@ template<class TValue>
 class cVectorFillValue
 {
 public:
-	cVectorFillValue(TValue Value):fValue(Value){}
+	cVectorFillValue(TValue Value)noexcept(true):fValue(Value){}
+
+	template<class TVectorOperator,uIntn VectorCount>
+	operator cnVar::cVectorStorage<TVectorOperator,VectorCount> ()const noexcept(true){
+		cnVar::cVectorStorage<TVectorOperator,VectorCount> RetValue;
+		RetValue.Fill(fValue);
+		return RetValue;
+	}
 
 	template<class TElement,uIntn ElementCount>
-	operator cnVar::cVector<TElement,ElementCount> ()const{
+	operator cnVar::cVector<TElement,ElementCount> ()const noexcept(true){
 		cnVar::cVector<TElement,ElementCount> RetValue;
 		RetValue.Fill(fValue);
 		return RetValue;
 	}
 
 	template<class TElement,uIntn ElementCount>
-	operator cnVar::cIntegerVector<TElement,ElementCount> ()const{
+	operator cnVar::cIntegerVector<TElement,ElementCount> ()const noexcept(true){
 		cnVar::cIntegerVector<TElement,ElementCount> RetValue;
 		RetValue.Fill(fValue);
 		return RetValue;
 	}
+
 private:
 	TValue fValue;
 };
 
 template<class TElement>
-cVectorFillValue<TElement> VectorFillValue(TElement Value)
+cVectorFillValue<TElement> VectorFillValue(TElement Value)noexcept(true)
 {
 	return Value;
 }
 //---------------------------------------------------------------------------
 template<uIntn ElementCount,class TElement>
-inline cVector<TElement,ElementCount> VectorMake(const TElement *Value)
+inline cVector<TElement,ElementCount> VectorMake(const TElement *Value)noexcept(true)
 {
 	cVector<TElement,ElementCount> RetValue;
 	for(uIntn i=0;i<ElementCount;i++){
@@ -269,7 +280,7 @@ inline cVector<TElement,ElementCount> VectorMake(const TElement *Value)
 }
 //---------------------------------------------------------------------------
 template<class TElement,uIntn ElementCount>
-inline cVector<TElement,ElementCount> VectorMakeZero(void)
+inline cVector<TElement,ElementCount> VectorMakeZero(void)noexcept(true)
 {
 	cVector<TElement,ElementCount> RetValue;
 	RetValue.Zero();
@@ -277,7 +288,7 @@ inline cVector<TElement,ElementCount> VectorMakeZero(void)
 }
 //---------------------------------------------------------------------------
 template<uIntn ElementCount,class TElement>
-inline cVector<TElement,ElementCount> VectorMakeFill(TElement Value)
+inline cVector<TElement,ElementCount> VectorMakeFill(TElement Value)noexcept(true)
 {
 	cVector<TElement,ElementCount> RetValue;
 	RetValue.Fill(Value);
@@ -289,7 +300,7 @@ inline cVector<TElement,ElementCount> VectorMakeFill(TElement Value)
 
 //---------------------------------------------------------------------------
 template<uIntn ElementCount,class TElement>
-inline cIntegerVector<TElement,ElementCount> IntegerVectorMake(const TElement *Value)
+inline cIntegerVector<TElement,ElementCount> IntegerVectorMake(const TElement *Value)noexcept(true)
 {
 	cIntegerVector<TElement,ElementCount> RetValue;
 	for(uIntn i=0;i<ElementCount;i++){
@@ -299,7 +310,7 @@ inline cIntegerVector<TElement,ElementCount> IntegerVectorMake(const TElement *V
 }
 //---------------------------------------------------------------------------
 template<class TElement,uIntn ElementCount>
-inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeZero(void)
+inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeZero(void)noexcept(true)
 {
 	cIntegerVector<TElement,ElementCount> RetValue;
 	RetValue.Zero();
@@ -307,7 +318,7 @@ inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeZero(void)
 }
 //---------------------------------------------------------------------------
 template<uIntn ElementCount,class TElement>
-inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeFill(TElement Value)
+inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeFill(TElement Value)noexcept(true)
 {
 	cIntegerVector<TElement,ElementCount> RetValue;
 	RetValue.Fill(Value);
@@ -318,70 +329,71 @@ inline cIntegerVector<TElement,ElementCount> IntegerVectorMakeFill(TElement Valu
 // Time
 
 //---------------------------------------------------------------------------
-sInt64 NanosecondsSinceUnixEPoch(iTimepoint *Time);
-//---------------------------------------------------------------------------
-class cTime : public iTimepoint
+class cSystemTime : public iTimepoint
 {
 private:
 	sInt64 fNanoSeconds;
 public:
-	static cTime TimeNow(void);
+	static cSystemTime TimeNow(void)noexcept(true);
 
-	cTime()=default;
-	cTime(const cTime &Src)=default;
-	explicit cnLib_CONSTEXPR_FUNC cTime(sInt64 SystemNanoSeconds):fNanoSeconds(SystemNanoSeconds){}
-	cTime(iTimepoint *RefTime);
-	~cTime();
+	cSystemTime()=default;
+	cSystemTime(const cSystemTime &Src)=default;
+	explicit cnLib_CONSTEXPR_FUNC cSystemTime(sInt64 SystemNanoSeconds)noexcept(true):fNanoSeconds(SystemNanoSeconds){}
+	cSystemTime(iTimepoint *RefTime)noexcept(true);
+	~cSystemTime()noexcept(true);
 
-	virtual sInt64 cnLib_FUNC SystemTime(void)override;
-	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)override;
+	virtual sInt64 cnLib_FUNC SystemTime(void)noexcept(true)override;
+	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)noexcept(true)override;
 
-	sInt64 Since(iTimepoint *Time)const;
+	sInt64 Since(iTimepoint *Time)const noexcept(true);
 
-	operator iTimepoint*()const;
+	operator iTimepoint*()const noexcept(true);
 
-	cTime& operator =(iTimepoint *RefTime);
+	cSystemTime& operator =(iTimepoint *RefTime)noexcept(true);
 	
-	cTime operator + (sInt64 Src)const;
-	cTime operator - (sInt64 Src)const;
-	sInt64 operator - (const cTime &Relative)const;
-	sInt64 operator - (iTimepoint *Relative)const;
+	cSystemTime operator + (sInt64 Src)const noexcept(true);
+	cSystemTime operator - (sInt64 Src)const noexcept(true);
+	sInt64 operator - (const cSystemTime &Relative)const noexcept(true);
+	sInt64 operator - (iTimepoint *Relative)const noexcept(true);
 
-	cTime& operator +=(sInt64 Src);
-	cTime& operator -=(sInt64 Src);
+	cSystemTime& operator +=(sInt64 Src)noexcept(true);
+	cSystemTime& operator -=(sInt64 Src)noexcept(true);
 
 
-	bool operator == (const cTime &Src)const;
-	bool operator != (const cTime &Src)const;
-	bool operator < (const cTime &Src)const;
-	bool operator <= (const cTime &Src)const;
-	bool operator > (const cTime &Src)const;
-	bool operator >= (const cTime &Src)const;
+	bool operator == (const cSystemTime &Src)const noexcept(true);
+	bool operator != (const cSystemTime &Src)const noexcept(true);
+	bool operator < (const cSystemTime &Src)const noexcept(true);
+	bool operator <= (const cSystemTime &Src)const noexcept(true);
+	bool operator > (const cSystemTime &Src)const noexcept(true);
+	bool operator >= (const cSystemTime &Src)const noexcept(true);
 
-	bool operator == (iTimepoint *Src)const;
-	bool operator != (iTimepoint *Src)const;
-	bool operator < (iTimepoint *Src)const;
-	bool operator <= (iTimepoint *Src)const;
-	bool operator > (iTimepoint *Src)const;
-	bool operator >= (iTimepoint *Src)const;
+	bool operator == (iTimepoint *Src)const noexcept(true);
+	bool operator != (iTimepoint *Src)const noexcept(true);
+	bool operator < (iTimepoint *Src)const noexcept(true);
+	bool operator <= (iTimepoint *Src)const noexcept(true);
+	bool operator > (iTimepoint *Src)const noexcept(true);
+	bool operator >= (iTimepoint *Src)const noexcept(true);
 
-	sInt64 SinceUnixEpoch(void)const;
-	void SetTimeUnix(sInt64 NanoSeconds);
-	void SetTimeNow(void);
-	void SetSystemTime(sInt64 SystemTime);
+	sInt64 SinceUnixEpoch(void)const noexcept(true);
+	void SetTimeUnix(sInt64 NanoSeconds)noexcept(true);
+	void SetTimeNow(void)noexcept(true);
+	void SetSystemTime(sInt64 SystemTime)noexcept(true);
 
-	void Truncate(uInt64 Mod);
+	void Truncate(uInt64 Mod)noexcept(true);
 
-	friend sInt64 operator - (iTimepoint *Dest,const cTime &Src);
+	friend sInt64 operator - (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
 
-	friend bool operator == (iTimepoint *Dest,const cTime &Src);
-	friend bool operator != (iTimepoint *Dest,const cTime &Src);
-	friend bool operator < (iTimepoint *Dest,const cTime &Src);
-	friend bool operator <= (iTimepoint *Dest,const cTime &Src);
-	friend bool operator > (iTimepoint *Dest,const cTime &Src);
-	friend bool operator >= (iTimepoint *Dest,const cTime &Src);
+	friend bool operator == (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
+	friend bool operator != (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
+	friend bool operator < (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
+	friend bool operator <= (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
+	friend bool operator > (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
+	friend bool operator >= (iTimepoint *Dest,const cSystemTime &Src)noexcept(true);
 };
-
+//---------------------------------------------------------------------------
+uInt64 SystemTimeToUnixTimeNS(uInt64 SystemTime)noexcept(true);
+uInt64 SystemTimeFromUnixTimeNS(uInt64 UnixTime)noexcept(true);
+uInt64 TimeNSTruncate(uInt64 UnixTime,uInt64 Mod)noexcept(true);
 //---------------------------------------------------------------------------
 template<class TSingleLinkedItemOperator>
 class bcAtomicLinkRecyclePool : public cnAsync::cAtomicStack<TSingleLinkedItemOperator>
@@ -391,15 +403,15 @@ public:
 
 	// Object Creation
 
-	tItem* Fetch(void){
+	tItem* Fetch(void)noexcept(true){
 		return this->Pop();
 	}
 
-	void Recycle(tItem *Object){
+	void Recycle(tItem *Object)noexcept(true){
 		this->Push(Object);
 	}
 
-	tItem* Query(void){
+	tItem* Query(void)noexcept(true){
 		auto Object=this->Pop();
 		if(Object==nullptr){
 			Object=new tItem;
@@ -407,7 +419,7 @@ public:
 		return Object;
 	}
 
-	void Clear(void){
+	void Clear(void)noexcept(true){
 		auto ItemsToDelete=this->Swap(nullptr);
 		while(ItemsToDelete!=nullptr){
 			auto DeleteObject=ItemsToDelete;
@@ -424,12 +436,12 @@ class cObjectRecyclePool : public bcAtomicLinkRecyclePool< cnDataStruct::cSingle
 {
 public:
 
-	cnLib_CONSTEXPR_FUNC cObjectRecyclePool():fRefCount(0){}
+	cnLib_CONSTEXPR_FUNC cObjectRecyclePool()noexcept(true):fRefCount(0){}
 
-	void IncreaseReference(void){
+	void IncreaseReference(void)noexcept(true){
 		fRefCount.Free++;
 	}
-	void DecreaseReference(void){
+	void DecreaseReference(void)noexcept(true){
 		if(fRefCount.Free--==1){
 			this->Clear();
 		}
@@ -443,20 +455,20 @@ template<class TItem>
 class cSharedLinkItemRecycler
 {
 public:
-	cSharedLinkItemRecycler()
+	cSharedLinkItemRecycler()noexcept(true)
 		: fPool(cnVar::StaticInitializedSinglton< cObjectRecyclePool<TItem> >())
 	{}
-	~cSharedLinkItemRecycler(){}
+	~cSharedLinkItemRecycler()noexcept(true){}
 
-	TItem* Query(void)
+	TItem* Query(void)noexcept(true)
 	{
 		return fPool->Query();
 	}
-	TItem* Fetch(void)
+	TItem* Fetch(void)noexcept(true)
 	{
 		return fPool->Fetch();
 	}
-	void Recycle(TItem *Item)
+	void Recycle(TItem *Item)noexcept(true)
 	{
 		return fPool->Recycle(Item);
 	}
@@ -472,14 +484,14 @@ private:
 class cSpinLock
 {
 public:
-	cnLib_CONSTEXPR_FUNC cSpinLock():fOwned(false){}
+	cnLib_CONSTEXPR_FUNC cSpinLock()noexcept(true):fOwned(false){}
 #ifdef cnLib_DEBUG
-	~cSpinLock(){	cnLib_ASSERT(fOwned==false);	}
+	~cSpinLock()noexcept(true){	cnLib_ASSERT(fOwned==false);	}
 #endif // cnLib_DEBUG
 
-	void Acquire(void);
-	bool TryAcquire(void);
-	void Release(void);
+	void Acquire(void)noexcept(true);
+	bool TryAcquire(void)noexcept(true);
+	void Release(void)noexcept(true);
 protected:
 	cAtomicVar<bool> fOwned=false;
 public:
@@ -489,15 +501,15 @@ public:
 template<class TPtr>
 struct cLockRefTokenOperator : cnVar::bcPointerRefTokenOperator<TPtr>
 {
-	static void Acquire(TPtr Token){	if(Token!=nullptr)	Token->Acquire();	}
-	static void Release(TPtr Token){	if(Token!=nullptr)	Token->Release();	}
+	static void Acquire(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->Acquire();	}
+	static void Release(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
 };
 //---------------------------------------------------------------------------
 template<class TPtr>
 struct cSharedLockRefTokenOperator : cnVar::bcPointerRefTokenOperator<TPtr>
 {
-	static void Acquire(TPtr Token){	if(Token!=nullptr)	Token->AcquireShared();	}
-	static void Release(TPtr Token){	if(Token!=nullptr)	Token->ReleaseShared();	}
+	static void Acquire(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->AcquireShared();	}
+	static void Release(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->ReleaseShared();	}
 };
 //---------------------------------------------------------------------------
 template<class TPtr>
@@ -506,25 +518,25 @@ template<class TPtr>
 using lockSharedPtr = cnVar::cPtrReference< cSharedLockRefTokenOperator<TPtr> >;
 //---------------------------------------------------------------------------
 template<class TLock>
-inline lockPtr<TLock*> TakeLock(TLock *Lock)
+inline lockPtr<TLock*> TakeLock(TLock *Lock)noexcept(true)
 {
 	return Lock;
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline auto TakeLock(TLock &Lock) -> lockPtr<decltype(Lock.operator ->())>
+inline auto TakeLock(TLock &Lock)noexcept(true) -> lockPtr<decltype(Lock.operator ->())>
 {
 	return Lock.operator ->();
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline lockSharedPtr<TLock*> TakeSharedLock(TLock *Lock)
+inline lockSharedPtr<TLock*> TakeSharedLock(TLock *Lock)noexcept(true)
 {
 	return Lock;
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline auto TakeSharedLock(TLock &Lock) -> lockSharedPtr<decltype(Lock.operator ->())>
+inline auto TakeSharedLock(TLock &Lock)noexcept(true) -> lockSharedPtr<decltype(Lock.operator ->())>
 {
 	return Lock.operator ->();
 }
@@ -541,22 +553,22 @@ struct rRefWeakTokenOperator
 	typedef iObservedReference* TRegToken;
 	typedef iReferenceInvalidationNotify TNotifyToken;
 
-	static TRegToken Register(TRef Ref,TNotifyToken *NotifyToken){
+	static TRegToken Register(TRef Ref,TNotifyToken *NotifyToken)noexcept(true){
 		if(Ref==nullptr)
 			return nullptr;
 		Ref->InvalidationRegisterNotification(NotifyToken);
 		return Ref;
 	}
-	static TRegToken Register(TPtr Pointer,TNotifyToken *NotifyToken){
+	static TRegToken Register(TPtr Pointer,TNotifyToken *NotifyToken)noexcept(true){
 		if(Pointer==nullptr)
 			return nullptr;
 		Pointer->InvalidationRegisterNotification(NotifyToken);
 		return Pointer;
 	}
-	static void Unregister(TRegToken RegToken,TNotifyToken *NotifyToken){
+	static void Unregister(TRegToken RegToken,TNotifyToken *NotifyToken)noexcept(true){
 		return RegToken->InvalidationUnregisterNotification(NotifyToken);
 	}
-	static TRef Reference(TRegToken RegToken){
+	static TRef Reference(TRegToken RegToken)noexcept(true){
 		return RegToken->Reference()?TRef::TakeFromManual(RegToken):nullptr;
 	}
 };
@@ -567,12 +579,12 @@ using rwPtr=cnVar::cPtrWeakReference< rRefWeakTokenOperator<T> >;
 class bcInterfaceWeakPointer : protected iReferenceInvalidationNotify
 {
 public:
-	bcInterfaceWeakPointer();
-	~bcInterfaceWeakPointer();
+	bcInterfaceWeakPointer()noexcept(true);
+	~bcInterfaceWeakPointer()noexcept(true);
 
-	bcInterfaceWeakPointer(bcInterfaceWeakPointer &Src);
+	bcInterfaceWeakPointer(bcInterfaceWeakPointer &Src)noexcept(true);
 
-	bcInterfaceWeakPointer(iInterface *Src);
+	bcInterfaceWeakPointer(iInterface *Src)noexcept(true);
 
 
 
@@ -581,8 +593,8 @@ protected:
 	iObservedReference *fWeakRef;
 	iInterface *fInterface;
 
-	void Assign(iInterface *Src);
-	bool ToStrong(void);
+	void Assign(iInterface *Src)noexcept(true);
+	bool ToStrong(void)noexcept(true);
 	virtual bool cnLib_FUNC InvalidationNotify(iObservedReference *InvalidatedReference)noexcept(true) override;
 };
 //---------------------------------------------------------------------------
@@ -590,27 +602,27 @@ template<class T>
 class iwPtr : protected bcInterfaceWeakPointer
 {
 public:
-	iwPtr(){}
-	~iwPtr(){}
+	iwPtr()noexcept(true){}
+	~iwPtr()noexcept(true){}
 
-	iwPtr(iwPtr &Src) : bcInterfaceWeakPointer(Src){}
+	iwPtr(iwPtr &Src)noexcept(true) : bcInterfaceWeakPointer(Src){}
 
-	iwPtr(T *Src) : bcInterfaceWeakPointer(Src){}
+	iwPtr(T *Src)noexcept(true) : bcInterfaceWeakPointer(Src){}
 
-	iwPtr& operator =(T *Src){
+	iwPtr& operator =(T *Src)noexcept(true){
 		Assign(Src);
 		return *this;
 	}
 
 
-	iPtr<T> Ref(void){
+	iPtr<T> Ref(void)noexcept(true){
 		if(bcInterfaceWeakPointer::ToStrong()){
 			return iPtr<T>::TakeFromManual(static_cast<T*>(this->fInterface));
 		}
 
 		return nullptr;
 	}
-	iPtr<T> operator + (void){
+	iPtr<T> operator + (void)noexcept(true){
 		return Ref();
 	}
 };
@@ -628,19 +640,19 @@ public:
 	// Acquire
 	//	test if caller acquired the flag, if not ,request owner to continue
 	// return true if the flag is acquired
-	bool Acquire(void);
+	bool Acquire(void)noexcept(true);
 	// Release
 	//	release the flag if no request pending
 	//	if there was pending request, the thread should continue running
 	//	this function must run called by owner
 	// return true if the owner release the flag, false if there is pending request
-	bool Release(void);
+	bool Release(void)noexcept(true);
 
 	// Continue
 	//	continue execution and clear pending state
-	void Continue(void);
+	void Continue(void)noexcept(true);
 
-	bool IsRunning(void)const;
+	bool IsRunning(void)const noexcept(true);
 private:
 	static cnLib_CONSTVAR uInt8 rfIdle=0;
 	static cnLib_CONSTVAR uInt8 rfExecute=1;
@@ -664,22 +676,22 @@ public:
 		bool Inc;
 	};
 
-	void Log(void *Object,uInt32 Tag,bool Inc);
+	void Log(void *Object,uInt32 Tag,bool Inc)noexcept(true);
 private:
 	class cContext : public iProcedure, public iDependentInfo
 	{
 	public:
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 
 		cSeqMap<void*, cSeqMap<uInt32,uIntn> > fObjectMap;
 
-		void Inc(void *Object,uInt32 Tag);
-		void Dec(void *Object,uInt32 Tag);
+		void Inc(void *Object,uInt32 Tag)noexcept(true);
+		void Dec(void *Object,uInt32 Tag)noexcept(true);
 
 		static const uChar16 DependentName[];
 
-		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)override;
-		virtual void cnLib_FUNC DependentShutdownNotification(void)override;
+		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
+		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 	};
 	cnVar::cStaticVariable<cContext> fContext;
 	cAtomicQueueSO<cItem> fItemQueue;
@@ -689,10 +701,10 @@ private:
 	bool fInitialized;
 	ufInt8 fSystemShutdown;
 
-	void Process(void);
+	void Process(void)noexcept(true);
 
-	void ThreadProcess(void);
-	void NotifyProcess(void);
+	void ThreadProcess(void)noexcept(true);
+	void NotifyProcess(void)noexcept(true);
 };
 extern cnVar::cStaticVariable<cReferenceCountLogger> gStaticReferenceCountLogger;
 //---------------------------------------------------------------------------
@@ -718,78 +730,78 @@ extern cnVar::cStaticVariable<cReferenceCountLogger> gStaticReferenceCountLogger
 #endif // !cnRTL_DEBUG_LOG_REFERENCE_DEC
 //---------------------------------------------------------------------------
 template<class T>
-void iIncReference(T *Src,uInt32 Tag)
+inline void iIncReference(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return iIncReference(Src);
 }
 template<class T>
-void iDecReference(T *Src,uInt32 Tag)
+inline void iDecReference(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return iDecReference(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-void iIncReference(const iPtr<T> &Src,uInt32 Tag)
+inline void iIncReference(const iPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return iIncReference(Src);
 }
 template<class T>
-void iDecReference(const iPtr<T> &Src,uInt32 Tag)
+inline void iDecReference(const iPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return iDecReference(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-iPtr<T> iTake(T *Src,uInt32 Tag)
+inline iPtr<T> iTake(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return iPtr<T>::TakeFromManual(Src);
 }
 template<class T>
-T* iExtract(iPtr<T> &Src,uInt32 Tag)
+inline T* iExtract(iPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
 template<class T>
-void rIncReference(T *Src,uInt32 Tag)
+inline void rIncReference(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return rIncReference(Src);
 }
 template<class T>
-void rDecReference(T *Src,uInt32 Tag)
+inline void rDecReference(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return rDecReference(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-void rIncReference(const iPtr<T> &Src,uInt32 Tag)
+inline void rIncReference(const iPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return rIncReference(Src);
 }
 template<class T>
-void rDecReference(const iPtr<T> &Src,uInt32 Tag)
+inline void rDecReference(const iPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return rDecReference(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
-rPtr<T> rTake(T *Src,uInt32 Tag)
+inline rPtr<T> rTake(T *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
 	return rPtr<T>::TakeFromManual(Src);
 }
 template<class T>
-T* rExtract(rPtr<T> &Src,uInt32 Tag)
+inline T* rExtract(rPtr<T> &Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return Src.ExtractToManual();
@@ -798,13 +810,13 @@ T* rExtract(rPtr<T> &Src,uInt32 Tag)
 namespace cnRTL{
 //---------------------------------------------------------------------------
 template<uIntn CacheLength,class TStreamReadBuffer>
-cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)
+inline cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)noexcept(true)
 {
 	return cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength>(static_cast<TStreamReadBuffer&&>(ReadBuffer));
 }
 //---------------------------------------------------------------------------
 template<uIntn CacheLength,class TStreamWriteBuffer>
-cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)
+inline cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
 {
 	return cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));
 }
@@ -814,7 +826,7 @@ namespace ArrayStream{
 // Read
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
-inline bool ReadElement(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement &Element)
+inline bool ReadElement(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement &Element)noexcept(true)
 {
 	typedef typename TStreamReadBuffer::tElement tElement;
 	cArray<const tElement> Memory=ReadBuffer.GatherReadBuffer(1);
@@ -826,13 +838,13 @@ inline bool ReadElement(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer
 }
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
-inline bool ReadElement(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement &Element)
+inline bool ReadElement(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement &Element)noexcept(true)
 {
 	return ReadElement(ReadBuffer,Element);
 }
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
-inline bool ReadArray(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement *Array,uIntn Length)
+inline bool ReadArray(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement *Array,uIntn Length)noexcept(true)
 {
 	if(Length==0)
 		return true;
@@ -860,7 +872,7 @@ inline bool ReadArray(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::
 }
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
-inline bool ReadArray(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement *Array,uIntn Length)
+inline bool ReadArray(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement *Array,uIntn Length)noexcept(true)
 {
 	return ReadArray(ReadBuffer,Array,Length);
 }
@@ -868,7 +880,7 @@ inline bool ReadArray(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveRefe
 // Write
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteElement(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element)
+inline bool WriteElement(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element)noexcept(true)
 {
 	typedef typename TStreamWriteBuffer::tElement tElement;
 	cArray<tElement> Memory=WriteBuffer.ReserveWriteBuffer(1);
@@ -879,13 +891,13 @@ inline bool WriteElement(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBu
 	return true;
 }
 template<class TStreamWriteBuffer>
-inline bool WriteElement(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element)
+inline bool WriteElement(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element)noexcept(true)
 {
 	return WriteElement(WriteBuffer,Element);
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element,uIntn Count)
+inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element,uIntn Count)noexcept(true)
 {
 	if(Count==0)
 		return true;
@@ -906,13 +918,13 @@ inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffe
 	return false;
 }
 template<class TStreamWriteBuffer>
-inline bool WriteFill(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element,uIntn Count)
+inline bool WriteFill(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element,uIntn Count)noexcept(true)
 {
 	return WriteFill(WriteBuffer,Element,Count);
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length)
+inline bool WriteArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length)noexcept(true)
 {
 	if(Length==0)
 		return true;
@@ -940,13 +952,13 @@ inline bool WriteArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuff
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length)
+inline bool WriteArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length)noexcept(true)
 {
 	return WriteArray(WriteBuffer,Array,Length);
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteFillArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length,uIntn Count)
+inline bool WriteFillArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
 {
 	if(Length==0)
 		return true;
@@ -967,7 +979,7 @@ inline bool WriteFillArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWrite
 }
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer>
-inline bool WriteFillArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length,uIntn Count)
+inline bool WriteFillArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
 {
 	return WriteFillArray(WriteBuffer,Array,Length,Count);
 }
@@ -975,39 +987,39 @@ inline bool WriteFillArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRem
 }	// namespace ArrayStream
 //---------------------------------------------------------------------------
 template<class T>
-struct cArrayWriteElement
+struct cArrayStreamElement
 {
 	T Element;
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayWriteElement &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamElement &Src)noexcept(true){
 		return ArrayStream::WriteElement(WriteBuffer,Src.Element);
 	}
 };
 
 template<class T>
-inline cArrayWriteElement<T> ArrayWriteElement(T&& Element){
-	cArrayWriteElement<T> ArrayWrite={
+inline cArrayStreamElement<T> ArrayStreamElement(T&& Element)noexcept(true){
+	cArrayStreamElement<T> ArrayWrite={
 		static_cast<T&&>(Element)
 	};
 	return ArrayWrite;
 }
 //---------------------------------------------------------------------------
 template<class T>
-struct cArrayWriteFill
+struct cArrayStreamFill
 {
 	T Element;
 	uIntn Count;
 
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayWriteFill &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFill &Src)noexcept(true){
 		return ArrayStream::WriteFill(WriteBuffer,Src.Element,Src.Count);
 	}
 };
 
 template<class T>
-inline cArrayWriteFill<T> ArrayWriteFill(T&& Element,uIntn Count){
-	cArrayWriteFill<T> ArrayWrite={
+inline cArrayStreamFill<T> ArrayStreamFill(T&& Element,uIntn Count)noexcept(true){
+	cArrayStreamFill<T> ArrayWrite={
 		static_cast<T&&>(Element),
 		Count
 	};
@@ -1015,43 +1027,53 @@ inline cArrayWriteFill<T> ArrayWriteFill(T&& Element,uIntn Count){
 }
 //---------------------------------------------------------------------------
 template<class T>
-struct cArrayWriteArray
+struct cArrayStreamArray
 {
 	const T *Array;
 	uIntn Length;
 
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayWriteArray &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamArray &Src)noexcept(true){
 		return ArrayStream::WriteArray(WriteBuffer,Src.Array,Src.Length);
 	}
 
 };
 
 template<class T>
-inline cArrayWriteArray<T> ArrayWriteArray(const T *Array,uIntn Length){
-	cArrayWriteArray<T> ArrayWrite={
+inline cArrayStreamArray<T> ArrayStreamArray(const T *Array,uIntn Length)noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
 		Array,
 		Length
 	};
 	return ArrayWrite;
 }
+
+template<class T,uIntn Length>
+inline cArrayStreamArray<T> ArrayStreamArray(const T (&Array)[Length])noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
+		Array,
+		Length
+	};
+	return ArrayWrite;
+}
+
 //---------------------------------------------------------------------------
 template<class T>
-struct cArrayWriteFillArray
+struct cArrayStreamFillArray
 {
 	const T *Array;
 	uIntn Length;
 	uIntn Count;
 
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayWriteFillArray &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFillArray &Src)noexcept(true){
 		return ArrayStream::WriteFillArray(WriteBuffer,Src.Array,Src.Length,Src.Count);
 	}
 };
 
 template<class T>
-inline cArrayWriteFillArray<T> ArrayWriteFillArray(const T *Array,uIntn Length,uIntn Count){
-	cArrayWriteFillArray<T> ArrayWrite={
+inline cArrayStreamFillArray<T> ArrayStreamFillArray(const T *Array,uIntn Length,uIntn Count)noexcept(true){
+	cArrayStreamFillArray<T> ArrayWrite={
 		Array,
 		Length,
 		Count
@@ -1065,7 +1087,7 @@ inline cArrayWriteFillArray<T> ArrayWriteFillArray(const T *Array,uIntn Length,u
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosCleanup.inc>
 //---------------------------------------------------------------------------
-#endif  /* cnLibrary_CPPFEATURELEVEL >= 1 */
+#endif  /* __cplusplus */
 /*-------------------------------------------------------------------------*/
 #endif
 

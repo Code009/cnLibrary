@@ -7,19 +7,19 @@ using namespace cnRTL;
 using namespace cnUI;
 
 
-rPtr<kiScrollBar> (*cnUI::gCreateDefaultScrollBarKit)(void)=nullptr;
+rPtr<kiScrollBar> (*cnUI::gCreateDefaultScrollBarKit)(void)noexcept=nullptr;
 
 namespace cnLibrary{namespace cnUI{
-static rPtr<viControl> CreateDefaultScrollBarGripVisual_SolidStaticColor(viScrollBarGripData*){
+static rPtr<viControl> CreateDefaultScrollBarGripVisual_SolidStaticColor(viScrollBarGripData*)noexcept{
 	return vSolidStaticColor::Create(UIColorFromUInt32(0xFFCCCCCC));
 }
 }}
 
-rPtr<viControl> (*cnUI::gCreateDefaultScrollBarGripVisual)(viScrollBarGripData *Data)=CreateDefaultScrollBarGripVisual_SolidStaticColor;
+rPtr<viControl> (*cnUI::gCreateDefaultScrollBarGripVisual)(viScrollBarGripData *Data)noexcept=CreateDefaultScrollBarGripVisual_SolidStaticColor;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-kControlScrollBar::kControlScrollBar()
+kControlScrollBar::kControlScrollBar()noexcept
 	: fBarMargin{0,0,0,0}
 {
 	fContentVisible=true;
@@ -28,17 +28,17 @@ kControlScrollBar::kControlScrollBar()
 	}
 }
 //---------------------------------------------------------------------------
-kControlScrollBar::~kControlScrollBar()
+kControlScrollBar::~kControlScrollBar()noexcept
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-rPtr<kiScrollBar> kControlScrollBar::Create(void)
+rPtr<kiScrollBar> kControlScrollBar::Create(void)noexcept
 {
 	return rCreate< bwkScrollBar<kControlScrollBar> >();
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::ViewSetup(void)
+void kControlScrollBar::ViewSetup(void)noexcept
 {
 	LayoutControl::ViewSetup();
 
@@ -63,7 +63,7 @@ void kControlScrollBar::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::ViewClear(void)
+void kControlScrollBar::ViewClear(void)noexcept
 {
 	ControlDestroyView(ScrollBarHorizontal,fView);
 	ControlDestroyView(ScrollBarVertical,fView);
@@ -72,7 +72,7 @@ void kControlScrollBar::ViewClear(void)
 	LayoutControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::UILayout(void)
+void kControlScrollBar::UILayout(void)noexcept
 {
 	auto ViewSize=fView->GetSize();
 
@@ -175,7 +175,7 @@ void kControlScrollBar::UILayout(void)
 	}
 }
 //---------------------------------------------------------------------------
-cUIRectangle kControlScrollBar::UIMargin(const cUIRectangle &Margin)
+cUIRectangle kControlScrollBar::UIMargin(const cUIRectangle &Margin)noexcept
 {
 	bool HorzScrollBarVisible=ControlGetVisible(ScrollBarHorizontal);
 	bool VertScrollBarVisible=ControlGetVisible(ScrollBarVertical);
@@ -202,7 +202,7 @@ cUIRectangle kControlScrollBar::UIMargin(const cUIRectangle &Margin)
 	return InsetMargin;
 }
 //---------------------------------------------------------------------------
-bool kControlScrollBar::CheckScrollBarVisible(cControlScrollBar &ScrollBar,bool &BarVisible,bool ContentVisible,Float32 BarSize)
+bool kControlScrollBar::CheckScrollBarVisible(cControlScrollBar &ScrollBar,bool &BarVisible,bool ContentVisible,Float32 BarSize)noexcept
 {
 	auto ScrollInfo=ScrollBar.GetScrollInfo();
 	if(ScrollInfo==nullptr)
@@ -225,14 +225,14 @@ bool kControlScrollBar::CheckScrollBarVisible(cControlScrollBar &ScrollBar,bool 
 	return true;
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::SetContentZPosition(Float32 ZPosition)
+void kControlScrollBar::SetContentZPosition(Float32 ZPosition)noexcept
 {
 	ScrollBarHorizontal.GetView()->SetZPosition(ZPosition);
 	ScrollBarVertical.GetView()->SetZPosition(ZPosition);
 	ScrollBarGrip.GetView()->SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::SetContentVisible(bool Visible)
+void kControlScrollBar::SetContentVisible(bool Visible)noexcept
 {
 	if(fContentVisible==Visible)
 		return;
@@ -249,13 +249,13 @@ void kControlScrollBar::SetContentVisible(bool Visible)
 	}
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)
+void kControlScrollBar::ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)noexcept
 {
 	ScrollBarHorizontal.SetScrollInfo(HorzInfo);
 	ScrollBarVertical.SetScrollInfo(VertInfo);
 }
 //---------------------------------------------------------------------------
-bool kControlScrollBar::ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)
+bool kControlScrollBar::ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)noexcept
 {
 	bool HPrevVisible=fHorzBarVisible;
 	bool VPrevVisible=fVertBarVisible;
@@ -295,7 +295,7 @@ bool kControlScrollBar::ScrollKitSetBarVisible(bool HorizontalVisible,bool Verti
 	return VisibleChanged;
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::Update(void)
+void kControlScrollBar::Update(void)noexcept
 {
 	if(fView!=nullptr){
 		fView->SetArrangement();
@@ -303,7 +303,7 @@ void kControlScrollBar::Update(void)
 	ScrollBarGripNotifySet();
 }
 //---------------------------------------------------------------------------
-eAlignment kControlScrollBar::ScrollBarGripGetAlignment(void)
+eAlignment kControlScrollBar::ScrollBarGripGetAlignment(void)noexcept
 {
 	if(VerticalBarAlignLeft){
 		if(HorizontalBarAlignTop){
@@ -323,7 +323,7 @@ eAlignment kControlScrollBar::ScrollBarGripGetAlignment(void)
 	}
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::cScrollBarHorizontal::ScrollInfoChanged(void)
+void kControlScrollBar::cScrollBarHorizontal::ScrollInfoChanged(void)noexcept
 {
 	cControlScrollBar::ScrollInfoChanged();
 
@@ -331,7 +331,7 @@ void kControlScrollBar::cScrollBarHorizontal::ScrollInfoChanged(void)
 	Host->HorizontalScrollInfoChanged();
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::cScrollBarVertical::ScrollInfoChanged(void)
+void kControlScrollBar::cScrollBarVertical::ScrollInfoChanged(void)noexcept
 {
 	cControlScrollBar::ScrollInfoChanged();
 
@@ -339,7 +339,7 @@ void kControlScrollBar::cScrollBarVertical::ScrollInfoChanged(void)
 	Host->VerticalScrollInfoChanged();
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::HorizontalScrollInfoChanged(void)
+void kControlScrollBar::HorizontalScrollInfoChanged(void)noexcept
 {
 	if(CheckScrollBarVisible(ScrollBarHorizontal,fHorzBarVisible,fContentVisible,HorizontalBarSize)){
 		ControlSetVisible(ScrollBarGrip,fContentVisible&&fVertBarVisible&&fHorzBarVisible);
@@ -348,7 +348,7 @@ void kControlScrollBar::HorizontalScrollInfoChanged(void)
 	}
 }
 //---------------------------------------------------------------------------
-void kControlScrollBar::VerticalScrollInfoChanged(void)
+void kControlScrollBar::VerticalScrollInfoChanged(void)noexcept
 {
 	if(CheckScrollBarVisible(ScrollBarVertical,fVertBarVisible,fContentVisible,VerticalBarSize)){
 		ControlSetVisible(ScrollBarGrip,fContentVisible&&fVertBarVisible&&fHorzBarVisible);
@@ -358,7 +358,7 @@ void kControlScrollBar::VerticalScrollInfoChanged(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cScrollContent::cScrollContent()
+cScrollContent::cScrollContent()noexcept
 	: fScrollOffset{0,0}
 	, fScrollViewportSize{0,0}
 	, fScrollLowwerLimit{0,0}
@@ -372,12 +372,12 @@ cScrollContent::cScrollContent()
 {
 }
 //---------------------------------------------------------------------------
-cScrollContent::~cScrollContent()
+cScrollContent::~cScrollContent()noexcept
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::ChangeOffset(bool Vertical,Float32 Offset)
+bool cScrollContent::ChangeOffset(bool Vertical,Float32 Offset)noexcept
 {
 	ScrollContentProcessOffset(Vertical,Offset);
 	if(Offset==fScrollOffset[Vertical]){
@@ -387,12 +387,12 @@ bool cScrollContent::ChangeOffset(bool Vertical,Float32 Offset)
 	return true;
 }
 //---------------------------------------------------------------------------
-Float32 cScrollContent::GetScrollOffset(bool Vertical)const
+Float32 cScrollContent::GetScrollOffset(bool Vertical)const noexcept
 {
 	return fScrollOffset[Vertical];
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::SetScrollOffset(bool Vertical,Float32 Offset)
+bool cScrollContent::SetScrollOffset(bool Vertical,Float32 Offset)noexcept
 {
 	if(ChangeOffset(Vertical,Offset)){
 		UpdateScrollOffset();
@@ -401,12 +401,12 @@ bool cScrollContent::SetScrollOffset(bool Vertical,Float32 Offset)
 	return false;
 }
 //---------------------------------------------------------------------------
-Float32 cScrollContent::GetViewportSize(bool Vertical)const
+Float32 cScrollContent::GetViewportSize(bool Vertical)const noexcept
 {
 	return fScrollViewportSize[Vertical];
 }
 //---------------------------------------------------------------------------
-cUIRectangle cScrollContent::GetViewportRectangle(void)const
+cUIRectangle cScrollContent::GetViewportRectangle(void)const noexcept
 {
 	cUIRectangle Rect;
 	Rect.Left=fScrollOffset[0];
@@ -416,7 +416,7 @@ cUIRectangle cScrollContent::GetViewportRectangle(void)const
 	return Rect;
 }
 //---------------------------------------------------------------------------
-cUIPoint cScrollContent::GetScrollOffset(void)const
+cUIPoint cScrollContent::GetScrollOffset(void)const noexcept
 {
 	cUIPoint Offset;
 	Offset.x=fScrollOffset[false];
@@ -424,7 +424,7 @@ cUIPoint cScrollContent::GetScrollOffset(void)const
 	return Offset;
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::SetScrollOffset(cUIPoint Offset)
+bool cScrollContent::SetScrollOffset(cUIPoint Offset)noexcept
 {
 	bool Changed=false;
 	if(ChangeOffset(false,Offset.x)){
@@ -439,7 +439,7 @@ bool cScrollContent::SetScrollOffset(cUIPoint Offset)
 	return Changed;
 }
 //---------------------------------------------------------------------------
-cUIPoint cScrollContent::GetViewportSize(void)const
+cUIPoint cScrollContent::GetViewportSize(void)const noexcept
 {
 	cUIPoint VisibleSize;
 	VisibleSize.x=fScrollViewportSize[0];
@@ -447,7 +447,7 @@ cUIPoint cScrollContent::GetViewportSize(void)const
 	return VisibleSize;
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::IsRectangleInViewport(const cUIRectangle &Rect)const
+bool cScrollContent::IsRectangleInViewport(const cUIRectangle &Rect)const noexcept
 {
 	if(Rect.Right<=fScrollOffset[0]){
 		return false;
@@ -464,7 +464,7 @@ bool cScrollContent::IsRectangleInViewport(const cUIRectangle &Rect)const
 	return true;
 }
 //---------------------------------------------------------------------------
-iControlScrollInfo::cScrollRange cScrollContent::GetScrollRange(bool Vertical)const
+iControlScrollInfo::cScrollRange cScrollContent::GetScrollRange(bool Vertical)const noexcept
 {
 	iControlScrollInfo::cScrollRange ScrollRange;
 	ScrollRange.LowwerLimit=fScrollLowwerLimit[Vertical];
@@ -475,17 +475,17 @@ iControlScrollInfo::cScrollRange cScrollContent::GetScrollRange(bool Vertical)co
 	return ScrollRange;
 }
 //---------------------------------------------------------------------------
-Float32 cScrollContent::GetScrollStepSize(bool Vertical)const
+Float32 cScrollContent::GetScrollStepSize(bool Vertical)const noexcept
 {
 	return fScrollStepSize[Vertical];
 }
 //---------------------------------------------------------------------------
-Float32 cScrollContent::GetScrollPageSize(bool Vertical)const
+Float32 cScrollContent::GetScrollPageSize(bool Vertical)const noexcept
 {
 	return fScrollPageSize[Vertical];
 }
 //---------------------------------------------------------------------------
-cUIRectangle cScrollContent::GetVisibleRectangle(void)const
+cUIRectangle cScrollContent::GetVisibleRectangle(void)const noexcept
 {
 	cUIRectangle Rect;
 	Rect.Left=fScrollOffset[0];
@@ -503,7 +503,7 @@ cUIRectangle cScrollContent::GetVisibleRectangle(void)const
 	return Rect;
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::ScrollRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)
+bool cScrollContent::ScrollRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)noexcept
 {
 	Float32 VisibleLowwer=fScrollOffset[Vertical];
 	Float32 VisibleUpper=fScrollOffset[Vertical]+fScrollViewportSize[Vertical];
@@ -520,7 +520,7 @@ bool cScrollContent::ScrollRangeToVisible(bool Vertical,Float32 Lowwer,Float32 U
 	return SetScrollOffset(NewOffset,Vertical);
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::ScrollRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)
+bool cScrollContent::ScrollRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept
 {
 	bool Changed=false;
 
@@ -546,12 +546,12 @@ bool cScrollContent::ScrollRangeToVisible(Float32 Left,Float32 Top,Float32 Right
 	return Changed;
 }
 //---------------------------------------------------------------------------
-bool cScrollContent::ScrollRectToVisible(cUIPoint Pos,cUIPoint Size)
+bool cScrollContent::ScrollRectToVisible(cUIPoint Pos,cUIPoint Size)noexcept
 {
 	return ScrollRangeToVisible(Pos.x,Pos.y,Pos.x+Size.x,Pos.y+Size.y);
 }
 //---------------------------------------------------------------------------
-void cScrollContent::SetNeedUpdateContentLayout(void)
+void cScrollContent::SetNeedUpdateContentLayout(void)noexcept
 {
 	if(fNeedUpdateContentLayout==false){
 		fNeedUpdateContentLayout=true;
@@ -561,18 +561,18 @@ void cScrollContent::SetNeedUpdateContentLayout(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollContent::UpdateScrollOffset(void)
+void cScrollContent::UpdateScrollOffset(void)noexcept
 {
 	SetNeedUpdateContentLayout();
 	ScrollOffsetChangeNotify();
 }
 //---------------------------------------------------------------------------
-void cScrollContent::UpdateScrollLimits(void)
+void cScrollContent::UpdateScrollLimits(void)noexcept
 {
 	ScrollRangeChangeNotify();
 }
 //---------------------------------------------------------------------------
-void cScrollContent::ScrollContentProcessOffset(bool Vertical,Float32 &Offset)
+void cScrollContent::ScrollContentProcessOffset(bool Vertical,Float32 &Offset)noexcept
 {
 	Offset=cnMath::FloatRoundNearest(Offset);
 	// limit offset range
@@ -591,7 +591,7 @@ void cScrollContent::ScrollContentProcessOffset(bool Vertical,Float32 &Offset)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollContent::ScrollContentUpdateStepSizes(void)
+void cScrollContent::ScrollContentUpdateStepSizes(void)noexcept
 {
 	fScrollStepSize[0]=cnMath::FloatRoundNearest(fScrollViewportSize[0]/16);
 	fScrollStepSize[1]=cnMath::FloatRoundNearest(fScrollViewportSize[1]/16);
@@ -599,11 +599,11 @@ void cScrollContent::ScrollContentUpdateStepSizes(void)
 	fScrollPageSize[1]=cnMath::FloatRoundNearest(fScrollViewportSize[1]/2);
 }
 //---------------------------------------------------------------------------
-void cScrollContent::ScrollContentUpdateContentLayout(void)
+void cScrollContent::ScrollContentUpdateContentLayout(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cScrollContent::RectangleChanged(bool Moved,bool Sized)
+void cScrollContent::RectangleChanged(bool Moved,bool Sized)noexcept
 {
 	VisualControl::RectangleChanged(Moved,Sized);
 	if(Sized){
@@ -620,12 +620,12 @@ void cScrollContent::RectangleChanged(bool Moved,bool Sized)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollContent::ContentScaleChanged(void)
+void cScrollContent::ContentScaleChanged(void)noexcept
 {
 	VisualControl::ContentScaleChanged();
 }
 //---------------------------------------------------------------------------
-void cScrollContent::UILayout(void)
+void cScrollContent::UILayout(void)noexcept
 {
 	LayoutControl::UILayout();
 
@@ -637,18 +637,18 @@ void cScrollContent::UILayout(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-lScrollFrame::lScrollFrame()
+lScrollFrame::lScrollFrame()noexcept
 	: fScrollContent(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-lScrollFrame::~lScrollFrame()
+lScrollFrame::~lScrollFrame()noexcept
 {
 	SetScrollBarKit(nullptr);
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::ViewSetup(void)
+void lScrollFrame::ViewSetup(void)noexcept
 {
 	LayoutControl::ViewSetup();
 
@@ -660,7 +660,7 @@ void lScrollFrame::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::ViewClear(void)
+void lScrollFrame::ViewClear(void)noexcept
 {
 	if(fScrollBarKit!=nullptr){
 		fScrollBarKit->SetView(nullptr);
@@ -669,12 +669,12 @@ void lScrollFrame::ViewClear(void)
 	LayoutControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-cScrollContent* lScrollFrame::GetScrollContent(void)const
+cScrollContent* lScrollFrame::GetScrollContent(void)const noexcept
 {
 	return fScrollContent;
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::SetScrollContent(cScrollContent *Content)
+void lScrollFrame::SetScrollContent(cScrollContent *Content)noexcept
 {
 	if(fScrollContent!=nullptr){
 		fScrollContent->ScrollOffsetChangeNotify.Remove(fScrollOffsetChangeNotifyToken);
@@ -692,12 +692,12 @@ void lScrollFrame::SetScrollContent(cScrollContent *Content)
 	}
 }
 //---------------------------------------------------------------------------
-kiScrollBar* lScrollFrame::GetScrollBarKit(void)const
+kiScrollBar* lScrollFrame::GetScrollBarKit(void)const noexcept
 {
 	return fScrollBarKit;
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::SetScrollBarKit(rPtr<kiScrollBar> Kit)
+void lScrollFrame::SetScrollBarKit(rPtr<kiScrollBar> Kit)noexcept
 {
 	if(fScrollBarKit!=nullptr){
 		fScrollBarKit->ScrollKitSetInfo(nullptr,nullptr);
@@ -711,14 +711,14 @@ void lScrollFrame::SetScrollBarKit(rPtr<kiScrollBar> Kit)
 	}
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::UpdateScrollBarLayoutOrder(void)
+void lScrollFrame::UpdateScrollBarLayoutOrder(void)noexcept
 {
 	if(fScrollBarKit!=nullptr){
 		fScrollBarKit->SetLayoutOrder(ScrollBarKitLayoutOrder);
 	}
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::ControlSetupDefaultScrollBarKit(void)
+void lScrollFrame::ControlSetupDefaultScrollBarKit(void)noexcept
 {
 	if(gCreateDefaultScrollBarKit!=nullptr){
 		auto ScrollBarKit=gCreateDefaultScrollBarKit();
@@ -726,7 +726,7 @@ void lScrollFrame::ControlSetupDefaultScrollBarKit(void)
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint lScrollFrame::GetScrollOffset(void)const
+cUIPoint lScrollFrame::GetScrollOffset(void)const noexcept
 {
 	if(fScrollContent==nullptr)
 		return UIPointZero;
@@ -734,7 +734,7 @@ cUIPoint lScrollFrame::GetScrollOffset(void)const
 	return fScrollContent->GetScrollOffset();
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::SetScrollOffset(cUIPoint Offset)
+bool lScrollFrame::SetScrollOffset(cUIPoint Offset)noexcept
 {
 	if(fScrollContent==nullptr)
 		return false;
@@ -742,21 +742,21 @@ bool lScrollFrame::SetScrollOffset(cUIPoint Offset)
 	return fScrollContent->SetScrollOffset(Offset);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::GetScrollOffset(bool Vertical)const
+Float32 lScrollFrame::GetScrollOffset(bool Vertical)const noexcept
 {
 	if(fScrollContent==nullptr)
 		return 0;
 	return fScrollContent->GetScrollOffset(Vertical);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::SetScrollOffset(bool Vertical,Float32 Offset)
+bool lScrollFrame::SetScrollOffset(bool Vertical,Float32 Offset)noexcept
 {
 	if(fScrollContent==nullptr)
 		return false;
 	return fScrollContent->SetScrollOffset(Vertical,Offset);
 }
 //---------------------------------------------------------------------------
-iControlScrollInfo::cScrollRange lScrollFrame::GetScrollRange(bool Vertical)const
+iControlScrollInfo::cScrollRange lScrollFrame::GetScrollRange(bool Vertical)const noexcept
 {
 	if(fScrollContent==nullptr){
 		iControlScrollInfo::cScrollRange ScrollRange;
@@ -770,21 +770,21 @@ iControlScrollInfo::cScrollRange lScrollFrame::GetScrollRange(bool Vertical)cons
 	return fScrollContent->GetScrollRange(Vertical);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::GetScrollStepSize(bool Vertical)const
+Float32 lScrollFrame::GetScrollStepSize(bool Vertical)const noexcept
 {
 	if(fScrollContent==nullptr)
 		return 0;
 	return fScrollContent->GetScrollStepSize(Vertical);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::GetScrollPageSize(bool Vertical)const
+Float32 lScrollFrame::GetScrollPageSize(bool Vertical)const noexcept
 {
 	if(fScrollContent==nullptr)
 		return 0;
 	return fScrollContent->GetScrollPageSize(Vertical);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::ScrollContentRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)
+bool lScrollFrame::ScrollContentRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)noexcept
 {
 	if(fScrollContent==nullptr)
 		return false;
@@ -792,7 +792,7 @@ bool lScrollFrame::ScrollContentRangeToVisible(bool Vertical,Float32 Lowwer,Floa
 	return fScrollContent->ScrollRangeToVisible(Vertical,Lowwer,Upper);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::ScrollContentRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)
+bool lScrollFrame::ScrollContentRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept
 {
 	if(fScrollContent==nullptr)
 		return false;
@@ -800,7 +800,7 @@ bool lScrollFrame::ScrollContentRangeToVisible(Float32 Left,Float32 Top,Float32 
 	return fScrollContent->ScrollRangeToVisible(Left,Top,Right,Bottom);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::ScrollContentRectToVisible(cUIPoint Pos,cUIPoint Size)
+bool lScrollFrame::ScrollContentRectToVisible(cUIPoint Pos,cUIPoint Size)noexcept
 {
 	if(fScrollContent==nullptr)
 		return false;
@@ -808,106 +808,106 @@ bool lScrollFrame::ScrollContentRectToVisible(cUIPoint Pos,cUIPoint Size)
 	return fScrollContent->ScrollRectToVisible(Pos,Size);
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::ScrollOffsetChanged(void)
+void lScrollFrame::ScrollOffsetChanged(void)noexcept
 {
 	ScrollInfoHorizontal.ScrollOffsetNotifySet();
 	ScrollInfoVertical.ScrollOffsetNotifySet();
 }
 //---------------------------------------------------------------------------
-void lScrollFrame::ScrollRangeChanged(void)
+void lScrollFrame::ScrollRangeChanged(void)noexcept
 {
 	ScrollInfoHorizontal.ScrollInfoNotifySet();
 	ScrollInfoVertical.ScrollInfoNotifySet();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-lScrollFrame* lScrollFrame::cScrollInfoHorizontal::GetHost(void)
+lScrollFrame* lScrollFrame::cScrollInfoHorizontal::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&lScrollFrame::ScrollInfoHorizontal);
 }
 //---------------------------------------------------------------------------
-const lScrollFrame* lScrollFrame::cScrollInfoHorizontal::GetHost(void)const
+const lScrollFrame* lScrollFrame::cScrollInfoHorizontal::GetHost(void)const noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&lScrollFrame::ScrollInfoHorizontal);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetOffset(void)const
+Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetOffset(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollOffset(false);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::cScrollInfoHorizontal::ScrollSetOffset(Float32 Offset)
+bool lScrollFrame::cScrollInfoHorizontal::ScrollSetOffset(Float32 Offset)noexcept
 {
 	auto Host=GetHost();
 	return Host->SetScrollOffset(false,Offset);
 }
 //---------------------------------------------------------------------------
-iControlScrollInfo::cScrollRange lScrollFrame::cScrollInfoHorizontal::ScrollGetScrollRange(void)const
+iControlScrollInfo::cScrollRange lScrollFrame::cScrollInfoHorizontal::ScrollGetScrollRange(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollRange(false);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetStepSize(void)const
+Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetStepSize(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollStepSize(false);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetPageSize(void)const
+Float32 lScrollFrame::cScrollInfoHorizontal::ScrollGetPageSize(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollPageSize(false);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-lScrollFrame* lScrollFrame::cScrollInfoVertical::GetHost(void)
+lScrollFrame* lScrollFrame::cScrollInfoVertical::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&lScrollFrame::ScrollInfoVertical);
 }
 //---------------------------------------------------------------------------
-const lScrollFrame* lScrollFrame::cScrollInfoVertical::GetHost(void)const
+const lScrollFrame* lScrollFrame::cScrollInfoVertical::GetHost(void)const noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&lScrollFrame::ScrollInfoVertical);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoVertical::ScrollGetOffset(void)const
+Float32 lScrollFrame::cScrollInfoVertical::ScrollGetOffset(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollOffset(true);
 }
 //---------------------------------------------------------------------------
-bool lScrollFrame::cScrollInfoVertical::ScrollSetOffset(Float32 Offset)
+bool lScrollFrame::cScrollInfoVertical::ScrollSetOffset(Float32 Offset)noexcept
 {
 	auto Host=GetHost();
 	return Host->SetScrollOffset(true,Offset);
 }
 //---------------------------------------------------------------------------
-iControlScrollInfo::cScrollRange lScrollFrame::cScrollInfoVertical::ScrollGetScrollRange(void)const
+iControlScrollInfo::cScrollRange lScrollFrame::cScrollInfoVertical::ScrollGetScrollRange(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollRange(true);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoVertical::ScrollGetStepSize(void)const
+Float32 lScrollFrame::cScrollInfoVertical::ScrollGetStepSize(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollStepSize(true);
 }
 //---------------------------------------------------------------------------
-Float32 lScrollFrame::cScrollInfoVertical::ScrollGetPageSize(void)const
+Float32 lScrollFrame::cScrollInfoVertical::ScrollGetPageSize(void)const noexcept
 {
 	auto Host=GetHost();
 	return Host->GetScrollPageSize(true);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cScrollViewContainer::cScrollViewContainer()
+cScrollViewContainer::cScrollViewContainer()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cScrollViewContainer::~cScrollViewContainer()
+cScrollViewContainer::~cScrollViewContainer()noexcept
 {
 	SetView(nullptr);
 
@@ -917,7 +917,7 @@ cScrollViewContainer::~cScrollViewContainer()
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewSetup(void)
+void cScrollViewContainer::ViewSetup(void)noexcept
 {
 	cScrollContent::ViewSetup();
 
@@ -927,7 +927,7 @@ void cScrollViewContainer::ViewSetup(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewClear(void)
+void cScrollViewContainer::ViewClear(void)noexcept
 {
 	for(auto *Item : fContentViewSet){
 		if(Item->View!=nullptr)
@@ -938,7 +938,7 @@ void cScrollViewContainer::ViewClear(void)
 	cScrollContent::ViewClear();
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ScrollContentUpdateContentLayout(void)
+void cScrollViewContainer::ScrollContentUpdateContentLayout(void)noexcept
 {
 	cScrollContent::ScrollContentUpdateContentLayout();
 	cnLib_ASSERT(fView!=nullptr);
@@ -962,7 +962,7 @@ void cScrollViewContainer::ScrollContentUpdateContentLayout(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::UILayout(void)
+void cScrollViewContainer::UILayout(void)noexcept
 {
 	cScrollContent::UILayout();
 
@@ -976,7 +976,7 @@ void cScrollViewContainer::UILayout(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewItemAttach(bcViewItem *Item)
+void cScrollViewContainer::ViewItemAttach(bcViewItem *Item)noexcept
 {
 	if(fView!=nullptr){
 		if(Item->View!=nullptr){
@@ -986,7 +986,7 @@ void cScrollViewContainer::ViewItemAttach(bcViewItem *Item)
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewItemDetach(bcViewItem *Item)
+void cScrollViewContainer::ViewItemDetach(bcViewItem *Item)noexcept
 {
 	if(Item->View!=nullptr){
 		if(fView!=nullptr){
@@ -998,12 +998,12 @@ void cScrollViewContainer::ViewItemDetach(bcViewItem *Item)
 	fVisibleSet.Remove(Item);
 }
 //---------------------------------------------------------------------------
-const cUIRectangle& cScrollViewContainer::ViewItemGetRectangle(const bcViewItem *Item)
+const cUIRectangle& cScrollViewContainer::ViewItemGetRectangle(const bcViewItem *Item)noexcept
 {
 	return Item->ContentRect;
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewItemSetRectangle(bcViewItem *Item,cUIRectangle Rect)
+void cScrollViewContainer::ViewItemSetRectangle(bcViewItem *Item,cUIRectangle Rect)noexcept
 {
 	Item->ContentRect=Rect;
 
@@ -1022,12 +1022,12 @@ void cScrollViewContainer::ViewItemSetRectangle(bcViewItem *Item,cUIRectangle Re
 	}
 }
 //---------------------------------------------------------------------------
-iViewReference* cScrollViewContainer::ViewItemGetViewReference(const bcViewItem *Item)const
+iViewReference* cScrollViewContainer::ViewItemGetViewReference(const bcViewItem *Item)const noexcept
 {
 	return Item->ViewReference;
 }
 //---------------------------------------------------------------------------
-bool cScrollViewContainer::ViewItemSetViewReference(bcViewItem *Item,iViewReference *ViewReference)
+bool cScrollViewContainer::ViewItemSetViewReference(bcViewItem *Item,iViewReference *ViewReference)noexcept
 {
 	if(Item->View!=nullptr){
 		if(fView!=nullptr){
@@ -1058,7 +1058,7 @@ bool cScrollViewContainer::ViewItemSetViewReference(bcViewItem *Item,iViewRefere
 	return true;
 }
 //---------------------------------------------------------------------------
-cUIRect cScrollViewContainer::ViewItemCalculateLayoutRect(const bcViewItem *Item)const
+cUIRect cScrollViewContainer::ViewItemCalculateLayoutRect(const bcViewItem *Item)const noexcept
 {
 	cUIRect ItemRect;
 
@@ -1073,7 +1073,7 @@ cUIRect cScrollViewContainer::ViewItemCalculateLayoutRect(const bcViewItem *Item
 	return ItemRect;
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ViewItemCheckVisible(bcViewItem *Item)
+void cScrollViewContainer::ViewItemCheckVisible(bcViewItem *Item)noexcept
 {
 	if(Item->Visible)
 		return;
@@ -1087,13 +1087,13 @@ void cScrollViewContainer::ViewItemCheckVisible(bcViewItem *Item)
 	fVisibleSet.Insert(Item);
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::RecycleView(rPtr<iViewReference> ViewReference)
+void cScrollViewContainer::RecycleView(rPtr<iViewReference> ViewReference)noexcept
 {
 	auto ImpType=ViewReference->GetImplementationType();
 	fViewRecycleMap[ImpType].AppendMake(cnVar::MoveCast(ViewReference));
 }
 //---------------------------------------------------------------------------
-rPtr<iViewReference> cScrollViewContainer::ReclaimView(tTypeID ImplementationType)
+rPtr<iViewReference> cScrollViewContainer::ReclaimView(tTypeID ImplementationType)noexcept
 {
 	auto TypePair=fViewRecycleMap.GetPair(ImplementationType);
 	if(TypePair==nullptr)
@@ -1116,42 +1116,42 @@ rPtr<iViewReference> cScrollViewContainer::ReclaimView(tTypeID ImplementationTyp
 	return ViewReference;
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ContentViewAttach(cViewItem *Item)
+void cScrollViewContainer::ContentViewAttach(cViewItem *Item)noexcept
 {
 	fContentViewSet.Insert(Item);
 	ViewItemAttach(Item);
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::ContentViewDetach(cViewItem *Item)
+void cScrollViewContainer::ContentViewDetach(cViewItem *Item)noexcept
 {
 	ViewItemDetach(Item);
 	fContentViewSet.Remove(Item);
 }
 //---------------------------------------------------------------------------
-bool cScrollViewContainer::bcViewItem::IsVisible(void)const
+bool cScrollViewContainer::bcViewItem::IsVisible(void)const noexcept
 {
 	return Visible;
 }
 //---------------------------------------------------------------------------
-iUIView *cScrollViewContainer::bcViewItem::GetView(void)const
+iUIView *cScrollViewContainer::bcViewItem::GetView(void)const noexcept
 {
 	return View;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cScrollViewContainer::cViewItem::cViewItem()
+cScrollViewContainer::cViewItem::cViewItem()noexcept
 	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cScrollViewContainer::cViewItem::~cViewItem()
+cScrollViewContainer::cViewItem::~cViewItem()noexcept
 {
 	if(fOwner!=nullptr){
 		fOwner->ContentViewDetach(this);
 	}
 }
 //---------------------------------------------------------------------------
-bool cScrollViewContainer::cViewItem::Attach(cScrollViewContainer *Owner)
+bool cScrollViewContainer::cViewItem::Attach(cScrollViewContainer *Owner)noexcept
 {
 	if(fOwner!=nullptr)
 		return false;
@@ -1163,7 +1163,7 @@ bool cScrollViewContainer::cViewItem::Attach(cScrollViewContainer *Owner)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cScrollViewContainer::cViewItem::Detach(cScrollViewContainer *Owner)
+bool cScrollViewContainer::cViewItem::Detach(cScrollViewContainer *Owner)noexcept
 {
 	if(fOwner!=Owner)
 		return false;
@@ -1173,26 +1173,26 @@ bool cScrollViewContainer::cViewItem::Detach(cScrollViewContainer *Owner)
 	return true;
 }
 //---------------------------------------------------------------------------
-const cUIRectangle& cScrollViewContainer::cViewItem::GetRectangle(void)const
+const cUIRectangle& cScrollViewContainer::cViewItem::GetRectangle(void)const noexcept
 {
 	if(fOwner==nullptr)
 		return UIRectangleZero;
 	return fOwner->ViewItemGetRectangle(this);
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::cViewItem::SetRectangle(cUIRectangle Rect)
+void cScrollViewContainer::cViewItem::SetRectangle(cUIRectangle Rect)noexcept
 {
 	return fOwner->ViewItemSetRectangle(this,Rect);
 }
 //---------------------------------------------------------------------------
-iViewReference* cScrollViewContainer::cViewItem::GetViewReference(void)const
+iViewReference* cScrollViewContainer::cViewItem::GetViewReference(void)const noexcept
 {
 	if(fOwner==nullptr)
 		return nullptr;
 	return fOwner->ViewItemGetViewReference(this);
 }
 //---------------------------------------------------------------------------
-bool cScrollViewContainer::cViewItem::SetViewReference(iViewReference *Reference)
+bool cScrollViewContainer::cViewItem::SetViewReference(iViewReference *Reference)noexcept
 {
 	if(fOwner==nullptr)
 		return false;
@@ -1200,14 +1200,14 @@ bool cScrollViewContainer::cViewItem::SetViewReference(iViewReference *Reference
 	return fOwner->ViewItemSetViewReference(this,Reference);
 }
 //---------------------------------------------------------------------------
-cUIRect cScrollViewContainer::cViewItem::CalculateLayoutRect(void)const
+cUIRect cScrollViewContainer::cViewItem::CalculateLayoutRect(void)const noexcept
 {
 	if(fOwner==nullptr)
 		return UIRectZero;
 	return fOwner->ViewItemCalculateLayoutRect(this);
 }
 //---------------------------------------------------------------------------
-void cScrollViewContainer::cViewItem::VisibilityChanged(void)
+void cScrollViewContainer::cViewItem::VisibilityChanged(void)noexcept
 {
 	OnVisibleChanged();
 }

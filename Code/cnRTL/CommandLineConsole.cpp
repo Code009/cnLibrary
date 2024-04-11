@@ -8,7 +8,8 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-static cStringBuffer<uChar16> ToUpperCase(const uChar16 *String){
+static cStringBuffer<uChar16> ToUpperCase(const uChar16 *String)noexcept
+{
 	cStringBuffer<uChar16> Result;
 	while(*String!=0){
 		uChar16 c=*String++;
@@ -21,15 +22,15 @@ static cStringBuffer<uChar16> ToUpperCase(const uChar16 *String){
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCommandDispatcher::cCommandDispatcher()
+cCommandDispatcher::cCommandDispatcher()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cCommandDispatcher::~cCommandDispatcher()
+cCommandDispatcher::~cCommandDispatcher()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cCommandDispatcher::Execute(const uChar16 *Text,uIntn Length)
+void cCommandDispatcher::Execute(const uChar16 *Text,uIntn Length)noexcept
 {
 	if(Length==0)
 		return;
@@ -39,7 +40,7 @@ void cCommandDispatcher::Execute(const uChar16 *Text,uIntn Length)
 	return Execute(Parser);
 }
 //---------------------------------------------------------------------------
-void cCommandDispatcher::Execute(cCmdTextParser<uChar16> &Parser)
+void cCommandDispatcher::Execute(cCmdTextParser<uChar16> &Parser)noexcept
 {
 	if(Parser.Run()==false){
 		//Log("Unknow command\n");
@@ -56,39 +57,39 @@ void cCommandDispatcher::Execute(cCmdTextParser<uChar16> &Parser)
 	CmdProc->Value(Parser);
 }
 //---------------------------------------------------------------------------
-void cCommandDispatcher::ClearCommand(void)
+void cCommandDispatcher::ClearCommand(void)noexcept
 {
 	fCmdMap.Clear();
 }
 //---------------------------------------------------------------------------
-void cCommandDispatcher::ResetCommand(const uChar16 *Name)
+void cCommandDispatcher::ResetCommand(const uChar16 *Name)noexcept
 {
 	cString<uChar16> NameU=ToUpperCase(Name);
 	fCmdMap.Remove(NameU);
 }
 //---------------------------------------------------------------------------
-cFunction<void (cCmdTextParser<uChar16>&)>& cCommandDispatcher::SetCommand(const uChar16 *Name)
+cFunction<void (cCmdTextParser<uChar16>&)>& cCommandDispatcher::SetCommand(const uChar16 *Name)noexcept
 {
 	cString<uChar16> NameU=ToUpperCase(Name);
 	return fCmdMap[NameU];
 }
 //---------------------------------------------------------------------------
-cFunction<void (cCmdTextParser<uChar16>&)>& cCommandDispatcher::operator [](const uChar16 *Name)
+cFunction<void (cCmdTextParser<uChar16>&)>& cCommandDispatcher::operator [](const uChar16 *Name)noexcept
 {
 	return SetCommand(Name);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cConsoleOutputWithPrompt::cConsoleOutputWithPrompt(rPtr<iConsoleOutput> ConsoleOutput)
+cConsoleOutputWithPrompt::cConsoleOutputWithPrompt(rPtr<iConsoleOutput> ConsoleOutput)noexcept
 	: fConsoleOutput(cnVar::MoveCast(ConsoleOutput))
 {
 }
 //---------------------------------------------------------------------------
-cConsoleOutputWithPrompt::~cConsoleOutputWithPrompt()
+cConsoleOutputWithPrompt::~cConsoleOutputWithPrompt()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cConsoleOutputWithPrompt::cPromptSaveState::cPromptSaveState(cConsoleOutputWithPrompt *p)
+cConsoleOutputWithPrompt::cPromptSaveState::cPromptSaveState(cConsoleOutputWithPrompt *p)noexcept
 	: Owner(p)
 {
 	if(Owner->fLineText==nullptr){
@@ -105,25 +106,25 @@ cConsoleOutputWithPrompt::cPromptSaveState::cPromptSaveState(cConsoleOutputWithP
 	Cleared=true;
 }
 //---------------------------------------------------------------------------
-cConsoleOutputWithPrompt::cPromptSaveState::~cPromptSaveState()
+cConsoleOutputWithPrompt::cPromptSaveState::~cPromptSaveState()noexcept
 {
 	if(Cleared){
 		Owner->RestorePrompt(LineText.Pointer,LineText.Length);
 	}
 }
 //---------------------------------------------------------------------------
-cConsoleOutputWithPrompt::cPromptSaveState::operator bool()
+cConsoleOutputWithPrompt::cPromptSaveState::operator bool()noexcept
 {
 	return Cleared;
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::ClearPrompt(void)
+void cConsoleOutputWithPrompt::ClearPrompt(void)noexcept
 {
 	fConsoleOutput->SetCursorPos(fPromptPos);
 	fConsoleOutput->EraseLinePart(true);
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::RestorePrompt(const uChar16 *Text,uIntn Length)
+void cConsoleOutputWithPrompt::RestorePrompt(const uChar16 *Text,uIntn Length)noexcept
 {
 	fConsoleOutput->Print(Text,Length);
 	
@@ -132,18 +133,18 @@ void cConsoleOutputWithPrompt::RestorePrompt(const uChar16 *Text,uIntn Length)
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cConsoleOutputWithPrompt::Print(const uChar16 *Text,uIntn Length)
+uIntn cConsoleOutputWithPrompt::Print(const uChar16 *Text,uIntn Length)noexcept
 {
 	cPromptSaveState SaveState(this);
 	return fConsoleOutput->Print(Text,Length);
 }
 //---------------------------------------------------------------------------
-cUIPoint cConsoleOutputWithPrompt::GetCursorPos(void)
+cUIPoint cConsoleOutputWithPrompt::GetCursorPos(void)noexcept
 {
 	return fConsoleOutput->GetCursorPos();
 }
 //---------------------------------------------------------------------------
-bool cConsoleOutputWithPrompt::SetCursorPos(cUIPoint Pos)
+bool cConsoleOutputWithPrompt::SetCursorPos(cUIPoint Pos)noexcept
 {
 	cPromptSaveState SaveState(this);
 	// print
@@ -154,17 +155,17 @@ bool cConsoleOutputWithPrompt::SetCursorPos(cUIPoint Pos)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cConsoleOutputWithPrompt::GetCursorVisible(void)
+bool cConsoleOutputWithPrompt::GetCursorVisible(void)noexcept
 {
 	return fConsoleOutput->GetCursorVisible();
 }
 //---------------------------------------------------------------------------
-bool cConsoleOutputWithPrompt::SetCursorVisible(bool Visible)
+bool cConsoleOutputWithPrompt::SetCursorVisible(bool Visible)noexcept
 {
 	return fConsoleOutput->SetCursorVisible(Visible);
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::MoveCursor(eDirection Direction,ufInt16 Count)
+void cConsoleOutputWithPrompt::MoveCursor(eDirection Direction,ufInt16 Count)noexcept
 {
 	cPromptSaveState SaveState(this);
 	fConsoleOutput->MoveCursor(Direction,Count);
@@ -173,7 +174,7 @@ void cConsoleOutputWithPrompt::MoveCursor(eDirection Direction,ufInt16 Count)
 	}
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::MoveCursorLineHead(bool Up,ufInt16 Count)
+void cConsoleOutputWithPrompt::MoveCursorLineHead(bool Up,ufInt16 Count)noexcept
 {
 	cPromptSaveState SaveState(this);
 	fConsoleOutput->MoveCursorLineHead(Up,Count);
@@ -182,22 +183,22 @@ void cConsoleOutputWithPrompt::MoveCursorLineHead(bool Up,ufInt16 Count)
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint cConsoleOutputWithPrompt::GetPageSize(void)
+cUIPoint cConsoleOutputWithPrompt::GetPageSize(void)noexcept
 {
 	return fConsoleOutput->GetPageSize();
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::EraseLine(void)
+void cConsoleOutputWithPrompt::EraseLine(void)noexcept
 {
 	return fConsoleOutput->EraseLine();
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::EraseLinePart(bool AfterCursor)
+void cConsoleOutputWithPrompt::EraseLinePart(bool AfterCursor)noexcept
 {
 	return fConsoleOutput->EraseLinePart(AfterCursor);
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::StartPrompt(iArrayReference<uChar16> *Reference)
+void cConsoleOutputWithPrompt::StartPrompt(iArrayReference<uChar16> *Reference)noexcept
 {
 	fLineText=Reference;
 	// record echo pos
@@ -210,7 +211,7 @@ void cConsoleOutputWithPrompt::StartPrompt(iArrayReference<uChar16> *Reference)
 	fPromptLength=TextLength;
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::FinishPrompt(void)
+void cConsoleOutputWithPrompt::FinishPrompt(void)noexcept
 {
 	if(fLineText==nullptr)
 		return;
@@ -225,7 +226,7 @@ void cConsoleOutputWithPrompt::FinishPrompt(void)
 	fLineText=nullptr;
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::UpdatePrompt(uIntn ChangedOffset)
+void cConsoleOutputWithPrompt::UpdatePrompt(uIntn ChangedOffset)noexcept
 {
 	if(fLineText==nullptr)
 		return;
@@ -243,7 +244,7 @@ void cConsoleOutputWithPrompt::UpdatePrompt(uIntn ChangedOffset)
 	fConsoleOutput->EraseLinePart(true);
 }
 //---------------------------------------------------------------------------
-uIntn cConsoleOutputWithPrompt::GetPromptCursorPos(void)
+uIntn cConsoleOutputWithPrompt::GetPromptCursorPos(void)noexcept
 {
 	if(fLineText==nullptr)
 		return IndexNotFound;
@@ -251,7 +252,7 @@ uIntn cConsoleOutputWithPrompt::GetPromptCursorPos(void)
 	return fPromptCursorPos;
 }
 //---------------------------------------------------------------------------
-bool cConsoleOutputWithPrompt::SetPromptCursorPos(uIntn Pos)
+bool cConsoleOutputWithPrompt::SetPromptCursorPos(uIntn Pos)noexcept
 {
 	if(fLineText==nullptr)
 		return false;
@@ -266,13 +267,13 @@ bool cConsoleOutputWithPrompt::SetPromptCursorPos(uIntn Pos)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::ApplyPromptCursorPos(void)
+void cConsoleOutputWithPrompt::ApplyPromptCursorPos(void)noexcept
 {
 	auto CaretPos=LinePosToConsolePos(fPromptCursorPos);
 	fConsoleOutput->SetCursorPos(CaretPos);
 }
 //---------------------------------------------------------------------------
-cUIPoint cConsoleOutputWithPrompt::OffsetConsolePos(cUIPoint Pos,sIntn Offset)
+cUIPoint cConsoleOutputWithPrompt::OffsetConsolePos(cUIPoint Pos,sIntn Offset)noexcept
 {
 	Pos.x+=Offset;
 	
@@ -288,7 +289,7 @@ cUIPoint cConsoleOutputWithPrompt::OffsetConsolePos(cUIPoint Pos,sIntn Offset)
 	return Pos;
 }
 //---------------------------------------------------------------------------
-cUIPoint cConsoleOutputWithPrompt::LinePosToConsolePos(uIntn Offset)
+cUIPoint cConsoleOutputWithPrompt::LinePosToConsolePos(uIntn Offset)noexcept
 {
 	cUIPoint Pos=fPromptPos;
 	Pos.x+=Offset;
@@ -305,7 +306,7 @@ cUIPoint cConsoleOutputWithPrompt::LinePosToConsolePos(uIntn Offset)
 	return Pos;
 }
 //---------------------------------------------------------------------------
-uIntn cConsoleOutputWithPrompt::ConsolePosToLinePos(cUIPoint Pos)
+uIntn cConsoleOutputWithPrompt::ConsolePosToLinePos(cUIPoint Pos)noexcept
 {
 	cnLib_ASSERT(fLineText!=nullptr);
 	if(fPromptPos.y>Pos.y){
@@ -328,17 +329,17 @@ uIntn cConsoleOutputWithPrompt::ConsolePosToLinePos(cUIPoint Pos)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcConsoleLineInputHandler::bcConsoleLineInputHandler(iConsolePrompt *ConsolePrompt)
+bcConsoleLineInputHandler::bcConsoleLineInputHandler(iConsolePrompt *ConsolePrompt)noexcept
 	: fConsolePrompt(ConsolePrompt)
 {
 	fLineBuffer=rCreate<cStringBufferRef>();
 }
 //---------------------------------------------------------------------------
-bcConsoleLineInputHandler::~bcConsoleLineInputHandler()
+bcConsoleLineInputHandler::~bcConsoleLineInputHandler()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcConsoleLineInputHandler::KeyInput(eKeyCode KeyCode)
+void bcConsoleLineInputHandler::KeyInput(eKeyCode KeyCode)noexcept
 {
 	switch(KeyCode){
 	case KeyCode::Backspace:
@@ -394,7 +395,7 @@ void bcConsoleLineInputHandler::KeyInput(eKeyCode KeyCode)
 	}
 }
 //---------------------------------------------------------------------------
-void bcConsoleLineInputHandler::TextInput(const uChar16 *Text,uIntn Length)
+void bcConsoleLineInputHandler::TextInput(const uChar16 *Text,uIntn Length)noexcept
 {
 	uIntn AppendIndex=fConsolePrompt->GetPromptCursorPos();
 	uIntn CurLineLength=fLineBuffer->GetLength();

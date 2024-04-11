@@ -6,7 +6,7 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCOMSyncStream::cCOMSyncStream(COMPtr<IStream> Stream)
+cCOMSyncStream::cCOMSyncStream(COMPtr<IStream> Stream)noexcept
 	: fStream(cnVar::MoveCast(Stream))
 	, fIsEndOfReading(false)
 	, fStreamStateCached(false)
@@ -14,16 +14,16 @@ cCOMSyncStream::cCOMSyncStream(COMPtr<IStream> Stream)
 	cnMemory::ZeroFill(fCachedState);
 }
 //---------------------------------------------------------------------------
-cCOMSyncStream::~cCOMSyncStream()
+cCOMSyncStream::~cCOMSyncStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cCOMSyncStream::Close(void)
+void cCOMSyncStream::Close(void)noexcept
 {
 	fStream=nullptr;
 }
 //---------------------------------------------------------------------------
-void cCOMSyncStream::SetupState(void)
+void cCOMSyncStream::SetupState(void)noexcept
 {
 	if(fStreamStateCached){
 		return;
@@ -37,7 +37,7 @@ void cCOMSyncStream::SetupState(void)
 	fStreamStateCached=true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::IsEndOfReading(void)
+bool cCOMSyncStream::IsEndOfReading(void)noexcept
 {
 	if(fIsEndOfReading)
 		return true;
@@ -64,7 +64,7 @@ bool cCOMSyncStream::IsEndOfReading(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::SetEndOfStream(void)
+bool cCOMSyncStream::SetEndOfStream(void)noexcept
 {
 	if(fStream==nullptr)
 		return false;
@@ -86,7 +86,7 @@ bool cCOMSyncStream::SetEndOfStream(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cCOMSyncStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	SizeCompleted=0;
 	if(fStream==nullptr)
@@ -105,7 +105,7 @@ bool cCOMSyncStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cCOMSyncStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	SizeCompleted=0;
 	if(fStream==nullptr)
@@ -121,7 +121,7 @@ bool cCOMSyncStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
 	return true;
 }
 //---------------------------------------------------------------------------
-uInt64 cCOMSyncStream::GetPointer(void)
+uInt64 cCOMSyncStream::GetPointer(void)noexcept
 {
 	if(fStream==nullptr)
 		return 0;
@@ -139,7 +139,7 @@ uInt64 cCOMSyncStream::GetPointer(void)
 	return uPosition.QuadPart;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::MovePointerBegin(uInt64 Offset)
+bool cCOMSyncStream::MovePointerBegin(uInt64 Offset)noexcept
 {
 	if(fStream==nullptr)
 		return false;
@@ -154,7 +154,7 @@ bool cCOMSyncStream::MovePointerBegin(uInt64 Offset)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::MovePointerCurrent(sInt64 Offset)
+bool cCOMSyncStream::MovePointerCurrent(sInt64 Offset)noexcept
 {
 	if(fStream==nullptr)
 		return false;
@@ -169,7 +169,7 @@ bool cCOMSyncStream::MovePointerCurrent(sInt64 Offset)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cCOMSyncStream::MovePointerEnd(sInt64 Offset)
+bool cCOMSyncStream::MovePointerEnd(sInt64 Offset)noexcept
 {
 	if(fStream==nullptr)
 		return false;

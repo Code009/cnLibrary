@@ -16,14 +16,14 @@ class cnLib_INTERFACE iODBC : public iReference
 {
 public:
 	virtual iPtr<iSQLDBConnection> cnLib_FUNC EditAndConnect(HWND ParentWindow,const wchar_t *ConnectionString,short ConnectionStringLength,
-		wchar_t *OutConnectionString,short &OutConnectionStringLength)=0;
-	virtual iPtr<iSQLDBConnection> cnLib_FUNC Connect(const wchar_t *ConnectionString,short ConnectionStringLength)=0;
+		wchar_t *OutConnectionString,short &OutConnectionStringLength)noexcept(true)=0;
+	virtual iPtr<iSQLDBConnection> cnLib_FUNC Connect(const wchar_t *ConnectionString,short ConnectionStringLength)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
 namespace cnWindows{
 //---------------------------------------------------------------------------
-rPtr<iODBC> cnLib_FUNC ODBC(void);
+rPtr<iODBC> cnLib_FUNC ODBC(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWindows
 //---------------------------------------------------------------------------

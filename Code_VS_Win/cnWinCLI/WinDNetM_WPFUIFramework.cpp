@@ -210,7 +210,7 @@ void WPFWindow::WindowClient::set(System::Windows::UIElement ^value)
 	Content=value;
 }
 //---------------------------------------------------------------------------
-iPtr<iUIWindow> cnWin::MakeUIWindowFromWindowTarget(IWPFWindowTarget ^Target)
+iPtr<iUIWindow> cnWin::MakeUIWindowFromWindowTarget(IWPFWindowTarget ^Target)noexcept
 {
 	auto TargetObject=dynamic_cast<System::Windows::DependencyObject^>(Target);
 	if(TargetObject==nullptr)
@@ -594,7 +594,7 @@ void WPFViewAdapter::OnTouchMove(System::Object ^sender,System::Windows::Input::
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iUIView> cnWin::MakeUIViewFromViewTarget(IWPFViewTarget ^Target)
+iPtr<iUIView> cnWin::MakeUIViewFromViewTarget(IWPFViewTarget ^Target)noexcept
 {
 	auto TargetObject=dynamic_cast<System::Windows::DependencyObject^>(Target);
 	if(TargetObject==nullptr)

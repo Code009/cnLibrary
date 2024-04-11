@@ -29,6 +29,9 @@
 // (C++11)200704L __cpp_unicode_characters			New character types (char16_t and char32_t)
 #define	cnLibrary_CPPFEATURE_UCHARS					__cpp_unicode_characters
 
+// (C++11)200907L __cpp_lambdas						Lambda expressions
+#define	cnLibrary_CPPFEATURE_LAMBDAS				__cpp_lambdas
+
 
 // (C++11)200704L __cpp_constexpr					constexpr
 // (C++14)201304L __cpp_constexpr					Relaxed constexpr, non-const constexpr methods

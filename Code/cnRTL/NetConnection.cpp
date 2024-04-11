@@ -5,101 +5,27 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iAddress* cConnection::GetLocalAddress(void)
+iAddress* cConnection::GetLocalAddress(void)noexcept
 {
 	return LocalAddress;
 }
 //---------------------------------------------------------------------------
-iAddress* cConnection::GetRemoteAddress(void)
+iAddress* cConnection::GetRemoteAddress(void)noexcept
 {
 	return RemoteAddress;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcConnectionQueueProcessor::bcConnectionQueueProcessor(iConnectionQueue *Queue)
-	: fConnectionQueue(Queue)
-	, fQueueActive(false)
-	, fActiveMutex(false)
-{
-}
-//---------------------------------------------------------------------------
-bcConnectionQueueProcessor::~bcConnectionQueueProcessor()
-{
-}
-//---------------------------------------------------------------------------
-iConnectionQueue* bcConnectionQueueProcessor::GetConnectionQueue(void)const
-{
-	return fConnectionQueue;
-}
-//---------------------------------------------------------------------------
-bool bcConnectionQueueProcessor::SetConnectionQueue(iConnectionQueue *Queue)
-{
-	if(fActiveMutex.Acquire.Xchg(true)==true){
-		return false;
-	}
-	if(fQueueActive==false){
-		fConnectionQueue=Queue;
-	}
-	
-	fActiveMutex.Release.Store(false);
-	return true;
-}
-//---------------------------------------------------------------------------
-bool bcConnectionQueueProcessor::IsActive(void)const
-{
-	return fQueueActive;
-}
-//---------------------------------------------------------------------------
-bool bcConnectionQueueProcessor::Start(iReference *Reference)
-{
-	if(fConnectionQueue==nullptr){
-		return false;
-	}
-	if(fQueueActive)
-		return false;
-	if(fActiveMutex.Acquire.Xchg(true)==true){
-		return false;
-	}
-
-	if(fConnectionQueue->StartNotify(Reference,this)==false){
-		fActiveMutex.Release.Store(false);
-		return false;
-	}
-
-	return true;
-}
-//---------------------------------------------------------------------------
-void bcConnectionQueueProcessor::Stop(void)
-{
-	if(fConnectionQueue!=nullptr){
-		if(fQueueActive){
-			fConnectionQueue->StopNotify();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-void bcConnectionQueueProcessor::AsyncStarted(void)
-{
-	fQueueActive=true;
-	fActiveMutex.Release.Store(false);
-}
-//---------------------------------------------------------------------------
-void bcConnectionQueueProcessor::AsyncStopped(void)
-{
-	fQueueActive=false;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-bcConnectionQueue::bcConnectionQueue()
+bcConnectionListener::bcConnectionListener()noexcept
 {
 	fConnectionQueueCallback=nullptr;
 }
 //---------------------------------------------------------------------------
-bcConnectionQueue::~bcConnectionQueue()
+bcConnectionListener::~bcConnectionListener()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool bcConnectionQueue::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)
+bool bcConnectionListener::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -112,24 +38,29 @@ bool bcConnectionQueue::StartNotify(iReference *Reference,iAsyncNotificationCall
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcConnectionQueue::StopNotify(void)
+void bcConnectionListener::StopNotify(void)noexcept
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void bcConnectionQueue::NotifyCallback(bool IdleNotify)
+void bcConnectionListener::NotifyCallback(bool IdleNotify)noexcept
 {
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool bcConnectionQueue::IsClosed(void)
+bool bcConnectionListener::IsClosed(void)noexcept
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-void bcConnectionQueue::NotificationStarted(void)
+void bcConnectionListener::Close(void)noexcept
+{
+	return CloseQueue();
+}
+//---------------------------------------------------------------------------
+void bcConnectionListener::NotificationStarted(void)noexcept
 {
 	bcAsyncQueue::NotificationStarted();
 
@@ -137,7 +68,7 @@ void bcConnectionQueue::NotificationStarted(void)
 	fConnectionQueueCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
-void bcConnectionQueue::NotificationStopped(void)
+void bcConnectionListener::NotificationStopped(void)noexcept
 {
 	bcAsyncQueue::NotificationStopped();
 
@@ -148,152 +79,21 @@ void bcConnectionQueue::NotificationStopped(void)
 	rDecReference(this,'cnqu');
 }
 //---------------------------------------------------------------------------
-void bcConnectionQueue::AsyncQueueNotify(void)
+void bcConnectionListener::AsyncQueueNotify(void)noexcept
 {
 	fConnectionQueueCallback->AsyncNotify();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool bcConnectionListener::cAcceptTask::IsDone(void)
-{
-	return fTaskState.IsDone();
-}
-//---------------------------------------------------------------------------
-bool bcConnectionListener::cAcceptTask::SetNotify(iProcedure *NotifyProcedure)
-{
-	return fTaskState.SetNotify(NotifyProcedure);
-}
-//---------------------------------------------------------------------------
-void bcConnectionListener::cAcceptTask::Cancel(void)
-{
-	Owner->fAcceptTaskQueue.CancelTask(this);
-}
-//---------------------------------------------------------------------------
-void bcConnectionListener::cAcceptTask::PrepareAccept(void)
+bcBufferedRWQueue::bcBufferedRWQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iConnection* bcConnectionListener::cAcceptTask::GetConnection(void)
-{
-	if(fTaskState.IsDone()==false){
-		return nullptr;
-	}
-	return Connection;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-bcConnectionListener::bcConnectionListener()
-{
-	fListenerClosed=false;
-}
-//---------------------------------------------------------------------------
-bcConnectionListener::~bcConnectionListener()
+bcBufferedRWQueue::~bcBufferedRWQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcConnectionListener::CloseListener(void)
-{
-	fListenerClosed=true;
-	UpdateAcceptTaskQueue();
-}
-//---------------------------------------------------------------------------
-void bcConnectionListener::Close(void)
-{
-	CloseListener();
-}
-//---------------------------------------------------------------------------
-iPtr<iConnection> bcConnectionListener::Accept(void)
-{
-	if(fListenerClosed){
-		//fLastErrorCode=StreamError::Closed;
-		return nullptr;
-	}
-	auto Task=iCreate<cAcceptTask>();
-	Task->Owner=this;
-	Task->PrepareAccept();
-	fAcceptTaskQueue.EnqueueTask(Task);
-
-	UpdateAcceptTaskQueue();
-	// sync access
-
-	WaitForTask(Task);
-
-	//fLastErrorCode=Task->AccessErrorCode;
-	return cnVar::MoveCast(Task->Connection);
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionTask> bcConnectionListener::AcceptAsync(void)
-{
-	if(fListenerClosed){
-		//fLastErrorCode=StreamError::Closed;
-		return nullptr;
-	}
-	auto Task=iCreate<cAcceptTask>();
-	Task->Owner=this;
-	Task->PrepareAccept();
-	fAcceptTaskQueue.EnqueueTask(Task);
-
-	UpdateAcceptTaskQueue();
-	return Task;
-}
-//---------------------------------------------------------------------------
-rPtr<bcConnectionListener::cAcceptTask> bcConnectionListener::QueryAcceptTask(void)
-{
-	auto Task=fAcceptTaskQueue.DequeueTask();
-	if(Task==nullptr)
-		return nullptr;
-
-	auto pTask=Task.ExtractToManual();
-	return rPtr<cAcceptTask>::TakeFromManual(static_cast<cAcceptTask*>(pTask));
-}
-//---------------------------------------------------------------------------
-void bcConnectionListener::CompleteAcceptTask(rPtr<cAcceptTask> Task)
-{
-	fAcceptTaskQueue.CompleteTask(cnVar::MoveCast(Task));
-}
-//---------------------------------------------------------------------------
-void bcConnectionListener::UpdateAcceptTaskQueue(void)
-{
-	fProcessAcceptTaskQueueProcedure.Run();
-}
-//---------------------------------------------------------------------------
-bool bcConnectionListener::cProcessAcceptTaskQueueProcedure::Procedure(void)
-{
-	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcConnectionListener::fProcessAcceptTaskQueueProcedure);
-	return Host->ProcessAcceptTaskQueueProc();
-}
-//---------------------------------------------------------------------------
-bool bcConnectionListener::ProcessAcceptTaskQueueProc(void)
-{
-	if(fListenerClosed){
-		// close all accept task
-		auto Task=fAcceptTaskQueue.DequeueTask();
-		while(Task!=nullptr){
-			auto *AcceptTask=static_cast<cAcceptTask*>(Task.Pointer());
-			AcceptTask->AcceptErrorCode=StreamError::Closed;
-			fAcceptTaskQueue.CompleteTask(Task);
-
-			Task=fAcceptTaskQueue.DequeueTask();
-		}
-
-		// process when read end
-		ConnectionProcessEnd();
-		return false;
-	}
-	ConnectionProcessTask();
-	return false;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-bcBufferedRWQueue::bcBufferedRWQueue()
-{
-}
-//---------------------------------------------------------------------------
-bcBufferedRWQueue::~bcBufferedRWQueue()
-{
-}
-//---------------------------------------------------------------------------
-void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)
+void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)noexcept
 {
 	auto WriteMemory=fReadDataQueue.ReserveWriteBuffer(Size);
 	cnMemory::Copy(WriteMemory.Pointer,Data,Size);
@@ -302,37 +102,37 @@ void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)
 	UpdateReadQueueState(false);
 }
 //---------------------------------------------------------------------------
-cMemory bcBufferedRWQueue::QueryReadDataBuffer(uIntn QuerySize)
+cMemory bcBufferedRWQueue::QueryReadDataBuffer(uIntn QuerySize)noexcept
 {
 	return fReadDataQueue.ReserveWriteBuffer(QuerySize);
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::AdvanceReadDataBuffer(uIntn Size)
+void bcBufferedRWQueue::AdvanceReadDataBuffer(uIntn Size)noexcept
 {
 	return fReadDataQueue.CommitWriteBuffer(Size);
 }
 //---------------------------------------------------------------------------
-cConstMemory bcBufferedRWQueue::QueryWriteData(void)
+cConstMemory bcBufferedRWQueue::QueryWriteData(void)noexcept
 {
 	return fWriteDataQueue.GatherReadBuffer(0);
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::AdvanceWriteData(uIntn Size)
+void bcBufferedRWQueue::AdvanceWriteData(uIntn Size)noexcept
 {
 	return fWriteDataQueue.DismissReadBuffer(Size);
 }
 //---------------------------------------------------------------------------
-bool bcBufferedRWQueue::IsWriteDataEnded(void)
+bool bcBufferedRWQueue::IsWriteDataEnded(void)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-cConstMemory bcBufferedRWQueue::GatherReadBuffer(uIntn QuerySize)
+cConstMemory bcBufferedRWQueue::GatherReadBuffer(uIntn QuerySize)noexcept
 {
 	return fReadDataQueue.GatherReadBuffer(QuerySize);
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::DismissReadBuffer(uIntn Size)
+void bcBufferedRWQueue::DismissReadBuffer(uIntn Size)noexcept
 {
 	fReadDataQueue.DismissReadBuffer(Size);
 	if(Size!=0){
@@ -340,12 +140,12 @@ void bcBufferedRWQueue::DismissReadBuffer(uIntn Size)
 	}
 }
 //---------------------------------------------------------------------------
-cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)
+cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {
 	return fWriteDataQueue.ReserveWriteBuffer(QuerySize);
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::CommitWriteBuffer(uIntn Size)
+void bcBufferedRWQueue::CommitWriteBuffer(uIntn Size)noexcept
 {
 	fWriteDataQueue.CommitWriteBuffer(Size);
 	if(Size!=0){
@@ -353,55 +153,55 @@ void bcBufferedRWQueue::CommitWriteBuffer(uIntn Size)
 	}
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::ReadQueueClosed(void)
+void bcBufferedRWQueue::ReadQueueClosed(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::WriteQueueClosed(void)
+void bcBufferedRWQueue::WriteQueueClosed(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
 cnLib_INTERFACE_LOCALID_DEFINE(cGATTTunnelConectionDevice);
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cRWQueue::cRWQueue(rPtr<cGATTTunnelConectionDevice> Device)
+cGATTTunnelConectionDevice::cRWQueue::cRWQueue(rPtr<cGATTTunnelConectionDevice> Device)noexcept
 	: fDevice(cnVar::MoveCast(Device))
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cRWQueue::~cRWQueue()
+cGATTTunnelConectionDevice::cRWQueue::~cRWQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::VirtualStarted(void)
+void cGATTTunnelConectionDevice::cRWQueue::VirtualStarted(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::VirtualStopped(void)
+void cGATTTunnelConectionDevice::cRWQueue::VirtualStopped(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionDevice* cGATTTunnelConectionDevice::cRWQueue::GetDevice(void)const
+cGATTTunnelConectionDevice* cGATTTunnelConectionDevice::cRWQueue::GetDevice(void)const noexcept
 {
 	return fDevice;
 }
 //---------------------------------------------------------------------------
-iReference* cGATTTunnelConectionDevice::cRWQueue::RWQueueInnerReference(void)
+iReference* cGATTTunnelConectionDevice::cRWQueue::RWQueueInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::ReadBufferNotify(void)
+void cGATTTunnelConectionDevice::cRWQueue::ReadBufferNotify(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cRWQueue::WriteDataNotify(void)
+void cGATTTunnelConectionDevice::cRWQueue::WriteDataNotify(void)noexcept
 {
 	fDevice->RWQueueNotifyWrite();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::cGATTTunnelConectionDevice(rPtr<iGATTService> Service,iPtr<iGATTCharacteristic> ReadChar,iPtr<iGATTCharacteristic> WriteChar)
+cGATTTunnelConectionDevice::cGATTTunnelConectionDevice(rPtr<iGATTService> Service,rPtr<iGATTCharacteristic> ReadChar,rPtr<iGATTCharacteristic> WriteChar)noexcept
 	: fService(cnVar::MoveCast(Service))
 	, fReadChar(cnVar::MoveCast(ReadChar))
 	, fWriteChar(cnVar::MoveCast(WriteChar))
@@ -409,11 +209,11 @@ cGATTTunnelConectionDevice::cGATTTunnelConectionDevice(rPtr<iGATTService> Servic
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionDevice::~cGATTTunnelConectionDevice()
+cGATTTunnelConectionDevice::~cGATTTunnelConectionDevice()noexcept
 {
 }
 //---------------------------------------------------------------------------
-eiOrdering cGATTTunnelConectionDevice::Compare(iAddress *Dest)
+eiOrdering cGATTTunnelConectionDevice::Compare(iAddress *Dest)noexcept
 {
 	auto DestDevice=iCast<cGATTTunnelConectionDevice>(Dest);
 	if(DestDevice==nullptr){
@@ -428,22 +228,22 @@ eiOrdering cGATTTunnelConectionDevice::Compare(iAddress *Dest)
 	return iOrdering::Greater;
 }
 //---------------------------------------------------------------------------
-iGATTService* cGATTTunnelConectionDevice::GetService(void)const
+iGATTService* cGATTTunnelConectionDevice::GetService(void)const noexcept
 {
 	return fService;
 }
 //---------------------------------------------------------------------------
-iGATTCharacteristic* cGATTTunnelConectionDevice::GetReadCharacteristic(void)const
+iGATTCharacteristic* cGATTTunnelConectionDevice::GetReadCharacteristic(void)const noexcept
 {
 	return fReadChar;
 }
 //---------------------------------------------------------------------------
-iGATTCharacteristic* cGATTTunnelConectionDevice::GetWriteCharacteristic(void)const
+iGATTCharacteristic* cGATTTunnelConectionDevice::GetWriteCharacteristic(void)const noexcept
 {
 	return fWriteChar;
 }
 //---------------------------------------------------------------------------
-bool cGATTTunnelConectionDevice::Connect(iConnectCallback *Callback)
+bool cGATTTunnelConectionDevice::Connect(iConnectCallback *Callback)noexcept
 {
 	if(fRWQueue!=nullptr || fConnectState!=csIdle)
 		return false;
@@ -459,20 +259,16 @@ bool cGATTTunnelConectionDevice::Connect(iConnectCallback *Callback)
 	fConnectCallback=Callback;
 
 	auto Peripheral=fService->GetPeripheral();
-	Peripheral->Activate();
+	//Peripheral->Connect();
 	return true;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::GATTServiceStateChanged(void)
+void cGATTTunnelConectionDevice::GATTServiceStateChanged(void)noexcept
 {
 	UpdateFunctionState();
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::GATTServiceCharacteristListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::UpdateFunctionState(void)
+void cGATTTunnelConectionDevice::UpdateFunctionState(void)noexcept
 {
 	switch(fConnectState){
 	case csIdle:
@@ -532,7 +328,7 @@ case_csWaitNotifyDescriptor:
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ConnectProcSucceed(void)
+void cGATTTunnelConectionDevice::ConnectProcSucceed(void)noexcept
 {
 	auto RWQueue=rCreate<cRWQueue>(this);
 	fRWQueue=RWQueue;
@@ -540,14 +336,14 @@ void cGATTTunnelConectionDevice::ConnectProcSucceed(void)
 	fConnectCallback=nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ConnectProcFailed(void)
+void cGATTTunnelConectionDevice::ConnectProcFailed(void)noexcept
 {
 	//fConnectCallback->TunnelDeviceOnConnectFailed();
 	fConnectCallback->TunnelDeviceOnConnectDone(nullptr);
 	fConnectCallback=nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::RWQueueNotifyWrite(void)
+void cGATTTunnelConectionDevice::RWQueueNotifyWrite(void)noexcept
 {
 	auto WriteData=fRWQueue->QueryWriteData();
 
@@ -560,9 +356,9 @@ void cGATTTunnelConectionDevice::RWQueueNotifyWrite(void)
 	fRWQueue->AdvanceWriteData(SendSize);
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::ReadCharValueNotify(void)
+void cGATTTunnelConectionDevice::ReadCharValueNotify(void)noexcept
 {
-	auto Value=fReadChar->GetValue();
+	auto Value=fReadChar->Read();
 	uIntn DataLength;
 	auto Data=Value->GetArray(DataLength);
 
@@ -571,80 +367,72 @@ void cGATTTunnelConectionDevice::ReadCharValueNotify(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristStateChanged(void)
+void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristStateChanged(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristDescriptorListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristValueNotify(void)
+void cGATTTunnelConectionDevice::cReadCharHandler::GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept
 {
 
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristStateChanged(void)
+void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristStateChanged(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristDescriptorListChanged(void)
-{
-}
-//---------------------------------------------------------------------------
-void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristValueNotify(void)
+void cGATTTunnelConectionDevice::cWriteCharHandler::GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept
 {
 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cEndpoint::cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
+cGATTTunnelConectionConnector::cEndpoint::cEndpoint(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept
 	: fRWQueue(cnVar::MoveCast(RWQueue))
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cEndpoint::~cEndpoint()
+cGATTTunnelConectionConnector::cEndpoint::~cEndpoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cGATTTunnelConectionConnector::cEndpoint::CastInterface(iTypeID IID)noexcept(true)
+void* cGATTTunnelConectionConnector::cEndpoint::CastInterface(iTypeID IID)noexcept
 {
 	return ImpCastInterface<iConnection,iEndpoint>(this,IID);
 }
 //---------------------------------------------------------------------------
-iAddress* cGATTTunnelConectionConnector::cEndpoint::GetLocalAddress(void)
+iAddress* cGATTTunnelConectionConnector::cEndpoint::GetLocalAddress(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iAddress* cGATTTunnelConectionConnector::cEndpoint::GetRemoteAddress(void)
+iAddress* cGATTTunnelConectionConnector::cEndpoint::GetRemoteAddress(void)noexcept
 {
 	return fRWQueue->GetDevice();
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cEndpoint::Close(void)
+void cGATTTunnelConectionConnector::cEndpoint::Close(void)noexcept
 {
 	fRWQueue->CloseReadQueue();
 	fRWQueue->CloseWriteQueue();
 }
 //---------------------------------------------------------------------------
-iReadQueue* cGATTTunnelConectionConnector::cEndpoint::GetReadQueue(void)
+iReadQueue* cGATTTunnelConectionConnector::cEndpoint::GetReadQueue(void)noexcept
 {
 	return fRWQueue;
 }
 //---------------------------------------------------------------------------
-iWriteQueue* cGATTTunnelConectionConnector::cEndpoint::GetWriteQueue(void)
+iWriteQueue* cGATTTunnelConectionConnector::cEndpoint::GetWriteQueue(void)noexcept
 {
 	return fRWQueue;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cEndpoint::SetWriteEndMode(eEndpointWriteEndMode EndMode)
+void cGATTTunnelConectionConnector::cEndpoint::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
 {
 	return fRWQueue->WriteQueueSetEndMode(EndMode);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectSyncObject::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
+void cGATTTunnelConectionConnector::cConnectSyncObject::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept
 {
 	//Connection=CreateConnection(ConnectionIID,cnVar::MoveCast(RWQueue));
 
@@ -652,36 +440,36 @@ void cGATTTunnelConectionConnector::cConnectSyncObject::TunnelDeviceOnConnectDon
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cGATTTunnelConectionConnector::cConnectAsyncTask::IsDone(void)
+bool cGATTTunnelConectionConnector::cConnectAsyncTask::IsDone(void)noexcept
 {
 	return TaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cGATTTunnelConectionConnector::cConnectAsyncTask::SetNotify(iProcedure *NotifyProcedure)
+bool cGATTTunnelConectionConnector::cConnectAsyncTask::SetNotify(iProcedure *NotifyProcedure)noexcept
 {
 	return TaskState.SetNotify(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::Cancel(void)
+void cGATTTunnelConectionConnector::cConnectAsyncTask::Cancel(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-iConnection* cGATTTunnelConectionConnector::cConnectAsyncTask::GetConnection(void)
+iConnection* cGATTTunnelConectionConnector::cConnectAsyncTask::GetConnection(void)noexcept
 {
 	return fConnection;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectStart(void)
+void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectStart(void)noexcept
 {
 	rIncReference(this,'conn');
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectCancel(void)
+void cGATTTunnelConectionConnector::cConnectAsyncTask::ConnectCancel(void)noexcept
 {
 	rDecReference(this,'conn');
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionConnector::cConnectAsyncTask::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
+void cGATTTunnelConectionConnector::cConnectAsyncTask::TunnelDeviceOnConnectDone(rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept
 {
 	//fConnection=CreateConnection(ConnectionIID,cnVar::MoveCast(RWQueue));
 
@@ -691,20 +479,20 @@ void cGATTTunnelConectionConnector::cConnectAsyncTask::TunnelDeviceOnConnectDone
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::cGATTTunnelConectionConnector()
+cGATTTunnelConectionConnector::cGATTTunnelConectionConnector()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionConnector::~cGATTTunnelConectionConnector()
+cGATTTunnelConectionConnector::~cGATTTunnelConectionConnector()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iAddress* cGATTTunnelConectionConnector::GetLocalAddress(void)
+iAddress* cGATTTunnelConectionConnector::GetLocalAddress(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cGATTTunnelConectionConnector::Connect(iAddress *RemoteAddress)
+iPtr<iConnection> cGATTTunnelConectionConnector::Connect(iAddress *RemoteAddress)noexcept
 {
 	if(RemoteAddress==nullptr)
 		return nullptr;
@@ -722,7 +510,7 @@ iPtr<iConnection> cGATTTunnelConectionConnector::Connect(iAddress *RemoteAddress
 	return cnVar::MoveCast(ConnectObject.Connection);
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionTask> cGATTTunnelConectionConnector::ConnectAsync(iAddress *RemoteAddress)
+iPtr<iConnectionTask> cGATTTunnelConectionConnector::ConnectAsync(iAddress *RemoteAddress)noexcept
 {
 	if(RemoteAddress==nullptr)
 		return nullptr;
@@ -740,7 +528,7 @@ iPtr<iConnectionTask> cGATTTunnelConectionConnector::ConnectAsync(iAddress *Remo
 	return Task;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnection> cGATTTunnelConectionConnector::CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)
+iPtr<iConnection> cGATTTunnelConectionConnector::CreateConnection(iTypeID ConnectionIID,rPtr<cGATTTunnelConectionDevice::cRWQueue> RWQueue)noexcept
 {
 	if(ConnectionIID==TInterfaceID<iEndpoint>::Value){
 		return iCreate<cEndpoint>(cnVar::MoveCast(RWQueue));
@@ -751,48 +539,42 @@ iPtr<iConnection> cGATTTunnelConectionConnector::CreateConnection(iTypeID Connec
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::cGATTTunnelConectionObserver(iGATTPeripheralObserver *Observer)
+cGATTTunnelConectionObserver::cGATTTunnelConectionObserver(iGATTAdvertisementObserver *Observer)noexcept
 	: fObserver(Observer)
 {
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::~cGATTTunnelConectionObserver()
+cGATTTunnelConectionObserver::~cGATTTunnelConectionObserver()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::VirtualStarted(void)
+void cGATTTunnelConectionObserver::VirtualStarted(void)noexcept
 {
-	InnerIncReference('self');
+	InnerActivate('self');
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::VirtualStopped(void)
+void cGATTTunnelConectionObserver::VirtualStopped(void)noexcept
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cGATTTunnelConectionObserver::QueryAllDevices(void)
+rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cGATTTunnelConectionObserver::QueryAllDevices(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cGATTTunnelConectionObserver::FetchDeviceChanges(void)
+rPtr< iArrayReference< rPtr<cGATTTunnelConectionDevice> > > cGATTTunnelConectionObserver::FetchDeviceChanges(void)noexcept
 {
-	auto Changes=fObserver->QueryChanges();
-	if(Changes==nullptr){
-		// no changes
-		return nullptr;
+	iGATTAdvertisement *Advertisement;
+	while((Advertisement=fObserver->Fetch())!=nullptr){
+		auto &Info=Advertisement->GetInfo();
 	}
-
-	uIntn ArrayLength;
-	auto Array=Changes->GetArray(ArrayLength);
-	ArrayLength;
-	Array[0];
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::DiscardChanges(void)
+void cGATTTunnelConectionObserver::DiscardChanges(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
@@ -838,12 +620,12 @@ void cGATTTunnelConectionObserver::DiscardChanges(void)
 //	return true;
 //}
 //---------------------------------------------------------------------------
-iReference* cGATTTunnelConectionObserver::NotificationInnerReference(void)
+iReference* cGATTTunnelConectionObserver::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::NotificationStarted(void)
+void cGATTTunnelConectionObserver::NotificationStarted(void)noexcept
 {
 	bcAsyncNotification::NotificationStarted();
 
@@ -853,14 +635,14 @@ void cGATTTunnelConectionObserver::NotificationStarted(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::NotificationStopped(void)
+void cGATTTunnelConectionObserver::NotificationStopped(void)noexcept
 {
 	fObserver->StopNotify();
 
 	bcAsyncNotification::NotificationStopped();
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionObserver::CycleState cGATTTunnelConectionObserver::NotificationCheckState(void)
+cGATTTunnelConectionObserver::CycleState cGATTTunnelConectionObserver::NotificationCheckState(void)noexcept
 {
 	if(fPeripheralObserverError){
 		return CycleState::Terminated;
@@ -868,15 +650,15 @@ cGATTTunnelConectionObserver::CycleState cGATTTunnelConectionObserver::Notificat
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncStarted(void)
+void cGATTTunnelConectionObserver::AsyncStarted(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncStopped(void)
+void cGATTTunnelConectionObserver::AsyncStopped(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTTunnelConectionObserver::AsyncNotify(void)
+void cGATTTunnelConectionObserver::AsyncNotify(void)noexcept
 {
 	// notify from perpheral
 	AsyncQueueSetAvailable(false);
@@ -909,9 +691,8 @@ void cGATTTunnelConectionObserver::AsyncNotify(void)
 //}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTTunnelConectionProtocol::cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central,rPtr<iGATTPeripheralDevice> Device)
+cGATTTunnelConectionProtocol::cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralCentral> Central)noexcept
 	: fCentral(cnVar::MoveCast(Central))
-	, fDevice(cnVar::MoveCast(Device))
 {
 	if(fCentral!=nullptr){
 		//fStreamConnector=iCreate<cGATTTunnelConectionConnector>(TInterfaceID<iStream>::Value);
@@ -919,11 +700,11 @@ cGATTTunnelConectionProtocol::cGATTTunnelConectionProtocol(rPtr<iGATTPeripheralC
 	}
 }
 //---------------------------------------------------------------------------
-cGATTTunnelConectionProtocol::~cGATTTunnelConectionProtocol()
+cGATTTunnelConectionProtocol::~cGATTTunnelConectionProtocol()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateStreamConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	if(LocalAddress!=nullptr)
 		return nullptr;
@@ -931,17 +712,12 @@ iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateStreamConnector(i
 	return fStreamConnector;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateStreamListener(iAddress *LocalAddress)
+iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateStreamListener(iAddress *LocalAddress)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionQueue> cGATTTunnelConectionProtocol::CreateStreamConnectionQueue(iAddress *LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)
+iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateEndpointConnector(iAddress *LocalAddress,iAddress *RemoteAddress)noexcept
 {
 	if(LocalAddress!=nullptr)
 		return nullptr;
@@ -949,28 +725,23 @@ iPtr<iConnectionConnector> cGATTTunnelConectionProtocol::CreateEndpointConnector
 	return fEndpointConnector;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateEndpointListener(iAddress *LocalAddress)
+iPtr<iConnectionListener> cGATTTunnelConectionProtocol::CreateEndpointListener(iAddress *LocalAddress)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iConnectionQueue> cGATTTunnelConectionProtocol::CreateEndpointConnectionQueue(iAddress *LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-rPtr<cGATTTunnelConectionObserver> cGATTTunnelConectionProtocol::CreateObserver(const cGATTTunnelConnectionDeviceID *ServiceIDs,uIntn ServiceCount)
+rPtr<cGATTTunnelConectionObserver> cGATTTunnelConectionProtocol::CreateObserver(const cGATTTunnelConnectionDeviceID *ServiceIDs,uIntn ServiceCount)noexcept
 {
 	cnRTL::cArrayBlock<cGATTUUID> ServiceUUIDs;
 	ServiceUUIDs.SetLength(ServiceCount);
 	for(uIntn i=0;i<ServiceCount;i++){
 		ServiceUUIDs.Pointer[i]=ServiceIDs[i].ServiceUUID;
 	}
-	auto PeripheralObserver=fCentral->CreatePeripheralObserver(ServiceUUIDs.Pointer,ServiceUUIDs.Length);
-	if(PeripheralObserver==nullptr)
+	auto AdvertisementObserver=fCentral->CreateAdvertisementObserver();
+	if(AdvertisementObserver==nullptr)
 		return nullptr;
 
-	auto ConnectionObserver=rCreate<cGATTTunnelConectionObserver>(PeripheralObserver);
+	auto ConnectionObserver=rCreate<cGATTTunnelConectionObserver>(AdvertisementObserver);
 
 	ConnectionObserver->DeviceIDs.Append(ServiceIDs,ServiceCount);
 

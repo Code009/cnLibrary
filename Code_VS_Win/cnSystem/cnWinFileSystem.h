@@ -23,9 +23,9 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
 
-	virtual const wchar_t*	cnLib_FUNC GetFileName(void)=0;
-	virtual uIntn			cnLib_FUNC GetFileNameLength(void)=0;
-	virtual void			cnLib_FUNC SetFileName(const wchar_t *FileName,uIntn Length)=0;
+	virtual const wchar_t*	cnLib_FUNC GetFileName(void)noexcept(true)=0;
+	virtual uIntn			cnLib_FUNC GetFileNameLength(void)noexcept(true)=0;
+	virtual void			cnLib_FUNC SetFileName(const wchar_t *FileName,uIntn Length)noexcept(true)=0;
 };
 //- system handle -----------------------------------------------------------
 class cnLib_INTERFACE iWinFileHandle : public iInterface
@@ -34,7 +34,7 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual HANDLE cnLib_FUNC GetFileHandle(void)=0;
+	virtual HANDLE cnLib_FUNC GetFileHandle(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnWindows{
@@ -47,13 +47,13 @@ cnLib_ENUM_BEGIN(ufInt16,SystemFile)
 	TempFolder,
 }cnLib_ENUM_END(SystemFile);
 //---------------------------------------------------------------------------
-iPtr<iWin32FileName> cnLib_FUNC CreateFileName(const wchar_t *FileName);
-iPtr<iWin32FileName> cnLib_FUNC CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix=0);
-iPtr<iWin32FileName> cnLib_FUNC GetSystemFileName(eSystemFile File);
+iPtr<iWin32FileName> cnLib_FUNC CreateFileName(const wchar_t *FileName)noexcept(true);
+iPtr<iWin32FileName> cnLib_FUNC CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix=0)noexcept(true);
+iPtr<iWin32FileName> cnLib_FUNC GetSystemFileName(eSystemFile File)noexcept(true);
 
 //---------------------------------------------------------------------------
-iPtr<iStream> cnLib_FUNC OpenDeviceStream(const wchar_t *DeviceName,eFileAccess AccessMode=FileAccess::Read|FileAccess::Write,eFileCreate CreateMode=FileCreate::Open);
-iPtr<iEndpoint> cnLib_FUNC OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAccess AccessMode=FileAccess::Read|FileAccess::Write,eFileCreate CreateMode=FileCreate::Open);
+iPtr<iStream> cnLib_FUNC OpenDeviceStream(const wchar_t *DeviceName,eFileAccess AccessMode=FileAccess::Read|FileAccess::Write,eFileCreate CreateMode=FileCreate::Open)noexcept(true);
+iPtr<iEndpoint> cnLib_FUNC OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAccess AccessMode=FileAccess::Read|FileAccess::Write,eFileCreate CreateMode=FileCreate::Open)noexcept(true);
 
 //---------------------------------------------------------------------------
 }	// namespace cnWindows

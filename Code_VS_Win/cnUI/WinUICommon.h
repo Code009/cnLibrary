@@ -20,27 +20,27 @@ namespace cnUI{
 
 	using cnRTL::cnWinRTL::COLORREFFromUIColor;
 
-HWND GetWindowHandleFromUIWindow(iUIArea *Area);
-HWND GetWindowHandleFromUIView(iUIView *View);
-//HWND GetComponentWindowHandle(iWindowComponent *WindowComponent);
+HWND GetWindowHandleFromUIWindow(iUIArea *Area)noexcept(true);
+HWND GetWindowHandleFromUIView(iUIView *View)noexcept(true);
+//HWND GetComponentWindowHandle(iWindowComponent *WindowComponent)noexcept(true);
 
-void HWNDSetOwner(HWND WindowHandle,HWND OwnerHandle);
-cUIPoint AlignWindowRect(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align);
-void MoveWindowAlign(HWND WindowHandle,iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align);
+void HWNDSetOwner(HWND WindowHandle,HWND OwnerHandle)noexcept(true);
+cUIPoint AlignWindowRect(iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept(true);
+void MoveWindowAlign(HWND WindowHandle,iUIArea *Relative,const cUIPoint &WindowSize,const cUIPoint &AlignPos,const cUIPoint &AlignSize,eAroundAlignment Align)noexcept(true);
 
 //---------------------------------------------------------------------------
-iInterface* QueryNullMouseCursor(void);
-iPtr<iInterface> QuerySystemMouseCursor(LPCWSTR ID);
+iInterface* QueryNullMouseCursor(void)noexcept(true);
+iPtr<iInterface> QuerySystemMouseCursor(LPCWSTR ID)noexcept(true);
 //---------------------------------------------------------------------------
-rPtr<iGDIFontHandle> QueryGDIFont(const cUITextStyle &TextStyle);
+rPtr<iGDIFontHandle> QueryGDIFont(const cUITextStyle &TextStyle)noexcept(true);
 //---------------------------------------------------------------------------
 class WindowMessageHandler : protected iWindowMessageHandler
 {
 protected:
-	virtual void cnLib_FUNC WindowAttached(void)override;
-	virtual void cnLib_FUNC WindowDetached(void)override;
-	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)override;
-	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &MsgParam)override;
+	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
+	virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
+	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept(true)override;
+	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &MsgParam)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

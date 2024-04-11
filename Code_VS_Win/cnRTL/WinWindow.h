@@ -17,13 +17,13 @@ namespace cnWinRTL{
 class bcWindowSubclass
 {
 public:
-	virtual void SubclassAttached(HWND WindowHandle)=0;
-	virtual void SubclassDetached(void)=0;
-	virtual LRESULT CALLBACK SubclassMessage(UINT Code,WPARAM wParam,LPARAM lParam)=0;
+	virtual void SubclassAttached(HWND WindowHandle)noexcept(true)=0;
+	virtual void SubclassDetached(void)noexcept(true)=0;
+	virtual LRESULT CALLBACK SubclassMessage(UINT Code,WPARAM wParam,LPARAM lParam)noexcept(true)=0;
 
 	class iProc{
 	public:
-		virtual LRESULT Execute(HWND Window,UINT Message,WPARAM wParam,LPARAM lParam)=0;
+		virtual LRESULT Execute(HWND Window,UINT Message,WPARAM wParam,LPARAM lParam)noexcept(true)=0;
 	};
 
 	cnVar::cPolymorphicInterface<iProc,sizeof(uIntn)*2,uIntn> DefaultWindowProcedure;
@@ -37,18 +37,18 @@ namespace NTXPWindowSubclass{
 class cDefaultProcedureCaller : public bcWindowSubclass::iProc
 {
 public:
-	LRESULT Execute(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)override;
+	LRESULT Execute(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 // LocalSubclass
 //	subclass a window with the local class
-bool SetLocal(HWND WindowHandle,bcWindowSubclass *Subclass);
+bool SetLocal(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true);
 // Subclass
 //	subclass a window
-bool Set(HWND WindowHandle,bcWindowSubclass *Subclass);
+bool Set(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true);
 // SubclassRestore
 //	restore subclassed window
-void Restore(HWND WindowHandle,bcWindowSubclass *Subclass);
+void Restore(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace NTXPWindowSubclass
 //---------------------------------------------------------------------------
@@ -57,17 +57,17 @@ void Restore(HWND WindowHandle,bcWindowSubclass *Subclass);
 class cWindowUIState
 {
 public:
-	cWindowUIState();
-	~cWindowUIState();
+	cWindowUIState()noexcept(true);
+	~cWindowUIState()noexcept(true);
 
-	eUIState GetUIState(void)const;
+	eUIState GetUIState(void)const noexcept(true);
 
 	// Window Handle Notification
 
-	LONG WindowAttached(HWND WindowHandle);
-	void WindowDetached(void);
-	bool WindowMessageCheckState(const cWindowMessageParam &MsgParam);
-	void AfterChildWindowCreated(HWND WindowHandle);
+	LONG WindowAttached(HWND WindowHandle)noexcept(true);
+	void WindowDetached(void)noexcept(true);
+	bool WindowMessageCheckState(const cWindowMessageParam &MsgParam)noexcept(true);
+	void AfterChildWindowCreated(HWND WindowHandle)noexcept(true);
 
 protected:
 
@@ -77,12 +77,12 @@ protected:
 
 };
 //---------------------------------------------------------------------------
-int GetWindowDPI(HWND hWnd);
+int GetWindowDPI(HWND hWnd)noexcept(true);
 //---------------------------------------------------------------------------
-HWND GetWindowHandleFromUIWindow(iUIArea *Area);
-HWND GetWindowHandleFromUIView(iUIView *View);
-iWindow* GetWindowFromUIWindow(iUIArea *Area);
-iWindow* GetWindowFromUIView(iUIView *View);
+HWND GetWindowHandleFromUIWindow(iUIArea *Area)noexcept(true);
+HWND GetWindowHandleFromUIView(iUIView *View)noexcept(true);
+iWindow* GetWindowFromUIWindow(iUIArea *Area)noexcept(true);
+iWindow* GetWindowFromUIView(iUIView *View)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL
 //---------------------------------------------------------------------------

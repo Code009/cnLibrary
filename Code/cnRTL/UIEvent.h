@@ -17,20 +17,20 @@ template<class TObject,class TOrder>
 class cOrderedObjectSet
 {
 public:
-	cOrderedObjectSet(){}
-	~cOrderedObjectSet(){}
+	cOrderedObjectSet()noexcept(true){}
+	~cOrderedObjectSet()noexcept(true){}
 
-	uIntn GetCount(void){
+	uIntn GetCount(void)noexcept(true){
 		return fPtrSet.GetCount();
 	}
 
-	const TObject &GetAt(uIntn Index){
+	const TObject &GetAt(uIntn Index)noexcept(true){
 		auto pPair=fPtrOrderMap.GetPairAt(Index);
 		return pPair->Key;
 	}
 
 	template<class TValue>
-	bool Insert(TValue&& Object,TOrder Order=0){
+	bool Insert(TValue&& Object,TOrder Order=0)noexcept(true){
 		bool Exists;
 		auto Pair=fPtrOrderMap.InsertPair(Object,Exists);
 		cOrderItem OrderItem;
@@ -57,7 +57,7 @@ public:
 	}
 
 	template<class TValue>
-	bool Remove(TValue&& Object)
+	bool Remove(TValue&& Object)noexcept(true)
 	{
 		auto Pair=fPtrOrderMap.GetPair(Object);
 		if(Pair==nullptr)
@@ -77,23 +77,23 @@ public:
 		cOrderedObjectSet *fSet;
 		uIntn fIndex;
 	public:
-		cIterator(){}
-		cIterator(cOrderedObjectSet *Set,uIntn Index):fSet(Set),fIndex(Index){}
-		void operator ++(){			fIndex++;		}
-		void operator ++(int){		fIndex++;		}
-		void operator --(){			fIndex--;		}
-		void operator --(int){		fIndex--;		}
+		cIterator()noexcept(true){}
+		cIterator(cOrderedObjectSet *Set,uIntn Index)noexcept(true):fSet(Set),fIndex(Index){}
+		void operator ++()noexcept(true){			fIndex++;		}
+		void operator ++(int)noexcept(true){		fIndex++;		}
+		void operator --()noexcept(true){			fIndex--;		}
+		void operator --(int)noexcept(true){		fIndex--;		}
 
-		bool operator !=(const cIterator &Src)const{
+		bool operator !=(const cIterator &Src)const noexcept(true){
 			return fIndex!=Src.fIndex;
 		}
 
-		const TObject &operator *()const{	return fSet->fPtrSet.GetItemAt(fIndex)->Object;	}
+		const TObject &operator *()const noexcept(true){	return fSet->fPtrSet.GetItemAt(fIndex)->Object;	}
 	};
-	cIterator begin(void){
+	cIterator begin(void)noexcept(true){
 		return cIterator{this,0};
 	}
-	cIterator end(void){
+	cIterator end(void)noexcept(true){
 		return cIterator{this,fPtrSet.GetCount()};
 	}
 protected:
@@ -103,16 +103,16 @@ protected:
 		TOrder Order;
 	
 		template<class TValue>
-		bool operator ==(TValue&& Value)const{	return Object==Value;	}
+		bool operator ==(TValue&& Value)const noexcept(true){	return Object==Value;	}
 		template<class TValue>
-		bool operator !=(TValue&& Value)const{	return Object!=Value;	}
+		bool operator !=(TValue&& Value)const noexcept(true){	return Object!=Value;	}
 
-		bool operator ==(const cOrderItem &Src)const{	return Order==Src.Order && Object==Src.Object;	}
-		bool operator !=(const cOrderItem &Src)const{	return Order!=Src.Order || Object!=Src.Object;	}
-		bool operator <(const cOrderItem &Src)const{	return Order!=Src.Order	? Order<Src.Order : Object<Src.Object;	}
-		bool operator <=(const cOrderItem &Src)const{	return Order!=Src.Order	? Order<Src.Order : Object<=Src.Object;	}
-		bool operator >(const cOrderItem &Src)const{	return Order!=Src.Order	? Order>Src.Order : Object>Src.Object;	}
-		bool operator >=(const cOrderItem &Src)const{	return Order!=Src.Order	? Order>Src.Order : Object>=Src.Object;	}
+		bool operator ==(const cOrderItem &Src)const noexcept(true){	return Order==Src.Order && Object==Src.Object;	}
+		bool operator !=(const cOrderItem &Src)const noexcept(true){	return Order!=Src.Order || Object!=Src.Object;	}
+		bool operator <(const cOrderItem &Src)const noexcept(true){	return Order!=Src.Order	? Order<Src.Order : Object<Src.Object;	}
+		bool operator <=(const cOrderItem &Src)const noexcept(true){	return Order!=Src.Order	? Order<Src.Order : Object<=Src.Object;	}
+		bool operator >(const cOrderItem &Src)const noexcept(true){	return Order!=Src.Order	? Order>Src.Order : Object>Src.Object;	}
+		bool operator >=(const cOrderItem &Src)const noexcept(true){	return Order!=Src.Order	? Order>Src.Order : Object>=Src.Object;	}
 	};
 	cSeqSet<cOrderItem> fPtrSet;
 	cSeqMap<TObject,TOrder> fPtrOrderMap;
@@ -122,13 +122,13 @@ template<class TObject,class TOrder>
 class cUIOrderedObjectSet
 {
 public:
-	cUIOrderedObjectSet(){}
-	~cUIOrderedObjectSet(){}
+	cUIOrderedObjectSet()noexcept(true){}
+	~cUIOrderedObjectSet()noexcept(true){}
 
-	uIntn GetCount(void)const{	return fSet.GetCount();	}
+	uIntn GetCount(void)const noexcept(true){	return fSet.GetCount();	}
 
 	template<class TValue>
-	bool Insert(TValue&& Object,TOrder Order){
+	bool Insert(TValue&& Object,TOrder Order)noexcept(true){
 		bool Exists;
 		auto Pair=fOrderMap.InsertPair(Object,Exists);
 		cSetItem OrderItem;
@@ -160,7 +160,7 @@ public:
 	}
 
 	template<class TValue>
-	bool Remove(TValue&& Object)
+	bool Remove(TValue&& Object)noexcept(true)
 	{
 		auto Pair=fOrderMap.GetPair(Object);
 		if(Pair==fOrderMap.end())
@@ -180,9 +180,9 @@ public:
 
 	struct cEnumIndex
 	{
-		cEnumIndex(const cUIOrderedObjectSet *Owner):Owner(Owner){	Owner->fPendingEnumeIndex.Insert(this);	}
-		cEnumIndex(const cEnumIndex &Src):Owner(Src.Owner),Index(Src.Index){	Owner->fPendingEnumeIndex.Insert(this);	}
-		~cEnumIndex(){	Owner->fPendingEnumeIndex.Remove(this);	}
+		cEnumIndex(const cUIOrderedObjectSet *Owner)noexcept(true):Owner(Owner){	Owner->fPendingEnumeIndex.Insert(this);	}
+		cEnumIndex(const cEnumIndex &Src)noexcept(true):Owner(Src.Owner),Index(Src.Index){	Owner->fPendingEnumeIndex.Insert(this);	}
+		~cEnumIndex()noexcept(true){	Owner->fPendingEnumeIndex.Remove(this);	}
 
 		cEnumIndex *Parent;
 		cEnumIndex *Child[2];
@@ -194,26 +194,26 @@ public:
 	class cEnumerator : protected cEnumIndex
 	{
 	public:
-		cEnumerator(const cUIOrderedObjectSet *Owner):cEnumIndex(Owner){}
-		cEnumerator(const cEnumerator &Src):cEnumIndex(Src){}
-		bool Enum(void){
+		cEnumerator(const cUIOrderedObjectSet *Owner)noexcept(true):cEnumIndex(Owner){}
+		cEnumerator(const cEnumerator &Src)noexcept(true):cEnumIndex(Src){}
+		bool Enum(void)noexcept(true){
 			this->Index=0;
 			return this->Owner->fSet.GetCount()!=0;
 		}
-		bool Next(void){
+		bool Next(void)noexcept(true){
 			this->Index++;
 			return this->Index<this->Owner->fSet.GetCount();
 		}
 
-		const TObject &Get()const{	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
+		const TObject &Get()const noexcept(true){	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
 	};
-	cEnumerator Enumerator(void)const{	return this;	}
+	cEnumerator Enumerator(void)const noexcept(true){	return this;	}
 	class cReverseEnumerator : protected cEnumIndex
 	{
 	public:
-		cReverseEnumerator(const cUIOrderedObjectSet *Owner):cEnumIndex(Owner){}
-		cReverseEnumerator(const cEnumerator &Src):cEnumIndex(Src){}
-		bool Enum(void){
+		cReverseEnumerator(const cUIOrderedObjectSet *Owner)noexcept(true):cEnumIndex(Owner){}
+		cReverseEnumerator(const cEnumerator &Src)noexcept(true):cEnumIndex(Src){}
+		bool Enum(void)noexcept(true){
 			this->Index=this->Owner->fSet.GetCount();
 			
 			if(this->Index==0)
@@ -221,35 +221,35 @@ public:
 			this->Index--;
 			return true;
 		}
-		bool Next(void){
+		bool Next(void)noexcept(true){
 			if(this->Index==0)
 				return false;
 			this->Index--;
 			return true;
 		}
 
-		const TObject &Get()const{	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
+		const TObject &Get()const noexcept(true){	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
 	};
-	cReverseEnumerator ReverseEnumerator(void)const{	return this;	}
+	cReverseEnumerator ReverseEnumerator(void)const noexcept(true){	return this;	}
 	class cIterator : protected cEnumIndex
 	{
 		friend cUIOrderedObjectSet; 
 	public:
-		cIterator(const cUIOrderedObjectSet *Owner,uIntn BeginIndex):cEnumIndex(Owner){	this->Index=BeginIndex;	}
-		cIterator(const cIterator &Src):cEnumIndex(Src){}
+		cIterator(const cUIOrderedObjectSet *Owner,uIntn BeginIndex)noexcept(true):cEnumIndex(Owner){	this->Index=BeginIndex;	}
+		cIterator(const cIterator &Src)noexcept(true):cEnumIndex(Src){}
 
-		void operator ++(){		this->Index++;		}
-		void operator ++(int){	this->Index++;		}
+		void operator ++()noexcept(true){		this->Index++;		}
+		void operator ++(int)noexcept(true){	this->Index++;		}
 
-		bool operator ==(const cIterator &Src)const{	return this->Index==Src.Index;	}
-		bool operator !=(const cIterator &Src)const{	return this->Index!=Src.Index;	}
+		bool operator ==(const cIterator &Src)const noexcept(true){	return this->Index==Src.Index;	}
+		bool operator !=(const cIterator &Src)const noexcept(true){	return this->Index!=Src.Index;	}
 
-		const TObject &operator *()const{	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
+		const TObject &operator *()const noexcept(true){	return this->Owner->fSet.GetItemAt(this->Index)->Object;	}
 	};
-	cIterator begin(void){
+	cIterator begin(void)noexcept(true){
 		return cIterator{this,0};
 	}
-	cIterator end(void){
+	cIterator end(void)noexcept(true){
 		return cIterator{this,fSet.GetCount()};
 	}
 protected:
@@ -259,28 +259,28 @@ protected:
 		TObject Object;
 		TOrder Order;
 	
-		typename cnVar::TDefaultCompareResult<TObject>::Type Compare(const cSetItem &Src)const{
+		typename cnVar::TDefaultCompareResult<TObject>::Type Compare(const cSetItem &Src)const noexcept(true){
 			auto CompareResult=cnVar::DefaultCompare(Order,Src.Order);
 			if(CompareResult!=0)
 				return CompareResult;
 
 			return cnVar::DefaultCompare(Object,Src.Object);
 		}
-		bool operator ==(const cSetItem &Src)const{	return Order==Src.Order && Object==Src.Object;	}
-		bool operator !=(const cSetItem &Src)const{	return Order!=Src.Order || Object!=Src.Object;	}
+		bool operator ==(const cSetItem &Src)const noexcept(true){	return Order==Src.Order && Object==Src.Object;	}
+		bool operator !=(const cSetItem &Src)const noexcept(true){	return Order!=Src.Order || Object!=Src.Object;	}
 
 		cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cSetItem &,Compare)
 	};
 	cSeqSet<cSetItem> fSet;
 
-	void FixEnumeratorInsert(uIntn InsertedIndex){
+	void FixEnumeratorInsert(uIntn InsertedIndex)noexcept(true){
 		for(auto EnumIndex : fPendingEnumeIndex){
 			if(EnumIndex->Index>=InsertedIndex){
 				EnumIndex->Index++;
 			}
 		}
 	}
-	void FixEnumeratorRemove(uIntn RemovedIndex){
+	void FixEnumeratorRemove(uIntn RemovedIndex)noexcept(true){
 		for(auto EnumIndex : fPendingEnumeIndex){
 			if(EnumIndex->Index>=RemovedIndex){
 				EnumIndex->Index--;
@@ -293,13 +293,13 @@ protected:
 class cUIStateHandlerSetNotifier
 {
 public:
-	cUIStateHandlerSetNotifier(const cUIOrderedObjectSet<iUIStateHandler*,sfInt16> &Set);
-	void UIStarted(void);
-	void UIShow(void);
-	void UIResume(void);
-	void UIPaused(void);
-	void UIHide(void);
-	void UIStopped(void);
+	cUIStateHandlerSetNotifier(const cUIOrderedObjectSet<iUIStateHandler*,sfInt16> &Set)noexcept(true);
+	void UIStarted(void)noexcept(true);
+	void UIShow(void)noexcept(true);
+	void UIResume(void)noexcept(true);
+	void UIPaused(void)noexcept(true);
+	void UIHide(void)noexcept(true);
+	void UIStopped(void)noexcept(true);
 private:
 	const cUIOrderedObjectSet<iUIStateHandler*,sfInt16> &fSet;
 };
@@ -307,14 +307,14 @@ private:
 class cUIWindowHandlerSetNotifier
 {
 public:
-	cUIWindowHandlerSetNotifier(const cUIOrderedObjectSet<iUIWindowHandler*,sfInt16> &Set);
-	void ScreenChanged(void);
-	void ParentChanged(void);
-	void ContentScaleChanged(void);
-	void RectangleChanged(bool Moved,bool Sized);
-	void ZPositionChanged(void);
-	void VisibleChanged(void);
-	void EnableChanged(void);
+	cUIWindowHandlerSetNotifier(const cUIOrderedObjectSet<iUIWindowHandler*,sfInt16> &Set)noexcept(true);
+	void ScreenChanged(void)noexcept(true);
+	void ParentChanged(void)noexcept(true);
+	void ContentScaleChanged(void)noexcept(true);
+	void RectangleChanged(bool Moved,bool Sized)noexcept(true);
+	void ZPositionChanged(void)noexcept(true);
+	void VisibleChanged(void)noexcept(true);
+	void EnableChanged(void)noexcept(true);
 private:
 	const cUIOrderedObjectSet<iUIWindowHandler*,sfInt16> &fSet;
 };
@@ -322,22 +322,22 @@ private:
 class cUIViewHandlerSetNotifier
 {
 public:
-	cUIViewHandlerSetNotifier(const cUIOrderedObjectSet<iUIViewHandler*,sfInt16> &Set);
-	void UILayout(void);
-	void UIMargin(cUIRectangle &Margin);
-	void WindowChanged(void);
-	void ParentChanged(void);
-	void ContentScaleChanged(void);
-	void RectangleChanged(bool Moved,bool Sized);
-	void ZPositionChanged(void);
-	void VisibleChanged(void);
-	void EnableChanged(void);
+	cUIViewHandlerSetNotifier(const cUIOrderedObjectSet<iUIViewHandler*,sfInt16> &Set)noexcept(true);
+	void UILayout(void)noexcept(true);
+	void UIMargin(cUIRectangle &Margin)noexcept(true);
+	void WindowChanged(void)noexcept(true);
+	void ParentChanged(void)noexcept(true);
+	void ContentScaleChanged(void)noexcept(true);
+	void RectangleChanged(bool Moved,bool Sized)noexcept(true);
+	void ZPositionChanged(void)noexcept(true);
+	void VisibleChanged(void)noexcept(true);
+	void EnableChanged(void)noexcept(true);
 private:
 	const cUIOrderedObjectSet<iUIViewHandler*,sfInt16> &fSet;
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline void UIStateNotifyChange(UIState PrevState,UIState NextState,T &Notifier)
+inline void UIStateNotifyChange(UIState PrevState,UIState NextState,T &Notifier)noexcept(true)
 {
 	// state action
 	switch(NextState){
@@ -410,33 +410,33 @@ class cUIKeyEventNotification
 {
 public:
 
-	bool InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order);
-	bool RemoveKeyHandler(iUIKeyHandler *Handler);
+	bool InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveKeyHandler(iUIKeyHandler *Handler)noexcept(true);
 
-	bool InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order);
-	bool RemoveKeyFilter(iUIKeyHandler *Filter);
+	bool InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order)noexcept(true);
+	bool RemoveKeyFilter(iUIKeyHandler *Filter)noexcept(true);
 
-	bool KeyAcquireExclusive(iUIKeyHandler *Handler);
-	void KeyReleaseExclusive(iUIKeyHandler *Handler);
+	bool KeyAcquireExclusive(iUIKeyHandler *Handler)noexcept(true);
+	void KeyReleaseExclusive(iUIKeyHandler *Handler)noexcept(true);
 
-	bool InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order);
-	bool RemoveTextInputHandler(iUITextInputHandler *Handler);
+	bool InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveTextInputHandler(iUITextInputHandler *Handler)noexcept(true);
 
 
-	void FocusEnterRange(iUIKeyEvent *KeyEvent);
-	void FocusLeaveRange(iUIKeyEvent *KeyEvent);
+	void FocusEnterRange(iUIKeyEvent *KeyEvent)noexcept(true);
+	void FocusLeaveRange(iUIKeyEvent *KeyEvent)noexcept(true);
 
-	void HandleFocusEnter(iUIKeyEvent *KeyEvent);
-	void HandleFocusLeave(iUIKeyEvent *KeyEvent);
-	void HandleKeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
-	void HandleKeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
-	void HandleKeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
+	void HandleFocusEnter(iUIKeyEvent *KeyEvent)noexcept(true);
+	void HandleFocusLeave(iUIKeyEvent *KeyEvent)noexcept(true);
+	void HandleKeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
+	void HandleKeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
+	void HandleKeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
 
-	void FilterFocusEnter(iUIKeyEvent *KeyEvent);
-	void FilterFocusLeave(iUIKeyEvent *KeyEvent);
-	void FilterKeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
-	void FilterKeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
-	void FilterKeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode);
+	void FilterFocusEnter(iUIKeyEvent *KeyEvent)noexcept(true);
+	void FilterFocusLeave(iUIKeyEvent *KeyEvent)noexcept(true);
+	void FilterKeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
+	void FilterKeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
+	void FilterKeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true);
 protected:
 
 	cUIOrderedObjectSet<iUIKeyHandler*,sfInt16> fKeyHandlers;
@@ -449,32 +449,32 @@ class cUIMouseEventNotification
 {
 public:
 
-	bool InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order);
-	bool RemoveMouseHandler(iUIMouseHandler *Handler);
+	bool InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveMouseHandler(iUIMouseHandler *Handler)noexcept(true);
 
-	bool InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order);
-	bool RemoveMouseFilter(iUIMouseHandler *Filter);
+	bool InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order)noexcept(true);
+	bool RemoveMouseFilter(iUIMouseHandler *Filter)noexcept(true);
 
-	bool MouseAcquireExclusive(iUIMouseHandler *Handler);
-	void MouseReleaseExclusive(iUIMouseHandler *Handler);
+	bool MouseAcquireExclusive(iUIMouseHandler *Handler)noexcept(true);
+	void MouseReleaseExclusive(iUIMouseHandler *Handler)noexcept(true);
 
 
-	void MouseEnterRange(iUIMouseEvent *MouseEvent);
-	void MouseLeaveRange(iUIMouseEvent *MouseEvent);
+	void MouseEnterRange(iUIMouseEvent *MouseEvent)noexcept(true);
+	void MouseLeaveRange(iUIMouseEvent *MouseEvent)noexcept(true);
 
-	void HandleEnter(iUIMouseEvent *MouseEvent);
-	void HandleLeave(iUIMouseEvent *MouseEvent);
-	void HandleMove(iUIMouseEvent *MouseEvent);
-	void HandleDown(iUIMouseEvent *MouseEvent,eMouseButton Button);
-	void HandleUp(iUIMouseEvent *MouseEvent,eMouseButton Button);
-	void HandleWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY);
+	void HandleEnter(iUIMouseEvent *MouseEvent)noexcept(true);
+	void HandleLeave(iUIMouseEvent *MouseEvent)noexcept(true);
+	void HandleMove(iUIMouseEvent *MouseEvent)noexcept(true);
+	void HandleDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true);
+	void HandleUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true);
+	void HandleWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept(true);
 
-	void FilterEnter(iUIMouseEvent *MouseEvent);
-	void FilterLeave(iUIMouseEvent *MouseEvent);
-	void FilterMove(iUIMouseEvent *MouseEvent);
-	void FilterDown(iUIMouseEvent *MouseEvent,eMouseButton Button);
-	void FilterUp(iUIMouseEvent *MouseEvent,eMouseButton Button);
-	void FilterWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY);
+	void FilterEnter(iUIMouseEvent *MouseEvent)noexcept(true);
+	void FilterLeave(iUIMouseEvent *MouseEvent)noexcept(true);
+	void FilterMove(iUIMouseEvent *MouseEvent)noexcept(true);
+	void FilterDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true);
+	void FilterUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true);
+	void FilterWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept(true);
 protected:
 
 	cUIOrderedObjectSet<iUIMouseHandler*,sfInt16> fMouseHandlers;
@@ -488,24 +488,24 @@ public:
 
 	// iUITouchControl
 
-	bool InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order);
-	bool RemoveTouchHandler(iUITouchHandler *Handler);
+	bool InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveTouchHandler(iUITouchHandler *Handler)noexcept(true);
 
-	bool InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order);
-	bool RemoveTouchFilter(iUITouchHandler *Filter);
+	bool InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order)noexcept(true);
+	bool RemoveTouchFilter(iUITouchHandler *Filter)noexcept(true);
 
-	bool TouchAcquireExclusive(iUITouchHandler *Handler);
-	void TouchReleaseExclusive(iUITouchHandler *Handler);
+	bool TouchAcquireExclusive(iUITouchHandler *Handler)noexcept(true);
+	void TouchReleaseExclusive(iUITouchHandler *Handler)noexcept(true);
 
-	void HandleBegin(iUITouchEvent *TouchEvent);
-	void HandleEnd(iUITouchEvent *TouchEvent);
-	void HandleLost(iUITouchEvent *TouchEvent);
-	void HandleMove(iUITouchEvent *TouchEvent);
+	void HandleBegin(iUITouchEvent *TouchEvent)noexcept(true);
+	void HandleEnd(iUITouchEvent *TouchEvent)noexcept(true);
+	void HandleLost(iUITouchEvent *TouchEvent)noexcept(true);
+	void HandleMove(iUITouchEvent *TouchEvent)noexcept(true);
 
-	void FilterBegin(iUITouchEvent *TouchEvent);
-	void FilterEnd(iUITouchEvent *TouchEvent);
-	void FilterLost(iUITouchEvent *TouchEvent);
-	void FilterMove(iUITouchEvent *TouchEvent);
+	void FilterBegin(iUITouchEvent *TouchEvent)noexcept(true);
+	void FilterEnd(iUITouchEvent *TouchEvent)noexcept(true);
+	void FilterLost(iUITouchEvent *TouchEvent)noexcept(true);
+	void FilterMove(iUITouchEvent *TouchEvent)noexcept(true);
 
 protected:
 	cUIOrderedObjectSet<iUITouchHandler*,sfInt16> fTouchHandlers;
@@ -517,24 +517,24 @@ class cUIViewEventNotification
 public:
 	// iUIView
 
-	bool InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order);
-	bool RemoveStateHandler(iUIStateHandler *Handler);
+	bool InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveStateHandler(iUIStateHandler *Handler)noexcept(true);
 
-	bool InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order);
-	bool RemoveViewHandler(iUIViewHandler *Handler);
+	bool InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order)noexcept(true);
+	bool RemoveViewHandler(iUIViewHandler *Handler)noexcept(true);
 
 
-	void StateChange(eUIState PrevState,eUIState NextState);
+	void StateChange(eUIState PrevState,eUIState NextState)noexcept(true);
 
-	void ContentScaleChanged(void);
-	void RectangleChanged(bool Moved,bool Sized);
-	void VisibleChanged(void);
-	void EnableChanged(void);
+	void ContentScaleChanged(void)noexcept(true);
+	void RectangleChanged(bool Moved,bool Sized)noexcept(true);
+	void VisibleChanged(void)noexcept(true);
+	void EnableChanged(void)noexcept(true);
 
-	void Layout(void);
-	cUIRectangle UIMargin(const cUIRectangle &Margin);
-	void WindowChanged(void);
-	void ParentChanged(void);
+	void Layout(void)noexcept(true);
+	cUIRectangle UIMargin(const cUIRectangle &Margin)noexcept(true);
+	void WindowChanged(void)noexcept(true);
+	void ParentChanged(void)noexcept(true);
 protected:
 
 	// event handlers

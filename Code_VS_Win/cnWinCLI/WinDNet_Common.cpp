@@ -8,7 +8,7 @@ using namespace cnWin;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void* iCLIObject::CastInterface(iTypeID IID)noexcept(true)
+void* iCLIObject::CastInterface(iTypeID IID)noexcept
 {
 	if(iCLIObject::tInterfaceID::Value==IID)
 		return this;
@@ -16,12 +16,12 @@ void* iCLIObject::CastInterface(iTypeID IID)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cnWin::rcRefProcedureCaller_RefProc(iReference *Reference)
+void cnWin::rcRefProcedureCaller_RefProc(iReference *Reference)noexcept
 {
 	rIncReference(Reference,'exec');
 }
 //---------------------------------------------------------------------------
-void cnWin::rcRefProcedureCaller_CallProc(iReference *Reference,iProcedure *Procedure)
+void cnWin::rcRefProcedureCaller_CallProc(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	Procedure->Execute();
 	rDecReference(Reference,'exec');

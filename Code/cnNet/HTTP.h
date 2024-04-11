@@ -26,66 +26,66 @@ struct URIPart
 	ufInt16 Path;
 	ufInt16 PathLen;
 };
-URIPart ParseURI(const char *URL,uIntn Length);
+URIPart ParseURI(const char *URL,uIntn Length)noexcept(true);
 //---------------------------------------------------------------------------
-bool ParseLine(uIntn &LineLength,const void *Buffer,uIntn BufferSize);
-uIntn ParseHeaderMessage(ufInt16 *Pos,ufInt16 *Len,uIntn PosCount,const char *Line,uIntn LineLength);
-bool ParseHeaderParameter(ufInt16 &NameLen,const char *Line,uIntn LineLength);
-void TrimLWS(ufInt16 &Pos,ufInt16 &Len,const char *Text,uIntn Length);
+bool ParseLine(uIntn &LineLength,const void *Buffer,uIntn BufferSize)noexcept(true);
+uIntn ParseHeaderMessage(ufInt16 *Pos,ufInt16 *Len,uIntn PosCount,const char *Line,uIntn LineLength)noexcept(true);
+bool ParseHeaderParameter(ufInt16 &NameLen,const char *Line,uIntn LineLength)noexcept(true);
+void TrimLWS(ufInt16 &Pos,ufInt16 &Len,const char *Text,uIntn Length)noexcept(true);
 //---------------------------------------------------------------------------
-void AppendDate(cStringBuffer<char> &DateString,const iTimepoint *Time);
+void AppendDate(cStringBuffer<char> &DateString,const iTimepoint *Time)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iClientProcessor
 {
 public:
-	virtual void HTTPRequestStart(cArray<const char> &Method,cArray<const char> &Path,cArray<const char> &Version)=0;
-	virtual bool HTTPRequestHeader(cArray<const char> &Name,cArray<const char> &Value)=0;
-	virtual uIntn HTTPRequestBody(void *Buffer,uIntn BufferSize)=0;
+	virtual void HTTPRequestStart(cArray<const char> &Method,cArray<const char> &Path,cArray<const char> &Version)noexcept(true)=0;
+	virtual bool HTTPRequestHeader(cArray<const char> &Name,cArray<const char> &Value)noexcept(true)=0;
+	virtual uIntn HTTPRequestBody(void *Buffer,uIntn BufferSize)noexcept(true)=0;
 	
-	virtual void HTTPResponseStatus(const char *Version,uIntn VersionLength,const char *Status,uIntn StatusLength,const char *StatusString,uIntn StatusStringLength)=0;
-	virtual void HTTPResponseHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)=0;
-	virtual void HTTPResponseHeaderFinish(uIntn &ExpectedBodySize)=0;
-	virtual uIntn HTTPResponseBody(const void *Buffer,uIntn Size)=0;
-	virtual void HTTPResponseBodyFinish(void)=0;
+	virtual void HTTPResponseStatus(const char *Version,uIntn VersionLength,const char *Status,uIntn StatusLength,const char *StatusString,uIntn StatusStringLength)noexcept(true)=0;
+	virtual void HTTPResponseHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)noexcept(true)=0;
+	virtual void HTTPResponseHeaderFinish(uIntn &ExpectedBodySize)noexcept(true)=0;
+	virtual uIntn HTTPResponseBody(const void *Buffer,uIntn Size)noexcept(true)=0;
+	virtual void HTTPResponseBodyFinish(void)noexcept(true)=0;
 
-	virtual void HTTPTerminated(void)=0;
+	virtual void HTTPTerminated(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iClientHost : public iReference
 {
 public:
-	virtual bool HTTPStart(iClientProcessor *ClientProcessor)=0;
-	virtual void HTTPTerminate(void)=0;
-	virtual void HTTPNotifySendRequest(void)=0;
-	virtual void HTTPCompleteRequest(void)=0;
-	virtual void HTTPNotifyReceiveResponse(void)=0;
+	virtual bool HTTPStart(iClientProcessor *ClientProcessor)noexcept(true)=0;
+	virtual void HTTPTerminate(void)noexcept(true)=0;
+	virtual void HTTPNotifySendRequest(void)noexcept(true)=0;
+	virtual void HTTPCompleteRequest(void)noexcept(true)=0;
+	virtual void HTTPNotifyReceiveResponse(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cClientSession : public cnRTL::cDualReference, public iReference, private iProtocolProcessor
 {
 public:
-	cClientSession();
-	~cClientSession();
+	cClientSession()noexcept(true);
+	~cClientSession()noexcept(true);
 	
-	bool SetProtocolHost(iProtocolProvider *Provider);
+	bool SetProtocolHost(iProtocolProvider *Provider)noexcept(true);
 
-	rPtr<iClientHost> CreateHost(void);
+	rPtr<iClientHost> CreateHost(void)noexcept(true);
 
 protected:
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 
 	class cClientHost : public iClientHost
 	{
 	public:
 		cClientHost *Next;
 
-		cClientHost(cClientSession *Session);
+		cClientHost(cClientSession *Session)noexcept(true);
 
-		virtual bool HTTPStart(iClientProcessor *ClientProcessor)override;
-		virtual void HTTPTerminate(void)override;
-		virtual void HTTPNotifySendRequest(void)override;
-		virtual void HTTPCompleteRequest(void)override;
-		virtual void HTTPNotifyReceiveResponse(void)override;
+		virtual bool HTTPStart(iClientProcessor *ClientProcessor)noexcept(true)override;
+		virtual void HTTPTerminate(void)noexcept(true)override;
+		virtual void HTTPNotifySendRequest(void)noexcept(true)override;
+		virtual void HTTPCompleteRequest(void)noexcept(true)override;
+		virtual void HTTPNotifyReceiveResponse(void)noexcept(true)override;
 
 		iClientProcessor *ClientProcessor=nullptr;
 
@@ -94,23 +94,23 @@ protected:
 		rPtr<cClientSession> fSession;
 	};
 
-	void MessageEnqueue(cClientHost *ClientHost);
-	void MessageTerminate(cClientHost *ClientHost);
-	void MessageNotifySendRequest(cClientHost *ClientHost);
-	void MessageCompleteRequest(cClientHost *ClientHost);
-	void MessageNotifyReceiveResponse(cClientHost *ClientHost);
+	void MessageEnqueue(cClientHost *ClientHost)noexcept(true);
+	void MessageTerminate(cClientHost *ClientHost)noexcept(true);
+	void MessageNotifySendRequest(cClientHost *ClientHost)noexcept(true);
+	void MessageCompleteRequest(cClientHost *ClientHost)noexcept(true);
+	void MessageNotifyReceiveResponse(cClientHost *ClientHost)noexcept(true);
 private:
 	rPtr<iProtocolProvider> fProtocolProvider;
 
-	virtual void ProtocolStarted(void)override;
-	virtual void ProtocolStopped(void)override;
-	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual void ProtocolInputEnd(void)override;
-	virtual void ProtocolOutputEnd(void)override;
+	virtual void ProtocolStarted(void)noexcept(true)override;
+	virtual void ProtocolStopped(void)noexcept(true)override;
+	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual void ProtocolInputEnd(void)noexcept(true)override;
+	virtual void ProtocolOutputEnd(void)noexcept(true)override;
 
 	cAtomicVar<uInt8> fHostChannelRefCount=0;
-	void HostChannelRelease(void);
+	void HostChannelRelease(void)noexcept(true);
 
 	ufInt8 fSessionStopState;
 
@@ -136,16 +136,16 @@ private:
 
 	cMemoryBuffer fSendBuffer;
 
-	bool PullHeader(void);
+	bool PullHeader(void)noexcept(true);
 
 	// response
 	uIntn fExpectedResponseBodySize;
 
-	const char* ParseResponseHeaderLine(uIntn &LineLength);
-	void ProcessReponseHeaderLine(const char *Line,uIntn LineSize);
+	const char* ParseResponseHeaderLine(uIntn &LineLength)noexcept(true);
+	void ProcessReponseHeaderLine(const char *Line,uIntn LineSize)noexcept(true);
 
-	void ProcessInputHeader(uIntn FirstLineLength);
-	void ProcessInputBody(void);
+	void ProcessInputHeader(uIntn FirstLineLength)noexcept(true);
+	void ProcessInputBody(void)noexcept(true);
 	
 	cnRTL::cMemoryBufferQueueReadBuffer fInputBufferReader;
 
@@ -154,38 +154,38 @@ private:
 class cnLib_INTERFACE iServerMessageHost
 {
 public:
-	virtual void HTTPTerminate(void)=0;
-	virtual void HTTPNotifyReceiveRequest(void)=0;
-	virtual void HTTPNotifySendResponse(void)=0;
-	virtual void HTTPCompleteResponse(void)=0;
+	virtual void HTTPTerminate(void)noexcept(true)=0;
+	virtual void HTTPNotifyReceiveRequest(void)noexcept(true)=0;
+	virtual void HTTPNotifySendResponse(void)noexcept(true)=0;
+	virtual void HTTPCompleteResponse(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iServerMessageProcessor
 {
 public:
-	virtual uIntn HTTPRequestBody(const void *Buffer,uIntn Size)=0;
-	virtual void HTTPRequestBodyFinish(void)=0;
+	virtual uIntn HTTPRequestBody(const void *Buffer,uIntn Size)noexcept(true)=0;
+	virtual void HTTPRequestBodyFinish(void)noexcept(true)=0;
 
-	virtual void HTTPResponseStatus(cArray<const char> &Version,cArray<const char> &Status,cArray<const char> &StatusString)=0;
-	virtual bool HTTPResponseHeader(cArray<const char> &Name,cArray<const char> &Value)=0;
-	virtual uIntn HTTPResponseBody(void *Buffer,uIntn Size)=0;
-	virtual void HTTPResponseFinish(void)=0;
-	virtual void HTTPTerminated(void)=0;
+	virtual void HTTPResponseStatus(cArray<const char> &Version,cArray<const char> &Status,cArray<const char> &StatusString)noexcept(true)=0;
+	virtual bool HTTPResponseHeader(cArray<const char> &Name,cArray<const char> &Value)noexcept(true)=0;
+	virtual uIntn HTTPResponseBody(void *Buffer,uIntn Size)noexcept(true)=0;
+	virtual void HTTPResponseFinish(void)noexcept(true)=0;
+	virtual void HTTPTerminated(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cServerSession : public iReference, private iProtocolProcessor
 {
 public:
-	cServerSession();
-	~cServerSession();
+	cServerSession()noexcept(true);
+	~cServerSession()noexcept(true);
 
-	bool Start(iProtocolProvider *Provider);
-	void Stop(void);
+	bool Start(iProtocolProvider *Provider)noexcept(true);
+	void Stop(void)noexcept(true);
 
 protected:
-	virtual void HTTPRequestStart(const char *Method,uIntn MethodLength,const char *Path,uIntn PathLength,const char *Version,uIntn VersionLength)=0;
-	virtual void HTTPRequestHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)=0;
-	virtual iServerMessageProcessor* HTTPRequestHeaderFinish(iServerMessageHost *Host,uIntn &ExpectedRequestBodySize)=0;
+	virtual void HTTPRequestStart(const char *Method,uIntn MethodLength,const char *Path,uIntn PathLength,const char *Version,uIntn VersionLength)noexcept(true)=0;
+	virtual void HTTPRequestHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)noexcept(true)=0;
+	virtual iServerMessageProcessor* HTTPRequestHeaderFinish(iServerMessageHost *Host,uIntn &ExpectedRequestBodySize)noexcept(true)=0;
 
 private:
 
@@ -194,12 +194,12 @@ private:
 	public:
 		cMessage *Next;
 
-		cMessage(cServerSession *Session);
+		cMessage(cServerSession *Session)noexcept(true);
 
-		virtual void HTTPTerminate(void)override;
-		virtual void HTTPNotifyReceiveRequest(void)override;
-		virtual void HTTPNotifySendResponse(void)override;
-		virtual void HTTPCompleteResponse(void)override;
+		virtual void HTTPTerminate(void)noexcept(true)override;
+		virtual void HTTPNotifyReceiveRequest(void)noexcept(true)override;
+		virtual void HTTPNotifySendResponse(void)noexcept(true)override;
+		virtual void HTTPCompleteResponse(void)noexcept(true)override;
 
 		iServerMessageProcessor *Processor=nullptr;
 
@@ -208,22 +208,22 @@ private:
 		rPtr<cServerSession> fSession;
 	};
 
-	void MessageTerminate(cMessage *Message);
-	void MessageNotifyReceiveRequest(cMessage *Message);
-	void MessageNotifySendResponse(cMessage *Message);
-	void MessageCompleteResponse(cMessage *Message);
+	void MessageTerminate(cMessage *Message)noexcept(true);
+	void MessageNotifyReceiveRequest(cMessage *Message)noexcept(true);
+	void MessageNotifySendResponse(cMessage *Message)noexcept(true);
+	void MessageCompleteResponse(cMessage *Message)noexcept(true);
 private:
 	rPtr<iProtocolProvider> fProtocolPovider;
 
-	virtual void ProtocolStarted(void)override;
-	virtual void ProtocolStopped(void)override;
-	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)override;
-	virtual void ProtocolInputEnd(void)override;
-	virtual void ProtocolOutputEnd(void)override;
+	virtual void ProtocolStarted(void)noexcept(true)override;
+	virtual void ProtocolStopped(void)noexcept(true)override;
+	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize,uIntn &LeastSizeNeeded)noexcept(true)override;
+	virtual void ProtocolInputEnd(void)noexcept(true)override;
+	virtual void ProtocolOutputEnd(void)noexcept(true)override;
 
 	cAtomicVar<uInt8> fHostChannelRefCount=0;
-	void HostChannelRelease(void);
+	void HostChannelRelease(void)noexcept(true);
 
 	ufInt8 fSessionStopState;
 
@@ -247,11 +247,11 @@ private:
 
 	uIntn fExpectedRequestBodySize;
 
-	const char* ParseRequestHeaderLine(uIntn &LineLength);
-	void ProcessRequestHeaderLine(const char *Line,uIntn LineSize);
+	const char* ParseRequestHeaderLine(uIntn &LineLength)noexcept(true);
+	void ProcessRequestHeaderLine(const char *Line,uIntn LineSize)noexcept(true);
 
-	void ProcessInputHeader(uIntn FirstLineLength);
-	void ProcessInputBody(void);
+	void ProcessInputHeader(uIntn FirstLineLength)noexcept(true);
+	void ProcessInputBody(void)noexcept(true);
 
 	// response
 
@@ -261,10 +261,11 @@ private:
 
 	cMemoryBuffer fSendBuffer;
 
-	bool PullHeader(void);
+	bool PullHeader(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,ClientQueryState)
+{
 	Idle,
 	Connecting,
 	Requesting,
@@ -273,34 +274,34 @@ cnLib_ENUM_BEGIN(ufInt8,ClientQueryState)
 	ReceiveHeader,
 	ReceiveBody,
 	Done
-cnLib_ENUM_END(ClientQueryState);
+}cnLib_ENUM_END(ClientQueryState);
 //---------------------------------------------------------------------------
 class cClientQuery : private iClientProcessor
 {
 public:
-	cClientQuery();
-	~cClientQuery();
+	cClientQuery()noexcept(true);
+	~cClientQuery()noexcept(true);
 	
 
-	bool Start(iReference *Reference,iClientHost *ClientHost);
-	bool Finish(void);
+	bool Start(iReference *Reference,iClientHost *ClientHost)noexcept(true);
+	bool Finish(void)noexcept(true);
 
-	eClientQueryState GetState(void);
+	eClientQueryState GetState(void)noexcept(true);
 
-	const cString<char>& GetHost(void);
+	const cString<char>& GetHost(void)noexcept(true);
 
-	bool SetURL(const char *URL);
-	void SetMethod(cString<char> Method);
-	void SetHeader(cString<char> Name,cString<char> Value);
-	void SetRequestInput(iReadBuffer<void> *ReadBuffer);
-	void SetResponseOutput(iWriteBuffer<void> *WriteBuffer);
+	bool SetURL(const char *URL)noexcept(true);
+	void SetMethod(cString<char> Method)noexcept(true);
+	void SetHeader(cString<char> Name,cString<char> Value)noexcept(true);
+	void SetRequestInput(iReadBuffer<void> *ReadBuffer)noexcept(true);
+	void SetResponseOutput(iWriteBuffer<void> *WriteBuffer)noexcept(true);
 
-	int GetResponseStatus(void);
-	const cString<char>& GetResponseStatusString(void);
+	int GetResponseStatus(void)noexcept(true);
+	const cString<char>& GetResponseStatusString(void)noexcept(true);
 
-	cnRTL::cFunction<void (const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)> OnResponseHeader;
-	cnRTL::cFunction<void (void)> OnStateChange;
-	cnRTL::cFunction<void (void)> OnCompleted;
+	cnRTL::cFunction<void (const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)noexcept(true)> OnResponseHeader;
+	cnRTL::cFunction<void (void)noexcept(true)> OnStateChange;
+	cnRTL::cFunction<void (void)noexcept(true)> OnCompleted;
 	
 protected:
 private:
@@ -308,8 +309,8 @@ private:
 	rPtr<iReference> fHostReference;
 	eClientQueryState fState;
 
-	void CallEvent(cnRTL::cFunction<void (void)> &Event);
-	void SetState(eClientQueryState State);
+	void CallEvent(cnRTL::cFunction<void (void)noexcept(true)> &Event)noexcept(true);
+	void SetState(eClientQueryState State)noexcept(true);
 
 	cString<char> fHost;
 	cString<char> fPath;
@@ -325,15 +326,15 @@ private:
 	int fResponseStatus;
 	cString<char> fResponseStatusString;
 
-	virtual void HTTPRequestStart(cArray<const char> &Method,cArray<const char> &Path,cArray<const char> &Version)override;
-	virtual bool HTTPRequestHeader(cArray<const char> &Name,cArray<const char> &Value)override;
-	virtual uIntn HTTPRequestBody(void *Buffer,uIntn BufferSize)override;
-	virtual void HTTPResponseStatus(const char *Version,uIntn VersionLength,const char *Status,uIntn StatusLength,const char *StatusString,uIntn StatusStringLength)override;
-	virtual void HTTPResponseHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)override;
-	virtual void HTTPResponseHeaderFinish(uIntn &ExpectedBodySize)override;
-	virtual uIntn HTTPResponseBody(const void *Buffer,uIntn Size)override;
-	virtual void HTTPResponseBodyFinish(void)override;
-	virtual void HTTPTerminated(void)override;
+	virtual void HTTPRequestStart(cArray<const char> &Method,cArray<const char> &Path,cArray<const char> &Version)noexcept(true)override;
+	virtual bool HTTPRequestHeader(cArray<const char> &Name,cArray<const char> &Value)noexcept(true)override;
+	virtual uIntn HTTPRequestBody(void *Buffer,uIntn BufferSize)noexcept(true)override;
+	virtual void HTTPResponseStatus(const char *Version,uIntn VersionLength,const char *Status,uIntn StatusLength,const char *StatusString,uIntn StatusStringLength)noexcept(true)override;
+	virtual void HTTPResponseHeader(const char *Name,uIntn NameLength,const char *Value,uIntn ValueLength)noexcept(true)override;
+	virtual void HTTPResponseHeaderFinish(uIntn &ExpectedBodySize)noexcept(true)override;
+	virtual uIntn HTTPResponseBody(const void *Buffer,uIntn Size)noexcept(true)override;
+	virtual void HTTPResponseBodyFinish(void)noexcept(true)override;
+	virtual void HTTPTerminated(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 }	// namespace HTTP

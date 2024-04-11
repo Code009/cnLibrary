@@ -5,7 +5,7 @@ using namespace cnUI;
 
 static constexpr int HIMETRIC_INCH=2540;	// HIMETRIC units per inch
 //---------------------------------------------------------------------------
-SIZE cnUI::OLE_DPtoHIMETRIC(HDC DC,const SIZE &Size)
+SIZE cnUI::OLE_DPtoHIMETRIC(HDC DC,const SIZE &Size)noexcept
 {
 	int cxPerInch, cyPerInch;
 	cxPerInch=::GetDeviceCaps(DC,LOGPIXELSX);
@@ -16,7 +16,7 @@ SIZE cnUI::OLE_DPtoHIMETRIC(HDC DC,const SIZE &Size)
 	RetSize.cy=MulDiv(Size.cy, HIMETRIC_INCH, cyPerInch);
 	return RetSize;
 }
-SIZE cnUI::OLE_HIMETRICtoDP(HDC DC,const SIZE &Size)
+SIZE cnUI::OLE_HIMETRICtoDP(HDC DC,const SIZE &Size)noexcept
 {
 	int cxPerInch, cyPerInch;
 	cxPerInch=::GetDeviceCaps(DC,LOGPIXELSX);
@@ -28,7 +28,7 @@ SIZE cnUI::OLE_HIMETRICtoDP(HDC DC,const SIZE &Size)
 	return RetSize;
 }
 //---------------------------------------------------------------------------
-RECT cnUI::OLE_DPtoHIMETRIC(HDC DC,const RECT &Rect)
+RECT cnUI::OLE_DPtoHIMETRIC(HDC DC,const RECT &Rect)noexcept
 {
 	int cxPerInch, cyPerInch;
 	cxPerInch=::GetDeviceCaps(DC,LOGPIXELSX);
@@ -41,7 +41,7 @@ RECT cnUI::OLE_DPtoHIMETRIC(HDC DC,const RECT &Rect)
 	RetRect.bottom=MulDiv(Rect.bottom, HIMETRIC_INCH, cyPerInch);
 	return RetRect;
 }
-RECT cnUI::OLE_HIMETRICtoDP(HDC DC,const RECT &Rect)
+RECT cnUI::OLE_HIMETRICtoDP(HDC DC,const RECT &Rect)noexcept
 {
 	int cxPerInch, cyPerInch;
 	cxPerInch=::GetDeviceCaps(DC,LOGPIXELSX);
@@ -56,31 +56,31 @@ RECT cnUI::OLE_HIMETRICtoDP(HDC DC,const RECT &Rect)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEInPlaceUIForm::cOLEInPlaceUIForm()
+cOLEInPlaceUIForm::cOLEInPlaceUIForm()noexcept
 {
 	fHostWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceUIForm::~cOLEInPlaceUIForm()
+cOLEInPlaceUIForm::~cOLEInPlaceUIForm()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceUIForm::UIStarted(void)
+void cOLEInPlaceUIForm::UIStarted(void)noexcept
 {
 	fHostWindowHandle=GetWindowHandleFromUIView(fView);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceUIForm::UIStopped(void)
+void cOLEInPlaceUIForm::UIStopped(void)noexcept
 {
 	fHostWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-HWND cOLEInPlaceUIForm::GetWindowHandle(void)
+HWND cOLEInPlaceUIForm::GetWindowHandle(void)noexcept
 {
 	return fHostWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceUIForm::GetToolRect(RECT &Rect)
+bool cOLEInPlaceUIForm::GetToolRect(RECT &Rect)noexcept
 {
 	if(fView==nullptr)
 		return false;
@@ -95,7 +95,7 @@ bool cOLEInPlaceUIForm::GetToolRect(RECT &Rect)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceUIForm::CheckToolSpace(const BORDERWIDTHS &Space)
+bool cOLEInPlaceUIForm::CheckToolSpace(const BORDERWIDTHS &Space)noexcept
 {
 	if(fView==nullptr)
 		return false;
@@ -110,7 +110,7 @@ bool cOLEInPlaceUIForm::CheckToolSpace(const BORDERWIDTHS &Space)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceUIForm::RestoreToolSpace(void)
+void cOLEInPlaceUIForm::RestoreToolSpace(void)noexcept
 {
 	fSpaceLeft=0;
 	fSpaceTop=0;
@@ -122,7 +122,7 @@ void cOLEInPlaceUIForm::RestoreToolSpace(void)
 
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceUIForm::SetToolSpace(const BORDERWIDTHS &Space)
+bool cOLEInPlaceUIForm::SetToolSpace(const BORDERWIDTHS &Space)noexcept
 {
 	if(fView==nullptr)
 		return false;
@@ -144,7 +144,7 @@ bool cOLEInPlaceUIForm::SetToolSpace(const BORDERWIDTHS &Space)
 	return true;
 }
 //---------------------------------------------------------------------------
-cLayout cOLEInPlaceUIForm::GetClientLayout(void)
+cLayout cOLEInPlaceUIForm::GetClientLayout(void)noexcept
 {
 	auto ViewSize=fView->GetSize();
 	cUIPoint Size;
@@ -156,20 +156,20 @@ cLayout cOLEInPlaceUIForm::GetClientLayout(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOleInPlaceUIWindowComponent::cOleInPlaceUIWindowComponent()
+cOleInPlaceUIWindowComponent::cOleInPlaceUIWindowComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cOleInPlaceUIWindowComponent::~cOleInPlaceUIWindowComponent()
+cOleInPlaceUIWindowComponent::~cOleInPlaceUIWindowComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOleInPlaceUIWindowComponent::COMUnknown(void)
+IUnknown* cOleInPlaceUIWindowComponent::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool cOleInPlaceUIWindowComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOleInPlaceUIWindowComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleWindow){
 		*ppvObject=static_cast<IOleWindow*>(this);
@@ -183,7 +183,7 @@ bool cOleInPlaceUIWindowComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ vo
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::GetWindow( 
-    /* [out] */ __RPC__deref_out_opt HWND *phwnd)
+    /* [out] */ __RPC__deref_out_opt HWND *phwnd)noexcept
 {
 // Retrieves a handle to one of the windows participating in in-place activation (frame, document, parent, or in-place object window).
 	if(ToolForm==nullptr){
@@ -195,7 +195,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::GetWindow(
 }
 //---------------------------------------------------------------------------      
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::ContextSensitiveHelp(
-    /* [in] */ BOOL fEnterMode)
+    /* [in] */ BOOL fEnterMode)noexcept
 {fEnterMode;
 // Determines whether context-sensitive help mode should be entered during an in-place activation session.
 // optional
@@ -203,7 +203,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::ContextSensitiveHelp(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::GetBorder(
-    /* [out] */ __RPC__out LPRECT lprectBorder)
+    /* [out] */ __RPC__out LPRECT lprectBorder)noexcept
 {
 // Retrieves the outer rectange for toolbars and controls while the object is active in place.
 // optional : Necessary for containers with toolbar UI 
@@ -217,7 +217,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::GetBorder(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::RequestBorderSpace(
-    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)
+    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)noexcept
 {
 // Determines whether there is space available for tools to be installed around the object's window frame while the object is active in place.
 // optional : Necessary for containers with toolbar UI 
@@ -230,7 +230,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::RequestBorderSpace(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::SetBorderSpace(
-    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)
+    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)noexcept
 {
 // Allocates space for the border requested in the call to IOleInPlaceUIWindow::RequestBorderSpace.
 // optional : Necessary for containers with toolbar UI 
@@ -250,7 +250,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::SetBorderSpace(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::SetActiveObject(
     /* [unique][in] */ __RPC__in_opt IOleInPlaceActiveObject *pActiveObject,
-    /* [unique][string][in] */ __RPC__in_opt_string LPCOLESTR pszObjName)
+    /* [unique][string][in] */ __RPC__in_opt_string LPCOLESTR pszObjName)noexcept
 {
 // Provides a direct channel of communication between the object and each of the frame and document windows.
 // optional
@@ -258,20 +258,20 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::SetActiveObject(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOleInPlaceFrameComponent::cOleInPlaceFrameComponent()
+cOleInPlaceFrameComponent::cOleInPlaceFrameComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cOleInPlaceFrameComponent::~cOleInPlaceFrameComponent()
+cOleInPlaceFrameComponent::~cOleInPlaceFrameComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOleInPlaceFrameComponent::COMUnknown(void)
+IUnknown* cOleInPlaceFrameComponent::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool cOleInPlaceFrameComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOleInPlaceFrameComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleWindow){
 		*ppvObject=static_cast<IOleWindow*>(this);
@@ -289,7 +289,7 @@ bool cOleInPlaceFrameComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void 
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::GetWindow( 
-    /* [out] */ __RPC__deref_out_opt HWND *phwnd)
+    /* [out] */ __RPC__deref_out_opt HWND *phwnd)noexcept
 {
 // Retrieves a handle to one of the windows participating in in-place activation (frame, document, parent, or in-place object window).
 	if(ToolForm==nullptr){
@@ -301,7 +301,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::GetWindow(
 }
 //---------------------------------------------------------------------------      
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::ContextSensitiveHelp(
-    /* [in] */ BOOL fEnterMode)
+    /* [in] */ BOOL fEnterMode)noexcept
 {
 // Determines whether context-sensitive help mode should be entered during an in-place activation session.
 // optional
@@ -309,7 +309,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::ContextSensitiveHelp(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::GetBorder(
-    /* [out] */ __RPC__out LPRECT lprectBorder)
+    /* [out] */ __RPC__out LPRECT lprectBorder)noexcept
 {
 // Retrieves the outer rectange for toolbars and controls while the object is active in place.
 // optional : Necessary for containers with toolbar UI 
@@ -323,7 +323,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::GetBorder(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::RequestBorderSpace(
-    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)
+    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)noexcept
 {
 // Determines whether there is space available for tools to be installed around the object's window frame while the object is active in place.
 // optional : Necessary for containers with toolbar UI 
@@ -336,7 +336,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::RequestBorderSpace(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetBorderSpace(
-    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)
+    /* [unique][in] */ __RPC__in_opt LPCBORDERWIDTHS pborderwidths)noexcept
 {
 // Allocates space for the border requested in the call to IOleInPlaceUIWindow::RequestBorderSpace.
 // optional : Necessary for containers with toolbar UI 
@@ -356,7 +356,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetBorderSpace(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetActiveObject(
     /* [unique][in] */ __RPC__in_opt IOleInPlaceActiveObject *pActiveObject,
-    /* [unique][string][in] */ __RPC__in_opt_string LPCOLESTR pszObjName)
+    /* [unique][string][in] */ __RPC__in_opt_string LPCOLESTR pszObjName)noexcept
 {
 // Provides a direct channel of communication between the object and each of the frame and document windows.
 // optional
@@ -365,7 +365,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetActiveObject(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::InsertMenus( 
     /* [in] */ __RPC__in HMENU hmenuShared,
-    /* [out][in] */ __RPC__inout LPOLEMENUGROUPWIDTHS lpMenuWidths)
+    /* [out][in] */ __RPC__inout LPOLEMENUGROUPWIDTHS lpMenuWidths)noexcept
 {
 // Enables the container to insert menu groups into the composite menu to be used during the in-place session.
 // optional : Necessary for containers with menu UI
@@ -375,7 +375,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::InsertMenus(
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetMenu( 
     /* [in] */ __RPC__in HMENU hmenuShared,
     /* [in] */ __RPC__in HOLEMENU holemenu,
-    /* [in] */ __RPC__in HWND hwndActiveObject)
+    /* [in] */ __RPC__in HWND hwndActiveObject)noexcept
 {
 // Adds a composite menu to the window frame containing the object being activated in place.
 // optional : Necessary for containers with menu UI 
@@ -384,7 +384,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetMenu(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::RemoveMenus( 
-    /* [in] */ __RPC__in HMENU hmenuShared)
+    /* [in] */ __RPC__in HMENU hmenuShared)noexcept
 {
 // Removes a container's menu elements from the composite menu.
 // optional : Necessary for containers with menu UI 
@@ -393,7 +393,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::RemoveMenus(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetStatusText( 
-    /* [unique][in] */ __RPC__in_opt LPCOLESTR pszStatusText)
+    /* [unique][in] */ __RPC__in_opt LPCOLESTR pszStatusText)noexcept
 {
 // Sets and displays status text about the in-place object in the container's frame window status line.
 // optional : Necessary only for containers that have a status line
@@ -401,7 +401,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::SetStatusText(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::EnableModeless( 
-    /* [in] */ BOOL fEnable)
+    /* [in] */ BOOL fEnable)noexcept
 {
 // Enables or disables a frame's modeless dialog boxes.
 // optional
@@ -410,7 +410,7 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::EnableModeless(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::TranslateAccelerator( 
     /* [in] */ __RPC__in LPMSG lpmsg,
-    /* [in] */ WORD wID)
+    /* [in] */ WORD wID)noexcept
 {
 // Translates accelerator keystrokes intended for the container's frame while an object is active in place.
 // optional
@@ -418,12 +418,12 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::TranslateAccelerator(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMOleClientSite::COMUnknown(void)
+IUnknown* bCOMOleClientSite::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool bCOMOleClientSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool bCOMOleClientSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleClientSite){
 		*ppvObject=static_cast<IOleClientSite*>(this);
@@ -432,7 +432,7 @@ bool bCOMOleClientSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FA
 	return false;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE bCOMOleClientSite::SaveObject(void)
+HRESULT STDMETHODCALLTYPE bCOMOleClientSite::SaveObject(void)noexcept
 {
 	return S_OK;
 }
@@ -440,7 +440,7 @@ HRESULT STDMETHODCALLTYPE bCOMOleClientSite::SaveObject(void)
 HRESULT STDMETHODCALLTYPE bCOMOleClientSite::GetMoniker( 
     /* [in] */ DWORD dwAssign,
     /* [in] */ DWORD dwWhichMoniker,
-    /* [out] */ __RPC__deref_out_opt IMoniker **ppmk)
+    /* [out] */ __RPC__deref_out_opt IMoniker **ppmk)noexcept
 {
 	if(ppmk==nullptr){
 		return E_POINTER;
@@ -450,35 +450,35 @@ HRESULT STDMETHODCALLTYPE bCOMOleClientSite::GetMoniker(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleClientSite::GetContainer( 
-    /* [out] */ __RPC__deref_out_opt IOleContainer **ppContainer)
+    /* [out] */ __RPC__deref_out_opt IOleContainer **ppContainer)noexcept
 {
 	*ppContainer=nullptr;
 	return E_NOINTERFACE;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE bCOMOleClientSite::ShowObject(void)
+HRESULT STDMETHODCALLTYPE bCOMOleClientSite::ShowObject(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleClientSite::OnShowWindow( 
-    /* [in] */ BOOL fShow)
+    /* [in] */ BOOL fShow)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE bCOMOleClientSite::RequestNewObjectLayout(void)
+HRESULT STDMETHODCALLTYPE bCOMOleClientSite::RequestNewObjectLayout(void)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMAdviseSink::COMUnknown(void)
+IUnknown* bCOMAdviseSink::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool bCOMAdviseSink::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool bCOMAdviseSink::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IAdviseSink){
 		*ppvObject=static_cast<IAdviseSink*>(this);
@@ -491,37 +491,37 @@ void STDMETHODCALLTYPE bCOMAdviseSink::OnDataChange(
     /* [annotation][unique][in] */ 
     _In_  FORMATETC *pFormatetc,
     /* [annotation][unique][in] */ 
-    _In_  STGMEDIUM *pStgmed)
+    _In_  STGMEDIUM *pStgmed)noexcept
 {
 }
 //---------------------------------------------------------------------------
 void STDMETHODCALLTYPE bCOMAdviseSink::OnViewChange( 
     /* [in] */ DWORD dwAspect,
-	/* [in] */ LONG lindex)
+	/* [in] */ LONG lindex)noexcept
 {
 }
 //---------------------------------------------------------------------------
 void STDMETHODCALLTYPE bCOMAdviseSink::OnRename( 
     /* [annotation][in] */ 
-	_In_  IMoniker *pmk)
+	_In_  IMoniker *pmk)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void STDMETHODCALLTYPE bCOMAdviseSink::OnSave(void)
+void STDMETHODCALLTYPE bCOMAdviseSink::OnSave(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void STDMETHODCALLTYPE bCOMAdviseSink::OnClose(void)
+void STDMETHODCALLTYPE bCOMAdviseSink::OnClose(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMOleControlSite::COMUnknown(void)
+IUnknown* bCOMOleControlSite::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool bCOMOleControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool bCOMOleControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleControlSite){
 		*ppvObject=static_cast<IOleControlSite*>(this);
@@ -530,19 +530,19 @@ bool bCOMOleControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_F
 	return false;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE bCOMOleControlSite::OnControlInfoChanged(void)
+HRESULT STDMETHODCALLTYPE bCOMOleControlSite::OnControlInfoChanged(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::LockInPlaceActive(
-	/* [in] */ BOOL fLock)
+	/* [in] */ BOOL fLock)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::GetExtendedControl(
-    /* [out] */ __RPC__deref_out_opt IDispatch **ppDisp)
+    /* [out] */ __RPC__deref_out_opt IDispatch **ppDisp)noexcept
 {
 	return E_NOTIMPL;
 }
@@ -550,7 +550,7 @@ HRESULT STDMETHODCALLTYPE bCOMOleControlSite::GetExtendedControl(
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::TransformCoords(
     /* [out][in] */ __RPC__inout POINTL *pPtlHimetric,
     /* [out][in] */ __RPC__inout POINTF *pPtfContainer,
-    /* [in] */ DWORD dwFlags)
+    /* [in] */ DWORD dwFlags)noexcept
 {
 	HRESULT hr = S_OK;
 
@@ -610,29 +610,29 @@ HRESULT STDMETHODCALLTYPE bCOMOleControlSite::TransformCoords(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::TranslateAccelerator(
     /* [in] */ __RPC__in MSG *pMsg,
-    /* [in] */ DWORD grfModifiers)
+    /* [in] */ DWORD grfModifiers)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::OnFocus(
-    /* [in] */ BOOL fGotFocus)
+    /* [in] */ BOOL fGotFocus)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE bCOMOleControlSite::ShowPropertyFrame(void)
+HRESULT STDMETHODCALLTYPE bCOMOleControlSite::ShowPropertyFrame(void)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMDispatch::COMUnknown(void)
+IUnknown* bCOMDispatch::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool bCOMDispatch::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool bCOMDispatch::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IDispatch){
 		*ppvObject=static_cast<IDispatch*>(this);
@@ -642,7 +642,7 @@ bool bCOMDispatch::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMDispatch::GetTypeInfoCount( 
-    /* [out] */ __RPC__out UINT *pctinfo)
+    /* [out] */ __RPC__out UINT *pctinfo)noexcept
 {
 	*pctinfo=0;
 	return S_OK;
@@ -651,7 +651,7 @@ HRESULT STDMETHODCALLTYPE bCOMDispatch::GetTypeInfoCount(
 HRESULT STDMETHODCALLTYPE bCOMDispatch::GetTypeInfo( 
     /* [in] */ UINT iTInfo,
     /* [in] */ LCID lcid,
-    /* [out] */ __RPC__deref_out_opt ITypeInfo **ppTInfo)
+    /* [out] */ __RPC__deref_out_opt ITypeInfo **ppTInfo)noexcept
 {
 	return E_NOTIMPL;
 }
@@ -661,7 +661,7 @@ HRESULT STDMETHODCALLTYPE bCOMDispatch::GetIDsOfNames(
     /* [size_is][in] */ __RPC__in_ecount_full(cNames) LPOLESTR *rgszNames,
     /* [range][in] */ __RPC__in_range(0,16384) UINT cNames,
     /* [in] */ LCID lcid,
-    /* [size_is][out] */ __RPC__out_ecount_full(cNames) DISPID *rgDispId)
+    /* [size_is][out] */ __RPC__out_ecount_full(cNames) DISPID *rgDispId)noexcept
 {
 	return DISP_E_UNKNOWNNAME;
 }
@@ -682,26 +682,26 @@ HRESULT STDMETHODCALLTYPE bCOMDispatch::Invoke(
     /* [annotation][out] */ 
     _Out_opt_  EXCEPINFO *pExcepInfo,
     /* [annotation][out] */ 
-    _Out_opt_  UINT *puArgErr)
+    _Out_opt_  UINT *puArgErr)noexcept
 {
 	return DISP_E_MEMBERNOTFOUND;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEInPlaceSite::cOLEInPlaceSite()
+cOLEInPlaceSite::cOLEInPlaceSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceSite::~cOLEInPlaceSite()
+cOLEInPlaceSite::~cOLEInPlaceSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOLEInPlaceSite::COMUnknown(void)
+IUnknown* cOLEInPlaceSite::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOLEInPlaceSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleWindow){
 		*ppvObject=static_cast<IOleWindow*>(this);
@@ -715,7 +715,7 @@ bool cOLEInPlaceSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR 
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::GetWindow(
-    /* [out] */ __RPC__deref_out_opt HWND *phwnd)
+    /* [out] */ __RPC__deref_out_opt HWND *phwnd)noexcept
 {
 	if(phwnd==nullptr){
 		return E_POINTER;
@@ -728,12 +728,12 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::GetWindow(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::ContextSensitiveHelp(
-    /* [in] */ BOOL fEnterMode)
+    /* [in] */ BOOL fEnterMode)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::CanInPlaceActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::CanInPlaceActivate(void)noexcept
 {
 	if(InPlaceControl->OLECanInPlaceActivate()){
 		return S_OK;
@@ -741,13 +741,13 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::CanInPlaceActivate(void)
 	return S_FALSE;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnInPlaceActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnInPlaceActivate(void)noexcept
 {
 	InPlaceControl->OLEOnInPlaceActivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnUIActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnUIActivate(void)noexcept
 {
 	InPlaceControl->OLEOnUIActivate();
 	return S_OK;
@@ -758,64 +758,64 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::GetWindowContext(
     /* [out] */ __RPC__deref_out_opt IOleInPlaceUIWindow **ppDoc,
     /* [out] */ __RPC__out LPRECT lprcPosRect,
     /* [out] */ __RPC__out LPRECT lprcClipRect,
-    /* [out][in] */ __RPC__inout LPOLEINPLACEFRAMEINFO lpFrameInfo)
+    /* [out][in] */ __RPC__inout LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
 {
 	return InPlaceControl->OLEGetWindowContext(ppFrame,ppDoc,lprcPosRect,lprcClipRect,lpFrameInfo);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::Scroll(
-    /* [in] */ SIZE scrollExtant)
+    /* [in] */ SIZE scrollExtant)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnUIDeactivate(
-    /* [in] */ BOOL fUndoable)
+    /* [in] */ BOOL fUndoable)noexcept
 {fUndoable;
 	InPlaceControl->OLEOnUIDeactivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnInPlaceDeactivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnInPlaceDeactivate(void)noexcept
 {
 	InPlaceControl->OLEOnInPlaceDeactivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::DiscardUndoState(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::DiscardUndoState(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::DeactivateAndUndo(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::DeactivateAndUndo(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnPosRectChange(
-    /* [in] */ __RPC__in LPCRECT lprcPosRect)
+    /* [in] */ __RPC__in LPCRECT lprcPosRect)noexcept
 {
 	InPlaceControl->OLEOnPosRectChange(lprcPosRect);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEDocumentSite::cOLEDocumentSite(cOLEInPlaceControl *Control)
+cOLEDocumentSite::cOLEDocumentSite(cOLEInPlaceControl *Control)noexcept
 {
 	fInPlaceSite.Outter=COMUnknown();
 	fInPlaceSite.InPlaceControl=Control;
 }
 //---------------------------------------------------------------------------
-cOLEDocumentSite::~cOLEDocumentSite()
+cOLEDocumentSite::~cOLEDocumentSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOLEDocumentSite::COMUnknown(void)
+IUnknown* cOLEDocumentSite::COMUnknown(void)noexcept
 {
 	return static_cast<IOleClientSite*>(this);
 }
 //---------------------------------------------------------------------------
-bool cOLEDocumentSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOLEDocumentSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(bCOMOleClientSite::COMQueryInterface(riid,ppvObject)){
 		return true;
@@ -831,12 +831,12 @@ bool cOLEDocumentSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR
 	return false;
 }
 //---------------------------------------------------------------------------
-IOleObject* cOLEDocumentSite::GetOleObject(void)
+IOleObject* cOLEDocumentSite::GetOleObject(void)noexcept
 {
 	return fOLEObject;
 }
 //---------------------------------------------------------------------------
-void cOLEDocumentSite::SetOleObject(IOleObject *OLEObject)
+void cOLEDocumentSite::SetOleObject(IOleObject *OLEObject)noexcept
 {
 	if(fOLEObject!=nullptr){
 		fOLEObject->Close(OLECLOSE_NOSAVE);
@@ -849,7 +849,7 @@ void cOLEDocumentSite::SetOleObject(IOleObject *OLEObject)
 	fInPlaceSite.InPlaceControl->UpdateObjectState();
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEDocumentSite::cInPlaceSite::CanInPlaceActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEDocumentSite::cInPlaceSite::CanInPlaceActivate(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(static_cast<COMInnerObject<cInPlaceSite>*>(this),&cOLEDocumentSite::fInPlaceSite);
 	COMPtr<IOleInPlaceObject> InPlaceObject;
@@ -865,7 +865,7 @@ HRESULT STDMETHODCALLTYPE cOLEDocumentSite::cInPlaceSite::CanInPlaceActivate(voi
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-bool cOLEDocumentSite::OLEOpen(LONG iVerb)
+bool cOLEDocumentSite::OLEOpen(LONG iVerb)noexcept
 {
 	HWND HostWindow=fInPlaceSite.InPlaceControl->OLEGetWindowHandle();
 	RECT RectInHost=fInPlaceSite.InPlaceControl->OLEGetInPlaceRect();
@@ -874,26 +874,26 @@ bool cOLEDocumentSite::OLEOpen(LONG iVerb)
 	return SUCCEEDED(hr);
 }
 //---------------------------------------------------------------------------
-void cOLEDocumentSite::OLEClose(DWORD dwSaveOption)
+void cOLEDocumentSite::OLEClose(DWORD dwSaveOption)noexcept
 {
 	fOLEObject->Close(dwSaveOption);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcOLEActiveXControlSite::bcOLEActiveXControlSite()
+bcOLEActiveXControlSite::bcOLEActiveXControlSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcOLEActiveXControlSite::~bcOLEActiveXControlSite()
+bcOLEActiveXControlSite::~bcOLEActiveXControlSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* bcOLEActiveXControlSite::COMUnknown(void)
+IUnknown* bcOLEActiveXControlSite::COMUnknown(void)noexcept
 {
 	return static_cast<IOleClientSite*>(this);
 }
 //---------------------------------------------------------------------------
-bool bcOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool bcOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(bCOMOleClientSite::COMQueryInterface(riid,ppvObject)){
 		return true;
@@ -908,12 +908,12 @@ bool bcOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __
 	return false;
 }
 //---------------------------------------------------------------------------
-IOleObject* bcOLEActiveXControlSite::GetOleObject(void)
+IOleObject* bcOLEActiveXControlSite::GetOleObject(void)noexcept
 {
 	return fOLEObject;
 }
 //---------------------------------------------------------------------------
-void bcOLEActiveXControlSite::SetOleObject(IOleObject *OLEObject)
+void bcOLEActiveXControlSite::SetOleObject(IOleObject *OLEObject)noexcept
 {
 	if(fOLEObject!=nullptr){
 		fOLEObject->SetClientSite(nullptr);
@@ -940,7 +940,7 @@ HRESULT STDMETHODCALLTYPE bcOLEActiveXControlSite::Invoke(
     /* [annotation][out] */ 
     _Out_opt_  EXCEPINFO *pExcepInfo,
     /* [annotation][out] */ 
-    _Out_opt_  UINT *puArgErr)
+    _Out_opt_  UINT *puArgErr)noexcept
 {
 	switch(wFlags){
 	case DISPATCH_METHOD:
@@ -1040,18 +1040,18 @@ HRESULT STDMETHODCALLTYPE bcOLEActiveXControlSite::Invoke(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEActiveXControlSite::cOLEActiveXControlSite(cOLEInPlaceControl *Control)
+cOLEActiveXControlSite::cOLEActiveXControlSite(cOLEInPlaceControl *Control)noexcept
 {
 	fInPlaceSite.Outter=COMUnknown();
 	fInPlaceSite.InPlaceControl=Control;
 	Control->OLEActivation=this;
 }
 //---------------------------------------------------------------------------
-cOLEActiveXControlSite::~cOLEActiveXControlSite()
+cOLEActiveXControlSite::~cOLEActiveXControlSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(bcOLEActiveXControlSite::COMQueryInterface(riid,ppvObject)){
 		return true;
@@ -1064,24 +1064,24 @@ bool cOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __R
 	return false;
 }
 //---------------------------------------------------------------------------
-void cOLEActiveXControlSite::SetOleObject(IOleObject *OLEObject)
+void cOLEActiveXControlSite::SetOleObject(IOleObject *OLEObject)noexcept
 {
 	fInPlaceSite.InPlaceControl->OLESetInPlaceObject(nullptr);
 	bcOLEActiveXControlSite::SetOleObject(OLEObject);
 	fInPlaceSite.InPlaceControl->UpdateObjectState();
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSite::OLEInPlaceActive(void)
+bool cOLEActiveXControlSite::OLEInPlaceActive(void)noexcept
 {
 	return OLEVerb(OLEIVERB_INPLACEACTIVATE);
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSite::OLEUIActive(void)
+bool cOLEActiveXControlSite::OLEUIActive(void)noexcept
 {
 	return OLEVerb(OLEIVERB_UIACTIVATE);
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSite::OLEVerb(int iVerb)
+bool cOLEActiveXControlSite::OLEVerb(int iVerb)noexcept
 {
 	if(fOLEObject==nullptr)
 		return false;
@@ -1099,26 +1099,26 @@ bool cOLEActiveXControlSite::OLEVerb(int iVerb)
 	return SUCCEEDED(hr);
 }
 //---------------------------------------------------------------------------
-void cOLEActiveXControlSite::SetActiveState(eOLEInPlaceActiveState State)
+void cOLEActiveXControlSite::SetActiveState(eOLEInPlaceActiveState State)noexcept
 {
 	fInPlaceSite.InPlaceControl->SetActiveState(State);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEInPlaceSiteWindowless::cOLEInPlaceSiteWindowless()
+cOLEInPlaceSiteWindowless::cOLEInPlaceSiteWindowless()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceSiteWindowless::~cOLEInPlaceSiteWindowless()
+cOLEInPlaceSiteWindowless::~cOLEInPlaceSiteWindowless()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOLEInPlaceSiteWindowless::COMUnknown(void)
+IUnknown* cOLEInPlaceSiteWindowless::COMUnknown(void)noexcept
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOLEInPlaceSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==IID_IOleWindow){
 		*ppvObject=static_cast<IOleWindow*>(this);
@@ -1140,7 +1140,7 @@ bool cOLEInPlaceSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void 
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetWindow(
-    /* [out] */ __RPC__deref_out_opt HWND *phwnd)
+    /* [out] */ __RPC__deref_out_opt HWND *phwnd)noexcept
 {
 	if(phwnd==nullptr){
 		return E_POINTER;
@@ -1153,12 +1153,12 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetWindow(
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::ContextSensitiveHelp(
-    /* [in] */ BOOL fEnterMode)
+    /* [in] */ BOOL fEnterMode)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanInPlaceActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanInPlaceActivate(void)noexcept
 {
 	if(InPlaceControl->OLECanInPlaceActivate()){
 		return S_OK;
@@ -1166,13 +1166,13 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanInPlaceActivate(void)
 	return S_FALSE;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceActivate(void)noexcept
 {
 	InPlaceControl->OLEOnInPlaceActivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnUIActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnUIActivate(void)noexcept
 {
 	InPlaceControl->OLEOnUIActivate();
 	return S_OK;
@@ -1183,42 +1183,42 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetWindowContext(
     /* [out] */ __RPC__deref_out_opt IOleInPlaceUIWindow **ppDoc,
     /* [out] */ __RPC__out LPRECT lprcPosRect,
     /* [out] */ __RPC__out LPRECT lprcClipRect,
-    /* [out][in] */ __RPC__inout LPOLEINPLACEFRAMEINFO lpFrameInfo)
+    /* [out][in] */ __RPC__inout LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
 {
 	return InPlaceControl->OLEGetWindowContext(ppFrame,ppDoc,lprcPosRect,lprcClipRect,lpFrameInfo);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::Scroll(
-    /* [in] */ SIZE scrollExtant)
+    /* [in] */ SIZE scrollExtant)noexcept
 {
 	return E_NOTIMPL;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnUIDeactivate(
-    /* [in] */ BOOL fUndoable)
+    /* [in] */ BOOL fUndoable)noexcept
 {fUndoable;
 	InPlaceControl->OLEOnUIDeactivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceDeactivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceDeactivate(void)noexcept
 {
 	InPlaceControl->OLEOnInPlaceDeactivate();
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::DiscardUndoState(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::DiscardUndoState(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::DeactivateAndUndo(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::DeactivateAndUndo(void)noexcept
 {
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnPosRectChange(
-    /* [in] */ __RPC__in LPCRECT lprcPosRect)
+    /* [in] */ __RPC__in LPCRECT lprcPosRect)noexcept
 {
 	InPlaceControl->OLEOnPosRectChange(lprcPosRect);
 	return S_OK;
@@ -1226,20 +1226,20 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnPosRectChange(
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceActivateEx(
     /* [out] */ __RPC__out BOOL *pfNoRedraw,
-    /* [in] */ DWORD dwFlags)
+    /* [in] */ DWORD dwFlags)noexcept
 {
 	InPlaceControl->OLEOnInPlaceActivateEx(pfNoRedraw,dwFlags);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnInPlaceDeactivateEx(
-    /* [in] */ BOOL fNoRedraw)
+    /* [in] */ BOOL fNoRedraw)noexcept
 {
 	InPlaceControl->OLEOnInPlaceDeactivateEx(fNoRedraw);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::RequestUIActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::RequestUIActivate(void)noexcept
 {
 	if(InPlaceControl->OLERequestUIActivate()==false){
 		return S_FALSE;
@@ -1247,7 +1247,7 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::RequestUIActivate(void)
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanWindowlessActivate(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanWindowlessActivate(void)noexcept
 {
 	if(InPlaceControl->OLECanWindowlessActivate()){
 		return S_OK;
@@ -1255,24 +1255,24 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::CanWindowlessActivate(void)
 	return S_FALSE;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetCapture(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetCapture(void)noexcept
 {
 	return InPlaceControl->OLEWindowlessGetCapture();
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::SetCapture(
-    /* [in] */ BOOL fCapture)
+    /* [in] */ BOOL fCapture)noexcept
 {
 	return InPlaceControl->OLEWindowlessSetCapture(fCapture);
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetFocus(void)
+HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetFocus(void)noexcept
 {
 	return InPlaceControl->OLEWindowlessGetFocus();
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::SetFocus( 
-    /* [in] */ BOOL fFocus)
+    /* [in] */ BOOL fFocus)noexcept
 {
 	return InPlaceControl->OLEWindowlessSetFocus(fFocus);
 }
@@ -1280,27 +1280,27 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::SetFocus(
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetDC( 
     /* [unique][in] */ __RPC__in_opt LPCRECT pRect,
     /* [in] */ DWORD grfFlags,
-    /* [out] */ __RPC__deref_out_opt HDC *phDC)
+    /* [out] */ __RPC__deref_out_opt HDC *phDC)noexcept
 {
 	return InPlaceControl->OLEWindowlessGetDC(pRect,grfFlags,phDC);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::ReleaseDC( 
-    /* [in] */ __RPC__in HDC hDC)
+    /* [in] */ __RPC__in HDC hDC)noexcept
 {
 	return InPlaceControl->OLEWindowlessReleaseDC(hDC);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::InvalidateRect( 
     /* [unique][in] */ __RPC__in_opt LPCRECT pRect,
-    /* [in] */ BOOL fErase)
+    /* [in] */ BOOL fErase)noexcept
 {
 	return InPlaceControl->OLEWindowlessInvalidateRect(pRect,fErase);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::InvalidateRgn( 
     /* [in] */ __RPC__in HRGN hRGN,
-    /* [in] */ BOOL fErase)
+    /* [in] */ BOOL fErase)noexcept
 {
 	return InPlaceControl->OLEWindowlessInvalidateRgn(hRGN,fErase);
 }
@@ -1309,13 +1309,13 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::ScrollRect(
     /* [in] */ INT dx,
     /* [in] */ INT dy,
     /* [in] */ __RPC__in LPCRECT pRectScroll,
-    /* [in] */ __RPC__in LPCRECT pRectClip)
+    /* [in] */ __RPC__in LPCRECT pRectClip)noexcept
 {
 	return InPlaceControl->OLEWindowlessScrollRect(dx,dy,pRectScroll,pRectClip);
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::AdjustRect( 
-    /* [out][in] */ __RPC__inout LPRECT prc)
+    /* [out][in] */ __RPC__inout LPRECT prc)noexcept
 {
 	return InPlaceControl->OLEWindowlessAdjustRect(prc);
 }
@@ -1327,24 +1327,24 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnDefWindowMessage(
     _In_  WPARAM wParam,
     /* [annotation][in] */ 
     _In_  LPARAM lParam,
-    /* [out] */ __RPC__out LRESULT *plResult)
+    /* [out] */ __RPC__out LRESULT *plResult)noexcept
 {
 	return InPlaceControl->OLEWindowlessOnDefWindowMessage(msg,wParam,lParam,plResult);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEActiveXControlSiteWindowless::cOLEActiveXControlSiteWindowless(cOLEInPlaceWindowlessControl *Control)
+cOLEActiveXControlSiteWindowless::cOLEActiveXControlSiteWindowless(cOLEInPlaceWindowlessControl *Control)noexcept
 {
 	fInPlaceSite.Outter=COMUnknown();
 	fInPlaceSite.InPlaceControl=Control;
 	Control->OLEActivation=this;
 }
 //---------------------------------------------------------------------------
-cOLEActiveXControlSiteWindowless::~cOLEActiveXControlSiteWindowless()
+cOLEActiveXControlSiteWindowless::~cOLEActiveXControlSiteWindowless()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
+bool cOLEActiveXControlSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(bcOLEActiveXControlSite::COMQueryInterface(riid,ppvObject)){
 		return true;
@@ -1357,17 +1357,17 @@ bool cOLEActiveXControlSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSiteWindowless::OLEInPlaceActive(void)
+bool cOLEActiveXControlSiteWindowless::OLEInPlaceActive(void)noexcept
 {
 	return OLEVerb(OLEIVERB_INPLACEACTIVATE);
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSiteWindowless::OLEUIActive(void)
+bool cOLEActiveXControlSiteWindowless::OLEUIActive(void)noexcept
 {
 	return OLEVerb(OLEIVERB_UIACTIVATE);
 }
 //---------------------------------------------------------------------------
-bool cOLEActiveXControlSiteWindowless::OLEVerb(int iVerb)
+bool cOLEActiveXControlSiteWindowless::OLEVerb(int iVerb)noexcept
 {
 	COMPtr<IOleInPlaceObject> InPlaceObject;
 	fOLEObject->QueryInterface(COMRetPtrT(InPlaceObject));
@@ -1383,7 +1383,7 @@ bool cOLEActiveXControlSiteWindowless::OLEVerb(int iVerb)
 	return SUCCEEDED(hr);
 }
 //---------------------------------------------------------------------------
-void cOLEActiveXControlSiteWindowless::SetActiveState(eOLEInPlaceActiveState State)
+void cOLEActiveXControlSiteWindowless::SetActiveState(eOLEInPlaceActiveState State)noexcept
 {
 	fInPlaceSite.InPlaceControl->SetActiveState(State);
 }

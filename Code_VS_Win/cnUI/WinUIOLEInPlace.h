@@ -27,7 +27,7 @@ public:
 	// InPlace FrameWindow
 	COMPtr<IOleInPlaceFrame> Frame;
 	
-	virtual void FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo);
+	virtual void FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cOLEInPlaceFrameInfo : public cOLEInPlaceFrameConfiguration
@@ -38,14 +38,14 @@ public:
 	HACCEL AcceleratorHandle=nullptr;
 	UINT AcceleratorEntries=0;
 	
-	virtual void FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)override;
+	virtual void FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class cOLEInPlaceControl : public ViewControl, protected UIStateHandler
 {
 public:
-	cOLEInPlaceControl();
-	~cOLEInPlaceControl();
+	cOLEInPlaceControl()noexcept(true);
+	~cOLEInPlaceControl()noexcept(true);
 
 protected:
 	eOLEInPlaceActiveState fActiveState;
@@ -61,95 +61,95 @@ public:
 	class iActivation
 	{
 	public:
-		virtual bool OLEInPlaceActive(void)=0;
-		virtual bool OLEUIActive(void)=0;
+		virtual bool OLEInPlaceActive(void)noexcept(true)=0;
+		virtual bool OLEUIActive(void)noexcept(true)=0;
 	};
 	iActivation *OLEActivation=nullptr;
 
-	IOleInPlaceObject* GetInPlaceObject(void);
+	IOleInPlaceObject* GetInPlaceObject(void)noexcept(true);
 
-	eOLEInPlaceActiveState GetActiveState(void)const;
+	eOLEInPlaceActiveState GetActiveState(void)const noexcept(true);
 
-	void UpdateObjectState(void);
+	void UpdateObjectState(void)noexcept(true);
 	
 	// action for OLE
 
-	void SetActiveState(eOLEInPlaceActiveState State);
-	void OLEDeactivate(void);
-	void OLEUIDeactivate(void);
+	void SetActiveState(eOLEInPlaceActiveState State)noexcept(true);
+	void OLEDeactivate(void)noexcept(true);
+	void OLEUIDeactivate(void)noexcept(true);
 
 	// state for OLE
 
-	HWND OLEGetWindowHandle(void);
-	RECT OLEGetInPlaceRect(void);
-	HRESULT OLEGetWindowContext(IOleInPlaceFrame **ppFrame,IOleInPlaceUIWindow **ppDoc,LPRECT lprcPosRect,LPRECT lprcClipRect,LPOLEINPLACEFRAMEINFO lpFrameInfo);
+	HWND OLEGetWindowHandle(void)noexcept(true);
+	RECT OLEGetInPlaceRect(void)noexcept(true);
+	HRESULT OLEGetWindowContext(IOleInPlaceFrame **ppFrame,IOleInPlaceUIWindow **ppDoc,LPRECT lprcPosRect,LPRECT lprcClipRect,LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true);
 
 	// call from OLE
 
-	void OLESetInPlaceObject(COMPtr<IOleInPlaceObject> InPlaceObject);
-	bool OLECanInPlaceActivate(void);
-	void OLEOnInPlaceActivate(void);
-	void OLEOnUIActivate(void);
-	void OLEOnUIDeactivate(void);
-	void OLEOnInPlaceDeactivate(void);
-	void OLEOnPosRectChange(LPCRECT lprcPosRect);
+	void OLESetInPlaceObject(COMPtr<IOleInPlaceObject> InPlaceObject)noexcept(true);
+	bool OLECanInPlaceActivate(void)noexcept(true);
+	void OLEOnInPlaceActivate(void)noexcept(true);
+	void OLEOnUIActivate(void)noexcept(true);
+	void OLEOnUIDeactivate(void)noexcept(true);
+	void OLEOnInPlaceDeactivate(void)noexcept(true);
+	void OLEOnPosRectChange(LPCRECT lprcPosRect)noexcept(true);
 protected:
 	
 	COMPtr<IOleInPlaceObject> fInPlaceObject;
 
-	void SetupInPlaceRect(void);
+	void SetupInPlaceRect(void)noexcept(true);
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)override;
+	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)override;
 
-	virtual void cnLib_FUNC UIStarted(void)override;
-	virtual void cnLib_FUNC UIShow(void)override;
-	virtual void cnLib_FUNC UIHide(void)override;
-	virtual void cnLib_FUNC UIStopped(void)override;
+	virtual void cnLib_FUNC UIStarted(void)noexcept(true)override;
+	virtual void cnLib_FUNC UIShow(void)noexcept(true)override;
+	virtual void cnLib_FUNC UIHide(void)noexcept(true)override;
+	virtual void cnLib_FUNC UIStopped(void)noexcept(true)override;
 	
 	HWND fHostWindowHandle;
 
 private:
-	void AutoActive(void);
-	void IncOLEState(uIntn Count);
-	void DecOLEState(uIntn Count);
+	void AutoActive(void)noexcept(true);
+	void IncOLEState(uIntn Count)noexcept(true);
+	void DecOLEState(uIntn Count)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cOLEInPlaceWindowlessControl : public cOLEInPlaceControl, protected iWindowMessageHandler
 {
 public:
-	cOLEInPlaceWindowlessControl();
-	~cOLEInPlaceWindowlessControl();
+	cOLEInPlaceWindowlessControl()noexcept(true);
+	~cOLEInPlaceWindowlessControl()noexcept(true);
 
 	// call from OLE
 
-	void OLEOnInPlaceDeactivate(void);
+	void OLEOnInPlaceDeactivate(void)noexcept(true);
 
-	void OLEOnInPlaceActivateEx(BOOL *pfNoRedraw,DWORD dwFlags);
-	void OLEOnInPlaceDeactivateEx(BOOL fNoRedraw);
-	bool OLERequestUIActivate(void);
+	void OLEOnInPlaceActivateEx(BOOL *pfNoRedraw,DWORD dwFlags)noexcept(true);
+	void OLEOnInPlaceDeactivateEx(BOOL fNoRedraw)noexcept(true);
+	bool OLERequestUIActivate(void)noexcept(true);
 
 	// call from OLE windowless
 
-	bool OLECanWindowlessActivate(void);
-	HRESULT OLEWindowlessGetCapture(void);
-	HRESULT OLEWindowlessSetCapture(BOOL fCapture);
-	HRESULT OLEWindowlessGetFocus(void);
-	HRESULT OLEWindowlessSetFocus(BOOL fFocus);
-	HRESULT OLEWindowlessGetDC(LPCRECT pRect,DWORD grfFlags,HDC *phDC);
-	HRESULT OLEWindowlessReleaseDC(HDC hDC);
-	HRESULT OLEWindowlessInvalidateRect(LPCRECT pRect,BOOL fErase);
-	HRESULT OLEWindowlessInvalidateRgn(HRGN hRGN,BOOL fErase);
-	HRESULT OLEWindowlessScrollRect(INT dx,INT dy,LPCRECT pRectScroll,LPCRECT pRectClip);
-	HRESULT OLEWindowlessAdjustRect(LPRECT prc);
-	HRESULT OLEWindowlessOnDefWindowMessage(UINT msg,WPARAM wParam,LPARAM lParam,LRESULT *plResult);
+	bool OLECanWindowlessActivate(void)noexcept(true);
+	HRESULT OLEWindowlessGetCapture(void)noexcept(true);
+	HRESULT OLEWindowlessSetCapture(BOOL fCapture)noexcept(true);
+	HRESULT OLEWindowlessGetFocus(void)noexcept(true);
+	HRESULT OLEWindowlessSetFocus(BOOL fFocus)noexcept(true);
+	HRESULT OLEWindowlessGetDC(LPCRECT pRect,DWORD grfFlags,HDC *phDC)noexcept(true);
+	HRESULT OLEWindowlessReleaseDC(HDC hDC)noexcept(true);
+	HRESULT OLEWindowlessInvalidateRect(LPCRECT pRect,BOOL fErase)noexcept(true);
+	HRESULT OLEWindowlessInvalidateRgn(HRGN hRGN,BOOL fErase)noexcept(true);
+	HRESULT OLEWindowlessScrollRect(INT dx,INT dy,LPCRECT pRectScroll,LPCRECT pRectClip)noexcept(true);
+	HRESULT OLEWindowlessAdjustRect(LPRECT prc)noexcept(true);
+	HRESULT OLEWindowlessOnDefWindowMessage(UINT msg,WPARAM wParam,LPARAM lParam,LRESULT *plResult)noexcept(true);
 protected:
 	
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 	
 	// windowless
 
@@ -157,26 +157,26 @@ protected:
 	COMPtr<IViewObject> fViewObjectWindowless;
 
 	iWindowViewport *fWindowViewport;
-	virtual void cnLib_FUNC WindowAttached(void)override;
-	virtual void cnLib_FUNC WindowDetached(void)override;
-	virtual bool cnLib_FUNC WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)override;
-	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &Message)override;
+	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
+	virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
+	virtual bool cnLib_FUNC WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)noexcept(true)override;
+	virtual void cnLib_FUNC WindowMessageProcessed(LRESULT MsgResult,const cWindowMessageParam &Message)noexcept(true)override;
 	rPtr<iDCViewContent> fDCViewContent;
 
 	class cOLEWindowlessPainter : public iDCPainter
 	{
-		cOLEInPlaceWindowlessControl *GetHost();
-		virtual void cnLib_FUNC PaintStarted(void)override;
-		virtual void cnLib_FUNC PaintShow(void)override;
-		virtual void cnLib_FUNC PaintResume(void)override;
-		virtual void cnLib_FUNC PaintPaused(void)override;
-		virtual void cnLib_FUNC PaintHide(void)override;
-		virtual void cnLib_FUNC PaintStopped(void)override;
-		virtual void cnLib_FUNC PaintRectChanged(void)override;
-		virtual void cnLib_FUNC PaintWindowChanged(void)override{}
-		virtual void cnLib_FUNC Paint(HDC DC,HRGN ClipRegion)override;
+		cOLEInPlaceWindowlessControl *GetHost()noexcept(true);
+		virtual void cnLib_FUNC PaintStarted(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintShow(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintResume(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintPaused(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintHide(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintStopped(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintRectChanged(void)noexcept(true)override;
+		virtual void cnLib_FUNC PaintWindowChanged(void)noexcept(true)override{}
+		virtual void cnLib_FUNC Paint(HDC DC,HRGN ClipRegion)noexcept(true)override;
 	}fOLEWindowlessPainter;
-	void WindowlessObjectDraw(HDC DC);
+	void WindowlessObjectDraw(HDC DC)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

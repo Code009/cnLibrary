@@ -22,7 +22,7 @@ template<bool Assignable>
 struct AssignOrReconstruct
 {
 	template<class T,class TSrc>
-	static void Call(T &Dest,TSrc cnLib_UREF Src)noexcept(cnLib_NOEXCEPTEXPR(Dest=cnLib_UREFCAST(TSrc)(Src)))
+	static void Call(T &Dest,TSrc cnLib_UREF Src)noexcept(noexcept(Dest=cnLib_UREFCAST(TSrc)(Src)))
 	{	Dest=cnLib_UREFCAST(TSrc)(Src);	}
 
 };
@@ -32,7 +32,7 @@ struct AssignOrReconstruct<false>
 	template<class T,class TSrc>
 	static void Call(T &Dest,TSrc cnLib_UREF Src)
 		noexcept(
-			cnLib_NOEXCEPTEXPR(cnVar::ManualDestruct(Dest) && cnLib_NOEXCEPTEXPR(T(cnLib_UREFCAST(TSrc)(Src))))
+			noexcept(cnVar::ManualDestruct(Dest)) && noexcept(T(cnLib_UREFCAST(TSrc)(Src)))
 		)
 	{
 		cnVar::ManualDestruct(Dest);
@@ -53,7 +53,7 @@ namespace cnVar{
 template<class TDest,class TSrc>
 void AssignOrReconstruct(TDest &Dest,TSrc cnLib_UREF Src)
 	noexcept(
-		cnLib_NOEXCEPTEXPR((cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignableFrom<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src))))
+		noexcept((cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignableFrom<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src))))
 	)
 {	return cnLib_THelper::Var_TH::AssignOrReconstruct<TIsAssignableFrom<TDest,TSrc cnLib_UREF>::Value>::Call(Dest,cnLib_UREFCAST(TSrc)(Src));	}
 
@@ -150,6 +150,52 @@ inline cAnyPtr AnyPtr(tNullptr)noexcept(true){
 }
 #endif
 
+template<uIntn Index,class T>
+struct cVarPackVariable
+{
+	T Value;
+};
+
+template<class TIndexSequence,class...T>
+struct cVarPackStruct;
+
+
+template<uIntn...Indics,class...T>
+struct cVarPackStruct<TValueSequence<uIntn,Indics...>,T...>
+	: cVarPackVariable<Indics,T>...
+{
+#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+	template<class...TDest,class TPack=typename TTypeConditional<cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...>&,TBooleanValuesAnd<TIsReinterpretable<T,TDest>::Value...>::Value>::Type>
+	operator cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...> &(void)noexcept(true){
+		return reinterpret_cast<TPack>(*this);
+	}
+	template<class...TDest,class TPack=typename TTypeConditional<const cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...>&,TBooleanValuesAnd<TIsReinterpretable<T,TDest>::Value...>::Value>::Type>
+	operator const cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...> &(void)const noexcept(true){
+		return reinterpret_cast<TPack>(*this);
+	}
+// !cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+#else
+// cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+	template<class...TDest>
+	operator cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...> &(void)noexcept(true){
+		return reinterpret_cast<
+			typename TTypeConditional<cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...>&,TBooleanValuesAnd<TIsReinterpretable<T,TDest>::Value...>::Value>::Type
+		>(*this);
+	}
+	template<class...TDest>
+	operator const cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...> &(void)const noexcept(true){
+		return reinterpret_cast<
+			typename TTypeConditional<const cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...>&,TBooleanValuesAnd<TIsReinterpretable<T,TDest>::Value...>::Value>::Type
+		>(*this);
+	}
+#endif	// cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+
+	template<uIntn Index>
+	struct tVariableAt
+		: TSelect<Index,T...>{};
+
+};
+
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------
@@ -164,43 +210,6 @@ namespace Var_TH{
 namespace VarPack{
 //---------------------------------------------------------------------------
 
-template<uIntn Index,class T>
-struct Variable
-{
-	T Value;
-};
-
-template<class TIndexSequence,class...T>
-struct PackStruct;
-
-
-template<uIntn...Indics,class...T>
-struct PackStruct<cnVar::TValueSequence<uIntn,Indics...>,T...>
-	: Variable<Indics,T>...
-{
-
-	template<uIntn Index>
-	struct tAccessor
-	{
-		typedef PackStruct<cnVar::TValueSequence<uIntn,Indics...>,T...> tPackStruct;
-		static cnLib_CONSTVAR uIntn AccessIndex=Index;
-
-		tPackStruct &Pack;
-
-		tAccessor(tPackStruct &Pack):Pack(Pack){}
-
-		typedef typename cnVar::TSelect<Index,T...>::Type tVariable;
-
-		typename cnVar::TSelect<Index,T...>::Type& operator *()const noexcept(true){
-			return Pack.Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value;
-		}
-
-		typename cnVar::TSelect<Index,typename cnVar::TRemoveReference<T>::Type...>::Type* operator &()const noexcept(true){
-			return cnMemory::AddressOf(Pack.Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value);
-		}
-	};
-};
-
 #ifndef cnLibrary_CPPEXCLUDE_NOEXCEPT
 
 template<class TFunc,class...VTVarPackAccessor>
@@ -208,7 +217,7 @@ struct FunctionIsNoexcept;
 	
 template<class TFunc,class TVarPackAccessor,class...VTVarPackAccessor>
 struct FunctionIsNoexcept<TFunc,TVarPackAccessor,VTVarPackAccessor...>
-	: cnVar::TSelect<cnLib_NOEXCEPTEXPR(cnVar::DeclVal<TFunc>()(cnVar::DeclVal<typename TVarPackAccessor::tVariable>(),cnVar::DeclVal<typename VTVarPackAccessor::tVariable>()...))
+	: cnVar::TSelect<noexcept(cnVar::DeclVal<TFunc>()(cnVar::DeclVal<typename TVarPackAccessor::tVariable>(),cnVar::DeclVal<typename VTVarPackAccessor::tVariable>()...))
 		, cnVar::TConstantValueFalse
 		, FunctionIsNoexcept<TFunc,VTVarPackAccessor...>
 	>::Type{};
@@ -230,9 +239,9 @@ struct FunctionIsNoexcept
 
 template<uIntn Index,class TIndexSequence,class...T>
 struct OffsetCalculate
-	: PackStruct<TIndexSequence,T...>
+	: cnVar::cVarPackStruct<TIndexSequence,T...>
 {
-	using Variable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value;
+	using cnVar::cVarPackVariable<Index,typename cnVar::TSelect<Index,T...>::Type>::Value;
 };
 
 
@@ -267,31 +276,60 @@ namespace cnVar{
 
 template<uIntn Index,uIntn Begin,uIntn End,class TPackStruct>
 struct cVarPackAccessor
-	: TPackStruct::template tAccessor<Index>
 {
-	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<Index>(Pack){}
+	static cnLib_CONSTVAR uIntn AccessIndex=Index;
+	TPackStruct &Pack;
+	cVarPackAccessor(TPackStruct &Pack):Pack(Pack){}
+
+	template<class TSrcPackStruct>
+	cVarPackAccessor(const cVarPackAccessor<Index,Begin,End,TSrcPackStruct> &Accessor)
+		: Pack(Accessor.Pack){}
+
+	typedef typename TPackStruct::template tVariableAt<Index>::Type tVariable;
+	typedef typename TCopyCV<typename TPackStruct::template tVariableAt<Index>::Type,TPackStruct>::Type tRetVariable;
+	tRetVariable& operator *()const noexcept(true){
+		return Pack.cVarPackVariable<Index,tVariable>::Value;
+	}
+	typename TRemoveReference<tRetVariable>::Type* operator &()const noexcept(true){
+		return cnMemory::AddressOf(Pack.cVarPackVariable<Index,tVariable>::Value);
+	}
 
 	typedef cVarPackAccessor<Index+1,Begin,End,TPackStruct> tNext;
 	typedef cVarPackAccessor<Index-1,Begin,End,TPackStruct> tPrev;
 
 	tNext operator +(void)const noexcept(true){
-		tNext Accessor={this->Pack};
+		tNext Accessor={Pack};
 		return Accessor;
 	}
 
 	tPrev operator -(void)const noexcept(true){
-		tPrev Accessor={this->Pack};
+		tPrev Accessor={Pack};
 		return Accessor;
 	}
+
 };
 
 struct cVarPackNoAccess{};
 
 template<uIntn Begin,uIntn End,class TPackStruct>
 struct cVarPackAccessor<Begin,Begin,End,TPackStruct>
-	: TPackStruct::template tAccessor<Begin>
 {
-	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<Begin>(Pack){}
+	static cnLib_CONSTVAR uIntn AccessIndex=Begin;
+	TPackStruct &Pack;
+	cVarPackAccessor(TPackStruct &Pack):Pack(Pack){}
+
+	template<class TSrcPackStruct>
+	cVarPackAccessor(const cVarPackAccessor<Begin,Begin,End,TSrcPackStruct> &Accessor)
+		: Pack(Accessor.Pack){}
+
+	typedef typename TPackStruct::template tVariableAt<Begin>::Type tVariable;
+	typedef typename TCopyCV<typename TPackStruct::template tVariableAt<Begin>::Type,TPackStruct>::Type tRetVariable;
+	tRetVariable& operator *()const noexcept(true){
+		return Pack.cVarPackVariable<Begin,tVariable>::Value;
+	}
+	typename TRemoveReference<tRetVariable>::Type* operator &()const noexcept(true){
+		return cnMemory::AddressOf(Pack.cVarPackVariable<Begin,tVariable>::Value);
+	}
 
 	typedef cVarPackAccessor<Begin+1,Begin,End,TPackStruct> tNext;
 	typedef cVarPackNoAccess tPrev;
@@ -306,9 +344,25 @@ struct cVarPackAccessor<Begin,Begin,End,TPackStruct>
 
 template<uIntn Begin,uIntn End,class TPackStruct>
 struct cVarPackAccessor<End,Begin,End,TPackStruct>
-	: TPackStruct::template tAccessor<End>
 {
-	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<End>(Pack){}
+	static cnLib_CONSTVAR uIntn AccessIndex=End;
+	TPackStruct &Pack;
+
+	cVarPackAccessor(TPackStruct &Pack):Pack(Pack){}
+
+	template<class TSrcPackStruct>
+	cVarPackAccessor(const cVarPackAccessor<End,Begin,End,TSrcPackStruct> &Accessor)
+		: Pack(Accessor.Pack){}
+
+	typedef typename TPackStruct::template tVariableAt<End>::Type tVariable;
+	typedef typename TCopyCV<typename TPackStruct::template tVariableAt<End>::Type,TPackStruct>::Type tRetVariable;
+	tRetVariable& operator *()const noexcept(true){
+		return Pack.cVarPackVariable<End,tVariable>::Value;
+	}
+	typename TRemoveReference<tRetVariable>::Type* operator &()const noexcept(true){
+		return cnMemory::AddressOf(Pack.cVarPackVariable<End,tVariable>::Value);
+	}
+
 
 	typedef cVarPackNoAccess tNext;
 	typedef cVarPackAccessor<End-1,Begin,End,TPackStruct> tPrev;
@@ -323,9 +377,24 @@ struct cVarPackAccessor<End,Begin,End,TPackStruct>
 
 template<uIntn SingleIndex,class TPackStruct>
 struct cVarPackAccessor<SingleIndex,SingleIndex,SingleIndex,TPackStruct>
-	: TPackStruct::template tAccessor<SingleIndex>
 {
-	cVarPackAccessor(TPackStruct &Pack):TPackStruct::template tAccessor<SingleIndex>(Pack){}
+	static cnLib_CONSTVAR uIntn AccessIndex=SingleIndex;
+	TPackStruct &Pack;
+	cVarPackAccessor(TPackStruct &Pack):Pack(Pack){}
+
+	template<class TSrcPackStruct>
+	cVarPackAccessor(const cVarPackAccessor<SingleIndex,SingleIndex,SingleIndex,TSrcPackStruct> &Accessor)
+		: Pack(Accessor.Pack){}
+
+	typedef typename TPackStruct::template tVariableAt<SingleIndex>::Type tVariable;
+	typedef typename TCopyCV<typename TPackStruct::template tVariableAt<SingleIndex>::Type,TPackStruct>::Type tRetVariable;
+	tRetVariable& operator *()const noexcept(true){
+		return Pack.cVarPackVariable<SingleIndex,tVariable>::Value;
+	}
+	typename TRemoveReference<tRetVariable>::Type* operator &()const noexcept(true){
+		return cnMemory::AddressOf(Pack.cVarPackVariable<SingleIndex,tVariable>::Value);
+	}
+
 
 	typedef cVarPackNoAccess tNext;
 	typedef cVarPackNoAccess tPrev;
@@ -336,13 +405,19 @@ struct cVarPackAccessor<SingleIndex,SingleIndex,SingleIndex,TPackStruct>
 
 template<class...T>
 struct cVarPack
-	: cnLib_THelper::Var_TH::VarPack::PackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...>
+	: cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...>
 {
-	typedef cnLib_THelper::Var_TH::VarPack::PackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
+	typedef cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
 	typedef cVarPackAccessor<0,0,sizeof...(T)-1,tPackStruct> tAllAccessor;
+	typedef cVarPackAccessor<0,0,sizeof...(T)-1,const tPackStruct> tAllConstAccessor;
 
 	tAllAccessor All(void){
 		tAllAccessor Accessor={*this};
+		return Accessor;
+	}
+
+	tAllConstAccessor All(void)const{
+		tAllConstAccessor Accessor={*this};
 		return Accessor;
 	}
 
@@ -376,13 +451,13 @@ cVarPack<VT&...> VarRefPack(VT &...v)noexcept(true)
 template<uIntn Index,class...T>
 typename TSelect<Index,T...>::Type& VarPackAt(cVarPack<T...> &Pack)noexcept(true)
 {
-	return Pack.cnLib_THelper::Var_TH::VarPack::template Variable<Index,typename TSelect<Index,T...>::Type>::Value;
+	return Pack.template cVarPackVariable<Index,typename TSelect<Index,T...>::Type>::Value;
 }
 
 template<uIntn Index,class...T>
 typename TSelect<Index,T...>::Type const& VarPackAt(const cVarPack<T...> &Pack)noexcept(true)
 {
-	return Pack.cnLib_THelper::Var_TH::VarPack::template Variable<Index,typename TSelect<Index,T...>::Type>::Value;
+	return Pack.template cVarPackVariable<Index,typename TSelect<Index,T...>::Type>::Value;
 }
 
 //---------------------------------------------------------------------------
@@ -681,8 +756,8 @@ public:
 
 	template<tTypeIndex NewTypeIndex,class TArg>
 	void Set(TArg cnLib_UREF Arg)noexcept(
-		cnLib_NOEXCEPTEXPR(AssignOrReconstruct(DeclVal<typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type&>(),cnLib_UREFCAST(TArg)(Arg)))
-		&& cnLib_NOEXCEPTEXPR(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArg)(Arg)))
+		noexcept(AssignOrReconstruct(DeclVal<typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type&>(),cnLib_UREFCAST(TArg)(Arg)))
+		&& noexcept(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArg)(Arg)))
 		&& TVariantTypeOperator::IsDestructNoexcept
 	){
 		typedef typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type TNewType;
@@ -706,7 +781,7 @@ public:
 
 	template<tTypeIndex NewTypeIndex,class...TArgs>
 	void Set(TArgs cnLib_UREF...Args)noexcept(
-		cnLib_NOEXCEPTEXPR(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArgs)(Args)...))
+		noexcept(typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type(cnLib_UREFCAST(TArgs)(Args)...))
 		&& TVariantTypeOperator::IsDestructNoexcept
 	){
 		typedef typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type TNewType;
@@ -778,32 +853,32 @@ struct cAnyVariableContent_Value
 	rtTypeInfo TypeInfo;
 
 	template<class T>
-	T* Ptr(void){
+	T* Ptr(void)noexcept(true){
 		return static_cast<T*>(&this->Content);
 	}
 
 	template<class T>
-	const T* Ptr(void)const{
+	const T* Ptr(void)const noexcept(true){
 		return static_cast<const T*>(&this->Content);
 	}
 
-	void Construct(void){
+	void Construct(void)noexcept(true){
 		this->TypeInfo->Operators->Construct(&this->Content);
 	}
-	void Destruct(void){
+	void Destruct(void)noexcept(true){
 		this->TypeInfo->Operators->Destruct(&this->Content);
 	}
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	template<class T,class...TArgs>
-	void ConstructAs(TArgs cnLib_UREF...Args){
+	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(noexcept(T(cnLib_UREFCAST(TArgs)(Args)...))){
 		Content.template ConstructAs<T>(cnLib_UREFCAST(TArgs)(Args)...);
 	}
 
 	// reconstruct
 	template<class T,class...TArgs>
-	void Reconstruct(TArgs cnLib_UREF...Args){
+	void Reconstruct(TArgs cnLib_UREF...Args)noexcept(noexcept(T(cnLib_UREFCAST(TArgs)(Args)...))){
 		this->Content.template DestructAs<T>();
 		this->Content.template ConstructAs<T>(cnLib_UREFCAST(TArgs)(Args)...);
 	}
@@ -813,13 +888,13 @@ struct cAnyVariableContent_Value
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class T,class TArg>
-	void ConstructAs(TArgs cnLib_UREF Arg){
+	void ConstructAs(TArgs cnLib_UREF Arg)noexcept(noexcept(T(cnLib_UREFCAST(TArg)(Arg)))){
 		Content.template ConstructAs<T>(cnLib_UREFCAST(TArg)(Arg));
 	}
 
 	// reconstruct
 	template<class T,class TArg>
-	void Reconstruct(TArgs cnLib_UREF Arg){
+	void Reconstruct(TArgs cnLib_UREF Arg)noexcept(noexcept(T(cnLib_UREFCAST(TArg)(Arg)))){
 		this->Content.template DestructAs<T>();
 		this->Content.template ConstructAs<T>(cnLib_UREFCAST(TArg)(Arg));
 	}
@@ -827,22 +902,22 @@ struct cAnyVariableContent_Value
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class T,class TSrc>
-	void SetVar(TSrc cnLib_UREF Src){
+	void SetVar(TSrc cnLib_UREF Src)noexcept(noexcept(cnVar::AssignOrReconstruct(cnVar::DeclVal<T>(),cnLib_UREFCAST(TSrc)(Src)))){
 		cnVar::AssignOrReconstruct(reinterpret_cast<T&>(this->Content),cnLib_UREFCAST(TSrc)(Src));
 	}
 
 	template<uIntn SrcSize,class TSrcAlignment>
-	void CopyConstructValue(const cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src){
+	void CopyConstructValue(const cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		this->TypeInfo->Operators->CopyConstruct(&this->Content,&Src.Content);
 	}
 
 	template<uIntn SrcSize,class TSrcAlignment>
-	void MoveConstructValue(cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src){
+	void MoveConstructValue(cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		this->TypeInfo->Operators->MoveConstruct(&this->Content,&Src.Content);
 	}
 
 	template<uIntn SrcSize,class TSrcAlignment>
-	void CopyAssignSameType(const cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src){
+	void CopyAssignSameType(const cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		if(this->TypeInfo->IsCopyAssignable){
 			this->TypeInfo->Operators->Copy(&this->Content,&Src.Content);
 		}
@@ -852,7 +927,7 @@ struct cAnyVariableContent_Value
 		}
 	}
 	template<uIntn SrcSize,class TSrcAlignment>
-	void MoveAssignSameType(cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src){
+	void MoveAssignSameType(cAnyVariableContent_Value<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		if(this->TypeInfo->IsMoveAssignable){
 			this->TypeInfo->Operators->Move(&this->Content,&Src.Content);
 		}
@@ -870,21 +945,21 @@ struct cAnyVariableContent_Pointer
 	rtTypeInfo TypeInfo;
 
 	template<class T>
-	T* Ptr(void){
+	T* Ptr(void)noexcept(true){
 		return static_cast<T*>(static_cast<void*>(this->Pointer));
 	}
 
 	template<class T>
-	const T* Ptr(void)const{
+	const T* Ptr(void)const noexcept(true){
 		return static_cast<const T*>(static_cast<const void*>(this->Pointer));
 	}
 
-	void Construct(void){
+	void Construct(void)noexcept(true){
 		static_cast<void*&>(this->Pointer)=this->TypeInfo->Operators->New();
 		this->TypeInfo->Operators->Construct(this->Pointer);
 	}
 
-	void Destruct(void){
+	void Destruct(void)noexcept(true){
 		this->TypeInfo->Operators->Destruct(this->Pointer);
 		this->TypeInfo->Operators->Delete(this->Pointer);
 	}
@@ -893,13 +968,13 @@ struct cAnyVariableContent_Pointer
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	template<class T,class...TArgs>
-	void ConstructAs(TArgs cnLib_UREF...Args){
+	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(true){
 		reinterpret_cast<T*&>(this->Pointer)=new T(cnLib_UREFCAST(TArgs)(Args)...);
 	}
 	         
 	// reconstruct
 	template<class T,class...TArgs>
-	void Reconstruct(TArgs cnLib_UREF...Args){
+	void Reconstruct(TArgs cnLib_UREF...Args)noexcept(true){
 		cnVar::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
 		cnVar::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArgs)(Args)...);
 	}
@@ -921,25 +996,25 @@ struct cAnyVariableContent_Pointer
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 	template<class T,class TSrc>
-	void SetVar(TSrc cnLib_UREF Src){
+	void SetVar(TSrc cnLib_UREF Src)noexcept(true){
 		cnVar::AssignOrReconstruct(*reinterpret_cast<T*&>(this->Pointer),cnLib_UREFCAST(TSrc)(Src));
 	}
 
 	
 	template<uIntn SrcSize,class TSrcAlignment>
-	void CopyConstructValue(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src){
+	void CopyConstructValue(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		static_cast<void*&>(this->Pointer)=TypeInfo->Operators->New();
 		this->TypeInfo->Operators->CopyConstruct(this->Pointer,Src.Pointer);
 	}
 	template<uIntn SrcSize,class TSrcAlignment>
-	void MoveConstructValue(cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src){
+	void MoveConstructValue(cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		static_cast<void*&>(this->Pointer)=Src.Pointer;
 		Src.TypeInfo=cnVar::TRuntimeTypeInfo<typename cnVar::TSelect<0,void,TAlignment>::Type>::Value;
 	}
 
 
 	template<uIntn SrcSize,class TSrcAlignment>
-	void CopyAssignSameType(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src){
+	void CopyAssignSameType(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		if(this->TypeInfo->IsCopyAssignable){
 			this->TypeInfo->Operators->Copy(this->Pointer,Src.Pointer);
 		}
@@ -951,7 +1026,7 @@ struct cAnyVariableContent_Pointer
 
 
 	template<uIntn SrcSize,class TSrcAlignment>
-	void MoveAssignSameType(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src){
+	void MoveAssignSameType(const cAnyVariableContent_Pointer<SrcSize,TSrcAlignment> &Src)noexcept(true){
 		if(this->TypeInfo->IsMoveAssignable){
 			this->TypeInfo->Operators->Move(this->Pointer,Src.Pointer);
 		}
@@ -977,8 +1052,8 @@ class cAnyVariable
 {
 public:
 
-	cAnyVariable(){		fValueContent.TypeInfo=TRuntimeTypeInfo<typename TSelect<0,void,TAlignment>::Type>::Value;	}
-	~cAnyVariable(){
+	cAnyVariable()noexcept(true){		fValueContent.TypeInfo=TRuntimeTypeInfo<typename TSelect<0,void,TAlignment>::Type>::Value;	}
+	~cAnyVariable()noexcept(true){
 		if(IsPointerContent()){
 			fPointerContent.Destruct();
 		}
@@ -987,17 +1062,17 @@ public:
 		}
 	}
 	
-	cAnyVariable(const cAnyVariable &Src){	CopyConstructA(Src);	}
+	cAnyVariable(const cAnyVariable &Src)noexcept(true){	CopyConstructA(Src);	}
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	cAnyVariable(cAnyVariable &&Src){			CopyConstructA(static_cast<cAnyVariable &&>(Src));	}
+	cAnyVariable(cAnyVariable &&Src)noexcept(true){			CopyConstructA(static_cast<cAnyVariable &&>(Src));	}
 #endif
 
 	template<class T>
-	cAnyVariable(T cnLib_UREF Src){
+	cAnyVariable(T cnLib_UREF Src)noexcept(true){
 		cSelector<typename TRemoveCVRef<T>::Type>::CopyConstruct(this,cnLib_UREFCAST(T)(Src));
 	}
 
-	cAnyVariable& operator = (const cAnyVariable &Src){
+	cAnyVariable& operator = (const cAnyVariable &Src)noexcept(true){
 		if(this==&Src)
 			return *this;
 
@@ -1006,37 +1081,37 @@ public:
 	}
 	
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-	cAnyVariable& operator = (cAnyVariable &&Src){
+	cAnyVariable& operator = (cAnyVariable &&Src)noexcept(true){
 		AssignA(static_cast<cAnyVariable&&>(Src));
 		return *this;
 	}
 #endif
 	// assignment operator
 	template<class T>
-	cAnyVariable& operator = (T cnLib_UREF Src){
+	cAnyVariable& operator = (T cnLib_UREF Src)noexcept(true){
 		cSelector<typename TRemoveCVRef<T>::Type>::Assign(this,cnLib_UREFCAST(T)(Src));
 		return *this;
 	}
 
 	// reference directly
 	template<class T>
-	T& Ref(void){
+	T& Ref(void)noexcept(true){
 		auto &Content=ContentSelector<T>();
 		return *Content.template Ptr<T>();
 	}
 	template<class T>
-	const T& Ref(void)const{
+	const T& Ref(void)const noexcept(true){
 		auto &Content=ContentSelector<T>();
 		return *Content.template Ptr<T>();
 	}
 	
-	template<class T>	explicit operator T& (){			return Ref<T>();	}
-	template<class T>	explicit operator const T& ()const{	return Ref<T>();	}
+	template<class T>	explicit operator T& ()noexcept(true){			return Ref<T>();	}
+	template<class T>	explicit operator const T& ()const noexcept(true){	return Ref<T>();	}
 	// Ptr
 	//	point to specified type
 	//	data of previous type should be overwritten
 	template<class T>
-	T* Ptr(void){
+	T* Ptr(void)noexcept(true){
 		if(IsType<T>()==false)
 			return nullptr;
 		auto &Content=ContentSelector<T>();
@@ -1045,7 +1120,7 @@ public:
 	// Ptr
 	//	point to specified type
 	template<class T>
-	const T* Ptr(void)const{
+	const T* Ptr(void)const noexcept(true){
 		if(IsType<T>()==false)
 			return nullptr;
 		auto &Content=ContentSelector<T>();
@@ -1055,19 +1130,19 @@ public:
 	// IsType
 	//	Check if it is type T
 	template<class T>
-	bool IsType(void)const{
+	bool IsType(void)const noexcept(true){
 		return fValueContent.TypeInfo==TRuntimeTypeInfo<T>::Value;
 	}
 	template<class T>
-	void SetType(void){
+	void SetType(void)noexcept(true){
 		return SetTypeInfo(TRuntimeTypeInfo<T>::Value);
 	}
 
-	rtTypeInfo GetTypeInfo(void)const{
+	rtTypeInfo GetTypeInfo(void)const noexcept(true){
 		return fValueContent.TypeInfo;
 	}
 	
-	void SetTypeInfo(rtTypeInfo NewTypeInfo){
+	void SetTypeInfo(rtTypeInfo NewTypeInfo)noexcept(true){
 		if(fValueContent.TypeInfo==NewTypeInfo)
 			return;
 
@@ -1087,7 +1162,7 @@ public:
 	}
 
 	template<class T>
-	bool Get(T &Dest)const{
+	bool Get(T &Dest)const noexcept(true){
 		if(IsType<T>()==false)
 			return false;
 		auto &Content=ContentSelector<T>();
@@ -1097,7 +1172,7 @@ public:
 
 	// assignment
 	template<class T=void,class TSrc>
-	void Set(TSrc cnLib_UREF Src){
+	void Set(TSrc cnLib_UREF Src)noexcept(true){
 		typedef typename TSelect<TIsSame<T,void>::Value,
 			T,
 			typename TRemoveCVRef<TSrc>::Type
@@ -1125,7 +1200,7 @@ public:
 
 	// reconstruct
 	template<class T,class...TArgs>
-	void Set(TArgs cnLib_UREF...Args){
+	void Set(TArgs cnLib_UREF...Args)noexcept(true){
 		rtTypeInfo NewTypeInfo=TRuntimeTypeInfo<T>::Value;
 		if(NewTypeInfo==fValueContent.TypeInfo){
 			auto &Content=ContentSelector<T>();
@@ -1165,27 +1240,27 @@ private:
 		>{};
 
 	template<class T>
-	typename cContentSelector<T>::Type& ContentSelector(void){
+	typename cContentSelector<T>::Type& ContentSelector(void)noexcept(true){
 		return reinterpret_cast<typename cContentSelector<T>::Type&>(fValueContent);
 	}
 	template<class T>
-	const typename cContentSelector<T>::Type& ContentSelector(void)const{
+	const typename cContentSelector<T>::Type& ContentSelector(void)const noexcept(true){
 		return reinterpret_cast<const typename cContentSelector<T>::Type&>(fValueContent);
 	}
 
 	template<class T>
-	static bool NeedPointer(void){
+	static bool NeedPointer(void)noexcept(true){
 		return StorageSize<sizeof(T);
 	}
-	static bool IsPointerContent(rtTypeInfo TypeInfo){
+	static bool IsPointerContent(rtTypeInfo TypeInfo)noexcept(true){
 		return TypeInfo->Size>StorageSize;
 	}
-	bool IsPointerContent(void)const{
+	bool IsPointerContent(void)const noexcept(true){
 		return fValueContent.TypeInfo->Size>StorageSize;
 	}
 
 	template<uIntn sSize,class sTAlignment>
-	void CopyConstructA(const cAnyVariable<sSize,sTAlignment> &Src){
+	void CopyConstructA(const cAnyVariable<sSize,sTAlignment> &Src)noexcept(true){
 		fValueContent.TypeInfo=Src.fValueContent.TypeInfo;
 		if(IsPointerContent(Src.fValueContent.TypeInfo)){
 			fPointerContent.CopyConstructValue(Src.fPointerContent);
@@ -1198,7 +1273,7 @@ private:
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	template<uIntn sSize,class sTAlignment>
-	void CopyConstructA(cAnyVariable<sSize,sTAlignment> &&Src){
+	void CopyConstructA(cAnyVariable<sSize,sTAlignment> &&Src)noexcept(true){
 		fValueContent.TypeInfo=Src.fValueContent.TypeInfo;
 		if(IsPointerContent(Src.fValueContent.TypeInfo)){
 			fPointerContent.MoveConstructValue(Src.fPointerContent);
@@ -1210,7 +1285,7 @@ private:
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	template<uIntn sSize,class sTAlignment>
-	void AssignA(const cAnyVariable<sSize,sTAlignment> &Src){
+	void AssignA(const cAnyVariable<sSize,sTAlignment> &Src)noexcept(true){
 		bool ThisIsPointer=IsPointerContent();
 		if(Src.fValueContent.TypeInfo==fValueContent.TypeInfo){
 			if(ThisIsPointer){
@@ -1235,7 +1310,7 @@ private:
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	template<uIntn sSize,class sTAlignment>
-	void AssignA(cAnyVariable<sSize,sTAlignment> &&Src){
+	void AssignA(cAnyVariable<sSize,sTAlignment> &&Src)noexcept(true){
 		bool ThisIsPointer=IsPointerContent();
 		if(Src.fValueContent.TypeInfo==fValueContent.TypeInfo){
 			if(ThisIsPointer){
@@ -1265,7 +1340,7 @@ private:
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	template<class T,class TSrc>
-	void CopyConstructT(TSrc cnLib_UREF Src){
+	void CopyConstructT(TSrc cnLib_UREF Src)noexcept(true){
 		auto &Content=ContentSelector<T>();
 		Content.TypeInfo=TRuntimeTypeInfo<T>::Value;
 		Content.template ConstructAs<T>(cnLib_UREFCAST(TSrc)(Src));
@@ -1274,11 +1349,11 @@ private:
 	struct cFunction_cAnyVariable
 	{
 		template<class TSrc>
-		static void CopyConstruct(cAnyVariable *pThis,TSrc cnLib_UREF Src){
+		static void CopyConstruct(cAnyVariable *pThis,TSrc cnLib_UREF Src)noexcept(true){
 			return pThis->CopyConstructA(cnLib_UREFCAST(TSrc)(Src));
 		}
 		template<class TSrc>
-		static void Assign(cAnyVariable *pThis,TSrc cnLib_UREF Src){
+		static void Assign(cAnyVariable *pThis,TSrc cnLib_UREF Src)noexcept(true){
 			return pThis->AssignA(cnLib_UREFCAST(TSrc)(Src));
 		}
 	};
@@ -1286,11 +1361,11 @@ private:
 	struct cFunction_T
 	{
 		template<class TSrc>
-		static void CopyConstruct(cAnyVariable *pThis,TSrc cnLib_UREF Src){
+		static void CopyConstruct(cAnyVariable *pThis,TSrc cnLib_UREF Src)noexcept(true){
 			return pThis->CopyConstructT<T>(cnLib_UREFCAST(TSrc)(Src));
 		}
 		template<class TSrc>
-		static void Assign(cAnyVariable *pThis,TSrc cnLib_UREF Src){
+		static void Assign(cAnyVariable *pThis,TSrc cnLib_UREF Src)noexcept(true){
 			return pThis->Set<T>(cnLib_UREFCAST(TSrc)(Src));
 		}
 	};

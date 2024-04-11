@@ -22,89 +22,89 @@ cnLib_ENUM_BEGIN(ufInt8,ImageScaleType)
 	StrectFull,
 }cnLib_ENUM_END(ImageScaleType);
 //---------------------------------------------------------------------------
-bool ImageRatioCompare(cUIPoint Size1,cUIPoint Size2);
+bool ImageRatioCompare(cUIPoint Size1,cUIPoint Size2)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE viImageData : public viData
 {
 public:
-	cFunctionSet<void (void)> ControlImageNotifySet;
-	virtual iBitmapDataSource* ControlImage(void)=0;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)=0;
-	virtual eAlignment ControlImageAlignment(void)=0;
-	virtual eImageScaleType ControlImageScale(void)=0;
+	cFunctionSet<void (void)noexcept(true)> ControlImageNotifySet;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)=0;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)=0;
+	virtual eAlignment ControlImageAlignment(void)noexcept(true)=0;
+	virtual eImageScaleType ControlImageScale(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class vImage : public vSimpleViewPainter
 {
 public:
-	vImage(viImageData *Data=nullptr);
-	~vImage();
+	vImage(viImageData *Data=nullptr)noexcept(true);
+	~vImage()noexcept(true);
 
-	static rPtr<viControl> Create(viImageData *Data);
+	static rPtr<viControl> Create(viImageData *Data)noexcept(true);
 
-	viImageData* GetData(void);
-	void SetData(viImageData *Data);
+	viImageData* GetData(void)noexcept(true);
+	void SetData(viImageData *Data)noexcept(true);
 
 protected:
 
 	dPtr<viImageData> fData;
 
-	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)override;
+	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)noexcept(true)override;
 private:
-	void Update(void);
+	void Update(void)noexcept(true);
 
 	iPtr<iUIBitmap> fCacheImageGraph;
 	cUIPoint fImageGraphSize;
 	bool fUpdateImage;
 
-	void SetupImageCache(void);
+	void SetupImageCache(void)noexcept(true);
 
-	cUIPoint TransformImageRect(void);
+	cUIPoint TransformImageRect(void)noexcept(true);
 
 	iFunctionToken *fImageDataNotifyToken;
 
-	void DataInsertCallback(void);
-	void DataRemoveCallback(void);
+	void DataInsertCallback(void)noexcept(true);
+	void DataRemoveCallback(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cImage : public cVisual, public viImageData
 { 
 public:
-	cImage();
-	~cImage();
+	cImage()noexcept(true);
+	~cImage()noexcept(true);
 
-	void Update(void);
+	void Update(void)noexcept(true);
 
 	iPtr<iBitmapDataSource> Image;
 	eAlignment ImageAlign=Alignment::Center;
 	eImageBlendingOperator ImageBlend=ImageBlendingOperator::Alpha;
 	eImageScaleType ImageScale=ImageScaleType::AspectFull;
 
-	virtual iBitmapDataSource* ControlImage(void)override;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)override;
-	virtual eAlignment ControlImageAlignment(void)override;
-	virtual eImageScaleType ControlImageScale(void)override;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)override;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)override;
+	virtual eAlignment ControlImageAlignment(void)noexcept(true)override;
+	virtual eImageScaleType ControlImageScale(void)noexcept(true)override;
 
 
 protected:
 
-	virtual void ControlContentSetDefault(void)override;
+	virtual void ControlContentSetDefault(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE viButtonImageData : public viData
 {
 public:
-	cFunctionSet<void (void)> ButtonImageNotifySet;
-	virtual iBitmapDataSource* ButtonImageForState(eButtonState State)=0;
-	virtual eImageBlendingOperator ButtonImageBlendingOperatorForState(eButtonState State)=0;
-	virtual eAlignment ButtonImageAlignment(void)=0;
+	cFunctionSet<void (void)noexcept(true)> ButtonImageNotifySet;
+	virtual iBitmapDataSource* ButtonImageForState(eButtonState State)noexcept(true)=0;
+	virtual eImageBlendingOperator ButtonImageBlendingOperatorForState(eButtonState State)noexcept(true)=0;
+	virtual eAlignment ButtonImageAlignment(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cButtonImageData : public viButtonImageData
 {
 public:
-	cButtonImageData();
-	~cButtonImageData();
+	cButtonImageData()noexcept(true);
+	~cButtonImageData()noexcept(true);
 
 	eAlignment ImageAlign=Alignment::None;
 	eImageBlendingOperator ImageBlend=ImageBlendingOperator::Alpha;
@@ -114,27 +114,27 @@ public:
 	iPtr<iBitmapDataSource> DisabledImage;
 	iPtr<iBitmapDataSource> InactiveImage;
 
-	void Update(void);
+	void Update(void)noexcept(true);
 
-	virtual iBitmapDataSource* ButtonImageForState(eButtonState State)override;
-	virtual eImageBlendingOperator ButtonImageBlendingOperatorForState(eButtonState State)override;
-	virtual eAlignment ButtonImageAlignment(void)override;
+	virtual iBitmapDataSource* ButtonImageForState(eButtonState State)noexcept(true)override;
+	virtual eImageBlendingOperator ButtonImageBlendingOperatorForState(eButtonState State)noexcept(true)override;
+	virtual eAlignment ButtonImageAlignment(void)noexcept(true)override;
 protected:
 };
 //---------------------------------------------------------------------------
 class vButtonImage : public vSimpleViewPainter
 {
 public:
-	vButtonImage(viButtonData *ButtonData=nullptr,viButtonImageData *ImageData=nullptr);
-	~vButtonImage();
+	vButtonImage(viButtonData *ButtonData=nullptr,viButtonImageData *ImageData=nullptr)noexcept(true);
+	~vButtonImage()noexcept(true);
 
-	static rPtr<viControl> Create(viButtonData *ButtonData,viButtonImageData *ImageData);
+	static rPtr<viControl> Create(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept(true);
 
-	viButtonData* GetButtonData(void)const;
-	void SetButtonData(viButtonData *Data);
-	viButtonImageData* GetImageData(void)const;
-	void SetImageData(viButtonImageData *Data);
-	void SetData(viButtonData *ButtonData,viButtonImageData *ImageData);
+	viButtonData* GetButtonData(void)const noexcept(true);
+	void SetButtonData(viButtonData *Data)noexcept(true);
+	viButtonImageData* GetImageData(void)const noexcept(true);
+	void SetImageData(viButtonImageData *Data)noexcept(true);
+	void SetData(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept(true);
 
 protected:
 	dPtr<viButtonData> fButtonData;
@@ -146,26 +146,26 @@ protected:
 	iPtr<iUIBitmap> fCacheImageInactive;
 	iPtr<iUIBitmap> fCacheImageDisabled;
 
-	void Update(void);
-	void UpdateState(void);
+	void Update(void)noexcept(true);
+	void UpdateState(void)noexcept(true);
 
-	void ClearCache(void);
-	void SetupCacheNormal(void);
-	void SetupCacheImage(iPtr<iUIBitmap> &CacheImage,eButtonState State);
-	void SetupCacheHot(void);
-	void SetupCachePressed(void);
-	void SetupCacheInactive(void);
-	void SetupCacheDisabled(void);
+	void ClearCache(void)noexcept(true);
+	void SetupCacheNormal(void)noexcept(true);
+	void SetupCacheImage(iPtr<iUIBitmap> &CacheImage,eButtonState State)noexcept(true);
+	void SetupCacheHot(void)noexcept(true);
+	void SetupCachePressed(void)noexcept(true);
+	void SetupCacheInactive(void)noexcept(true);
+	void SetupCacheDisabled(void)noexcept(true);
 
-	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)override;
+	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)noexcept(true)override;
 private:
 	iFunctionToken *fButtonDataNofityToken;
 	iFunctionToken *fButtonImageDataNotifyToken;
 
-	void ButtonDataInsertCallback(void);
-	void ButtonDataRemoveCallback(void);
-	void ImageDataInsertCallback(void);
-	void ImageDataRemoveCallback(void);
+	void ButtonDataInsertCallback(void)noexcept(true);
+	void ButtonDataRemoveCallback(void)noexcept(true);
+	void ImageDataInsertCallback(void)noexcept(true);
+	void ImageDataRemoveCallback(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct cLayoutImageTextOptions
@@ -177,36 +177,36 @@ struct cLayoutImageTextOptions
 };
 //---------------------------------------------------------------------------
 void LayoutImageText(cUIPoint &TextPos,cUIPoint &ImagePos,const cUIPoint &TextSize,const cUIPoint &ImageSize,
-	const cUIPoint &AreaSize,const cLayoutImageTextOptions &Option);
+	const cUIPoint &AreaSize,const cLayoutImageTextOptions &Option)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE viImageTextControlData : public viData
 {
 public:
-	cFunctionSet<void (void)> ControlImageTextNotifySet;
-	virtual const uChar16* ControlTextString(void)=0;
-	virtual uIntn ControlTextLength(void)=0;
-	virtual const cUITextStyle& ControlTextStyle(void)=0;
-	virtual iBitmapDataSource* ControlImage(void)=0;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)=0;
-	virtual cLayoutImageTextOptions ControlImageTextOption(void)=0;
+	cFunctionSet<void (void)noexcept(true)> ControlImageTextNotifySet;
+	virtual const uChar16* ControlTextString(void)noexcept(true)=0;
+	virtual uIntn ControlTextLength(void)noexcept(true)=0;
+	virtual const cUITextStyle& ControlTextStyle(void)noexcept(true)=0;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)=0;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)=0;
+	virtual cLayoutImageTextOptions ControlImageTextOption(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class vImageLabel : public vSimpleViewPainter
 {
 public:
-	vImageLabel(viImageTextControlData *Data=nullptr);
-	~vImageLabel();
+	vImageLabel(viImageTextControlData *Data=nullptr)noexcept(true);
+	~vImageLabel()noexcept(true);
 
-	static rPtr<viControl> Create(viImageTextControlData *Data);
+	static rPtr<viControl> Create(viImageTextControlData *Data)noexcept(true);
 
-	viImageTextControlData* GetData(void)const;
-	void SetData(viImageTextControlData *Data);
+	viImageTextControlData* GetData(void)const noexcept(true);
+	void SetData(viImageTextControlData *Data)noexcept(true);
 
 protected:
 
 	dPtr<viImageTextControlData> fData;
 
-	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)override;
+	virtual void cnLib_FUNC Paint(iUISimplePaintContext *Context)noexcept(true)override;
 private:
 
 	iPtr<iUIBitmap> fCacheImageGraph;
@@ -216,13 +216,13 @@ private:
 	bool fUpdateText;
 	bool fUpdateImage;
 
-	void SetupTextCache(void);
-	void SetupImageCache(void);
+	void SetupTextCache(void)noexcept(true);
+	void SetupImageCache(void)noexcept(true);
 
-	void Update(void);
+	void Update(void)noexcept(true);
 
-	void DataInsertCallback(void);
-	void DataRemoveCallback(void);
+	void DataInsertCallback(void)noexcept(true);
+	void DataRemoveCallback(void)noexcept(true);
 	
 	iFunctionToken *fImageTextNoftifyToken;
 };
@@ -230,10 +230,10 @@ private:
 class cImageLabel : public cVisual, public viImageTextControlData
 { 
 public:
-	cImageLabel();
-	~cImageLabel();
+	cImageLabel()noexcept(true);
+	~cImageLabel()noexcept(true);
 
-	void Update(void);
+	void Update(void)noexcept(true);
 
 	iPtr<iBitmapDataSource> Image;
 	cString<uChar16> Text;
@@ -243,23 +243,23 @@ public:
 	sfInt8 ImageMargin=2;
 	eImageBlendingOperator ImageBlend=ImageBlendingOperator::Alpha;
 
-	virtual const uChar16* ControlTextString(void)override;
-	virtual uIntn ControlTextLength(void)override;
-	virtual const cUITextStyle& ControlTextStyle(void)override;
-	virtual iBitmapDataSource* ControlImage(void)override;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)override;
-	virtual cLayoutImageTextOptions ControlImageTextOption(void)override;
+	virtual const uChar16* ControlTextString(void)noexcept(true)override;
+	virtual uIntn ControlTextLength(void)noexcept(true)override;
+	virtual const cUITextStyle& ControlTextStyle(void)noexcept(true)override;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)override;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)override;
+	virtual cLayoutImageTextOptions ControlImageTextOption(void)noexcept(true)override;
 
 protected:
 	
-	virtual void ControlContentSetDefault(void)override;
+	virtual void ControlContentSetDefault(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 class bcImageTextButton : public bcButton, public viImageTextControlData
 {
 public:
-	bcImageTextButton();
-	~bcImageTextButton();
+	bcImageTextButton()noexcept(true);
+	~bcImageTextButton()noexcept(true);
 
 	cUITextStyle TextStyle;
 
@@ -275,50 +275,50 @@ public:
 	sfInt8 ImageMargin=2;
 
 
-	void SetContent(rPtr<viControl> Content);
-	void UpdateZPosition(void);
+	void SetContent(rPtr<viControl> Content)noexcept(true);
+	void UpdateZPosition(void)noexcept(true);
 
-	void Update(void);
-	void UpdateState(void);
+	void Update(void)noexcept(true);
+	void UpdateState(void)noexcept(true);
 
-	virtual const uChar16* ControlTextString(void)override;
-	virtual uIntn ControlTextLength(void)override;
-	virtual const cUITextStyle& ControlTextStyle(void)override;
-	virtual iBitmapDataSource* ControlImage(void)override;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)override;
-	virtual cLayoutImageTextOptions ControlImageTextOption(void)override;
+	virtual const uChar16* ControlTextString(void)noexcept(true)override;
+	virtual uIntn ControlTextLength(void)noexcept(true)override;
+	virtual const cUITextStyle& ControlTextStyle(void)noexcept(true)override;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)override;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)override;
+	virtual cLayoutImageTextOptions ControlImageTextOption(void)noexcept(true)override;
 
 protected:
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
 	rPtr<viControl> fContent;
-	virtual void ControlContentSetDefault(void);
+	virtual void ControlContentSetDefault(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cImageTextButton : public bcImageTextButton
 {
 public:
-	cImageTextButton();
-	~cImageTextButton();
+	cImageTextButton()noexcept(true);
+	~cImageTextButton()noexcept(true);
 
 	iPtr<iBitmapDataSource> Image;
 	cString<uChar16> Text;
 	ufInt8 Check=0;
 	eImageBlendingOperator ImageBlend=ImageBlendingOperator::Alpha;
 
-	virtual ufInt8 CheckState(void)override;
-	virtual const uChar16* ControlTextString(void)override;
-	virtual uIntn ControlTextLength(void)override;
-	virtual iBitmapDataSource* ControlImage(void)override;
-	virtual eImageBlendingOperator ControlImageBlendingOperator(void)override;
+	virtual ufInt8 CheckState(void)noexcept(true)override;
+	virtual const uChar16* ControlTextString(void)noexcept(true)override;
+	virtual uIntn ControlTextLength(void)noexcept(true)override;
+	virtual iBitmapDataSource* ControlImage(void)noexcept(true)override;
+	virtual eImageBlendingOperator ControlImageBlendingOperator(void)noexcept(true)override;
 	
-	cFunction<void (void)> OnClick;
+	cFunction<void (void)noexcept(true)> OnClick;
 
 protected:
-	virtual bool ButtonMouseAllowButton(eMouseButton Button)override;
-	virtual void ButtonClick(const cUIPoint &Pos)override;
+	virtual bool ButtonMouseAllowButton(eMouseButton Button)noexcept(true)override;
+	virtual void ButtonClick(const cUIPoint &Pos)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

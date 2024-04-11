@@ -17,12 +17,12 @@ class aMouseClick : public MouseAction
 {
 public:
 	eMouseButton ActionButton=MouseButton::Left;
-	cFunction<void (void)> OnClick;
+	cFunction<void (void)noexcept(true)> OnClick;
 protected:
 	eMouseButton fClickButton;
-	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
+	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
 
 };
 //---------------------------------------------------------------------------
@@ -33,19 +33,19 @@ public:
 	bool ActionWhenButtonUp=false;
 	ufInt16 TapCount=0;
 	ufInt16 TapIntervalMS=200;
-	cUIPoint GetTapPos(void)const;
+	cUIPoint GetTapPos(void)const noexcept(true);
 
 	sInt32 CancelDistance=5;
-	cFunction<void (void)> OnTap;
+	cFunction<void (void)noexcept(true)> OnTap;
 protected:
 	eMouseButton fClickButton;
 	cUIPoint fDownPos;
 	sInt64 fDownTime;
-	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
+	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
 
-	void ActionTap(void);
+	void ActionTap(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class aMouseHover : public MouseAction
@@ -58,20 +58,20 @@ protected:
 	cUIPoint fHoverPos;
 	bool fHoverStarted=false;
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	//virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)override;
+	//virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)override;
 
 	class cMouseHoverTimerProc : public iProcedure
 	{
-		virtual void cnLib_FUNC Execute(void)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	}fMouseHoverTimerProc;
 	rPtr<iAsyncTimer> fHoverTimer;
 
-	void ActionHover(void);
+	void ActionHover(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class aMousePan : public MouseAction
@@ -83,35 +83,35 @@ public:
 	bool AllowX=true;
 	bool AllowY=true;
 
-	cFunction<bool (cUIPoint Pos)> OnAllowScroll;
+	cFunction<bool (cUIPoint Pos)noexcept(true)> OnAllowScroll;
 	
-	cFunction<void (cUIPoint Pos)> OnScrollStart;
-	cFunction<void (cUIPoint Pos)> OnScrollFinish;
-	cFunction<void (cUIPoint Pos)> OnScroll;
+	cFunction<void (cUIPoint Pos)noexcept(true)> OnScrollStart;
+	cFunction<void (cUIPoint Pos)noexcept(true)> OnScrollFinish;
+	cFunction<void (cUIPoint Pos)noexcept(true)> OnScroll;
 protected:
-	//virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
+	//virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+	virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
 
 	class cExclusiveHandler : public MouseHandler
 	{
-		aMousePan* GetHost(void);
+		aMousePan* GetHost(void)noexcept(true);
 	public:
-		//virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)override;
-		//virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)override;
-		//virtual iInterface* cnLib_FUNC MouseGetCursor(iUIMouseEvent *MouseEvent)override;
-		virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)override;
-		//virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-		virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
-		//virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,sfInt16 ScrollX,sfInt16 ScrollY)override;
-		//virtual void cnLib_FUNC MouseHover(iUIMouseEvent *MouseEvent)override;
+		//virtual void cnLib_FUNC MouseEnter(iUIMouseEvent *MouseEvent)noexcept(true)override;
+		//virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
+		//virtual iInterface* cnLib_FUNC MouseGetCursor(iUIMouseEvent *MouseEvent)noexcept(true)override;
+		virtual void cnLib_FUNC MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)override;
+		//virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+		virtual void cnLib_FUNC MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
+		//virtual void cnLib_FUNC MouseWheel(iUIMouseEvent *MouseEvent,sfInt16 ScrollX,sfInt16 ScrollY)noexcept(true)override;
+		//virtual void cnLib_FUNC MouseHover(iUIMouseEvent *MouseEvent)noexcept(true)override;
 
 	}fExclusiveHandler;
 
-	void ExclusiveMouseMove(iUIMouseEvent *MouseEvent);
-	void ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button);
+	void ExclusiveMouseMove(iUIMouseEvent *MouseEvent)noexcept(true);
+	void ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true);
 private:
 
 	eMouseButton fDownButton=MouseButton::None;
@@ -122,29 +122,29 @@ private:
 class afMouseActiveContent : public ViewControl, protected MouseHandler, protected KeyHandler
 {
 public:
-	afMouseActiveContent();
-	~afMouseActiveContent();
+	afMouseActiveContent()noexcept(true);
+	~afMouseActiveContent()noexcept(true);
 
 	bool AutoFocus=false;
 
-	void SetActiveView(iUIView *View);
+	void SetActiveView(iUIView *View)noexcept(true);
 protected:
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)override;
-	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)override;
+	virtual void cnLib_FUNC MouseEnterRange(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseLeaveRange(iUIMouseEvent *MouseEvent)noexcept(true)override;
+	virtual void cnLib_FUNC MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)override;
 
-	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)override;
-	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)override;
+	virtual void cnLib_FUNC KeyFocusEnterRange(iUIKeyEvent *KeyEvent)noexcept(true)override;
+	virtual void cnLib_FUNC KeyFocusLeaveRange(iUIKeyEvent *KeyEvent)noexcept(true)override;
 
 
 private:
 	bool fHot=false;
 	bool fActiveFocus=false;
 	iPtr<iUIView> fActiveView;
-	void ApplyActiveViewVisible(void);
+	void ApplyActiveViewVisible(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnUI

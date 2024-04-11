@@ -7,32 +7,32 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-CHAR Interlocked::_Func<1>::Inc(volatile CHAR &Dest){	return _InterlockedExchangeAdd8(&Dest,1);	}
-CHAR Interlocked::_Func<1>::Dec(volatile CHAR &Dest){	return _InterlockedExchangeAdd8(&Dest,-1);	}
-CHAR Interlocked::_Func<1>::Xchg(volatile CHAR &Dest,CHAR Src){	return InterlockedExchange8(&Dest,Src);	}
-CHAR Interlocked::_Func<1>::CmpXchg(volatile CHAR &Dest,CHAR Src,CHAR Compare){	return _InterlockedCompareExchange8(&Dest,Src,Compare);	}
+CHAR Interlocked::_Func<1>::Inc(volatile CHAR &Dest)noexcept{	return _InterlockedExchangeAdd8(&Dest,1);	}
+CHAR Interlocked::_Func<1>::Dec(volatile CHAR &Dest)noexcept{	return _InterlockedExchangeAdd8(&Dest,-1);	}
+CHAR Interlocked::_Func<1>::Xchg(volatile CHAR &Dest,CHAR Src)noexcept{	return InterlockedExchange8(&Dest,Src);	}
+CHAR Interlocked::_Func<1>::CmpXchg(volatile CHAR &Dest,CHAR Src,CHAR Compare)noexcept{	return _InterlockedCompareExchange8(&Dest,Src,Compare);	}
 //---------------------------------------------------------------------------
-SHORT Interlocked::_Func<2>::Inc(volatile SHORT &Dest){	return InterlockedIncrement16(&Dest);	}
-SHORT Interlocked::_Func<2>::Dec(volatile SHORT &Dest){	return InterlockedDecrement16(&Dest);	}
-SHORT Interlocked::_Func<2>::Xchg(volatile SHORT &Dest,SHORT Src){	return InterlockedExchange16(&Dest,Src);	}
-SHORT Interlocked::_Func<2>::CmpXchg(volatile SHORT &Dest,SHORT Src,SHORT Compare){	return InterlockedCompareExchange16(&Dest,Src,Compare);	}
+SHORT Interlocked::_Func<2>::Inc(volatile SHORT &Dest)noexcept{	return InterlockedIncrement16(&Dest);	}
+SHORT Interlocked::_Func<2>::Dec(volatile SHORT &Dest)noexcept{	return InterlockedDecrement16(&Dest);	}
+SHORT Interlocked::_Func<2>::Xchg(volatile SHORT &Dest,SHORT Src)noexcept{	return InterlockedExchange16(&Dest,Src);	}
+SHORT Interlocked::_Func<2>::CmpXchg(volatile SHORT &Dest,SHORT Src,SHORT Compare)noexcept{	return InterlockedCompareExchange16(&Dest,Src,Compare);	}
 //---------------------------------------------------------------------------
-LONG Interlocked::_Func<4>::Inc(volatile LONG &Dest){	return InterlockedIncrement(&Dest);	}
-LONG Interlocked::_Func<4>::Dec(volatile LONG &Dest){	return InterlockedDecrement(&Dest);	}
-LONG Interlocked::_Func<4>::Xchg(volatile LONG &Dest,LONG Src){	return InterlockedExchange(&Dest,Src);	}
-LONG Interlocked::_Func<4>::CmpXchg(volatile LONG &Dest,LONG Src,LONG Compare){	return InterlockedCompareExchange(&Dest,Src,Compare);	}
+LONG Interlocked::_Func<4>::Inc(volatile LONG &Dest)noexcept{	return InterlockedIncrement(&Dest);	}
+LONG Interlocked::_Func<4>::Dec(volatile LONG &Dest)noexcept{	return InterlockedDecrement(&Dest);	}
+LONG Interlocked::_Func<4>::Xchg(volatile LONG &Dest,LONG Src)noexcept{	return InterlockedExchange(&Dest,Src);	}
+LONG Interlocked::_Func<4>::CmpXchg(volatile LONG &Dest,LONG Src,LONG Compare)noexcept{	return InterlockedCompareExchange(&Dest,Src,Compare);	}
 //---------------------------------------------------------------------------
-LONG64 Interlocked::_Func<8>::Inc(volatile LONG64 &Dest){	return InterlockedIncrement64(&Dest);	}
-LONG64 Interlocked::_Func<8>::Dec(volatile LONG64 &Dest){	return InterlockedDecrement64(&Dest);	}
-LONG64 Interlocked::_Func<8>::Xchg(volatile LONG64 &Dest,LONG64 Src){	return InterlockedExchange64(&Dest,Src);	}
-LONG64 Interlocked::_Func<8>::CmpXchg(volatile LONG64 &Dest,LONG64 Src,LONG64 Compare){	return InterlockedCompareExchange64(&Dest,Src,Compare);	}
+LONG64 Interlocked::_Func<8>::Inc(volatile LONG64 &Dest)noexcept{	return InterlockedIncrement64(&Dest);	}
+LONG64 Interlocked::_Func<8>::Dec(volatile LONG64 &Dest)noexcept{	return InterlockedDecrement64(&Dest);	}
+LONG64 Interlocked::_Func<8>::Xchg(volatile LONG64 &Dest,LONG64 Src)noexcept{	return InterlockedExchange64(&Dest,Src);	}
+LONG64 Interlocked::_Func<8>::CmpXchg(volatile LONG64 &Dest,LONG64 Src,LONG64 Compare)noexcept{	return InterlockedCompareExchange64(&Dest,Src,Compare);	}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 constexpr char cWinExclusiveFlag::rfIdle;
 constexpr char cWinExclusiveFlag::rfExecute;
 constexpr char cWinExclusiveFlag::rfPending;
 //---------------------------------------------------------------------------
-cWinExclusiveFlag::cWinExclusiveFlag(bool InitalRun)
+cWinExclusiveFlag::cWinExclusiveFlag(bool InitalRun)noexcept
 {
 	if(InitalRun)
 		fRunFlag=rfPending;
@@ -40,12 +40,12 @@ cWinExclusiveFlag::cWinExclusiveFlag(bool InitalRun)
 		fRunFlag=rfIdle;
 }
 //---------------------------------------------------------------------------
-bool cWinExclusiveFlag::IsRunning(void)const
+bool cWinExclusiveFlag::IsRunning(void)const noexcept
 {
 	return fRunFlag!=rfIdle;
 }
 //---------------------------------------------------------------------------
-bool cWinExclusiveFlag::Acquire(void)
+bool cWinExclusiveFlag::Acquire(void)noexcept
 {
 	auto PrevRunFlag=::_InterlockedExchange8(&fRunFlag,rfPending);
 	switch(PrevRunFlag){
@@ -63,7 +63,7 @@ bool cWinExclusiveFlag::Acquire(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool cWinExclusiveFlag::Release(void)
+bool cWinExclusiveFlag::Release(void)noexcept
 {
 	// decrease state
 	auto PrevRunFlag=::_InterlockedExchangeAdd8(&fRunFlag,-1);
@@ -79,49 +79,49 @@ bool cWinExclusiveFlag::Release(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cWinExclusiveFlag::Continue(void)
+void cWinExclusiveFlag::Continue(void)noexcept
 {
 	fRunFlag=rfExecute;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinTLS::cWinTLS()
+cWinTLS::cWinTLS()noexcept
 {
 	fTLSIndex=::TlsAlloc();
 }
 //---------------------------------------------------------------------------
-cWinTLS::~cWinTLS()
+cWinTLS::~cWinTLS()noexcept
 {
 	::TlsFree(fTLSIndex);
 }
 //---------------------------------------------------------------------------
-void* cWinTLS::Get(void)
+void* cWinTLS::Get(void)noexcept
 {
 	return ::TlsGetValue(fTLSIndex);
 }
 //---------------------------------------------------------------------------
-bool cWinTLS::Set(void *Value)
+bool cWinTLS::Set(void *Value)noexcept
 {
 	return ::TlsSetValue(fTLSIndex,Value)!=FALSE;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinWaitObject::cWinWaitObject()
+cWinWaitObject::cWinWaitObject()noexcept
 {
 	fRefCount=0;
 }
 //---------------------------------------------------------------------------
-cWinWaitObject::~cWinWaitObject()
+cWinWaitObject::~cWinWaitObject()noexcept
 {
 	cnLib_ASSERT(fRefCount==0);
 }
 //---------------------------------------------------------------------------
-void cWinWaitObject::Acquire(void)
+void cWinWaitObject::Acquire(void)noexcept
 {
 	fRefCount.Free++;
 }
 //---------------------------------------------------------------------------
-void cWinWaitObject::Release(void)
+void cWinWaitObject::Release(void)noexcept
 {
 	if(fRefCount.Free--==0){
 		if(fWaitThreadHandle!=nullptr){
@@ -130,18 +130,18 @@ void cWinWaitObject::Release(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool cWinWaitObject::Check(void)
+bool cWinWaitObject::Check(void)noexcept
 {
 	return fRefCount==0;
 }
 //---------------------------------------------------------------------------
-VOID CALLBACK cWinWaitObject::WaitNotifyAPC(ULONG_PTR Param)
+VOID CALLBACK cWinWaitObject::WaitNotifyAPC(ULONG_PTR Param)noexcept
 {
 	auto This=reinterpret_cast<cWinWaitObject*>(Param);
 	This->fWaitFlag=false;
 }
 //---------------------------------------------------------------------------
-void cWinWaitObject::Wait(DWORD Millisecond)
+void cWinWaitObject::Wait(DWORD Millisecond)noexcept
 {
 	if(fRefCount==0)
 		return;
@@ -166,69 +166,69 @@ void cWinWaitObject::Wait(DWORD Millisecond)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinWaitReference::cWinWaitReference()
+cWinWaitReference::cWinWaitReference()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cWinWaitReference::~cWinWaitReference()
+cWinWaitReference::~cWinWaitReference()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWinWaitReference::IncreaseReference(void)noexcept(true) 
+void cWinWaitReference::IncreaseReference(void)noexcept
 {
 	Acquire();
 }
 //---------------------------------------------------------------------------
-void cWinWaitReference::DecreaseReference(void)noexcept(true) 
+void cWinWaitReference::DecreaseReference(void)noexcept
 {
 	Release();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCriticalSection::cCriticalSection()
+cCriticalSection::cCriticalSection()noexcept
 {
 	::InitializeCriticalSection(&fCriticalSection);
 }
-cCriticalSection::~cCriticalSection()
+cCriticalSection::~cCriticalSection()noexcept
 {
 	::DeleteCriticalSection(&fCriticalSection);
 }
 //---------------------------------------------------------------------------
-void cCriticalSection::Acquire(void)
+void cCriticalSection::Acquire(void)noexcept
 {
 	::EnterCriticalSection(&fCriticalSection);
 }
 //---------------------------------------------------------------------------
-bool cCriticalSection::TryAcquire(void)
+bool cCriticalSection::TryAcquire(void)noexcept
 {
 	return ::TryEnterCriticalSection(&fCriticalSection)!=FALSE;
 }
 //---------------------------------------------------------------------------
-void cCriticalSection::Release(void)
+void cCriticalSection::Release(void)noexcept
 {
 	::LeaveCriticalSection(&fCriticalSection);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDependentRegistration::cDependentRegistration()
+cDependentRegistration::cDependentRegistration()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cDependentRegistration::~cDependentRegistration()
+cDependentRegistration::~cDependentRegistration()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Register(iDependentInfo *Dependent)
+void cDependentRegistration::Register(iDependentInfo *Dependent)noexcept
 {
 	return Register(reinterpret_cast<bcNotifyToken*>(Dependent));
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Unregister(iDependentInfo *Dependent)
+void cDependentRegistration::Unregister(iDependentInfo *Dependent)noexcept
 {
 	return Unregister(reinterpret_cast<bcNotifyToken*>(Dependent));
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Register(bcNotifyToken *NotifyToken)
+void cDependentRegistration::Register(bcNotifyToken *NotifyToken)noexcept
 {
 	auto AutoLock=TakeLock(&fCS);
 
@@ -239,7 +239,7 @@ void cDependentRegistration::Register(bcNotifyToken *NotifyToken)
 	}
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Unregister(bcNotifyToken *NotifyToken)
+void cDependentRegistration::Unregister(bcNotifyToken *NotifyToken)noexcept
 {
 	auto AutoLock=TakeLock(&fCS);
 	if(fDependentSet.Remove(NotifyToken)){
@@ -263,7 +263,7 @@ void cDependentRegistration::Unregister(bcNotifyToken *NotifyToken)
 	}
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Shutdown(void)
+void cDependentRegistration::Shutdown(void)noexcept
 {
 	if(fShutDown)
 		return;
@@ -319,41 +319,41 @@ void cDependentRegistration::Shutdown(void)
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cSRWLock::cSRWLock()
+cSRWLock::cSRWLock()noexcept
 {
 	::InitializeSRWLock(&fLock);
 }
 //---------------------------------------------------------------------------
-cSRWLock::~cSRWLock()
+cSRWLock::~cSRWLock()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cSRWLock::Acquire(void)
+void cSRWLock::Acquire(void)noexcept
 {
 	::AcquireSRWLockExclusive(&fLock);
 }
 //---------------------------------------------------------------------------
-bool cSRWLock::TryAcquire(void)
+bool cSRWLock::TryAcquire(void)noexcept
 {
 	return FALSE!=::TryAcquireSRWLockExclusive(&fLock);
 }
 //---------------------------------------------------------------------------
-void cSRWLock::Release(void)
+void cSRWLock::Release(void)noexcept
 {
 	::ReleaseSRWLockExclusive(&fLock);
 }
 //---------------------------------------------------------------------------
-void cSRWLock::AcquireShared(void)
+void cSRWLock::AcquireShared(void)noexcept
 {
 	::AcquireSRWLockShared(&fLock);
 }
 //---------------------------------------------------------------------------
-bool cSRWLock::TryAcquireShared(void)
+bool cSRWLock::TryAcquireShared(void)noexcept
 {
 	return FALSE!=::TryAcquireSRWLockShared(&fLock);
 }
 //---------------------------------------------------------------------------
-void cSRWLock::ReleaseShared(void)
+void cSRWLock::ReleaseShared(void)noexcept
 {
 	::ReleaseSRWLockShared(&fLock);
 }
@@ -361,39 +361,39 @@ void cSRWLock::ReleaseShared(void)
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_WIN7
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-VOID CALLBACK cnWinRTL::EmptyAPCFunction(ULONG_PTR)
+VOID CALLBACK cnWinRTL::EmptyAPCFunction(ULONG_PTR)noexcept
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThreadHandle::cThreadHandle()
+cThreadHandle::cThreadHandle()noexcept
 {
 	auto Registration=cnSystem::GetSystemDependentRegistration();
 	Registration->Register(this);
 }
 //---------------------------------------------------------------------------
-cThreadHandle::~cThreadHandle()
+cThreadHandle::~cThreadHandle()noexcept
 {
 	auto Registration=cnSystem::GetSystemDependentRegistration();
 	Registration->Unregister(this);
 }
 //---------------------------------------------------------------------------
-HANDLE cThreadHandle::GetThreadHandle(void)
+HANDLE cThreadHandle::GetThreadHandle(void)noexcept
 {
 	return fThreadHandle;
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::ThreadIsCurrent(void)
+bool cThreadHandle::ThreadIsCurrent(void)noexcept
 {
 	return fThreadID==::GetCurrentThreadId();
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::IsCurrentThread(void)
+bool cThreadHandle::IsCurrentThread(void)noexcept
 {
 	return ThreadIsCurrent();
 }
 //---------------------------------------------------------------------------
-int cThreadHandle::ConvertThreadPriorityFrom(sInt8 Priority)
+int cThreadHandle::ConvertThreadPriorityFrom(sInt8 Priority)noexcept
 {
 	static_assert(THREAD_PRIORITY_HIGHEST<=15,"");
 	static_assert(THREAD_PRIORITY_NORMAL==0,"");
@@ -413,7 +413,7 @@ int cThreadHandle::ConvertThreadPriorityFrom(sInt8 Priority)
 	return wtProiority;
 }
 //---------------------------------------------------------------------------
-sInt8 cThreadHandle::ConvertThreadPriorityTo(int Priority)
+sInt8 cThreadHandle::ConvertThreadPriorityTo(int Priority)noexcept
 {
 	static_assert(THREAD_PRIORITY_NORMAL==0,"");
 
@@ -429,13 +429,13 @@ sInt8 cThreadHandle::ConvertThreadPriorityTo(int Priority)
 	return libProiority;
 }
 //---------------------------------------------------------------------------
-VOID CALLBACK cThreadHandle::WakeAPCFunction(ULONG_PTR dwParam)
+VOID CALLBACK cThreadHandle::WakeAPCFunction(ULONG_PTR dwParam)noexcept
 {
 	auto pVal=reinterpret_cast<bool*>(dwParam);
 	*pVal=false;
 }
 //---------------------------------------------------------------------------
-void cThreadHandle::Wake(bool *ResetVal)
+void cThreadHandle::Wake(bool *ResetVal)noexcept
 {
 	// Queue APC
 	DWORD r;
@@ -451,12 +451,12 @@ void cThreadHandle::Wake(bool *ResetVal)
 	}
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::SetPriority(HANDLE ThreadHandle,sfInt8 Priority)
+bool cThreadHandle::SetPriority(HANDLE ThreadHandle,sfInt8 Priority)noexcept
 {
 	return ::SetThreadPriority(ThreadHandle,ConvertThreadPriorityFrom(Priority))!=FALSE;
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::GetPriority(HANDLE ThreadHandle,sfInt8 &Priority)
+bool cThreadHandle::GetPriority(HANDLE ThreadHandle,sfInt8 &Priority)noexcept
 {
 	int r=::GetThreadPriority(ThreadHandle);
 	if(r==THREAD_PRIORITY_ERROR_RETURN)
@@ -465,7 +465,7 @@ bool cThreadHandle::GetPriority(HANDLE ThreadHandle,sfInt8 &Priority)
 	return true;
 }
 //---------------------------------------------------------------------------
-sfInt8 cThreadHandle::GetPriority(HANDLE ThreadHandle)
+sfInt8 cThreadHandle::GetPriority(HANDLE ThreadHandle)noexcept
 {
 	int r=::GetThreadPriority(ThreadHandle);
 	if(r==THREAD_PRIORITY_ERROR_RETURN)
@@ -473,34 +473,33 @@ sfInt8 cThreadHandle::GetPriority(HANDLE ThreadHandle)
 	return ConvertThreadPriorityTo(r);
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::SetPriority(sfInt8 Priority)
+bool cThreadHandle::SetPriority(sfInt8 Priority)noexcept
 {
 	return SetPriority(fThreadHandle,Priority);
 }
 //---------------------------------------------------------------------------
-bool cThreadHandle::GetPriority(sfInt8 &Priority)
+bool cThreadHandle::GetPriority(sfInt8 &Priority)noexcept
 {
 	return GetPriority(fThreadHandle,Priority);
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cThreadHandle::DependentCreateDescription(void)
+rPtr< iArrayReference<const uChar16> > cThreadHandle::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Temp=cnRTL::CreateStringFormat(u"cThreadHandle - ThreadID = %d(0x%x), Handle=%x",fThreadID,fThreadID,(uIntn)fThreadHandle);
 	return cnVar::MoveCast(Temp.Token());
 	//return u"cThreadHandle"_cArray;
 }
 //---------------------------------------------------------------------------
-void cThreadHandle::DependentShutdownNotification(void)
+void cThreadHandle::DependentShutdownNotification(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cnWinRTL::CurrentThreadSleepUntil(iTimepoint *Time,uInt64 Delay)
+bool cnWinRTL::CurrentThreadSleepUntil(uInt64 SystemTime)noexcept
 {
-	if(Time==nullptr){
+	if(SystemTime==SystemTime_Never){
 		return CurrentThreadSleep(INFINITE);
 	}
-	sInt64 SleepNanoseconds=TimepointSinceNTFileTimeNowNS(Time);
-	SleepNanoseconds+=Delay;
+	sInt64 SleepNanoseconds=SystemTimeSinceNTFileTimeNowNS(SystemTime);
 	if(SleepNanoseconds<0){
 		// already time out
 		return false;
@@ -510,7 +509,7 @@ bool cnWinRTL::CurrentThreadSleepUntil(iTimepoint *Time,uInt64 Delay)
 	return CurrentThreadSleep(SleepMS);
 }
 //---------------------------------------------------------------------------
-bool cnWinRTL::CurrentThreadSleep(DWORD Milliseconds)
+bool cnWinRTL::CurrentThreadSleep(DWORD Milliseconds)noexcept
 {
 	auto r=SleepEx(Milliseconds,TRUE);
 	if(r==WAIT_TIMEOUT){
@@ -523,12 +522,12 @@ bool cnWinRTL::CurrentThreadSleep(DWORD Milliseconds)
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadLocalVariable::cNT6ThreadLocalVariable()
+cNT6ThreadLocalVariable::cNT6ThreadLocalVariable()noexcept
 {
 	fTLSIndex=::TlsAlloc();
 }
 //---------------------------------------------------------------------------
-cNT6ThreadLocalVariable::~cNT6ThreadLocalVariable()
+cNT6ThreadLocalVariable::~cNT6ThreadLocalVariable()noexcept
 {
 	::TlsFree(fTLSIndex);
 }
@@ -538,7 +537,7 @@ VOID NTAPI cNT6ThreadLocalVariable::WaitCallback(
 	_Inout_opt_ PVOID                 Context,
 	_Inout_     PTP_WAIT              Wait,
 	_In_        TP_WAIT_RESULT        WaitResult
-)
+)noexcept
 {Instance;Wait;WaitResult;
 	auto *Variable=static_cast<cThreadData*>(Context);
 	::CloseThreadpoolWait(Variable->Waiter);
@@ -554,7 +553,7 @@ VOID NTAPI cNT6ThreadLocalVariable::WaitCallback(
 	delete Variable;
 }
 //---------------------------------------------------------------------------
-cNT6ThreadLocalVariable::cThreadData* cNT6ThreadLocalVariable::CreateThreadData(void)
+cNT6ThreadLocalVariable::cThreadData* cNT6ThreadLocalVariable::CreateThreadData(void)noexcept
 {
 	auto ThreadData=new cThreadData;
 	HANDLE Process=GetCurrentProcess();
@@ -565,7 +564,7 @@ cNT6ThreadLocalVariable::cThreadData* cNT6ThreadLocalVariable::CreateThreadData(
 	return ThreadData;
 }
 //---------------------------------------------------------------------------
-void* cNT6ThreadLocalVariable::Get(void)noexcept(true)
+void* cNT6ThreadLocalVariable::Get(void)noexcept
 {
 	void *ThreadData=::TlsGetValue(fTLSIndex);
 	if(ThreadData==nullptr)
@@ -573,7 +572,7 @@ void* cNT6ThreadLocalVariable::Get(void)noexcept(true)
 	return static_cast<cThreadData*>(ThreadData)->Object;
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadLocalVariable::Set(iReference *Reference,void *Data)noexcept(true)
+void cNT6ThreadLocalVariable::Set(iReference *Reference,void *Data)noexcept
 {
 	void *pData=::TlsGetValue(fTLSIndex);
 	cThreadData *ThreadData;
@@ -596,7 +595,7 @@ void cNT6ThreadLocalVariable::Set(iReference *Reference,void *Data)noexcept(true
 	}
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadLocalVariable::Clear(void)noexcept(true)
+void cNT6ThreadLocalVariable::Clear(void)noexcept
 {
 	void *pData=::TlsGetValue(fTLSIndex);
 	if(pData==nullptr){
@@ -611,7 +610,7 @@ void cNT6ThreadLocalVariable::Clear(void)noexcept(true)
 	ThreadData->NotifyProc=nullptr;
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept(true)
+void cNT6ThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept
 {
 	void *pData=::TlsGetValue(fTLSIndex);
 	cThreadData *ThreadData;
@@ -628,16 +627,16 @@ void cNT6ThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyP
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void* cNT6TLSStaticThreadData::operator new(tSize Size)
+void* cNT6TLSStaticThreadData::operator new(tSize Size)noexcept
 {
 	return ::HeapAlloc(::GetProcessHeap(),0,Size);
 }
 //---------------------------------------------------------------------------
-void cNT6TLSStaticThreadData::operator delete(void*p){
+void cNT6TLSStaticThreadData::operator delete(void*p)noexcept{
 	::HeapFree(::GetProcessHeap(),0,p);
 }
 //---------------------------------------------------------------------------
-void cNT6TLSStaticThreadData::Setup(void)
+void cNT6TLSStaticThreadData::Setup(void)noexcept
 {
 	HANDLE Process=GetCurrentProcess();
 	::DuplicateHandle(Process,GetCurrentThread(),Process,&ThreadHandle,SYNCHRONIZE,FALSE,0);
@@ -650,7 +649,7 @@ VOID NTAPI cNT6TLSStaticThreadData::WaitCallback(
 	_Inout_opt_ PVOID                 Context,
 	_Inout_     PTP_WAIT              Wait,
 	_In_        TP_WAIT_RESULT        WaitResult
-)
+)noexcept
 {Instance;Wait;WaitResult;
 	auto *Variable=static_cast<cNT6TLSStaticThreadData*>(Context);
 	::CloseThreadpoolWait(Variable->Waiter);
@@ -667,7 +666,7 @@ VOID NTAPI cNT6TLSStaticThreadData::WaitCallback(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolHandleWaiter::cNT6ThreadPoolHandleWaiter(PTP_CALLBACK_ENVIRON env,iReference *Reference,iFunction<void (DWORD WaitResult)> *Callback)
+cNT6ThreadPoolHandleWaiter::cNT6ThreadPoolHandleWaiter(PTP_CALLBACK_ENVIRON env,iReference *Reference,iFunction<void (DWORD WaitResult)noexcept(true)> *Callback)noexcept
 {
 	fTPEnv=env;
 	fSetting=false;
@@ -677,13 +676,13 @@ cNT6ThreadPoolHandleWaiter::cNT6ThreadPoolHandleWaiter(PTP_CALLBACK_ENVIRON env,
 	fProcedure=Callback;
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolHandleWaiter::~cNT6ThreadPoolHandleWaiter(void)
+cNT6ThreadPoolHandleWaiter::~cNT6ThreadPoolHandleWaiter(void)noexcept
 {
 	::SetThreadpoolWait(fWaiter,nullptr,nullptr);
 	::CloseThreadpoolWait(fWaiter);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolHandleWaiter::VirtualStopped(void)
+void cNT6ThreadPoolHandleWaiter::VirtualStopped(void)noexcept
 {
 	cnLib_ASSERT(fSetting==false);
 	while(fSetting){
@@ -697,7 +696,7 @@ void cNT6ThreadPoolHandleWaiter::VirtualStopped(void)
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolHandleWaiter::CleanupCallback(void)
+void cNT6ThreadPoolHandleWaiter::CleanupCallback(void)noexcept
 {
 	// wait for timer callbacks in thread pool
 	if(::TrySubmitThreadpoolCallback(WaitCallbackProc,this,fTPEnv)==FALSE){
@@ -706,7 +705,7 @@ void cNT6ThreadPoolHandleWaiter::CleanupCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolHandleWaiter::WaitForCallback(void)
+void cNT6ThreadPoolHandleWaiter::WaitForCallback(void)noexcept
 {
 	// wait for timer ends
 	::WaitForThreadpoolWaitCallbacks(fWaiter,FALSE);
@@ -720,7 +719,7 @@ void cNT6ThreadPoolHandleWaiter::WaitForCallback(void)
 VOID CALLBACK cNT6ThreadPoolHandleWaiter::WaitCallbackProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context
-	)
+	)noexcept
 {Instance;
 	auto This=static_cast<cNT6ThreadPoolHandleWaiter*>(Context);
 	This->WaitForCallback();
@@ -731,13 +730,13 @@ VOID CALLBACK cNT6ThreadPoolHandleWaiter::WorkProc(
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_WAIT              Wait,
 		_In_        TP_WAIT_RESULT        WaitResult
-	)
+	)noexcept
 {Instance,Wait;
 	auto This=static_cast<cNT6ThreadPoolHandleWaiter*>(Context);
 	This->fProcedure->Execute(WaitResult);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolHandleWaiter::SetWait(HANDLE WaitHandle,PFILETIME Timeout)
+void cNT6ThreadPoolHandleWaiter::SetWait(HANDLE WaitHandle,PFILETIME Timeout)noexcept
 {
 	if(fSetting.Acquire.Xchg(true)){
 		// another configuration in progress
@@ -808,13 +807,14 @@ void cNT6ThreadPoolHandleWaiter::SetWait(HANDLE WaitHandle,PFILETIME Timeout)
 //}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolWorkAsyncProcedure::cNT6ThreadPoolWorkAsyncProcedure(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)
-	: fProcedureReference(Reference),fProcedure(Procedure)
+cNT6ThreadPoolWorkAsyncProcedure::cNT6ThreadPoolWorkAsyncProcedure(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)noexcept
+	: fProcedureReference(Reference)
+	, fProcedure(Procedure)
 {
 	fWork=::CreateThreadpoolWork(WorkProc,this,env);
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolWorkAsyncProcedure::~cNT6ThreadPoolWorkAsyncProcedure()
+cNT6ThreadPoolWorkAsyncProcedure::~cNT6ThreadPoolWorkAsyncProcedure()noexcept
 {
 	::CloseThreadpoolWork(fWork);
 }
@@ -823,7 +823,7 @@ VOID CALLBACK cNT6ThreadPoolWorkAsyncProcedure::WorkProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_WORK              Work
-	)
+	)noexcept
 {	Work;Instance;
 	auto This=static_cast<cNT6ThreadPoolWorkAsyncProcedure*>(Context);
 	auto Reference=This->fProcedureReference;
@@ -839,7 +839,7 @@ VOID CALLBACK cNT6ThreadPoolWorkAsyncProcedure::WorkProc(
 
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolWorkAsyncProcedure::Start(void)
+void cNT6ThreadPoolWorkAsyncProcedure::Start(void)noexcept
 {
 	cnLib_ASSERT(this!=nullptr);
 
@@ -854,7 +854,7 @@ void cNT6ThreadPoolWorkAsyncProcedure::Start(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolTimerAsyncTimer::cNT6ThreadPoolTimerAsyncTimer(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)
+cNT6ThreadPoolTimerAsyncTimer::cNT6ThreadPoolTimerAsyncTimer(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)noexcept
 	: fProcedureReference(Reference),fProcedure(Procedure)
 {
 	fSetting=false;
@@ -863,12 +863,12 @@ cNT6ThreadPoolTimerAsyncTimer::cNT6ThreadPoolTimerAsyncTimer(PTP_CALLBACK_ENVIRO
 	fTimer=::CreateThreadpoolTimer(WorkProc,this,fTPEnv);
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolTimerAsyncTimer::~cNT6ThreadPoolTimerAsyncTimer(void)
+cNT6ThreadPoolTimerAsyncTimer::~cNT6ThreadPoolTimerAsyncTimer(void)noexcept
 {
 	::CloseThreadpoolTimer(fTimer);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolTimerAsyncTimer::VirtualStopped(void)
+void cNT6ThreadPoolTimerAsyncTimer::VirtualStopped(void)noexcept
 {
 	cnLib_ASSERT(fSetting==false);
 	while(fSetting){
@@ -883,7 +883,7 @@ void cNT6ThreadPoolTimerAsyncTimer::VirtualStopped(void)
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolTimerAsyncTimer::CleanupTimerCallback(void)
+void cNT6ThreadPoolTimerAsyncTimer::CleanupTimerCallback(void)noexcept
 {
 	// wait for timer callbacks in thread pool
 	if(::TrySubmitThreadpoolCallback(WaitTimerProc,this,fTPEnv)==FALSE){
@@ -892,7 +892,7 @@ void cNT6ThreadPoolTimerAsyncTimer::CleanupTimerCallback(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolTimerAsyncTimer::WaitForTimer(void)
+void cNT6ThreadPoolTimerAsyncTimer::WaitForTimer(void)noexcept
 {
 	// wait for timer ends
 	::WaitForThreadpoolTimerCallbacks(fTimer,FALSE);
@@ -906,7 +906,7 @@ void cNT6ThreadPoolTimerAsyncTimer::WaitForTimer(void)
 VOID CALLBACK cNT6ThreadPoolTimerAsyncTimer::WaitTimerProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context
-	)
+	)noexcept
 {Instance;
 	auto This=static_cast<cNT6ThreadPoolTimerAsyncTimer*>(Context);
 	This->WaitForTimer();
@@ -916,17 +916,14 @@ VOID CALLBACK cNT6ThreadPoolTimerAsyncTimer::WorkProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_TIMER             Timer
-	)
+	)noexcept
 {Instance;Timer;
 	auto This=static_cast<cNT6ThreadPoolTimerAsyncTimer*>(Context);
 	This->fProcedure->Execute();
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolTimerAsyncTimer::Start(iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)
+void cNT6ThreadPoolTimerAsyncTimer::Start(uInt64 DueTime,uInt64 Period)noexcept
 {
-	if(DueTime==nullptr)
-		return;
-
 	if(fSetting.Acquire.Xchg(true)){
 		// another configuration in progress
 		return;
@@ -942,7 +939,7 @@ void cNT6ThreadPoolTimerAsyncTimer::Start(iTimepoint *DueTime,sInt64 DueTimeDela
 	}
 
 	cNTFileTime DueFileTime;
-	DueFileTime.FromTimepoint(DueTime,DueTimeDelay);
+	DueFileTime.FromSystemTime(DueTime);
 	DWORD PeriodMS=static_cast<DWORD>(Period/Time_1ms);
 	::SetThreadpoolTimer(fTimer,&DueFileTime.FileTime,PeriodMS,1000);
 
@@ -950,7 +947,7 @@ void cNT6ThreadPoolTimerAsyncTimer::Start(iTimepoint *DueTime,sInt64 DueTimeDela
 	fSetting.Release.Store(false);
 }
 //---------------------------------------------------------------------------
-void cNT6ThreadPoolTimerAsyncTimer::Stop(void)
+void cNT6ThreadPoolTimerAsyncTimer::Stop(void)noexcept
 {
 	if(fSetting.Acquire.Xchg(true)){
 		// another configuration in progress
@@ -968,19 +965,19 @@ void cNT6ThreadPoolTimerAsyncTimer::Stop(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcNT6ThreadPoolEnvironment::bcNT6ThreadPoolEnvironment(PTP_CALLBACK_ENVIRON Env)
+bcNT6ThreadPoolEnvironment::bcNT6ThreadPoolEnvironment(PTP_CALLBACK_ENVIRON Env)noexcept
 	: fEnv(Env)
 {
 }
 //---------------------------------------------------------------------------
-bcNT6ThreadPoolEnvironment::~bcNT6ThreadPoolEnvironment()
+bcNT6ThreadPoolEnvironment::~bcNT6ThreadPoolEnvironment()noexcept
 {
 }
 //---------------------------------------------------------------------------
 VOID CALLBACK bcNT6ThreadPoolEnvironment::SimpleWork(
 	_Inout_     PTP_CALLBACK_INSTANCE Instance,
 	_Inout_opt_ PVOID                 Context
-)
+)noexcept
 {	Instance;
 	auto Data=static_cast<SimpleWorkData*>(Context);
 
@@ -988,7 +985,7 @@ VOID CALLBACK bcNT6ThreadPoolEnvironment::SimpleWork(
 	delete Data;
 }
 //---------------------------------------------------------------------------
-void bcNT6ThreadPoolEnvironment::StartWork(PTP_CALLBACK_ENVIRON Env,iReference *Reference,iProcedure *Procedure)
+void bcNT6ThreadPoolEnvironment::StartWork(PTP_CALLBACK_ENVIRON Env,iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Data=new SimpleWorkData;
 	Data->Reference=Reference;
@@ -1001,23 +998,23 @@ void bcNT6ThreadPoolEnvironment::StartWork(PTP_CALLBACK_ENVIRON Env,iReference *
 	delete Data;
 }
 //---------------------------------------------------------------------------
-void bcNT6ThreadPoolEnvironment::Execute(iReference *Reference,iProcedure *Procedure)
+void bcNT6ThreadPoolEnvironment::Execute(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	return StartWork(fEnv,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncProcedure> bcNT6ThreadPoolEnvironment::CreateWork(iReference *Reference,iProcedure *Procedure)
+rPtr<iAsyncProcedure> bcNT6ThreadPoolEnvironment::CreateWork(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	return rCreate<cNT6ThreadPoolWorkAsyncProcedure>(fEnv,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncTimer> bcNT6ThreadPoolEnvironment::CreateTimer(iReference *Reference,iProcedure *Procedure)
+rPtr<iAsyncTimer> bcNT6ThreadPoolEnvironment::CreateTimer(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	return rCreate<cNT6ThreadPoolTimerAsyncTimer>(fEnv,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNT6ThreadPoolEnvironment::cNT6ThreadPoolEnvironment()
+cNT6ThreadPoolEnvironment::cNT6ThreadPoolEnvironment()noexcept
 	: bcNT6ThreadPoolEnvironment(&fEnvironment)
 {
 	fPool=::CreateThreadpool(nullptr);
@@ -1030,7 +1027,7 @@ cNT6ThreadPoolEnvironment::cNT6ThreadPoolEnvironment()
 	::SetThreadpoolCallbackPool(fEnv,fPool);
 }
 //---------------------------------------------------------------------------
-cNT6ThreadPoolEnvironment::~cNT6ThreadPoolEnvironment()
+cNT6ThreadPoolEnvironment::~cNT6ThreadPoolEnvironment()noexcept
 {
 	::CloseThreadpool(fPool);
 	::DestroyThreadpoolEnvironment(fEnv);

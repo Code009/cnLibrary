@@ -17,9 +17,9 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
-COMPtr<IWICImagingFactory> WICQueryImagingFactory(void);
+COMPtr<IWICImagingFactory> WICQueryImagingFactory(void)noexcept(true);
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceBitmap(HMODULE hModule,LPCWSTR lpName);
+iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceBitmap(HMODULE hModule,LPCWSTR lpName)noexcept(true);
 //---------------------------------------------------------------------------
 #if 0
 
@@ -56,24 +56,24 @@ private:
 class cBitmapDataSourceFromIconResource : public iBitmapDataSource
 {
 public:
-	cBitmapDataSourceFromIconResource();
-	~cBitmapDataSourceFromIconResource();
+	cBitmapDataSourceFromIconResource()noexcept(true);
+	~cBitmapDataSourceFromIconResource()noexcept(true);
 
 	// iBitmapDataSource
 
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
-	bool SetIconData(const void *ResourceData,uIntn ResourceDataSize);
-	uIntn GetDataSize(void);
+	bool SetIconData(const void *ResourceData,uIntn ResourceDataSize)noexcept(true);
+	uIntn GetDataSize(void)noexcept(true);
 
 private:
-	void ClearData(void);
+	void ClearData(void)noexcept(true);
 	cBitmapPixelFormat fPixelFormat;
 	cUIPoint fSize;
 	const BITMAPINFO *fResourceData;
@@ -87,36 +87,36 @@ private:
 
 	uInt16 fPixelLockCount=0;
 
-	void SetupPixelBuffer(void);
+	void SetupPixelBuffer(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceIconItem(HMODULE hModule,LPCWSTR lpName);
-iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceIcon(HMODULE hModule,LPCWSTR lpName,int LookupX,int LookupY,UINT LookupFlag=LR_DEFAULTCOLOR);
+iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceIconItem(HMODULE hModule,LPCWSTR lpName)noexcept(true);
+iPtr<iBitmapDataSource> CreateBitmapDataSourceFromResourceIcon(HMODULE hModule,LPCWSTR lpName,int LookupX,int LookupY,UINT LookupFlag=LR_DEFAULTCOLOR)noexcept(true);
 //---------------------------------------------------------------------------
 class cWICBitmapDataSource : public iBitmapDataSource, public iCOMInterface
 {
 public:
-	cWICBitmapDataSource(IWICBitmap *Bitmap);
-	cWICBitmapDataSource(IWICBitmapSource *BitmapSource);
-	~cWICBitmapDataSource();
+	cWICBitmapDataSource(IWICBitmap *Bitmap)noexcept(true);
+	cWICBitmapDataSource(IWICBitmapSource *BitmapSource)noexcept(true);
+	~cWICBitmapDataSource()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 	// iBitmapDataSource
 	
-	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)override;
-	virtual cUIPoint cnLib_FUNC GetImageSize(void)override;
-	virtual uIntn cnLib_FUNC GetDataPitch(void)override;
-	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)override;
-	virtual const void* cnLib_FUNC AcquirePixels(void)override;
-	virtual void cnLib_FUNC ReleasePixels(void)override;
-	virtual bool cnLib_FUNC IsTopDown(void)override;
+	virtual cBitmapPixelFormat cnLib_FUNC GetPixelFormat(void)noexcept(true)override;
+	virtual cUIPoint cnLib_FUNC GetImageSize(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC GetDataPitch(void)noexcept(true)override;
+	virtual uIntn cnLib_FUNC CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)override;
+	virtual const void* cnLib_FUNC AcquirePixels(void)noexcept(true)override;
+	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
 	// iCOMInterface
 
-	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)override;
+	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)noexcept(true)override;
 
-	uIntn GetDataSize(void);
+	uIntn GetDataSize(void)noexcept(true);
 private:
 	COMPtr<IWICBitmapSource> fBitmapSource;
 	COMPtr<IWICBitmap> fBitmap;
@@ -124,40 +124,40 @@ private:
 
 	bool fFormatValid;
 	cBitmapPixelFormat fPixelFormat;
-	static cBitmapPixelFormat GUIDToFormat(const WICPixelFormatGUID &FormatGUID);
-	bool SetupData(void);
+	static cBitmapPixelFormat GUIDToFormat(const WICPixelFormatGUID &FormatGUID)noexcept(true);
+	bool SetupData(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> CreateBitmapSourceFromWIC(IWICBitmapSource *BitmapSource);
-iPtr<iBitmapDataSource> CreateBitmapSourceFromWICBitmap(IWICBitmap *Bitmap);
+iPtr<iBitmapDataSource> CreateBitmapSourceFromWIC(IWICBitmapSource *BitmapSource)noexcept(true);
+iPtr<iBitmapDataSource> CreateBitmapSourceFromWICBitmap(IWICBitmap *Bitmap)noexcept(true);
 //---------------------------------------------------------------------------
 class cWICImageFactory
 {
 public:
-	cWICImageFactory();
-	~cWICImageFactory();
+	cWICImageFactory()noexcept(true);
+	~cWICImageFactory()noexcept(true);
 
-	IWICImagingFactory* GetImagingFactory(void);
+	IWICImagingFactory* GetImagingFactory(void)noexcept(true);
 
-	COMPtr<IWICBitmapSource> OpenImageFile(const wchar_t *FileName);
-	COMPtr<IWICBitmapSource> OpenImageStream(IStream *Stream);
-	COMPtr<IWICBitmapSource> OpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType);
+	COMPtr<IWICBitmapSource> OpenImageFile(const wchar_t *FileName)noexcept(true);
+	COMPtr<IWICBitmapSource> OpenImageStream(IStream *Stream)noexcept(true);
+	COMPtr<IWICBitmapSource> OpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept(true);
 	COMPtr<IWICBitmapSource> ImageConvertFormat(IWICBitmapSource *pISource,REFWICPixelFormatGUID dstFormat,
 		WICBitmapDitherType dither=WICBitmapDitherTypeNone,IWICPalette *pIPalette=nullptr,
-		double alphaThresholdPercent=0.0,WICBitmapPaletteType paletteTranslate=WICBitmapPaletteTypeCustom);
-	COMPtr<IWICBitmapSource> ImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode=WICBitmapInterpolationModeLinear);
+		double alphaThresholdPercent=0.0,WICBitmapPaletteType paletteTranslate=WICBitmapPaletteTypeCustom)noexcept(true);
+	COMPtr<IWICBitmapSource> ImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode=WICBitmapInterpolationModeLinear)noexcept(true);
 
 private:
 	COMPtr<IWICImagingFactory> fImagingFactory;
 
 };
-COMPtr<IWICBitmapSource> WICOpenImageFile(const wchar_t *FileName);
-COMPtr<IWICBitmapSource> WICOpenImageStream(IStream *Stream);
-COMPtr<IWICBitmapSource> WICOpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType);
+COMPtr<IWICBitmapSource> WICOpenImageFile(const wchar_t *FileName)noexcept(true);
+COMPtr<IWICBitmapSource> WICOpenImageStream(IStream *Stream)noexcept(true);
+COMPtr<IWICBitmapSource> WICOpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept(true);
 COMPtr<IWICBitmapSource> WICImageConvertFormat(IWICBitmapSource *pISource,REFWICPixelFormatGUID dstFormat,
 	WICBitmapDitherType dither=WICBitmapDitherTypeNone,IWICPalette *pIPalette=nullptr,
-	double alphaThresholdPercent=0.0,WICBitmapPaletteType paletteTranslate=WICBitmapPaletteTypeCustom);
-COMPtr<IWICBitmapSource> WICImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode=WICBitmapInterpolationModeLinear);
+	double alphaThresholdPercent=0.0,WICBitmapPaletteType paletteTranslate=WICBitmapPaletteTypeCustom)noexcept(true);
+COMPtr<IWICBitmapSource> WICImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode=WICBitmapInterpolationModeLinear)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL
 //---------------------------------------------------------------------------

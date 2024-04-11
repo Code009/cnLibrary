@@ -62,8 +62,8 @@ class mcDNetUIThreadDispatcher;
 class mcDNetUIThreadAsyncProcedureExecutor
 {
 public:
-	mcDNetUIThreadAsyncProcedureExecutor(bool HighPriority,iProcedure *Procedure);
-	~mcDNetUIThreadAsyncProcedureExecutor();
+	mcDNetUIThreadAsyncProcedureExecutor(bool HighPriority,iProcedure *Procedure)noexcept(true);
+	~mcDNetUIThreadAsyncProcedureExecutor()noexcept(true);
 protected:
 
 #if _MANAGED
@@ -75,14 +75,14 @@ protected:
 #endif
 	cnCLI_MANAGED_VALUE_STRUCT(cManaged,1,4) fManaged;
 
-	void mStart(mcDNetUIThreadDispatcher *UIDispatch);
+	void mStart(mcDNetUIThreadDispatcher *UIDispatch)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class mcDNetUIThreadAsyncProcedureRefExecutor
 {
 public:
-	mcDNetUIThreadAsyncProcedureRefExecutor(bool HighPriority,iReference *Reference,iProcedure *Procedure);
-	~mcDNetUIThreadAsyncProcedureRefExecutor();
+	mcDNetUIThreadAsyncProcedureRefExecutor(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~mcDNetUIThreadAsyncProcedureRefExecutor()noexcept(true);
 protected:
 	iReference *fReference;
 	iProcedure *fProcedure;
@@ -98,22 +98,22 @@ protected:
 	cnCLI_MANAGED_VALUE_STRUCT(cManaged,1,4) fManaged;
 	
 
-	void mStart(mcDNetUIThreadDispatcher *UIDispatch);
+	void mStart(mcDNetUIThreadDispatcher *UIDispatch)noexcept(true);
 
-	void CallProc(void);
+	void CallProc(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class mcDNetUIThreadAsyncTimerExecutor
 {
 public:
-	mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThreadDispatcher *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure);
-	~mcDNetUIThreadAsyncTimerExecutor();
+	mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThreadDispatcher *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~mcDNetUIThreadAsyncTimerExecutor()noexcept(true);
 		
 protected:
 
 	iReference *fReference;
 	iProcedure *fProcedure;
-	void TimerStateThreadProc(void);	
+	void TimerStateThreadProc(void)noexcept(true);
 	
 #if _MANAGED
 
@@ -141,18 +141,18 @@ protected:
 	
 	uInt64 fPeriod;
 
-	void mStopTimer(void);
-	void mHitAndSetTimer(mcDNetUIThreadDispatcher *UIDispatch);
-	void mScheludeFirstHit(uInt64 Delay);
-	void ExecuteAndState(void);
+	void mStopTimer(void)noexcept(true);
+	void mHitAndSetTimer(mcDNetUIThreadDispatcher *UIDispatch)noexcept(true);
+	void mScheludeFirstHit(uInt64 Delay)noexcept(true);
+	void ExecuteAndState(void)noexcept(true);
 
-	void TimerStart(mcDNetUIThreadDispatcher *UIDispatch,iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period);
-	void TimerStop(void);
+	void TimerStart(mcDNetUIThreadDispatcher *UIDispatch,uInt64 DueTime,uInt64 Period)noexcept(true);
+	void TimerStop(void)noexcept(true);
 
 #if _MANAGED
 	friend rcWPFUICoreProcedureCaller;
-	void __clrcall TimerTick(void);
-	void __clrcall TimerFirstHit(void);
+	void __clrcall TimerTick(void)noexcept(true);
+	void __clrcall TimerFirstHit(void)noexcept(true);
 
 #endif // _MANAGED
 
@@ -174,25 +174,25 @@ private value struct rcDNetUIThreadContext
 class mcDNetUIThreadDispatcher
 {
 public:
-	mcDNetUIThreadDispatcher(iReference *InnerReference);
-	~mcDNetUIThreadDispatcher();
+	mcDNetUIThreadDispatcher(iReference *InnerReference)noexcept(true);
+	~mcDNetUIThreadDispatcher()noexcept(true);
 
 #if _MANAGED
-	static System::Windows::Threading::DispatcherPriority __clrcall GetDispatcherPriority(bool HighPriority);
+	static System::Windows::Threading::DispatcherPriority __clrcall GetDispatcherPriority(bool HighPriority)noexcept(true);
 
-	System::Windows::Threading::Dispatcher^ __clrcall GetDispatcher(void);
+	System::Windows::Threading::Dispatcher^ __clrcall GetDispatcher(void)noexcept(true);
 
-	void __clrcall SetThreadReleaseNotify(System::Action ^Action);
+	void __clrcall SetThreadReleaseNotify(System::Action ^Action)noexcept(true);
 #endif
-	bool mCreateOnCurrentThread(void);
+	bool mCreateOnCurrentThread(void)noexcept(true);
 	
-	bool mIsCurrent(void);
-	bool mIsShutdown(void);
-	static mcDNetUIThreadDispatcher* mCurrentUIDispatcher(void);
+	bool mIsCurrent(void)noexcept(true);
+	bool mIsShutdown(void)noexcept(true);
+	static mcDNetUIThreadDispatcher* mCurrentUIDispatcher(void)noexcept(true);
 	
-	void mDispatchExecute(bool HighPriority,iProcedure *Procedure);
-	void mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure);
-	void mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure);
+	void mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept(true);
+	void mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept(true);
+	void mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
 
 	class mcDispatchExecuteAsyncTask
 	{
@@ -207,17 +207,17 @@ public:
 
 #endif	// _MANAGED
 	protected:
-		virtual void ExecuteTask(void)=0;
+		virtual void ExecuteTask(void)noexcept(true)=0;
 	};
 
-	void mDispatchExecuteAsync(mcDispatchExecuteAsyncTask *Task,bool HighPriority);
+	void mDispatchExecuteAsync(mcDispatchExecuteAsyncTask *Task,bool HighPriority)noexcept(true);
 	
 protected:
 
-	void mShutdownFrame(void);
+	void mShutdownFrame(void)noexcept(true);
 
 #if _MANAGED
-	void __clrcall UIThreadRelease(void);
+	void __clrcall UIThreadRelease(void)noexcept(true);
 
 #endif
 	
@@ -232,8 +232,8 @@ protected:
 #endif // _MANAGED
 
 #if _MANAGED
-	void __clrcall SetupDispatcher(System::Windows::Threading::Dispatcher ^Dispatcher);
-	void __clrcall ClearDispatcher(void);
+	void __clrcall SetupDispatcher(System::Windows::Threading::Dispatcher ^Dispatcher)noexcept(true);
+	void __clrcall ClearDispatcher(void)noexcept(true);
 
 #endif // _MANAGED
 
@@ -246,20 +246,20 @@ public:
 		ufInt8 Color;
 
 #if _MANAGED
-		void (__clrcall *NotifyProcedure)(cDispatcherFinishNotify *Notify,bool Shutdown);
+		void (__clrcall *NotifyProcedure)(cDispatcherFinishNotify *Notify,bool Shutdown)noexcept(true);
 #else
 		void (*NotifyProcedure)(void);
 #endif
 	};
-	void mAttachDispatcher(cDispatcherFinishNotify *NotifyToken);
-	bool mDetachDispatcher(cDispatcherFinishNotify *NotifyToken);
+	void mAttachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept(true);
+	bool mDetachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept(true);
 
 	bool fDispatcherShutdown=false;
 private:
 	bool fDispatchedRelease=false;
 	
 	iReference *fOwnerInnerReference;
-	void ThreadExitProc(void);
+	void ThreadExitProc(void)noexcept(true);
 
 	cnRTL::cLinkItemSet<
 		cDispatcherFinishNotify,
@@ -270,22 +270,22 @@ private:
 #if _MANAGED
 	friend rcWPFUICoreProcedureCaller;
 
-	void __clrcall WPFOnShutdown(void);
-	static void __clrcall FinishNotifyRelease(System::IntPtr This,System::IntPtr DispatcherFinishNoftify);
-	void __clrcall NotifyFinish(cDispatcherFinishNotify *FinishNoftify);
+	void __clrcall WPFOnShutdown(void)noexcept(true);
+	static void __clrcall FinishNotifyRelease(System::IntPtr This,System::IntPtr DispatcherFinishNoftify)noexcept(true);
+	void __clrcall NotifyFinish(cDispatcherFinishNotify *FinishNoftify)noexcept(true);
 #endif // _MANAGED
 
 
 public:
-	static bool mKeyboardEventIsKeyDown(eKeyCode KeyCode);
-	static bool mKeyboardEventIsKeyToggled(eKeyCode KeyCode);
+	static bool mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept(true);
+	static bool mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept(true);
 
-	static bool mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIPoint &Position);
-	static bool mMouseEventIsButtonDown(eMouseButton Button);
+	static bool mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIPoint &Position)noexcept(true);
+	static bool mMouseEventIsButtonDown(eMouseButton Button)noexcept(true);
 #if _MANAGED
 
-	static bool __clrcall mMouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position);
-	static bool __clrcall mMouseGetPosition(DNet::IWPFUIViewVisual ^ViewVisual,cUIPoint &Position);
+	static bool __clrcall mMouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept(true);
+	static bool __clrcall mMouseGetPosition(DNet::IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)noexcept(true);
 #endif // _MANAGED
 
 };
@@ -311,13 +311,13 @@ private:
 //---------------------------------------------------------------------------
 #endif	// _MANAGED
 //---------------------------------------------------------------------------
-void rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher);
+void rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher)noexcept(true);
 //---------------------------------------------------------------------------
 class mcDNetUIApplicationDispatchFrame
 {
 public:
-	mcDNetUIApplicationDispatchFrame();
-	~mcDNetUIApplicationDispatchFrame();
+	mcDNetUIApplicationDispatchFrame()noexcept(true);
+	~mcDNetUIApplicationDispatchFrame()noexcept(true);
 protected:
 #if _MANAGED
 	mcGCRefT<System::Windows::Threading::DispatcherFrame> fDispatchFrameRef;
@@ -325,8 +325,8 @@ protected:
 	cGCRef fDispatchFrameHandle;
 #endif // _MANAGED
 
-	void mNotifyStopRun(void);
-	void mWPFUIMain(void);
+	void mNotifyStopRun(void)noexcept(true);
+	void mWPFUIMain(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

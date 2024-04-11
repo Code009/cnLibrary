@@ -57,13 +57,13 @@ typedef cnRTL::cnWinRTL::cSRWLock cSRWLock;
 class cThread : public cnRTL::cnWinRTL::cThreadHandle
 {
 public:
-	cThread();
-	~cThread();
+	cThread()noexcept(true);
+	~cThread()noexcept(true);
 
-	static cThread* QueryCurrent(void);
-	static iPtr<cThread> StartThread(iProcedure *ThreadProcedure);
+	static cThread* QueryCurrent(void)noexcept(true);
+	static iPtr<cThread> StartThread(iProcedure *ThreadProcedure)noexcept(true);
 
-	bool IsRunning(void);
+	bool IsRunning(void)noexcept(true);
 
 	static iThreadLocalVariable *const gTLS;
 protected:
@@ -74,23 +74,23 @@ protected:
 		iPtr<cThread> Thread;
 		iProcedure *Procedure;
 	};
-	static DWORD WINAPI ThreadEntry(LPVOID Parameter);
+	static DWORD WINAPI ThreadEntry(LPVOID Parameter)noexcept(true);
 
-	virtual void cnLib_FUNC DependentShutdownNotification(void)override;
+	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 
 private:
 	class cThreadExitNotifyProc : public iThreadExitNotifyProc
 	{
-		virtual void cnLib_FUNC Execute(rPtr<iReference>,void*)override;
+		virtual void cnLib_FUNC Execute(rPtr<iReference>,void*)noexcept(true)override;
 	};
-	static void TLSSetExitNotify(void);
+	static void TLSSetExitNotify(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cErrorReportRecord : public iErrorReport
 {
 public:
-	cErrorReportRecord(iErrorReport *Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error);
-	~cErrorReportRecord();
+	cErrorReportRecord(iErrorReport *Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
+	~cErrorReportRecord()noexcept(true);
 
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
@@ -113,14 +113,14 @@ namespace cnWinNT6{
 class cDefaultThreadPool : public cnRTL::cnWinRTL::bcNT6ThreadPoolEnvironment, public iWinThreadPool
 {
 public:
-	cDefaultThreadPool();
-	~cDefaultThreadPool();
+	cDefaultThreadPool()noexcept(true);
+	~cDefaultThreadPool()noexcept(true);
 
 	using iWinThreadPool::CastInterface;
 
 	static cDefaultThreadPool gInstance;
 
-	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)override;
+	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept(true)> *Callback)noexcept(true) override;
 };
 typedef cnRTL::cnWinRTL::cNT6ThreadPoolEnvironment cThreadPool;
 //---------------------------------------------------------------------------

@@ -16,122 +16,96 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-struct cLogContent
+struct cLogMessage
 {
 	uInt8 Level;
-	cTime Time;
-	cString<uChar16> Name;
-	cString<uChar16> Type;
+	uInt64 Time;
+	cString<uChar16> Path;
 	cString<uChar16> Text;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iLogger : public iReference
+class cnLib_INTERFACE iLogRecorder : public iReference
 {
 public:
-	virtual void cnLib_FUNC Log(aClsConstRef<cLogContent> Content)=0;
+	virtual void Write(aClsConstRef<cLogMessage> Message)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class cTextStreamOutputLogger : public iLogger
+class bcLog
 {
 public:
-	cTextStreamOutputLogger(iTextStreamOutput *Output);
-	virtual void cnLib_FUNC Log(aClsConstRef<cLogContent> Content)override;
+	bcLog()noexcept(true);
+	~bcLog()noexcept(true);
+
+	void InsertRecorder(iLogRecorder *Recorder)noexcept(true);
+	void RemoveRecorder(iLogRecorder *Recorder)noexcept(true);
+	void ClearRecorder(void)noexcept(true);
+	void Submit(aClsConstRef<cLogMessage> Message)noexcept(true);
 protected:
-	rPtr<iTextStreamOutput> fOutput;
+	rPtr<iSharedMutex> fRecordListLock;
+	cSeqSet< rPtr<iLogRecorder> > fRecordList;
 };
 //---------------------------------------------------------------------------
-class cLoggerSwitch : public iLogger
+class cLogStream
 {
 public:
-	cLoggerSwitch();
-	~cLoggerSwitch();
+	cLogStream(bcLog *Log,cString<uChar16> Path)noexcept(true);
 
-	void InsertLogger(iLogger *Logger);
-	void RemoveLogger(iLogger *Logger);
-	void ClearLogger(void);
-	bool IsEmpty(void)const;
-
-	virtual void cnLib_FUNC Log(aClsConstRef<cLogContent> Content)override;
-protected:
-	rPtr<iSharedMutex> fLoggerListLock;
-	cSeqSet< rPtr<iLogger> > fLoggerList;
-};
-//---------------------------------------------------------------------------
-class cLogWriter
-{
-public:
-	cLogWriter()noexcept(true);
-	~cLogWriter()noexcept(true);
-
-	iLogger* GetLogger(void)const;
-	void SetLogger(iLogger *Logger);
-
-	const cString<uChar16>& GetName(void)const;
-	void SetName(cString<uChar16> Name);
-
-	void Write(uInt8 Level,cString<uChar16> Text);
-	void Write(uInt8 Level,cString<uChar16> Type,cString<uChar16> Text);
+	cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> StreamWriteBuffer(void)noexcept(true);
+	void CommitWriteBuffer(void)noexcept(true);
 
 	template<class...TArgs>
-	void Write(uInt8 Level,const uChar16 *FormatString,TArgs...Args){
-		if(fLogger==nullptr)
-			return;
-		
-		Write(Level,CreateStringFormat<uChar16>(FormatString,Args...));
+	void Report(const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
+		fTextBuffer.Clear();
+		StringStream::WriteFormatString(fTextBuffer.StreamWriteBuffer(),FormatString,cnVar::Forward<TArgs>(Args)...);
+		return CommitWriteBuffer();
 	}
 
-	class cTextBlock
-	{
-	public:
-		cTextBlock(iLogger *Logger,uInt8 Level,cString<uChar16> Name,cString<uChar16> Type);
-		~cTextBlock();
-
-		void Commit(void);
-
-		template<class...TArgs>
-		void Write(const uChar16 *FormatString,TArgs...Args){
-			StringStream::WriteFormatString(fText.StreamWriteBuffer(),FormatString,Args...);
-		}
-	private:
-		rPtr<iLogger> fLogger;
-		cString<uChar16> fName;
-		cString<uChar16> fType;
-		aClsRef<cLogContent> fContent;
-		cStringBuffer<uChar16> fText;
-	};
-	cTextBlock Block(uInt8 Level);
-	cTextBlock Block(uInt8 Level,cString<uChar16> Type);
 protected:
-	rPtr<iLogger> fLogger;
-	cString<uChar16> fName;
+	bcLog *fLog;
+	cString<uChar16> fPath;
+	cStringBuffer<uChar16> fTextBuffer;
+
+	void Submit(cString<uChar16> Text)noexcept(true);
+
 };
 //---------------------------------------------------------------------------
-class cLogVoidWriter
+class cLogVoidStream
 {
 public:
-	iLogger* GetLogger(void)const{	return nullptr;	}
-	void SetLogger(iLogger*){}
+	cLogVoidStream(bcLog*,const uChar16*)noexcept(true){}
 
-	cString<uChar16> GetName(void)const{	return nullptr;	}
-	void SetName(const cString<uChar16>&){}
+	cnStream::cVoidStreamBuffer<uChar16> StreamWriteBuffer(void)noexcept(true){	return cnStream::VoidStreamWriteBuffer<uChar16>();	}
+	void CommitWriteBuffer(void)noexcept(true){}
 
-	cString<uChar16> GetType(void)const{	return nullptr;	}
-	void SetType(const cString<uChar16>&){}
+	template<class...TArgs>	void Report(const uChar16*,TArgs&&...)noexcept(true){}
+};
+//---------------------------------------------------------------------------
+template<int LogLevel>
+class cLog : public bcLog
+{
+public:
+	cLog()noexcept(true){}
+	~cLog()noexcept(true){}
 
-	template<class...TArgs>
-	static void Write(uInt8,TArgs...){}
+	template<uIntn Level,class TPath>
+	typename cnVar::TSelect<Level<LogLevel,cLogStream,cLogVoidStream>::Type MakeLogStream(TPath &&Path)noexcept(true){
+		return {this,cnVar::MoveCast(Path)};
+	}
 
-	class cTextBlock
-	{
-	public:
-		static void Commit(void){}
-
-		template<class...TArgs>
-		static void Write(uInt8,TArgs...){}
-	};
-
-	cTextBlock Block(uInt8){					return {};	}
-	cTextBlock Block(uInt8,cString<uChar16>){	return {};	}
+	template<uIntn Level,class TPath,class...TArgs>
+	void Report(TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
+		typename cnVar::TSelect<Level<LogLevel,cLogStream,cLogVoidStream>::Type LogStream(this,cnVar::MoveCast(Path));
+		return LogStream.Report(FormatString,cnVar::Forward<TArgs>(Args)...);
+	}
+};
+//---------------------------------------------------------------------------
+class cTextStreamOutputLogRecorder : public iLogRecorder
+{
+public:
+	cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept(true);
+	virtual void Write(aClsConstRef<cLogMessage> Message)noexcept(true)override;
+protected:
+	rPtr<iTextStreamOutput> fOutput;
 };
 //---------------------------------------------------------------------------
 }   // namespace cnRTL

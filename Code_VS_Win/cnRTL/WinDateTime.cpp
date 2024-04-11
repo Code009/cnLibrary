@@ -4,10 +4,10 @@ using namespace cnLibrary;
 using namespace cnRTL;
 using namespace cnWinRTL;
 
-static constexpr sInt64 FileTime_Second=1'000'000'0;
-static constexpr sInt64 FileTime_ToNanoSecond=100;
+static constexpr uInt64 FileTime_Second=1'000'000'0;
+static constexpr uInt64 FileTime_ToNanoSecond=100;
 //---------------------------------------------------------------------------
-void cnWinRTL::NTFileTimeToDateTime(cDateTime &DateTime,const FILETIME &FileTime)
+void cnWinRTL::NTFileTimeToDateTime(cDateTime &DateTime,const FILETIME &FileTime)noexcept
 {
 	SYSTEMTIME st;
 	::FileTimeToSystemTime(&FileTime,&st);
@@ -23,12 +23,12 @@ void cnWinRTL::NTFileTimeToDateTime(cDateTime &DateTime,const FILETIME &FileTime
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cNTFileTime::SetNow(void)
+void cNTFileTime::SetNow(void)noexcept
 {
 	::GetSystemTimeAsFileTime(&FileTime);
 }
 //---------------------------------------------------------------------------
-bool cNTFileTime::ToDateTime(cDateTime &DateTime)const
+bool cNTFileTime::ToDateTime(cDateTime &DateTime)const noexcept
 {
 	SYSTEMTIME st;
 	if(::FileTimeToSystemTime(&FileTime,&st)==FALSE){
@@ -45,7 +45,7 @@ bool cNTFileTime::ToDateTime(cDateTime &DateTime)const
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cNTFileTime::FromDateTime(const cDateTime &DateTime)
+bool cNTFileTime::FromDateTime(const cDateTime &DateTime)noexcept
 {
 	SYSTEMTIME st;
 	st.wYear=DateTime.Year;
@@ -61,7 +61,7 @@ bool cNTFileTime::FromDateTime(const cDateTime &DateTime)
 	return ::SystemTimeToFileTime(&st,&FileTime)!=FALSE;
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::FromTimepoint(iTimepoint *Time)
+void cNTFileTime::FromTimepoint(iTimepoint *Time)noexcept
 {
 	auto RefFileTime=iCast<iFileTime>(Time);
 	if(RefFileTime!=nullptr){
@@ -74,7 +74,7 @@ void cNTFileTime::FromTimepoint(iTimepoint *Time)
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::FromTimepoint(iTimepoint *Time,sInt64 Delay)
+void cNTFileTime::FromTimepoint(iTimepoint *Time,sInt64 Delay)noexcept
 {
 	auto RefFileTime=iCast<iFileTime>(Time);
 	if(RefFileTime!=nullptr){
@@ -89,45 +89,45 @@ void cNTFileTime::FromTimepoint(iTimepoint *Time,sInt64 Delay)
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::AdjustNanoSeconds(sInt64 Seconds)
+void cNTFileTime::AdjustNanoSeconds(sInt64 Seconds)noexcept
 {
 	sInt64 FileTimeValue=Seconds/FileTime_ToNanoSecond;
 	TimeValue.QuadPart+=FileTimeValue;
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::AdjustSeconds(sInt64 Seconds)
+void cNTFileTime::AdjustSeconds(sInt64 Seconds)noexcept
 {
 	sInt64 FileTimeValue=Seconds*FileTime_Second;
 	TimeValue.QuadPart+=FileTimeValue;
 }
 //---------------------------------------------------------------------------
-Float64 cNTFileTime::DifferenceSeconds(const cNTFileTime &Time)const
+Float64 cNTFileTime::DifferenceSeconds(const cNTFileTime &Time)const noexcept
 {
 	sInt64 diff=TimeValue.QuadPart-Time.TimeValue.QuadPart;
 
 	return diff/static_cast<Float64>(FileTime_Second);
 }
 //---------------------------------------------------------------------------
-sInt64 cNTFileTime::DifferenceNanoseconds(const cNTFileTime &Time)const
+sInt64 cNTFileTime::DifferenceNanoseconds(const cNTFileTime &Time)const noexcept
 {
 	sInt64 diff=TimeValue.QuadPart-Time.TimeValue.QuadPart;
 
 	return diff*FileTime_ToNanoSecond;
 }
 //---------------------------------------------------------------------------
-sInt64 cNTFileTime::ToSystemTime(void)const
+uInt64 cNTFileTime::ToSystemTime(void)const noexcept
 {
-	sInt64 st=TimeValue.QuadPart-cnWindows::SystemTimeEpochAsFileTime.QuadPart;
+	uInt64 st=TimeValue.QuadPart-cnWindows::SystemTimeEpochAsFileTime.QuadPart;
 	return st*FileTime_ToNanoSecond;
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::FromSystemTime(sInt64 st)
+void cNTFileTime::FromSystemTime(uInt64 st)noexcept
 {
 	TimeValue.QuadPart=st/FileTime_ToNanoSecond;
 	TimeValue.QuadPart+=cnWindows::SystemTimeEpochAsFileTime.QuadPart;
 }
 //---------------------------------------------------------------------------
-void cNTFileTime::FromTimeDue(iTimepoint *DueTime,sInt64 DueTimeDelay)
+void cNTFileTime::FromTimeDue(iTimepoint *DueTime,sInt64 DueTimeDelay)noexcept
 {
 	if(DueTime==nullptr){
 		if(DueTimeDelay<=0){
@@ -146,37 +146,37 @@ void cNTFileTime::FromTimeDue(iTimepoint *DueTime,sInt64 DueTimeDelay)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-sInt64 cnWinRTL::TimepointSinceNTFileTimeNowNS(iTimepoint *Timepoint)
+sInt64 cnWinRTL::SystemTimeSinceNTFileTimeNowNS(uInt64 SystemTime)noexcept
 {
 	cNTFileTime Now,Time;
 	Now.SetNow();
-	Time.FromTimepoint(Timepoint);
+	Time.FromSystemTime(SystemTime);
 	sInt64 Nanoseconds=Time.DifferenceNanoseconds(Now);
 	return Nanoseconds;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cNTFileTimePoint::cNTFileTimePoint()
+cNTFileTimePoint::cNTFileTimePoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-cNTFileTimePoint::~cNTFileTimePoint()
+cNTFileTimePoint::~cNTFileTimePoint()noexcept
 {
 }
 //---------------------------------------------------------------------------
-iPtr<cNTFileTimePoint> cNTFileTimePoint::TimeNow(void)
+iPtr<cNTFileTimePoint> cNTFileTimePoint::TimeNow(void)noexcept
 {
 	auto tp=iCreate<cNTFileTimePoint>();
 	tp->SetNow();
 	return tp;
 }
 //---------------------------------------------------------------------------
-sInt64 cNTFileTimePoint::SystemTime(void)
+sInt64 cNTFileTimePoint::SystemTime(void)noexcept
 {
 	return ToSystemTime();
 }
 //---------------------------------------------------------------------------
-sInt64 cNTFileTimePoint::SinceTime(iTimepoint *Time)
+sInt64 cNTFileTimePoint::SinceTime(iTimepoint *Time)noexcept
 {
 	cNTFileTime dt;
 	dt.FromTimepoint(Time);
@@ -184,12 +184,12 @@ sInt64 cNTFileTimePoint::SinceTime(iTimepoint *Time)
 	return DifferenceNanoseconds(dt);
 }
 //---------------------------------------------------------------------------
-FILETIME cNTFileTimePoint::GetFileTime(void)
+FILETIME cNTFileTimePoint::GetFileTime(void)noexcept
 {
 	return FileTime;
 }
 //---------------------------------------------------------------------------
-LARGE_INTEGER cNTFileTimePoint::GetTimeValue(void)
+LARGE_INTEGER cNTFileTimePoint::GetTimeValue(void)noexcept
 {
 	return TimeValue;
 }

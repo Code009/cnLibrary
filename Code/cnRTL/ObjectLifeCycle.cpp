@@ -21,27 +21,3 @@ void cCPPLifeCycleRecyclableInstance::bcManager::Manage(cCPPLifeCycleRecyclableI
 	Object->LifeCycleManager=this;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cDualReference::cInner::IncreaseReference(void)noexcept(true)
-{
-	return Inc();
-}
-void cDualReference::cInner::DecreaseReference(void)noexcept(true)
-{
-	return Dec();
-}
-//---------------------------------------------------------------------------
-void cDualReference::cInner::Inc(void)noexcept(true)
-{
-	cnLib_ASSERT(Ref!=cnVar::TIntegerValue<uIntn>::Max);
-	Ref.Free++;
-}
-void cDualReference::cInner::Dec(void)noexcept(true)
-{
-	cnLib_ASSERT(Ref!=0);
-	if(Ref.Free--==1){
-		auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDualReference::fInnerReference);
-		Host->VirtualDelete();
-	}
-}
-//---------------------------------------------------------------------------

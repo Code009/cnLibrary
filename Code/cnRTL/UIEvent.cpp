@@ -5,12 +5,12 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUIStateHandlerSetNotifier::cUIStateHandlerSetNotifier(const cUIOrderedObjectSet<iUIStateHandler*,sfInt16> &Set)
+cUIStateHandlerSetNotifier::cUIStateHandlerSetNotifier(const cUIOrderedObjectSet<iUIStateHandler*,sfInt16> &Set)noexcept
 	: fSet(Set)
 {
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIStarted(void)
+void cUIStateHandlerSetNotifier::UIStarted(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -18,7 +18,7 @@ void cUIStateHandlerSetNotifier::UIStarted(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIShow(void)
+void cUIStateHandlerSetNotifier::UIShow(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -26,7 +26,7 @@ void cUIStateHandlerSetNotifier::UIShow(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIResume(void)
+void cUIStateHandlerSetNotifier::UIResume(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -34,7 +34,7 @@ void cUIStateHandlerSetNotifier::UIResume(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIPaused(void)
+void cUIStateHandlerSetNotifier::UIPaused(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -42,7 +42,7 @@ void cUIStateHandlerSetNotifier::UIPaused(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIHide(void)
+void cUIStateHandlerSetNotifier::UIHide(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -50,7 +50,7 @@ void cUIStateHandlerSetNotifier::UIHide(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIStateHandlerSetNotifier::UIStopped(void)
+void cUIStateHandlerSetNotifier::UIStopped(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -59,12 +59,12 @@ void cUIStateHandlerSetNotifier::UIStopped(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUIWindowHandlerSetNotifier::cUIWindowHandlerSetNotifier(const cUIOrderedObjectSet<iUIWindowHandler*,sfInt16> &Set)
+cUIWindowHandlerSetNotifier::cUIWindowHandlerSetNotifier(const cUIOrderedObjectSet<iUIWindowHandler*,sfInt16> &Set)noexcept
 	: fSet(Set)
 {
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::ScreenChanged(void)
+void cUIWindowHandlerSetNotifier::ScreenChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -72,7 +72,7 @@ void cUIWindowHandlerSetNotifier::ScreenChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::ParentChanged(void)
+void cUIWindowHandlerSetNotifier::ParentChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -80,7 +80,7 @@ void cUIWindowHandlerSetNotifier::ParentChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::ContentScaleChanged(void)
+void cUIWindowHandlerSetNotifier::ContentScaleChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -88,7 +88,7 @@ void cUIWindowHandlerSetNotifier::ContentScaleChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)
+void cUIWindowHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -96,7 +96,7 @@ void cUIWindowHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::ZPositionChanged(void)
+void cUIWindowHandlerSetNotifier::ZPositionChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -104,7 +104,7 @@ void cUIWindowHandlerSetNotifier::ZPositionChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::VisibleChanged(void)
+void cUIWindowHandlerSetNotifier::VisibleChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -112,7 +112,7 @@ void cUIWindowHandlerSetNotifier::VisibleChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIWindowHandlerSetNotifier::EnableChanged(void)
+void cUIWindowHandlerSetNotifier::EnableChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -121,12 +121,12 @@ void cUIWindowHandlerSetNotifier::EnableChanged(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUIViewHandlerSetNotifier::cUIViewHandlerSetNotifier(const cUIOrderedObjectSet<iUIViewHandler*,sfInt16> &Set)
+cUIViewHandlerSetNotifier::cUIViewHandlerSetNotifier(const cUIOrderedObjectSet<iUIViewHandler*,sfInt16> &Set)noexcept
 	: fSet(Set)
 {
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::UILayout(void)
+void cUIViewHandlerSetNotifier::UILayout(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -134,7 +134,7 @@ void cUIViewHandlerSetNotifier::UILayout(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::UIMargin(cUIRectangle &Margin)
+void cUIViewHandlerSetNotifier::UIMargin(cUIRectangle &Margin)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -142,7 +142,7 @@ void cUIViewHandlerSetNotifier::UIMargin(cUIRectangle &Margin)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::WindowChanged(void)
+void cUIViewHandlerSetNotifier::WindowChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -150,7 +150,7 @@ void cUIViewHandlerSetNotifier::WindowChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::ParentChanged(void)
+void cUIViewHandlerSetNotifier::ParentChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -158,7 +158,7 @@ void cUIViewHandlerSetNotifier::ParentChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::ContentScaleChanged(void)
+void cUIViewHandlerSetNotifier::ContentScaleChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -166,7 +166,7 @@ void cUIViewHandlerSetNotifier::ContentScaleChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)
+void cUIViewHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -174,7 +174,7 @@ void cUIViewHandlerSetNotifier::RectangleChanged(bool Moved,bool Sized)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::ZPositionChanged(void)
+void cUIViewHandlerSetNotifier::ZPositionChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -182,7 +182,7 @@ void cUIViewHandlerSetNotifier::ZPositionChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::VisibleChanged(void)
+void cUIViewHandlerSetNotifier::VisibleChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -190,7 +190,7 @@ void cUIViewHandlerSetNotifier::VisibleChanged(void)
 	}while(Enum.Next());
 }
 //---------------------------------------------------------------------------
-void cUIViewHandlerSetNotifier::EnableChanged(void)
+void cUIViewHandlerSetNotifier::EnableChanged(void)noexcept
 {
 	auto Enum=fSet.Enumerator();
 	if(Enum.Enum()) do{
@@ -199,46 +199,46 @@ void cUIViewHandlerSetNotifier::EnableChanged(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order)
+bool cUIKeyEventNotification::InsertKeyHandler(iUIKeyHandler *Handler,sfInt16 Order)noexcept
 {
 	return fKeyHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::RemoveKeyHandler(iUIKeyHandler *Handler)
+bool cUIKeyEventNotification::RemoveKeyHandler(iUIKeyHandler *Handler)noexcept
 {
 	return fKeyHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order)
+bool cUIKeyEventNotification::InsertKeyFilter(iUIKeyHandler *Filter,sfInt16 Order)noexcept
 {
 	return fKeyFilters.Insert(Filter,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::RemoveKeyFilter(iUIKeyHandler *Filter)
+bool cUIKeyEventNotification::RemoveKeyFilter(iUIKeyHandler *Filter)noexcept
 {
 	return fKeyFilters.Remove(Filter);
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::KeyAcquireExclusive(iUIKeyHandler *Handler)
+bool cUIKeyEventNotification::KeyAcquireExclusive(iUIKeyHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::KeyReleaseExclusive(iUIKeyHandler *Handler)
+void cUIKeyEventNotification::KeyReleaseExclusive(iUIKeyHandler *Handler)noexcept
 {
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order)
+bool cUIKeyEventNotification::InsertTextInputHandler(iUITextInputHandler *Handler,sfInt16 Order)noexcept
 {
 	return fTextInputHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIKeyEventNotification::RemoveTextInputHandler(iUITextInputHandler *Handler)
+bool cUIKeyEventNotification::RemoveTextInputHandler(iUITextInputHandler *Handler)noexcept
 {
 	return fTextInputHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FocusEnterRange(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::FocusEnterRange(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyFocusEnterRange(KeyEvent);
@@ -248,7 +248,7 @@ void cUIKeyEventNotification::FocusEnterRange(iUIKeyEvent *KeyEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FocusLeaveRange(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::FocusLeaveRange(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyFocusLeaveRange(KeyEvent);
@@ -258,21 +258,21 @@ void cUIKeyEventNotification::FocusLeaveRange(iUIKeyEvent *KeyEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::HandleFocusEnter(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::HandleFocusEnter(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyHandlers){
 		Handler->KeyFocusEnter(KeyEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::HandleFocusLeave(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::HandleFocusLeave(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyHandlers){
 		Handler->KeyFocusLeave(KeyEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::HandleKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::HandleKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyHandlers){
 		Handler->KeyDown(KeyEvent,Key);
@@ -281,7 +281,7 @@ void cUIKeyEventNotification::HandleKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::HandleKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::HandleKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyHandlers){
 		Handler->KeyUp(KeyEvent,Key);
@@ -290,7 +290,7 @@ void cUIKeyEventNotification::HandleKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::HandleKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::HandleKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyHandlers){
 		Handler->KeyInput(KeyEvent,Key);
@@ -299,21 +299,21 @@ void cUIKeyEventNotification::HandleKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FilterFocusEnter(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::FilterFocusEnter(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyFocusEnter(KeyEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FilterFocusLeave(iUIKeyEvent *KeyEvent)
+void cUIKeyEventNotification::FilterFocusLeave(iUIKeyEvent *KeyEvent)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyFocusLeave(KeyEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FilterKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::FilterKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyDown(KeyEvent,Key);
@@ -322,7 +322,7 @@ void cUIKeyEventNotification::FilterKeyDown(iUIKeyEvent *KeyEvent,eKeyCode Key)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FilterKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::FilterKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyUp(KeyEvent,Key);
@@ -331,7 +331,7 @@ void cUIKeyEventNotification::FilterKeyUp(iUIKeyEvent *KeyEvent,eKeyCode Key)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIKeyEventNotification::FilterKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)
+void cUIKeyEventNotification::FilterKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept
 {
 	for(auto *Handler : fKeyFilters){
 		Handler->KeyInput(KeyEvent,Key);
@@ -339,36 +339,36 @@ void cUIKeyEventNotification::FilterKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUIMouseEventNotification::InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order)
+bool cUIMouseEventNotification::InsertMouseHandler(iUIMouseHandler *Handler,sfInt16 Order)noexcept
 {
 	return fMouseHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIMouseEventNotification::RemoveMouseHandler(iUIMouseHandler *Handler)
+bool cUIMouseEventNotification::RemoveMouseHandler(iUIMouseHandler *Handler)noexcept
 {
 	return fMouseHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-bool cUIMouseEventNotification::InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order)
+bool cUIMouseEventNotification::InsertMouseFilter(iUIMouseHandler *Filter,sfInt16 Order)noexcept
 {
 	return fMouseFilters.Insert(Filter,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIMouseEventNotification::RemoveMouseFilter(iUIMouseHandler *Filter)
+bool cUIMouseEventNotification::RemoveMouseFilter(iUIMouseHandler *Filter)noexcept
 {
 	return fMouseFilters.Remove(Filter);
 }
 //---------------------------------------------------------------------------
-bool cUIMouseEventNotification::MouseAcquireExclusive(iUIMouseHandler *Handler)
+bool cUIMouseEventNotification::MouseAcquireExclusive(iUIMouseHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::MouseReleaseExclusive(iUIMouseHandler *Handler)
+void cUIMouseEventNotification::MouseReleaseExclusive(iUIMouseHandler *Handler)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::MouseEnterRange(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::MouseEnterRange(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseEnterRange(MouseEvent);
@@ -378,7 +378,7 @@ void cUIMouseEventNotification::MouseEnterRange(iUIMouseEvent *MouseEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::MouseLeaveRange(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::MouseLeaveRange(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseLeaveRange(MouseEvent);
@@ -388,21 +388,21 @@ void cUIMouseEventNotification::MouseLeaveRange(iUIMouseEvent *MouseEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleEnter(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::HandleEnter(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseEnter(MouseEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleLeave(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::HandleLeave(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseLeave(MouseEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleMove(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::HandleMove(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseMove(MouseEvent);
@@ -411,7 +411,7 @@ void cUIMouseEventNotification::HandleMove(iUIMouseEvent *MouseEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleDown(iUIMouseEvent *MouseEvent,eMouseButton Button)
+void cUIMouseEventNotification::HandleDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseDown(MouseEvent,Button);
@@ -420,7 +420,7 @@ void cUIMouseEventNotification::HandleDown(iUIMouseEvent *MouseEvent,eMouseButto
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleUp(iUIMouseEvent *MouseEvent,eMouseButton Button)
+void cUIMouseEventNotification::HandleUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseUp(MouseEvent,Button);
@@ -429,7 +429,7 @@ void cUIMouseEventNotification::HandleUp(iUIMouseEvent *MouseEvent,eMouseButton 
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::HandleWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)
+void cUIMouseEventNotification::HandleWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept
 {
 	for(auto *Handler : fMouseHandlers){
 		Handler->MouseWheel(MouseEvent,ScrollX,ScrollY);
@@ -438,21 +438,21 @@ void cUIMouseEventNotification::HandleWheel(iUIMouseEvent *MouseEvent,Float32 Sc
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterEnter(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::FilterEnter(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseEnter(MouseEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterLeave(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::FilterLeave(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseLeave(MouseEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterMove(iUIMouseEvent *MouseEvent)
+void cUIMouseEventNotification::FilterMove(iUIMouseEvent *MouseEvent)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseMove(MouseEvent);
@@ -461,7 +461,7 @@ void cUIMouseEventNotification::FilterMove(iUIMouseEvent *MouseEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterDown(iUIMouseEvent *MouseEvent,eMouseButton Button)
+void cUIMouseEventNotification::FilterDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseDown(MouseEvent,Button);
@@ -470,7 +470,7 @@ void cUIMouseEventNotification::FilterDown(iUIMouseEvent *MouseEvent,eMouseButto
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterUp(iUIMouseEvent *MouseEvent,eMouseButton Button)
+void cUIMouseEventNotification::FilterUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseUp(MouseEvent,Button);
@@ -479,7 +479,7 @@ void cUIMouseEventNotification::FilterUp(iUIMouseEvent *MouseEvent,eMouseButton 
 	}
 }
 //---------------------------------------------------------------------------
-void cUIMouseEventNotification::FilterWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)
+void cUIMouseEventNotification::FilterWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept
 {
 	for(auto *Handler : fMouseFilters){
 		Handler->MouseWheel(MouseEvent,ScrollX,ScrollY);
@@ -489,57 +489,57 @@ void cUIMouseEventNotification::FilterWheel(iUIMouseEvent *MouseEvent,Float32 Sc
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUITouchEventNotification::InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order)
+bool cUITouchEventNotification::InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order)noexcept
 {
 	return fTouchHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUITouchEventNotification::RemoveTouchHandler(iUITouchHandler *Handler)
+bool cUITouchEventNotification::RemoveTouchHandler(iUITouchHandler *Handler)noexcept
 {
 	return fTouchHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-bool cUITouchEventNotification::InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order)
+bool cUITouchEventNotification::InsertTouchFilter(iUITouchHandler *Filter,sfInt16 Order)noexcept
 {
 	return fTouchFilters.Insert(Filter,Order);
 }
 //---------------------------------------------------------------------------
-bool cUITouchEventNotification::RemoveTouchFilter(iUITouchHandler *Filter)
+bool cUITouchEventNotification::RemoveTouchFilter(iUITouchHandler *Filter)noexcept
 {
 	return fTouchFilters.Remove(Filter);
 }
 //---------------------------------------------------------------------------
-bool cUITouchEventNotification::TouchAcquireExclusive(iUITouchHandler *Handler)
+bool cUITouchEventNotification::TouchAcquireExclusive(iUITouchHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::TouchReleaseExclusive(iUITouchHandler *Handler)
+void cUITouchEventNotification::TouchReleaseExclusive(iUITouchHandler *Handler)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleBegin(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::HandleBegin(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
 		Handler->TouchBegin(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleEnd(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::HandleEnd(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
 		Handler->TouchEnd(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleLost(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::HandleLost(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
 		Handler->TouchLost(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleMove(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::HandleMove(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
 		Handler->TouchMove(TouchEvent);
@@ -548,28 +548,28 @@ void cUITouchEventNotification::HandleMove(iUITouchEvent *TouchEvent)
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterBegin(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::FilterBegin(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
 		Handler->TouchBegin(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterEnd(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::FilterEnd(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
 		Handler->TouchEnd(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterLost(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::FilterLost(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
 		Handler->TouchLost(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterMove(iUITouchEvent *TouchEvent)
+void cUITouchEventNotification::FilterMove(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
 		Handler->TouchMove(TouchEvent);
@@ -579,94 +579,91 @@ void cUITouchEventNotification::FilterMove(iUITouchEvent *TouchEvent)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUIViewEventNotification::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)
+bool cUIViewEventNotification::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)noexcept
 {
 	return fStateHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIViewEventNotification::RemoveStateHandler(iUIStateHandler *Handler)
+bool cUIViewEventNotification::RemoveStateHandler(iUIStateHandler *Handler)noexcept
 {
 	return fStateHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-bool cUIViewEventNotification::InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order)
+bool cUIViewEventNotification::InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order)noexcept
 {
 	return fViewHandlers.Insert(Handler,Order);
 }
 //---------------------------------------------------------------------------
-bool cUIViewEventNotification::RemoveViewHandler(iUIViewHandler *Handler)
+bool cUIViewEventNotification::RemoveViewHandler(iUIViewHandler *Handler)noexcept
 {
 	return fViewHandlers.Remove(Handler);
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::StateChange(eUIState PrevState,eUIState NextState)
+void cUIViewEventNotification::StateChange(eUIState PrevState,eUIState NextState)noexcept
 {
 	cUIStateHandlerSetNotifier Notifier(fStateHandlers);
 
 	UIStateNotifyChange(PrevState,NextState,Notifier);
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::ContentScaleChanged(void)
+void cUIViewEventNotification::ContentScaleChanged(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->ContentScaleChanged();
 	}
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::RectangleChanged(bool Moved,bool Sized)
+void cUIViewEventNotification::RectangleChanged(bool Moved,bool Sized)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->RectangleChanged(Moved,Sized);
 	}
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::VisibleChanged(void)
+void cUIViewEventNotification::VisibleChanged(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->VisibleChanged();
 	}
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::EnableChanged(void)
+void cUIViewEventNotification::EnableChanged(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->EnableChanged();
 	}
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::Layout(void)
+void cUIViewEventNotification::Layout(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->UILayout();
 	}
 }
 //---------------------------------------------------------------------------
-cUIRectangle cUIViewEventNotification::UIMargin(const cUIRectangle &Margin)
+cUIRectangle cUIViewEventNotification::UIMargin(const cUIRectangle &Margin)noexcept
 {
-	union{
-		cVector<Float32,4> RetVector;
-		cUIRectangle RetMargin;
-	};
-	union{
-		cVector<Float32,4> HandlerVector;
-		cUIRectangle HandlerMargin;
-	};
-	RetMargin=Margin;
+	cUIRectangle RetMargin=Margin;
+	cVector<Float32,4> RetVector;
+	cVector<Float32,4> HandlerVector;
 	for(auto *Handler : fViewHandlers){
-		HandlerMargin=Handler->UIMargin(RetMargin);
+		auto HandlerMargin=Handler->UIMargin(RetMargin);
+		HandlerVector.Load(reinterpret_cast<Float32*>(&HandlerMargin));
+		RetVector.Load(reinterpret_cast<Float32*>(&RetMargin));
 		RetVector+=HandlerVector;
+		RetVector.Store(reinterpret_cast<Float32*>(&RetMargin));
 	}
 	return RetMargin;
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::WindowChanged(void)
+void cUIViewEventNotification::WindowChanged(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->WindowChanged();
 	}
 }
 //---------------------------------------------------------------------------
-void cUIViewEventNotification::ParentChanged(void)
+void cUIViewEventNotification::ParentChanged(void)noexcept
 {
 	for(auto *Handler : fViewHandlers){
 		Handler->ParentChanged();

@@ -112,7 +112,7 @@ namespace cnWin{
 //---------------------------------------------------------------------------
 #if _MANAGED
 //---------------------------------------------------------------------------
-iPtr<iUIWindow> MakeUIWindowFromWindowTarget(DNet::IWPFWindowTarget ^Target);
+iPtr<iUIWindow> MakeUIWindowFromWindowTarget(DNet::IWPFWindowTarget ^Target)noexcept(true);
 //---------------------------------------------------------------------------
 #endif // _MANAGED
 //---------------------------------------------------------------------------
@@ -247,7 +247,7 @@ namespace cnWin{
 //---------------------------------------------------------------------------
 #if _MANAGED
 //---------------------------------------------------------------------------
-iPtr<iUIView> MakeUIViewFromViewTarget(DNet::IWPFViewTarget ^Target);
+iPtr<iUIView> MakeUIViewFromViewTarget(DNet::IWPFViewTarget ^Target)noexcept(true);
 //---------------------------------------------------------------------------
 #endif // _MANAGED
 //---------------------------------------------------------------------------

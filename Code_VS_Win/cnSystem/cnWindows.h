@@ -42,13 +42,13 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 	
-	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)=0;
+	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iCOMApartmentThreading : public iReference
 {
 public:
-	virtual iDispatch* cnLib_FUNC GetDispatch(void)=0;
+	virtual iDispatch* cnLib_FUNC GetDispatch(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iWaveFormat : public iInterface
@@ -57,7 +57,7 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual const WAVEFORMATEX*	cnLib_FUNC GetFormat(void)=0;
+	virtual const WAVEFORMATEX*	cnLib_FUNC GetFormat(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnWindows{
@@ -75,14 +75,16 @@ struct LibLoadResult
 ufInt8 cnLib_FUNC Initialize(void)noexcept(true);
 void cnLib_FUNC Finalize(void)noexcept(true);
 //---------------------------------------------------------------------------
-rPtr<iMemoryHeap>		cnLib_FUNC CreateMemoryHeap(void);
+extern iTextStreamOutput*const DebugLogStream;
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> cnLib_FUNC CodePageToUTF16(UINT SrcCodePage);
-rPtr<iTextEncodingConverter> cnLib_FUNC CodePageFromUTF16(UINT DestCodePage);
+rPtr<iMemoryHeap>		cnLib_FUNC CreateMemoryHeap(void)noexcept(true);
+//---------------------------------------------------------------------------
+rPtr<iTextEncodingConverter> cnLib_FUNC CodePageToUTF16(UINT SrcCodePage)noexcept(true);
+rPtr<iTextEncodingConverter> cnLib_FUNC CodePageFromUTF16(UINT DestCodePage)noexcept(true);
 
 //---------------------------------------------------------------------------
-rPtr<iCOMApartmentThreading> cnLib_FUNC COMApartmentThreadingGet(void);
-rPtr<iCOMApartmentThreading> cnLib_FUNC COMApartmentThreadingQuery(iDispatch *Dispatch);
+rPtr<iCOMApartmentThreading> cnLib_FUNC COMApartmentThreadingGet(void)noexcept(true);
+rPtr<iCOMApartmentThreading> cnLib_FUNC COMApartmentThreadingQuery(iDispatch *Dispatch)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWindows
 //---------------------------------------------------------------------------

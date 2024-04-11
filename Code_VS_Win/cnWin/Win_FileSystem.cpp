@@ -11,23 +11,23 @@ using namespace cnWinNT6;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32FileName::cWin32FileName(cString<wchar_t> &&Path)
+cWin32FileName::cWin32FileName(cString<wchar_t> &&Path)noexcept
 	: fFileName(cnVar::MoveCast(Path))
 {
 	fNamePartIndex=IndexNotFound;
 	fCachedFileInfo=false;
 }
 //---------------------------------------------------------------------------
-cWin32FileName::~cWin32FileName()
+cWin32FileName::~cWin32FileName()noexcept
 {
 }
 //---------------------------------------------------------------------------
-eiOrdering cWin32FileName::CompareWin32Name(const wchar_t *DestName,uIntn DestNameLength)const
+eiOrdering cWin32FileName::CompareWin32Name(const wchar_t *DestName,uIntn DestNameLength)const noexcept
 {
 	return static_cast<iOrdering>(cnMemory::Compare(fFileName.GetString(),fFileName.GetLength(),DestName,DestNameLength));
 }
 //---------------------------------------------------------------------------
-eiOrdering cWin32FileName::Compare(iFileName *Dest)
+eiOrdering cWin32FileName::Compare(iFileName *Dest)noexcept
 {
 	auto Win32File=iCast<iWin32FileName>(Dest);
 	if(Win32File==nullptr)
@@ -35,7 +35,7 @@ eiOrdering cWin32FileName::Compare(iFileName *Dest)
 	return CompareWin32Name(Win32File->GetFileName(),Win32File->GetFileNameLength());
 }
 //---------------------------------------------------------------------------
-uIntn cWin32FileName::MakrDirGetErrorLevel(cnRTL::cStringBuffer<wchar_t> &Path,uIntn Index)
+uIntn cWin32FileName::MakrDirGetErrorLevel(cnRTL::cStringBuffer<wchar_t> &Path,uIntn Index)noexcept
 {
 	uIntn CurLength;
 	uIntn CurLevel=0;
@@ -46,7 +46,7 @@ uIntn cWin32FileName::MakrDirGetErrorLevel(cnRTL::cStringBuffer<wchar_t> &Path,u
 	return CurLevel;
 }
 //---------------------------------------------------------------------------
-uIntn cWin32FileName::MakeDir(cnRTL::cStringBuffer<wchar_t> &Path)
+uIntn cWin32FileName::MakeDir(cnRTL::cStringBuffer<wchar_t> &Path)noexcept
 {
 	DWORD FileAttr;
 	FileAttr=::GetFileAttributesW(Path->Pointer);
@@ -118,7 +118,7 @@ uIntn cWin32FileName::MakeDir(cnRTL::cStringBuffer<wchar_t> &Path)
 	return 0;
 }
 //---------------------------------------------------------------------------
-void cWin32FileName::CacheFileInfo(const WIN32_FIND_DATA &FindData)
+void cWin32FileName::CacheFileInfo(const WIN32_FIND_DATA &FindData)noexcept
 {
 	if(fCachedFileInfo==false){
 		fFileInfo.dwFileAttributes=FindData.dwFileAttributes;
@@ -133,7 +133,7 @@ void cWin32FileName::CacheFileInfo(const WIN32_FIND_DATA &FindData)
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32FileName::CacheFileInfo(const WIN32_FILE_ATTRIBUTE_DATA &FileInfo)
+void cWin32FileName::CacheFileInfo(const WIN32_FILE_ATTRIBUTE_DATA &FileInfo)noexcept
 {
 	if(fCachedFileInfo==false){
 
@@ -143,7 +143,7 @@ void cWin32FileName::CacheFileInfo(const WIN32_FILE_ATTRIBUTE_DATA &FileInfo)
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32FileName::SetupFileInfo(void)
+void cWin32FileName::SetupFileInfo(void)noexcept
 {
 	if(fCachedFileInfo==false){
 		if(::GetFileAttributesExW(fFileName,GetFileExInfoStandard,&fFileInfo)){
@@ -160,26 +160,26 @@ void cWin32FileName::SetupFileInfo(void)
 	}
 }
 //---------------------------------------------------------------------------
-bool cWin32FileName::IsExists(void)
+bool cWin32FileName::IsExists(void)noexcept
 {
 	SetupFileInfo();
 	return fFileExists;
 }
 //---------------------------------------------------------------------------
-uInt64 cWin32FileName::GetDataSize(void)
+uInt64 cWin32FileName::GetDataSize(void)noexcept
 {
 	SetupFileInfo();
 
 	return Win32FileGetSize(fFileName);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileName::HasData(void)
+bool cWin32FileName::HasData(void)noexcept
 {
 	SetupFileInfo();
 	return (fFileInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)==0;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileName::HasFolder(void)
+bool cWin32FileName::HasFolder(void)noexcept
 {
 	SetupFileInfo();
 	if(fFileExists==false)
@@ -187,7 +187,7 @@ bool cWin32FileName::HasFolder(void)
 	return (fFileInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)!=0;
 }
 //---------------------------------------------------------------------------
-bool cWin32FileName::Delete(void)
+bool cWin32FileName::Delete(void)noexcept
 {
 	SetupFileInfo();
 	if(fFileExists==false)
@@ -202,7 +202,7 @@ bool cWin32FileName::Delete(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32FileName::SetupNameInfo(void)
+void cWin32FileName::SetupNameInfo(void)noexcept
 {
 	if(fNamePartIndex==IndexNotFound){
 		fNamePartIndex=cnMemory::ReverseSearch(fFileName.GetString(),fFileName.GetLength(),'\\');
@@ -213,7 +213,7 @@ void cWin32FileName::SetupNameInfo(void)
 	}
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWin32FileName::EnumFolder(void)
+rPtr<iFileEnumerator> cWin32FileName::EnumFolder(void)noexcept
 {
 	SetupFileInfo();
 
@@ -227,7 +227,7 @@ rPtr<iFileEnumerator> cWin32FileName::EnumFolder(void)
 	return CreateFileEnumeration(fFileName,nullptr);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncNotification> cWin32FileName::WatchFolder(void)
+rPtr<iAsyncNotification> cWin32FileName::WatchFolder(void)noexcept
 {
 	SetupFileInfo();
 
@@ -241,7 +241,7 @@ rPtr<iAsyncNotification> cWin32FileName::WatchFolder(void)
 	return WindowsInterface::Win32FileOpenFileWatcher(fFileName);
 }
 //---------------------------------------------------------------------------
-rPtr<iFileObserver> cWin32FileName::ObserveFolder(void)
+rPtr<iFileObserver> cWin32FileName::ObserveFolder(void)noexcept
 {
 	SetupFileInfo();
 
@@ -255,17 +255,17 @@ rPtr<iFileObserver> cWin32FileName::ObserveFolder(void)
 	return WindowsInterface::Win32FileOpenFileObserver(fFileName);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileSyncStream> cWin32FileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileSyncStream> cWin32FileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	return Win32FileOpenSequentialStream(fFileName,AccessMode,CreateFlag);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileStream> cWin32FileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileStream> cWin32FileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	return WindowsInterface::Win32FileOpenFileStream(fFileName,AccessMode,CreateFlag);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName>	cWin32FileName::ParentFileName(void)
+iPtr<iFileName>	cWin32FileName::ParentFileName(void)noexcept
 {
 	SetupNameInfo();
 	if(fNamePartIndex==0){
@@ -275,12 +275,12 @@ iPtr<iFileName>	cWin32FileName::ParentFileName(void)
 	return iCreate<cWin32FileName>(cString<wchar_t>(fFileName,fNamePartIndex-1));
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWin32FileName::EnumFileNames(const uChar16 *Filter)
+rPtr<iFileEnumerator> cWin32FileName::EnumFileNames(const uChar16 *Filter)noexcept
 {
 	return CreateFileEnumeration(fFileName,utow(Filter));
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName>	cWin32FileName::MakeName(const uChar16*const *FilePath,uIntn Depth)
+iPtr<iFileName>	cWin32FileName::MakeName(const uChar16*const *FilePath,uIntn Depth)noexcept
 {
 	// create file name
 	auto FileName=cnWinRTL::Win32FileMakeName(fFileName,fFileName.GetLength(),FilePath,Depth);
@@ -290,53 +290,53 @@ iPtr<iFileName>	cWin32FileName::MakeName(const uChar16*const *FilePath,uIntn Dep
 	return iCreate<cWin32FileName>(FileName.Swap());
 }
 //---------------------------------------------------------------------------
-uIntn	cWin32FileName::CreateFolderPath(void)
+uIntn	cWin32FileName::CreateFolderPath(void)noexcept
 {
 	cnRTL::cStringBuffer<wchar_t> PathBuffer=fFileName.GetArray();
 
 	return MakeDir(PathBuffer);
 }
 //---------------------------------------------------------------------------
-bool cWin32FileName::CreateFolder(void)
+bool cWin32FileName::CreateFolder(void)noexcept
 {
 	return ::CreateDirectoryW(fFileName,nullptr)!=FALSE;
 }
 //---------------------------------------------------------------------------
-const uChar16*	cWin32FileName::GetName(void)
+const uChar16*	cWin32FileName::GetName(void)noexcept
 {
 	SetupNameInfo();
 	return wtou(fFileName.GetString())+fNamePartIndex;
 }
 //---------------------------------------------------------------------------
-uIntn			cWin32FileName::GetNameLength(void)
+uIntn			cWin32FileName::GetNameLength(void)noexcept
 {
 	SetupNameInfo();
 	return fFileName->Length-fNamePartIndex;
 }
 //---------------------------------------------------------------------------
-const wchar_t* cWin32FileName::GetFileName(void)
+const wchar_t* cWin32FileName::GetFileName(void)noexcept
 {
 	return fFileName;
 }
 //---------------------------------------------------------------------------
-uIntn cWin32FileName::GetFileNameLength(void)
+uIntn cWin32FileName::GetFileNameLength(void)noexcept
 {
 	return fFileName.GetLength();
 }
 //---------------------------------------------------------------------------
-void cWin32FileName::SetFileName(const wchar_t *FileName,uIntn Length)
+void cWin32FileName::SetFileName(const wchar_t *FileName,uIntn Length)noexcept
 {
 	fFileName.SetString(FileName,Length);
 	fNamePartIndex=IndexNotFound;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iFileName> cnWin::Win32CreateFileName(cnRTL::cString<wchar_t> FileName)
+iPtr<iFileName> cnWin::Win32CreateFileName(cnRTL::cString<wchar_t> FileName)noexcept
 {
 	return iCreate<cWin32FileName>(cnVar::MoveCast(FileName));
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cnWin::FileEnumerationCreateFileName(cString<wchar_t> Path,const WIN32_FIND_DATA &FindData)
+iPtr<iFileName> cnWin::FileEnumerationCreateFileName(cString<wchar_t> Path,const WIN32_FIND_DATA &FindData)noexcept
 {
 	// create file name
 	auto pFileName=wtou(FindData.cFileName);
@@ -349,7 +349,7 @@ iPtr<iFileName> cnWin::FileEnumerationCreateFileName(cString<wchar_t> Path,const
 	return FileNameInterface;
 }
 //---------------------------------------------------------------------------
-rPtr<cWin32FileNameEnum> cnWin::CreateFileEnumeration(cString<wchar_t> Path,const wchar_t *Filter)
+rPtr<cWin32FileNameEnum> cnWin::CreateFileEnumeration(cString<wchar_t> Path,const wchar_t *Filter)noexcept
 {
 	auto FindPath=Win32FileMakeFindName(Path,Path->Length,Filter);
 
@@ -357,7 +357,7 @@ rPtr<cWin32FileNameEnum> cnWin::CreateFileEnumeration(cString<wchar_t> Path,cons
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-aClsRef<cWin32FileMappingHandle> cnWin::CreateFileMappingHandle(aCls<cWin32FileHandle> *FileHandle,uInt64 Size,eFileAccess AccessMode,const wchar_t *FileMappingName)
+aClsRef<cWin32FileMappingHandle> cnWin::CreateFileMappingHandle(aCls<cWin32FileHandle> *FileHandle,uInt64 Size,eFileAccess AccessMode,const wchar_t *FileMappingName)noexcept
 {
 	DWORD ProtectFlag=0;
 
@@ -383,7 +383,7 @@ aClsRef<cWin32FileMappingHandle> cnWin::CreateFileMappingHandle(aCls<cWin32FileH
 	return aClsCreate<cWin32FileMappingHandle>(FileMappingHandle,FileHandle);
 }
 //---------------------------------------------------------------------------
-aClsRef<cWin32FileMappingHandle> cnWin::CreateSwapFileHandle(uInt64 Size)
+aClsRef<cWin32FileMappingHandle> cnWin::CreateSwapFileHandle(uInt64 Size)noexcept
 {
 	uInt32 SizeLo=static_cast<uInt32>(Size);
 	uInt32 SizeHi=static_cast<uInt32>(Size>>32);
@@ -394,7 +394,7 @@ aClsRef<cWin32FileMappingHandle> cnWin::CreateSwapFileHandle(uInt64 Size)
 	return aClsCreate<cWin32FileMappingHandle>(FileMappingHandle,nullptr);
 }
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory> cnWin::AllocSwapFile(uInt64 Size)
+rPtr<iSwapMemory> cnWin::AllocSwapFile(uInt64 Size)noexcept
 {
 	auto FMHandle=CreateSwapFileHandle(Size);
 	if(FMHandle==nullptr)	// create failed
@@ -403,7 +403,7 @@ rPtr<iSwapMemory> cnWin::AllocSwapFile(uInt64 Size)
 	return rCreate<cWin32FileMapping>(cnVar::MoveCast(FMHandle),Size,FILE_MAP_READ|FILE_MAP_WRITE);
 }
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory> cnWin::Win32FileCreateSwapMemory(const wchar_t *FileName,uInt64 Size,eFileAccess AccessMode)
+rPtr<iSwapMemory> cnWin::Win32FileCreateSwapMemory(const wchar_t *FileName,uInt64 Size,eFileAccess AccessMode)noexcept
 {
 	DWORD Flag=0;
 	auto FileHandle=Win32FileOpenHandle(FileName,AccessMode,FileCreate::Open,Flag);
@@ -420,7 +420,7 @@ rPtr<iSwapMemory> cnWin::Win32FileCreateSwapMemory(const wchar_t *FileName,uInt6
 	return rCreate<cWin32FileMapping>(cnVar::MoveCast(FileMapping),Size,MapFlag);
 }
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory> cnWin::CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode)
+rPtr<iSwapMemory> cnWin::CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode)noexcept
 {
 	auto WinFileName=iCast<iWin32FileName>(File);
 	if(WinFileName==nullptr)
@@ -429,7 +429,7 @@ rPtr<iSwapMemory> cnWin::CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileA
 	return Win32FileCreateSwapMemory(WinFileName->GetFileName(),Size,AccessMode);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileSyncStream> cnWin::Win32FileOpenSequentialStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileSyncStream> cnWin::Win32FileOpenSequentialStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	auto FileHandle=Win32FileOpenHandle(FileName,AccessMode,CreateFlag,FILE_FLAG_SEQUENTIAL_SCAN);
 	if(FileHandle==INVALID_HANDLE_VALUE)
@@ -442,7 +442,7 @@ iPtr<iFileSyncStream> cnWin::Win32FileOpenSequentialStream(const wchar_t *FileNa
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-static cnRTL::cStringBuffer<wchar_t> Win32FileMakeShellFolderName(REFKNOWNFOLDERID rfid)
+static cnRTL::cStringBuffer<wchar_t> Win32FileMakeShellFolderName(REFKNOWNFOLDERID rfid)noexcept
 {
 	cShellString Path;
 	uIntn PathLen;
@@ -456,7 +456,7 @@ static cnRTL::cStringBuffer<wchar_t> Win32FileMakeShellFolderName(REFKNOWNFOLDER
 	return NTFileNormalizeName(Path,PathLen);
 }
 //---------------------------------------------------------------------------
-cnRTL::cStringBuffer<wchar_t> Win32FileSystem::MakeSystemFileName(cnWindows::eSystemFile File)
+cnRTL::cStringBuffer<wchar_t> Win32FileSystem::MakeSystemFileName(cnWindows::eSystemFile File)noexcept
 {
 	switch(File){
 	default:
@@ -472,7 +472,7 @@ cnRTL::cStringBuffer<wchar_t> Win32FileSystem::MakeSystemFileName(cnWindows::eSy
 	}
 }
 //---------------------------------------------------------------------------
-iPtr<iFileStream> Win32FileSystem::OpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileStream> Win32FileSystem::OpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	auto FileHandle=Win32FileOpenHandle(FileName,AccessMode,CreateFlag,FILE_FLAG_OVERLAPPED|FILE_FLAG_RANDOM_ACCESS);
 	if(FileHandle==INVALID_HANDLE_VALUE)
@@ -487,7 +487,7 @@ iPtr<iFileStream> Win32FileSystem::OpenFileStream(const wchar_t *FileName,eFileA
 	return iCreate<cNTFileOverlappedIOHandleFileStream>(cnVar::MoveCast(FileIO));
 }
 //---------------------------------------------------------------------------
-iPtr<iStream>	Win32FileSystem::OpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iStream>	Win32FileSystem::OpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	auto FileHandle=Win32FileOpenHandle(FileName,AccessMode,CreateFlag,FILE_FLAG_OVERLAPPED);
 	if(FileHandle==INVALID_HANDLE_VALUE)
@@ -502,7 +502,7 @@ iPtr<iStream>	Win32FileSystem::OpenDeviceStream(const wchar_t *FileName,eFileAcc
 	return iCreate<cNTFileOverlappedIOHandleStream>(cnVar::MoveCast(FileIO));
 }
 //---------------------------------------------------------------------------
-iPtr<iEndpoint>		Win32FileSystem::OpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iEndpoint>		Win32FileSystem::OpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	auto FileHandle=Win32FileOpenHandle(FileName,AccessMode,CreateFlag,FILE_FLAG_OVERLAPPED);
 	if(FileHandle==INVALID_HANDLE_VALUE)
@@ -518,7 +518,7 @@ iPtr<iEndpoint>		Win32FileSystem::OpenDeviceEndpoint(const wchar_t *FileName,eFi
 	return CreateEndpointFromSteam(cnVar::MoveCast(SeqStream));
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncNotification>	Win32FileSystem::OpenFileWatcher(const wchar_t *FolderName)
+rPtr<iAsyncNotification>	Win32FileSystem::OpenFileWatcher(const wchar_t *FolderName)noexcept
 {
 	HANDLE FolderHandle=::CreateFileW(FolderName,FILE_LIST_DIRECTORY,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,NULL,OPEN_EXISTING,FILE_FLAG_OVERLAPPED|FILE_FLAG_BACKUP_SEMANTICS,NULL);
 	if(FolderHandle==INVALID_HANDLE_VALUE)
@@ -531,7 +531,7 @@ rPtr<iAsyncNotification>	Win32FileSystem::OpenFileWatcher(const wchar_t *FolderN
 	return rCreate<cNTFolderOverlappedIOHandleFileWatcher>(cnVar::MoveCast(FileIO));
 }
 //---------------------------------------------------------------------------
-rPtr<iFileObserver>			Win32FileSystem::OpenFileObserver(cnRTL::cString<wchar_t> FolderName)
+rPtr<iFileObserver>			Win32FileSystem::OpenFileObserver(cnRTL::cString<wchar_t> FolderName)noexcept
 {
 	HANDLE FolderHandle=::CreateFileW(FolderName,FILE_LIST_DIRECTORY,FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,NULL,OPEN_EXISTING,FILE_FLAG_OVERLAPPED|FILE_FLAG_BACKUP_SEMANTICS,NULL);
 	if(FolderHandle==INVALID_HANDLE_VALUE)

@@ -44,21 +44,18 @@ namespace cnNet{
 	using cnRTL::cAtomicStackSO;
 	using cnRTL::cAtomicQueueSO;
 
-	using cnRTL::cTime;
-
 	using cnRTL::iProtocolProcessor;
 	using cnRTL::iProtocolProvider;
 	
 	using cnRTL::bcProtocolProcessor;
 	using cnRTL::bcProtocolQueueProcessor;
-	using cnRTL::bcConnectionQueueProcessor;
 //---------------------------------------------------------------------------
-constexpr uInt32 IPv4Addr(uInt8 a3,uInt8 a2,uInt8 a1,uInt8 a0)
+constexpr uInt32 IPv4Addr(uInt8 a3,uInt8 a2,uInt8 a1,uInt8 a0)noexcept(true)
 {
 	return ( a3<<24 ) | ( a2<<16 ) | ( a1<<8 ) | a0;
 }
 //---------------------------------------------------------------------------
-constexpr uInt32 IPv4AddrR(uInt8 a3,uInt8 a2,uInt8 a1,uInt8 a0)
+constexpr uInt32 IPv4AddrR(uInt8 a3,uInt8 a2,uInt8 a1,uInt8 a0)noexcept(true)
 {
 	return ( a0<<24 ) | ( a1<<16 ) | ( a2<<8 ) | a3;
 }

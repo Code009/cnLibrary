@@ -24,65 +24,65 @@ template<>
 struct _Func<1>
 {
 	typedef CHAR Type;
-	static CHAR Inc(volatile CHAR &Dest);
-	static CHAR Dec(volatile CHAR &Dest);
-	static CHAR Xchg(volatile CHAR &Dest,CHAR Src);
-	static CHAR CmpXchg(volatile CHAR &Dest,CHAR Src,CHAR Compare);
+	static CHAR Inc(volatile CHAR &Dest)noexcept(true);
+	static CHAR Dec(volatile CHAR &Dest)noexcept(true);
+	static CHAR Xchg(volatile CHAR &Dest,CHAR Src)noexcept(true);
+	static CHAR CmpXchg(volatile CHAR &Dest,CHAR Src,CHAR Compare)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<>
 struct _Func<2>
 {
 	typedef SHORT Type;
-	static SHORT Inc(volatile SHORT &Dest);
-	static SHORT Dec(volatile SHORT &Dest);
-	static SHORT Xchg(volatile SHORT &Dest,SHORT Src);
-	static SHORT CmpXchg(volatile SHORT &Dest,SHORT Src,SHORT Compare);
+	static SHORT Inc(volatile SHORT &Dest)noexcept(true);
+	static SHORT Dec(volatile SHORT &Dest)noexcept(true);
+	static SHORT Xchg(volatile SHORT &Dest,SHORT Src)noexcept(true);
+	static SHORT CmpXchg(volatile SHORT &Dest,SHORT Src,SHORT Compare)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<>
 struct _Func<4>
 {
 	typedef LONG Type;
-	static LONG Inc(volatile LONG &Dest);
-	static LONG Dec(volatile LONG &Dest);
-	static LONG Xchg(volatile LONG &Dest,LONG Src);
-	static LONG CmpXchg(volatile LONG &Dest,LONG Src,LONG Compare);
+	static LONG Inc(volatile LONG &Dest)noexcept(true);
+	static LONG Dec(volatile LONG &Dest)noexcept(true);
+	static LONG Xchg(volatile LONG &Dest,LONG Src)noexcept(true);
+	static LONG CmpXchg(volatile LONG &Dest,LONG Src,LONG Compare)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<>
 struct _Func<8>
 {
 	typedef LONG64 Type;
-	static LONG64 Inc(volatile LONG64 &Dest);
-	static LONG64 Dec(volatile LONG64 &Dest);
-	static LONG64 Xchg(volatile LONG64 &Dest,LONG64 Src);
-	static LONG64 CmpXchg(volatile LONG64 &Dest,LONG64 Src,LONG64 Compare);
+	static LONG64 Inc(volatile LONG64 &Dest)noexcept(true);
+	static LONG64 Dec(volatile LONG64 &Dest)noexcept(true);
+	static LONG64 Xchg(volatile LONG64 &Dest,LONG64 Src)noexcept(true);
+	static LONG64 CmpXchg(volatile LONG64 &Dest,LONG64 Src,LONG64 Compare)noexcept(true);
 };
 //---------------------------------------------------------------------------
 // Inc
 template<class TInt>
-TInt Inc(volatile TInt &Dest){
+inline TInt Inc(volatile TInt &Dest)noexcept(true){
 	typedef _Func<sizeof(TInt)> FuncType;
 	return static_cast<TInt>( FuncType::Inc(reinterpret_cast<typename FuncType::Type volatile&>(Dest)) );
 }
 // Dec
 template<class TInt>
-TInt Dec(volatile TInt &Dest){
+inline TInt Dec(volatile TInt &Dest)noexcept(true){
 	typedef _Func<sizeof(TInt)> FuncType;
 	return static_cast<TInt>( FuncType::Dec(reinterpret_cast<typename FuncType::Type volatile&>(Dest)) );
 }
 
 // Xchg
 template<class TInt>
-TInt Xchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src){
+inline TInt Xchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src)noexcept(true){
 	typedef _Func<sizeof(TInt)> FuncType;
 	return static_cast<TInt>( FuncType::Xchg(reinterpret_cast<typename FuncType::Type volatile&>(Dest),reinterpret_cast<typename FuncType::Type const&>(Src)) );
 }
 
 // CmpXchg
 template<class TInt>
-TInt CmpXchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src,cnVar::TypeDef<TInt> Compare){
+inline TInt CmpXchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src,cnVar::TypeDef<TInt> Compare)noexcept(true){
 	typedef _Func<sizeof(TInt)> FuncType;
 	return static_cast<TInt>( FuncType::CmpXchg(reinterpret_cast<typename FuncType::Type volatile&>(Dest),reinterpret_cast<typename FuncType::Type const&>(Src),reinterpret_cast<typename FuncType::Type const&>(Compare)) );
 }
@@ -92,24 +92,24 @@ TInt CmpXchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src,cnVar::TypeDef<TInt> C
 class cWinExclusiveFlag
 {
 public:
-	cWinExclusiveFlag(bool InitalRun=false);
+	cWinExclusiveFlag(bool InitalRun=false)noexcept(true);
 
 	// Acquire
 	//	test if caller acquired the flag, if not ,request owner to continue
 	// return true if the flag is acquired
-	bool Acquire(void);
+	bool Acquire(void)noexcept(true);
 	// Release
 	//	release the flag if no request pending
 	//	if there was pending request, the thread should continue running
 	//	this function must run called by owner
 	// return true if the owner release the flag, false if there is pending request
-	bool Release(void);
+	bool Release(void)noexcept(true);
 
 	// Continue
 	//	continue execution and clear pending state
-	void Continue(void);
+	void Continue(void)noexcept(true);
 
-	bool IsRunning(void)const;
+	bool IsRunning(void)const noexcept(true);
 private:
 	static constexpr char rfIdle=0;
 	static constexpr char rfExecute=1;
@@ -120,11 +120,11 @@ private:
 class cWinTLS
 {
 public:
-	cWinTLS();
-	~cWinTLS();
+	cWinTLS()noexcept(true);
+	~cWinTLS()noexcept(true);
 
-	void* Get(void);
-	bool Set(void *Value);
+	void* Get(void)noexcept(true);
+	bool Set(void *Value)noexcept(true);
 private:
 	DWORD fTLSIndex;
 };
@@ -132,27 +132,27 @@ private:
 class cWinWaitObject
 {
 public:
-	cWinWaitObject();
-	~cWinWaitObject();
+	cWinWaitObject()noexcept(true);
+	~cWinWaitObject()noexcept(true);
 
-	void Acquire(void);
-	void Release(void);
+	void Acquire(void)noexcept(true);
+	void Release(void)noexcept(true);
 
-	bool Check(void);
-	void Wait(DWORD Millisecond);
+	bool Check(void)noexcept(true);
+	void Wait(DWORD Millisecond)noexcept(true);
 private:
 	cAtomicVar<uIntn> fRefCount;
 	HANDLE fWaitThreadHandle=nullptr;
 	bool fWaitFlag;
 
-	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR);
+	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cWinWaitReference : public iReference, public cWinWaitObject
 {
 public:
-	cWinWaitReference();
-	~cWinWaitReference();
+	cWinWaitReference()noexcept(true);
+	~cWinWaitReference()noexcept(true);
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
@@ -160,14 +160,14 @@ public:
 class cCriticalSection 
 {
 public:
-	cCriticalSection();
-	~cCriticalSection();
+	cCriticalSection()noexcept(true);
+	~cCriticalSection()noexcept(true);
 
 	cCriticalSection(const cCriticalSection&)=delete;
 
-	void Acquire(void);
-	bool TryAcquire(void);
-	void Release(void);
+	void Acquire(void)noexcept(true);
+	bool TryAcquire(void)noexcept(true);
+	void Release(void)noexcept(true);
 
 protected:
 	CRITICAL_SECTION fCriticalSection;
@@ -176,21 +176,21 @@ protected:
 class cDependentRegistration : public iDependentRegistration
 {
 public:
-	cDependentRegistration();
-	~cDependentRegistration();
+	cDependentRegistration()noexcept(true);
+	~cDependentRegistration()noexcept(true);
 
-	void Shutdown(void);
+	void Shutdown(void)noexcept(true);
 
-	virtual void cnLib_FUNC Register(iDependentInfo *Dependent)override;
-	virtual void cnLib_FUNC Unregister(iDependentInfo *Dependent)override;
+	virtual void cnLib_FUNC Register(iDependentInfo *Dependent)noexcept(true)override;
+	virtual void cnLib_FUNC Unregister(iDependentInfo *Dependent)noexcept(true)override;
 protected:
 	cCriticalSection fCS;
 	cWinWaitObject fWaitObject;
 	class cnLib_INTERFACE bcNotifyToken
 	{
 	public:
-		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)=0;
-		virtual void cnLib_FUNC DependentShutdownNotification(void)=0;
+		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)=0;
+		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)=0;
 
 		bcNotifyToken *Parent;
 		bcNotifyToken *Child[2];
@@ -199,8 +199,8 @@ protected:
 	};
 	static_assert(sizeof(bcNotifyToken)<=sizeof(iDependentInfo),"incompatiable iDependentInfo");
 
-	void Register(bcNotifyToken *Token);
-	void Unregister(bcNotifyToken *Token);
+	void Register(bcNotifyToken *Token)noexcept(true);
+	void Unregister(bcNotifyToken *Token)noexcept(true);
 
 	struct cRemovingItem
 	{
@@ -217,66 +217,66 @@ protected:
 class cSRWLock
 {
 public:
-	cSRWLock();
-	~cSRWLock();
+	cSRWLock()noexcept(true);
+	~cSRWLock()noexcept(true);
 
-	void Acquire(void);
-	bool TryAcquire(void);
-	void Release(void);
-	void AcquireShared(void);
-	bool TryAcquireShared(void);
-	void ReleaseShared(void);
+	void Acquire(void)noexcept(true);
+	bool TryAcquire(void)noexcept(true);
+	void Release(void)noexcept(true);
+	void AcquireShared(void)noexcept(true);
+	bool TryAcquireShared(void)noexcept(true);
+	void ReleaseShared(void)noexcept(true);
 protected:
 	SRWLOCK fLock;
 };
 //---------------------------------------------------------------------------
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_WIN7
 //---------------------------------------------------------------------------
-VOID CALLBACK EmptyAPCFunction(ULONG_PTR dwParam);
+VOID CALLBACK EmptyAPCFunction(ULONG_PTR dwParam)noexcept(true);
 //---------------------------------------------------------------------------
 class cThreadHandle : public iThread, private iDependentInfo
 {
 public:
-	cThreadHandle();
-	~cThreadHandle();
+	cThreadHandle()noexcept(true);
+	~cThreadHandle()noexcept(true);
 
-	static int ConvertThreadPriorityFrom(sInt8 Priority);
-	static sfInt8 ConvertThreadPriorityTo(int Priority);
+	static int ConvertThreadPriorityFrom(sInt8 Priority)noexcept(true);
+	static sfInt8 ConvertThreadPriorityTo(int Priority)noexcept(true);
 
-	static bool SetPriority(HANDLE ThreadHandle,sfInt8 Priority);
-	static bool GetPriority(HANDLE ThreadHandle,sfInt8 &Priority);
-	static sfInt8 GetPriority(HANDLE ThreadHandle);
+	static bool SetPriority(HANDLE ThreadHandle,sfInt8 Priority)noexcept(true);
+	static bool GetPriority(HANDLE ThreadHandle,sfInt8 &Priority)noexcept(true);
+	static sfInt8 GetPriority(HANDLE ThreadHandle)noexcept(true);
 
-	HANDLE GetThreadHandle(void);
-	bool ThreadIsCurrent(void);
+	HANDLE GetThreadHandle(void)noexcept(true);
+	bool ThreadIsCurrent(void)noexcept(true);
 
 	// iThread
 
-	virtual void cnLib_FUNC Wake(bool *ResetVal)override;
-	virtual bool cnLib_FUNC SetPriority(sfInt8 Priority)override;
-	virtual bool cnLib_FUNC GetPriority(sfInt8 &Priority)override;
-	virtual bool cnLib_FUNC IsCurrentThread(void)override;
+	virtual void cnLib_FUNC Wake(bool *ResetVal)noexcept(true)override;
+	virtual bool cnLib_FUNC SetPriority(sfInt8 Priority)noexcept(true)override;
+	virtual bool cnLib_FUNC GetPriority(sfInt8 &Priority)noexcept(true)override;
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)override;
 protected:
 
 	HANDLE fThreadHandle;
 	DWORD fThreadID;
 
-	static VOID CALLBACK WakeAPCFunction(ULONG_PTR dwParam);
+	static VOID CALLBACK WakeAPCFunction(ULONG_PTR dwParam)noexcept(true);
 
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)override;
-	virtual void cnLib_FUNC DependentShutdownNotification(void)override;
+	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
+	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-bool CurrentThreadSleepUntil(iTimepoint *Time,uInt64 Delay);
-bool CurrentThreadSleep(DWORD Milliseconds);
+bool CurrentThreadSleepUntil(uInt64 SystemTime)noexcept(true);
+bool CurrentThreadSleep(DWORD Milliseconds)noexcept(true);
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
 class cNT6ThreadLocalVariable : public iThreadLocalVariable
 {
 public:
-	cNT6ThreadLocalVariable();
-	~cNT6ThreadLocalVariable();
+	cNT6ThreadLocalVariable()noexcept(true);
+	~cNT6ThreadLocalVariable()noexcept(true);
 
 	struct cThreadData
 	{
@@ -293,7 +293,7 @@ public:
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_WAIT              Wait,
 		_In_        TP_WAIT_RESULT        WaitResult
-    );
+    )noexcept(true);
 
 	virtual void* cnLib_FUNC Get(void)noexcept(true)override;
 	virtual void cnLib_FUNC Set(iReference *Reference,void *Data)noexcept(true)override;
@@ -303,7 +303,7 @@ public:
 private:
 	DWORD fTLSIndex;
 
-	cThreadData* CreateThreadData(void);
+	cThreadData* CreateThreadData(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct cNT6TLSStaticThreadData
@@ -314,16 +314,16 @@ struct cNT6TLSStaticThreadData
 	iReference *Reference;
 	iThreadExitNotifyProc *NotifyProc;
 
-	void* operator new(tSize Size);
-	void operator delete(void*p);
+	void* operator new(tSize Size)noexcept(true);
+	void operator delete(void*p)noexcept(true);
 
-	void Setup(void);
+	void Setup(void)noexcept(true);
 	static VOID NTAPI WaitCallback(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_WAIT              Wait,
 		_In_        TP_WAIT_RESULT        WaitResult
-    );
+    )noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<class T>
@@ -400,13 +400,13 @@ template<class T> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPoint
 class cNT6ThreadPoolHandleWaiter : public iThreadPoolHandleWaiter, public cnRTL::cDualReference
 {
 public:
-	cNT6ThreadPoolHandleWaiter(PTP_CALLBACK_ENVIRON env,iReference *Reference,iFunction<void (DWORD WaitResult)> *Callback);
-	~cNT6ThreadPoolHandleWaiter();
+	cNT6ThreadPoolHandleWaiter(PTP_CALLBACK_ENVIRON env,iReference *Reference,iFunction<void (DWORD WaitResult)noexcept(true)> *Callback)noexcept(true);
+	~cNT6ThreadPoolHandleWaiter()noexcept(true);
 
-	virtual void SetWait(HANDLE WaitHandle,PFILETIME Timeout)override;
+	virtual void SetWait(HANDLE WaitHandle,PFILETIME Timeout)noexcept(true)override;
 
 protected:
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 	PTP_CALLBACK_ENVIRON fTPEnv;
 	PTP_WAIT fWaiter;
 	static VOID CALLBACK WorkProc(
@@ -414,19 +414,19 @@ protected:
 	  _Inout_opt_ PVOID                 Context,
 	  _Inout_     PTP_WAIT              Wait,
 	  _In_        TP_WAIT_RESULT        WaitResult
-	);
+	)noexcept(true);
 	iReference *fProcedureReference;
-	iFunction<void (DWORD)> *fProcedure;
+	iFunction<void (DWORD)noexcept(true)> *fProcedure;
 
 	cnRTL::cAtomicVar<bool> fSetting;
 	bool fWaiterIsSet;
 
-	void CleanupCallback(void);
-	void WaitForCallback(void);
+	void CleanupCallback(void)noexcept(true);
+	void WaitForCallback(void)noexcept(true);
 	static VOID CALLBACK WaitCallbackProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context
-	);
+	)noexcept(true);
 };
 //---------------------------------------------------------------------------
 //class cNT6ThreadPoolHandleRepeatWaiter : public iThreadPoolHandleRepeatWaiter
@@ -455,10 +455,10 @@ protected:
 class cNT6ThreadPoolWorkAsyncProcedure : public iAsyncProcedure
 {
 public:
-	cNT6ThreadPoolWorkAsyncProcedure(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure);
-	~cNT6ThreadPoolWorkAsyncProcedure();
+	cNT6ThreadPoolWorkAsyncProcedure(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~cNT6ThreadPoolWorkAsyncProcedure()noexcept(true);
 
-	virtual void cnLib_FUNC Start(void)override;
+	virtual void cnLib_FUNC Start(void)noexcept(true)override;
 protected:
 	PTP_WORK fWork;
 	iReference *fProcedureReference;
@@ -468,21 +468,21 @@ protected:
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_WORK              Work
-	);
+	)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cNT6ThreadPoolTimerAsyncTimer : public iAsyncTimer, public cnRTL::cDualReference
 {
 public:
-	cNT6ThreadPoolTimerAsyncTimer(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure);
-	~cNT6ThreadPoolTimerAsyncTimer(void);
+	cNT6ThreadPoolTimerAsyncTimer(PTP_CALLBACK_ENVIRON env,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~cNT6ThreadPoolTimerAsyncTimer(void)noexcept(true);
 
-	virtual void cnLib_FUNC Start(iTimepoint *DueTime,sInt64 DueTimeDelay,uInt64 Period)override;
-	virtual void cnLib_FUNC Stop(void)override;
+	virtual void cnLib_FUNC Start(uInt64 DueTime,uInt64 Period)noexcept(true)override;
+	virtual void cnLib_FUNC Stop(void)noexcept(true)override;
 
 protected:
-	void VirtualStopped(void);
+	void VirtualStopped(void)noexcept(true);
 
 	PTP_CALLBACK_ENVIRON fTPEnv;
 	PTP_TIMER fTimer;
@@ -495,31 +495,31 @@ protected:
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
 		_Inout_     PTP_TIMER             Timer
-	);
+	)noexcept(true);
 
-	void CleanupTimerCallback(void);
-	void WaitForTimer(void);
+	void CleanupTimerCallback(void)noexcept(true);
+	void WaitForTimer(void)noexcept(true);
 	static VOID CALLBACK WaitTimerProc(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context
-	);
+	)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class bcNT6ThreadPoolEnvironment : public iThreadPool
 {
 public:
-	bcNT6ThreadPoolEnvironment(PTP_CALLBACK_ENVIRON Env);
-	~bcNT6ThreadPoolEnvironment();
+	bcNT6ThreadPoolEnvironment(PTP_CALLBACK_ENVIRON Env)noexcept(true);
+	~bcNT6ThreadPoolEnvironment()noexcept(true);
 
 	typedef cNT6ThreadPoolHandleWaiter cHandleWaiter;
 	//typedef cNT6ThreadPoolHandleRepeatWaiter cHandleRepeatWaiter;
 
-	static void StartWork(PTP_CALLBACK_ENVIRON Env,iReference *Reference,iProcedure *Procedure);
+	static void StartWork(PTP_CALLBACK_ENVIRON Env,iReference *Reference,iProcedure *Procedure)noexcept(true);
 	
-	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)override;
-	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *Procedure)override;
-	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *Procedure)override;
+	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)noexcept(true)override;
+	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *Procedure)noexcept(true)override;
+	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *Procedure)noexcept(true)override;
 
 protected:
 
@@ -534,15 +534,15 @@ protected:
 	static VOID CALLBACK SimpleWork(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context
-	);
+	)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cNT6ThreadPoolEnvironment : public bcNT6ThreadPoolEnvironment
 {
 public:
-	cNT6ThreadPoolEnvironment();
-	~cNT6ThreadPoolEnvironment();
+	cNT6ThreadPoolEnvironment()noexcept(true);
+	~cNT6ThreadPoolEnvironment()noexcept(true);
 
 protected:
 	TP_CALLBACK_ENVIRON fEnvironment;

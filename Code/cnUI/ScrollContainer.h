@@ -17,11 +17,11 @@ namespace cnUI{
 class cnLib_INTERFACE kiScrollBar : public kiControl
 {
 public:
-	virtual void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)=0;
+	virtual void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)noexcept(true)=0;
 	//virtual bool ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)=0;
 };
 //---------------------------------------------------------------------------
-extern rPtr<kiScrollBar> (*gCreateDefaultScrollBarKit)(void);
+extern rPtr<kiScrollBar> (*gCreateDefaultScrollBarKit)(void)noexcept(true);
 //---------------------------------------------------------------------------
 template<class TClass,class TInterface=kiScrollBar>
 class bwkScrollBar : public bwkControl<TClass,TInterface>
@@ -29,10 +29,10 @@ class bwkScrollBar : public bwkControl<TClass,TInterface>
 public:
 	using bwkControl<TClass,TInterface>::bwkControl;
 
-	virtual void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)override{
+	virtual void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)noexcept(true)override{
 		return (*this)->ScrollKitSetInfo(HorzInfo,VertInfo);
 	}
-	//virtual bool ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)override{
+	//virtual bool ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)noexcept(true)override{
 	//	return (*this)->ScrollKitSetBarVisible(HorizontalVisible,VerticalVisible,HorizontalViewportSize,VerticalViewportSize);
 	//}
 };
@@ -40,62 +40,62 @@ public:
 class cnLib_INTERFACE viScrollBarGripData : public viData
 {
 public:
-	cFunctionSet<void (void)> ScrollBarGripNotifySet;
-	virtual eAlignment ScrollBarGripGetAlignment(void)=0;
+	cFunctionSet<void (void)noexcept(true)> ScrollBarGripNotifySet;
+	virtual eAlignment ScrollBarGripGetAlignment(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-extern rPtr<viControl> (*gCreateDefaultScrollBarGripVisual)(viScrollBarGripData *Data);
+extern rPtr<viControl> (*gCreateDefaultScrollBarGripVisual)(viScrollBarGripData *Data)noexcept(true);
 //---------------------------------------------------------------------------
 class kControlScrollBar : public LayoutControl , public viScrollBarGripData
 {
 public:
-	kControlScrollBar();
-	~kControlScrollBar();
+	kControlScrollBar()noexcept(true);
+	~kControlScrollBar()noexcept(true);
 
-	static rPtr<kiScrollBar> Create(void);
+	static rPtr<kiScrollBar> Create(void)noexcept(true);
 
 	Float32 BarZPosition=ZPosition_ContentInset;
 
 	class cScrollBarHorizontal : public cControlScrollBar
 	{
 	protected:
-		virtual void ScrollInfoChanged(void)override;
+		virtual void ScrollInfoChanged(void)noexcept(true)override;
 	}ScrollBarHorizontal;
 	class cScrollBarVertical : public cControlScrollBar
 	{
 	protected:
-		virtual void ScrollInfoChanged(void)override;
+		virtual void ScrollInfoChanged(void)noexcept(true)override;
 	}ScrollBarVertical;
 	VisualControl ScrollBarGrip;
 
 	// kiControl
 
-	void SetContentZPosition(Float32 ZPosition);
-	void SetContentVisible(bool Visible);
+	void SetContentZPosition(Float32 ZPosition)noexcept(true);
+	void SetContentVisible(bool Visible)noexcept(true);
 
 	// kiScrollBar
 
-	void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo);
-	bool ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize);
+	void ScrollKitSetInfo(iControlScrollInfo *HorzInfo,iControlScrollInfo *VertInfo)noexcept(true);
+	bool ScrollKitSetBarVisible(bool HorizontalVisible,bool VerticalVisible,Float32 HorizontalViewportSize,Float32 VerticalViewportSize)noexcept(true);
 
 	// viScrollBarGripData
 
-	virtual eAlignment ScrollBarGripGetAlignment(void)override;
+	virtual eAlignment ScrollBarGripGetAlignment(void)noexcept(true)override;
 
 
 	Float32 HorizontalBarSize=20;
 	Float32 VerticalBarSize=20;
 	bool VerticalBarAlignLeft=false;
 	bool HorizontalBarAlignTop=false;
-	void Update(void);
+	void Update(void)noexcept(true);
 
 protected:
 
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	virtual void cnLib_FUNC UILayout(void)override;
-	virtual cUIRectangle cnLib_FUNC UIMargin(const cUIRectangle &Margin)override;
+	virtual void cnLib_FUNC UILayout(void)noexcept(true)override;
+	virtual cUIRectangle cnLib_FUNC UIMargin(const cUIRectangle &Margin)noexcept(true)override;
 
 	bool fContentVisible;
 	bool fHorzBarVisible=false;
@@ -104,45 +104,45 @@ protected:
 private:
 	cUIRectangle fBarMargin;
 
-	static bool CheckScrollBarVisible(cControlScrollBar &ScrollBar,bool &BarVisible,bool ContentVisible,Float32 BarSize);
-	void HorizontalScrollInfoChanged(void);
-	void VerticalScrollInfoChanged(void);
+	static bool CheckScrollBarVisible(cControlScrollBar &ScrollBar,bool &BarVisible,bool ContentVisible,Float32 BarSize)noexcept(true);
+	void HorizontalScrollInfoChanged(void)noexcept(true);
+	void VerticalScrollInfoChanged(void)noexcept(true);
 };
 
 //---------------------------------------------------------------------------
 class cScrollContent : public VisualControl
 {
 public:
-	cScrollContent();
-	~cScrollContent();
+	cScrollContent()noexcept(true);
+	~cScrollContent()noexcept(true);
 
 	cCallbackSet ScrollOffsetChangeNotify;
 	cCallbackSet ScrollRangeChangeNotify;
 
-	Float32 GetScrollOffset(bool Vertical)const;
-	bool SetScrollOffset(bool Vertical,Float32 Offset);
-	cUIPoint GetScrollOffset(void)const;
-	bool SetScrollOffset(cUIPoint Offset);
+	Float32 GetScrollOffset(bool Vertical)const noexcept(true);
+	bool SetScrollOffset(bool Vertical,Float32 Offset)noexcept(true);
+	cUIPoint GetScrollOffset(void)const noexcept(true);
+	bool SetScrollOffset(cUIPoint Offset)noexcept(true);
 	
-	Float32 GetViewportSize(bool Vertical)const;
-	cUIPoint GetViewportSize(void)const;
-	cUIRectangle GetViewportRectangle(void)const;
-	bool IsRectangleInViewport(const cUIRectangle &Rect)const;
+	Float32 GetViewportSize(bool Vertical)const noexcept(true);
+	cUIPoint GetViewportSize(void)const noexcept(true);
+	cUIRectangle GetViewportRectangle(void)const noexcept(true);
+	bool IsRectangleInViewport(const cUIRectangle &Rect)const noexcept(true);
 
-	iControlScrollInfo::cScrollRange GetScrollRange(bool Vertical)const;
-	Float32 GetScrollStepSize(bool Vertical)const;
-	Float32 GetScrollPageSize(bool Vertical)const;
+	iControlScrollInfo::cScrollRange GetScrollRange(bool Vertical)const noexcept(true);
+	Float32 GetScrollStepSize(bool Vertical)const noexcept(true);
+	Float32 GetScrollPageSize(bool Vertical)const noexcept(true);
 
-	cUIRectangle GetVisibleRectangle(void)const;
-	bool ScrollRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper);
-	bool ScrollRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom);
-	bool ScrollRectToVisible(cUIPoint Pos,cUIPoint Size);
+	cUIRectangle GetVisibleRectangle(void)const noexcept(true);
+	bool ScrollRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)noexcept(true);
+	bool ScrollRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept(true);
+	bool ScrollRectToVisible(cUIPoint Pos,cUIPoint Size)noexcept(true);
 
 protected:
 
-	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)override;
-	virtual void cnLib_FUNC ContentScaleChanged(void)override;
-	virtual void cnLib_FUNC UILayout(void)override;
+	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)override;
+	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)override;
+	virtual void cnLib_FUNC UILayout(void)noexcept(true)override;
 
 	Float32 fScrollOffset[2];
 	Float32 fScrollViewportSize[2];
@@ -154,109 +154,109 @@ protected:
 	bool fScrollNoLowwerLimit[2];
 	bool fScrollNoUpperLimit[2];
 
-	void UpdateScrollOffset(void);
-	void UpdateScrollLimits(void);
+	void UpdateScrollOffset(void)noexcept(true);
+	void UpdateScrollLimits(void)noexcept(true);
 
-	virtual void ScrollContentProcessOffset(bool Vertical,Float32 &Offset);
-	virtual void ScrollContentUpdateContentLayout(void);
-	virtual void ScrollContentUpdateStepSizes(void);
+	virtual void ScrollContentProcessOffset(bool Vertical,Float32 &Offset)noexcept(true);
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true);
+	virtual void ScrollContentUpdateStepSizes(void)noexcept(true);
 
-	void SetNeedUpdateContentLayout(void);
+	void SetNeedUpdateContentLayout(void)noexcept(true);
 
 	bool fUpdateStepSizesOnViewportSize;
 
 private:
 	bool fNeedUpdateContentLayout;
-	bool ChangeOffset(bool Vertical,Float32 Offset);
+	bool ChangeOffset(bool Vertical,Float32 Offset)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class lScrollFrame : public LayoutControl
 {
 public:
-	lScrollFrame();
-	~lScrollFrame();
+	lScrollFrame()noexcept(true);
+	~lScrollFrame()noexcept(true);
 
-	cScrollContent* GetScrollContent(void)const;
-	void SetScrollContent(cScrollContent *Content);
+	cScrollContent* GetScrollContent(void)const noexcept(true);
+	void SetScrollContent(cScrollContent *Content)noexcept(true);
 
 	class cScrollInfoHorizontal : public iControlScrollInfo
 	{
-		lScrollFrame* GetHost(void);
-		const lScrollFrame* GetHost(void)const;
+		lScrollFrame* GetHost(void)noexcept(true);
+		const lScrollFrame* GetHost(void)const noexcept(true);
 	public:
-		virtual Float32 ScrollGetOffset(void)const override;
-		virtual bool ScrollSetOffset(Float32 Offset)override;
-		virtual cScrollRange ScrollGetScrollRange(void)const override;
-		virtual Float32 ScrollGetStepSize(void)const override;
-		virtual Float32 ScrollGetPageSize(void)const override;
+		virtual Float32 ScrollGetOffset(void)const noexcept(true)override;
+		virtual bool ScrollSetOffset(Float32 Offset)noexcept(true)override;
+		virtual cScrollRange ScrollGetScrollRange(void)const noexcept(true)override;
+		virtual Float32 ScrollGetStepSize(void)const noexcept(true)override;
+		virtual Float32 ScrollGetPageSize(void)const noexcept(true)override;
 	}ScrollInfoHorizontal;
 	class cScrollInfoVertical : public iControlScrollInfo
 	{
-		lScrollFrame* GetHost(void);
-		const lScrollFrame* GetHost(void)const;
+		lScrollFrame* GetHost(void)noexcept(true);
+		const lScrollFrame* GetHost(void)const noexcept(true);
 	public:
-		virtual Float32 ScrollGetOffset(void)const override;
-		virtual bool ScrollSetOffset(Float32 Offset)override;
-		virtual cScrollRange ScrollGetScrollRange(void)const override;
-		virtual Float32 ScrollGetStepSize(void)const override;
-		virtual Float32 ScrollGetPageSize(void)const override;
+		virtual Float32 ScrollGetOffset(void)const noexcept(true)override;
+		virtual bool ScrollSetOffset(Float32 Offset)noexcept(true)override;
+		virtual cScrollRange ScrollGetScrollRange(void)const noexcept(true)override;
+		virtual Float32 ScrollGetStepSize(void)const noexcept(true)override;
+		virtual Float32 ScrollGetPageSize(void)const noexcept(true)override;
 	}ScrollInfoVertical;
 
-	cUIPoint GetScrollOffset(void)const;
-	bool SetScrollOffset(cUIPoint Offset);
+	cUIPoint GetScrollOffset(void)const noexcept(true);
+	bool SetScrollOffset(cUIPoint Offset)noexcept(true);
 
-	Float32 GetScrollOffset(bool Vertical)const;
-	bool SetScrollOffset(bool Vertical,Float32 Offset);
+	Float32 GetScrollOffset(bool Vertical)const noexcept(true);
+	bool SetScrollOffset(bool Vertical,Float32 Offset)noexcept(true);
 
-	iControlScrollInfo::cScrollRange GetScrollRange(bool Vertical)const;
-	Float32 GetScrollStepSize(bool Vertical)const;
-	Float32 GetScrollPageSize(bool Vertical)const;
+	iControlScrollInfo::cScrollRange GetScrollRange(bool Vertical)const noexcept(true);
+	Float32 GetScrollStepSize(bool Vertical)const noexcept(true);
+	Float32 GetScrollPageSize(bool Vertical)const noexcept(true);
 
-	bool ScrollContentRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper);
-	bool ScrollContentRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom);
-	bool ScrollContentRectToVisible(cUIPoint Pos,cUIPoint Size);
+	bool ScrollContentRangeToVisible(bool Vertical,Float32 Lowwer,Float32 Upper)noexcept(true);
+	bool ScrollContentRangeToVisible(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept(true);
+	bool ScrollContentRectToVisible(cUIPoint Pos,cUIPoint Size)noexcept(true);
 
 	
-	kiScrollBar* GetScrollBarKit(void)const;
-	void SetScrollBarKit(rPtr<kiScrollBar> Kit);
+	kiScrollBar* GetScrollBarKit(void)const noexcept(true);
+	void SetScrollBarKit(rPtr<kiScrollBar> Kit)noexcept(true);
 	template<class TControl>
-	void SetScrollBarKit(TControl &Kit){
+	void SetScrollBarKit(TControl &Kit)noexcept(true){
 		SetScrollBarKit(rCreate< bwkScrollBar<TControl&> >(Kit));
 	}
 
 	sfInt16 ScrollBarKitLayoutOrder=0;
-	void UpdateScrollBarLayoutOrder(void);
+	void UpdateScrollBarLayoutOrder(void)noexcept(true);
 
 protected:
 	
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
 
 	cScrollContent *fScrollContent;
 	
 	rPtr<kiScrollBar> fScrollBarKit;
-	virtual void ControlSetupDefaultScrollBarKit(void);
+	virtual void ControlSetupDefaultScrollBarKit(void)noexcept(true);
 
 	iFunctionToken *fScrollOffsetChangeNotifyToken;
 	iFunctionToken *fScrollRangeChangeNotifyToken;
 
-	void ScrollOffsetChanged(void);
-	void ScrollRangeChanged(void);
+	void ScrollOffsetChanged(void)noexcept(true);
+	void ScrollRangeChanged(void)noexcept(true);
 
 };
 //---------------------------------------------------------------------------
 class cScrollViewContainer : public cScrollContent
 {
 public:
-	cScrollViewContainer();
-	~cScrollViewContainer();
+	cScrollViewContainer()noexcept(true);
+	~cScrollViewContainer()noexcept(true);
 
 	class bcViewItem
 	{
 	public:
-		iUIView *GetView(void)const;
-		bool IsVisible(void)const;
+		iUIView *GetView(void)const noexcept(true);
+		bool IsVisible(void)const noexcept(true);
 	private:
 		friend cScrollViewContainer;
 		rPtr<iViewReference> ViewReference;
@@ -268,62 +268,62 @@ public:
 	class cViewItem : public bcViewItem
 	{
 	public:
-		cViewItem();
-		~cViewItem();
+		cViewItem()noexcept(true);
+		~cViewItem()noexcept(true);
 	
-		bool Attach(cScrollViewContainer *Owner);
-		bool Detach(cScrollViewContainer *Owner);
+		bool Attach(cScrollViewContainer *Owner)noexcept(true);
+		bool Detach(cScrollViewContainer *Owner)noexcept(true);
 		
-		iViewReference* GetViewReference(void)const;
-		bool SetViewReference(iViewReference *ViewReference);
+		iViewReference* GetViewReference(void)const noexcept(true);
+		bool SetViewReference(iViewReference *ViewReference)noexcept(true);
 
-		const cUIRectangle& GetRectangle(void)const;
-		void SetRectangle(cUIRectangle Rect);
-		cUIRect CalculateLayoutRect(void)const;
+		const cUIRectangle& GetRectangle(void)const noexcept(true);
+		void SetRectangle(cUIRectangle Rect)noexcept(true);
+		cUIRect CalculateLayoutRect(void)const noexcept(true);
 
-		cFunctionSet<void (void)> OnVisibleChanged;
+		cFunctionSet<void (void)noexcept(true)> OnVisibleChanged;
 	protected:
 		friend cScrollViewContainer;
-		virtual void VisibilityChanged(void);
+		virtual void VisibilityChanged(void)noexcept(true);
 		cScrollViewContainer *fOwner;
 	};
 	
-	rPtr<iViewReference> ReclaimView(tTypeID ImplementationType);
+	rPtr<iViewReference> ReclaimView(tTypeID ImplementationType)noexcept(true);
 
 	template<class T>
-	rPtr< cControlViewReference<T> > ReclaimControl(void){
+	rPtr< cControlViewReference<T> > ReclaimControl(void)noexcept(true){
 		auto ViewReference=ReclaimView(cnVar::TTypeID< cControlViewReference<T> >::Value);
 		return rPtr< cControlViewReference<T> >::TakeFromManual(static_cast<cControlViewReference<T>*>(ViewReference.ExtractToManual())); 
 	}
 
 protected:
 	
-	virtual void ViewSetup(void)override;
-	virtual void ViewClear(void)override;
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
 
-	virtual void cnLib_FUNC UILayout(void)override;
+	virtual void cnLib_FUNC UILayout(void)noexcept(true)override;
 
-	virtual void ScrollContentUpdateContentLayout(void)override;
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 
-	void ViewItemAttach(bcViewItem *Item);
-	void ViewItemDetach(bcViewItem *Item);
+	void ViewItemAttach(bcViewItem *Item)noexcept(true);
+	void ViewItemDetach(bcViewItem *Item)noexcept(true);
 
-	const cUIRectangle& ViewItemGetRectangle(const bcViewItem *Item);
-	void ViewItemSetRectangle(bcViewItem *Item,cUIRectangle Rect);
-	cUIRect ViewItemCalculateLayoutRect(const bcViewItem *Item)const;
-	iViewReference* ViewItemGetViewReference(const bcViewItem *Item)const;
-	bool ViewItemSetViewReference(bcViewItem *Item,iViewReference *ViewReference);
-	void ViewItemCheckVisible(bcViewItem *Item);
+	const cUIRectangle& ViewItemGetRectangle(const bcViewItem *Item)noexcept(true);
+	void ViewItemSetRectangle(bcViewItem *Item,cUIRectangle Rect)noexcept(true);
+	cUIRect ViewItemCalculateLayoutRect(const bcViewItem *Item)const noexcept(true);
+	iViewReference* ViewItemGetViewReference(const bcViewItem *Item)const noexcept(true);
+	bool ViewItemSetViewReference(bcViewItem *Item,iViewReference *ViewReference)noexcept(true);
+	void ViewItemCheckVisible(bcViewItem *Item)noexcept(true);
 
 private:
 	cnRTL::cSeqSet<bcViewItem*> fVisibleSet;
 	cnRTL::cSeqMap<tTypeID, cnRTL::cSeqList< rPtr<iViewReference> > > fViewRecycleMap;
 
-	void RecycleView(rPtr<iViewReference> ViewReference);
+	void RecycleView(rPtr<iViewReference> ViewReference)noexcept(true);
 
 	cnRTL::cSeqSet<cViewItem*> fContentViewSet;
-	void ContentViewAttach(cViewItem *Item);
-	void ContentViewDetach(cViewItem *Item);
+	void ContentViewAttach(cViewItem *Item)noexcept(true);
+	void ContentViewDetach(cViewItem *Item)noexcept(true);
 	
 };
 typedef cScrollViewContainer::cViewItem cScrollViewItem;

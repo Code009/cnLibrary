@@ -22,19 +22,19 @@ namespace cnWin{
 class mcWPFDrawingContext : public iUISimplePaintContext
 {
 public:
-	mcWPFDrawingContext();
-	~mcWPFDrawingContext();
+	mcWPFDrawingContext()noexcept(true);
+	~mcWPFDrawingContext()noexcept(true);
 
-	virtual bool cnLib_FUNC Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)override;
-	virtual bool cnLib_FUNC Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)override;
-	virtual bool cnLib_FUNC Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator=ImageBlendingOperator::Alpha)override;
+	virtual bool cnLib_FUNC Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept(true)override;
+	virtual bool cnLib_FUNC Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)noexcept(true)override;
+	virtual bool cnLib_FUNC Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator=ImageBlendingOperator::Alpha)noexcept(true)override;
 
-	bool mFill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color);
+	bool mFill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept(true);
 
 #if _MANAGED
-	void __clrcall Start(System::Windows::Media::DrawingContext ^Context);
-	void __clrcall Finish(void);
-	System::Windows::Media::DrawingContext^ __clrcall Stop(void);
+	void __clrcall Start(System::Windows::Media::DrawingContext ^Context)noexcept(true);
+	void __clrcall Finish(void)noexcept(true);
+	System::Windows::Media::DrawingContext^ __clrcall Stop(void)noexcept(true);
 #endif	// _MANAGED
 
 protected:
@@ -48,11 +48,11 @@ protected:
 struct mcWPFDrawing
 {
 #if _MANAGED
-	mcWPFDrawing(System::Windows::Media::Drawing ^Drawing);
-	template<class TSrc>	mcWPFDrawing(mcGCRefT<TSrc> &&Src): Handle(cnVar::MoveCast(Src)){}
+	mcWPFDrawing(System::Windows::Media::Drawing ^Drawing)noexcept(true);
+	template<class TSrc>	mcWPFDrawing(mcGCRefT<TSrc> &&Src)noexcept(true): Handle(cnVar::MoveCast(Src)){}
 #endif // _MANAGED
-	mcWPFDrawing(mcWPFDrawing &&Src);
-	~mcWPFDrawing();
+	mcWPFDrawing(mcWPFDrawing &&Src)noexcept(true);
+	~mcWPFDrawing()noexcept(true);
 
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::Drawing> Handle;
@@ -64,11 +64,11 @@ struct mcWPFDrawing
 struct mcWPFUIBitmap
 {
 #if _MANAGED
-	mcWPFUIBitmap(System::Windows::Media::ImageSource ^Image);
+	mcWPFUIBitmap(System::Windows::Media::ImageSource ^Image)noexcept(true);
 #endif // _MANAGED
 
-	mcWPFUIBitmap(mcWPFUIBitmap &&Src);
-	~mcWPFUIBitmap();
+	mcWPFUIBitmap(mcWPFUIBitmap &&Src)noexcept(true);
+	~mcWPFUIBitmap()noexcept(true);
 
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::ImageSource> Handle;
@@ -78,19 +78,19 @@ struct mcWPFUIBitmap
 
 	cUIPoint ImageSize;
 
-	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize);
+	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true);
 
-	static mcWPFUIBitmap FromDrawing(const mcWPFDrawing &Drawing);
+	static mcWPFUIBitmap FromDrawing(const mcWPFDrawing &Drawing)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct mcWPFBitmapDataSource
 {
 #if _MANAGED
-	mcWPFBitmapDataSource(System::Windows::Media::Imaging::BitmapSource ^BitmapSource);
+	mcWPFBitmapDataSource(System::Windows::Media::Imaging::BitmapSource ^BitmapSource)noexcept(true);
 #endif
 
-	mcWPFBitmapDataSource(mcWPFBitmapDataSource &&Src);
-	~mcWPFBitmapDataSource();
+	mcWPFBitmapDataSource(mcWPFBitmapDataSource &&Src)noexcept(true);
+	~mcWPFBitmapDataSource()noexcept(true);
 
 
 #if _MANAGED
@@ -101,17 +101,17 @@ struct mcWPFBitmapDataSource
 
 	cUIPoint ImageSize;
 	
-	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize);
+	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true);
 
-	static mcWPFBitmapDataSource FromDrawing(const mcWPFDrawing &Drawing,cUIPoint Size);
+	static mcWPFBitmapDataSource FromDrawing(const mcWPFDrawing &Drawing,cUIPoint Size)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class mcWPFUISimpleBitmapCanvas
 {
 public:
-	mcWPFUISimpleBitmapCanvas(cUIPoint Size);
-	mcWPFUISimpleBitmapCanvas(mcWPFUISimpleBitmapCanvas &&Src);
-	~mcWPFUISimpleBitmapCanvas();
+	mcWPFUISimpleBitmapCanvas(cUIPoint Size)noexcept(true);
+	mcWPFUISimpleBitmapCanvas(mcWPFUISimpleBitmapCanvas &&Src)noexcept(true);
+	~mcWPFUISimpleBitmapCanvas()noexcept(true);
 
 protected:
 	cUIPoint fBitmapSize;
@@ -122,15 +122,15 @@ protected:
 	cGCRef DrawingHandle;
 #endif
 
-	void StartContext(mcWPFDrawingContext &mContext,cUIColor Color);
-	void DiscardContext(mcWPFDrawingContext &mContext);
-	mcWPFDrawing FinishContext(mcWPFDrawingContext &mContext,bool &Success);
+	void StartContext(mcWPFDrawingContext &mContext,cUIColor Color)noexcept(true);
+	void DiscardContext(mcWPFDrawingContext &mContext)noexcept(true);
+	mcWPFDrawing FinishContext(mcWPFDrawingContext &mContext,bool &Success)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct mcWPFImageDrawing
 {
-	mcWPFImageDrawing();
-	~mcWPFImageDrawing();
+	mcWPFImageDrawing()noexcept(true);
+	~mcWPFImageDrawing()noexcept(true);
 
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::ImageDrawing> Handle;
@@ -138,20 +138,20 @@ struct mcWPFImageDrawing
 	cGCRef Handle;
 #endif
 
-	void mUpdateRect(Float32 Width,Float32 Height);
+	void mUpdateRect(Float32 Width,Float32 Height)noexcept(true);
 
-	void mApplyVisual(const cnRTL::cnWinRTL::cGDIBitmapSection &BitmapBuffer,Float32 Width,Float32 Height);
+	void mApplyVisual(const cnRTL::cnWinRTL::cGDIBitmapSection &BitmapBuffer,Float32 Width,Float32 Height)noexcept(true);
 };
 //---------------------------------------------------------------------------
 struct mcWPFTypeface
 {
 #if _MANAGED
-	mcWPFTypeface(System::Windows::Media::Typeface ^Typeface);
+	mcWPFTypeface(System::Windows::Media::Typeface ^Typeface)noexcept(true);
 #endif // _MANAGED
-	~mcWPFTypeface();
-	mcWPFTypeface(mcWPFTypeface &&Src);
+	~mcWPFTypeface()noexcept(true);
+	mcWPFTypeface(mcWPFTypeface &&Src)noexcept(true);
 
-	static mcWPFTypeface CreateTypeface(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight);
+	static mcWPFTypeface CreateTypeface(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true);
 
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::Typeface> Handle;
@@ -168,7 +168,7 @@ struct mcWPFTextLayout
 	Float32 TextHeight;
 	cnRTL::cSeqList<Float32> TextDistance;
 
-	void Setup(const uChar32 *Text,uIntn Length,const cUITextStyle &Style);
+	void Setup(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #if _MANAGED
@@ -231,12 +231,12 @@ protected:
 class mcWPFUISimpleTextGraph
 {
 public:
-	mcWPFUISimpleTextGraph();
-	~mcWPFUISimpleTextGraph();
+	mcWPFUISimpleTextGraph()noexcept(true);
+	~mcWPFUISimpleTextGraph()noexcept(true);
 
-	void SetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight);
+	void SetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true);
 
-	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize);
+	void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true);
 
 protected:
 
@@ -254,13 +254,13 @@ protected:
 class mcWPFUIRichTextGraph
 {
 public:
-	mcWPFUIRichTextGraph();
-	~mcWPFUIRichTextGraph();
+	mcWPFUIRichTextGraph()noexcept(true);
+	~mcWPFUIRichTextGraph()noexcept(true);
 
 
-	void SetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight);
+	void SetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true);
 
-	void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize);
+	void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true);
 protected:
 
 #if _MANAGED
@@ -277,13 +277,13 @@ protected:
 class mcWPFUIViewContentDrawingGroup
 {
 public:
-	mcWPFUIViewContentDrawingGroup();
-	~mcWPFUIViewContentDrawingGroup();
+	mcWPFUIViewContentDrawingGroup()noexcept(true);
+	~mcWPFUIViewContentDrawingGroup()noexcept(true);
 
-	cGCRef& GetDrawingGroup(void);
+	cGCRef& GetDrawingGroup(void)noexcept(true);
 
-	void mSetScale(Float32 Scale);
-	void mRenderVisual(iUISimplePainter *Painter);
+	void mSetScale(Float32 Scale)noexcept(true);
+	void mRenderVisual(iUISimplePainter *Painter)noexcept(true);
 protected:
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::DrawingGroup> fDrawingGroup;
@@ -312,10 +312,10 @@ private:
 };
 //---------------------------------------------------------------------------
 #endif	// _MANAGED
-void* mDNetGDIThreadContext_ThreadContext(void);
-void* cDNetGDIThreadCPPContext_New(void);
-void cDNetGDIThreadCPPContext_Delete(void *p);
-void cDNetGDIThreadCPPContext_NotifyDisplayChanged(void *p);
+void* mDNetGDIThreadContext_ThreadContext(void)noexcept(true);
+void* cDNetGDIThreadCPPContext_New(void)noexcept(true);
+void cDNetGDIThreadCPPContext_Delete(void *p)noexcept(true);
+void cDNetGDIThreadCPPContext_NotifyDisplayChanged(void *p)noexcept(true);
 //---------------------------------------------------------------------------
 struct mcWPFD3DImageDrawing;
 #if _MANAGED
@@ -331,8 +331,8 @@ internal:
 //---------------------------------------------------------------------------
 struct mcWPFD3DImageDrawing
 {
-	mcWPFD3DImageDrawing();
-	~mcWPFD3DImageDrawing();
+	mcWPFD3DImageDrawing()noexcept(true);
+	~mcWPFD3DImageDrawing()noexcept(true);
 
 #if _MANAGED
 	mcGCRefT<System::Windows::Media::ImageDrawing> Handle;
@@ -342,14 +342,14 @@ struct mcWPFD3DImageDrawing
 	cGCRef Image;
 #endif
 
-	void mUpdateRect(Float32 Width,Float32 Height);
+	void mUpdateRect(Float32 Width,Float32 Height)noexcept(true);
 
 	iProcedure *FrontBufferAvailableChanged;
 	bool FrontBufferAvailable;
 
-	void mApplyBackBuffer(HANDLE BackBuffer,int Width,int Height);
-	void mSetBackBuffer(void *BackBuffer);
-	void mPresent(int Width,int Height);
+	void mApplyBackBuffer(HANDLE BackBuffer,int Width,int Height)noexcept(true);
+	void mSetBackBuffer(void *BackBuffer)noexcept(true);
+	void mPresent(int Width,int Height)noexcept(true);
 
 };
 //---------------------------------------------------------------------------

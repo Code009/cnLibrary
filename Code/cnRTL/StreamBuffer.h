@@ -45,12 +45,12 @@ template<class TStreamReadBuffer>
 class impReadBufferFromStreamBuffer : public iReadBuffer<typename cnVar::TRemoveConst<typename TStreamReadBuffer::tElement>::Type>
 {
 public:
-	impReadBufferFromStreamBuffer(TStreamReadBuffer *ReadBuffer):fReadBuffer(ReadBuffer){}
+	impReadBufferFromStreamBuffer(TStreamReadBuffer *ReadBuffer)noexcept(true):fReadBuffer(ReadBuffer){}
 
-	virtual cArray<typename TStreamReadBuffer::tElement const> cnLib_FUNC GatherReadBuffer(uIntn Length)override{
+	virtual cArray<typename TStreamReadBuffer::tElement const> cnLib_FUNC GatherReadBuffer(uIntn Length)noexcept(true)override{
 		return fReadBuffer->GatherReadBuffer(Length);
 	}
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Length)override{
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Length)noexcept(true)override{
 		return fReadBuffer->DismissReadBuffer(Length);
 	}
 private:
@@ -61,12 +61,12 @@ template<class TStreamWriteBuffer>
 class impWriteBufferFromStreamBuffer : public iWriteBuffer<typename TStreamWriteBuffer::tElement>
 {
 public:
-	impWriteBufferFromStreamBuffer(TStreamWriteBuffer *WriteBuffer):fWriteBuffer(WriteBuffer){}
+	impWriteBufferFromStreamBuffer(TStreamWriteBuffer *WriteBuffer)noexcept(true):fWriteBuffer(WriteBuffer){}
 
-	virtual cArray<typename TStreamWriteBuffer::tElement> cnLib_FUNC ReserveWriteBuffer(uIntn Length)override{
+	virtual cArray<typename TStreamWriteBuffer::tElement> cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)override{
 		return fWriteBuffer->ReserveWriteBuffer(Length);
 	}
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)override{
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)override{
 		return fWriteBuffer->CommitWriteBuffer(Length);
 	}
 private:
@@ -74,12 +74,12 @@ private:
 };
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
-impReadBufferFromStreamBuffer<TStreamReadBuffer> ReadBufferFromStreamBuffer(TStreamReadBuffer *ReadBuffer)
+inline impReadBufferFromStreamBuffer<TStreamReadBuffer> ReadBufferFromStreamBuffer(TStreamReadBuffer *ReadBuffer)noexcept(true)
 {
 	return ReadBuffer;
 }
 template<class TStreamWriteBuffer>
-impWriteBufferFromStreamBuffer<TStreamWriteBuffer> WriteBufferFromStreamBuffer(TStreamWriteBuffer *WriteBuffer)
+inline impWriteBufferFromStreamBuffer<TStreamWriteBuffer> WriteBufferFromStreamBuffer(TStreamWriteBuffer *WriteBuffer)noexcept(true)
 {
 	return WriteBuffer;
 }
@@ -114,13 +114,11 @@ uIntn WriteMemory(TStreamWriteBuffer &Buffer,typename TStreamWriteBuffer::tEleme
 	return TotalLengthWritten;
 }
 //---------------------------------------------------------------------------
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 template<class TStreamWriteBuffer>
 uIntn WriteMemory(TStreamWriteBuffer &&Buffer,typename TStreamWriteBuffer::tElement const *Src,uIntn Length)
 {
 	return WriteMemory(Buffer,Src,Length);
 }
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 //---------------------------------------------------------------------------
 template<class TStreamReadBuffer>
 uIntn ReadMemory(TStreamReadBuffer &Buffer,typename TStreamReadBuffer::tElement *Dest,uIntn Length)
@@ -148,18 +146,16 @@ uIntn ReadMemory(TStreamReadBuffer &Buffer,typename TStreamReadBuffer::tElement 
 	return TotalLengthRead;
 }
 //---------------------------------------------------------------------------
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 template<class TStreamReadBuffer>
 uIntn ReadMemory(TStreamReadBuffer &&Buffer,typename TStreamReadBuffer::tElement const *Src,uIntn Length)
 {
 	return ReadMemory(Buffer,Src,Length);
 }
-#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 #endif // 0
 
 template<class TStreamWriteBuffer>
-uIntn WriteToStream(typename TStreamWriteBuffer::tElement const *Src,uIntn Length,TStreamWriteBuffer *Buffer)
+inline uIntn WriteToStream(typename TStreamWriteBuffer::tElement const *Src,uIntn Length,TStreamWriteBuffer *Buffer)noexcept(true)
 {
 	if(Buffer==nullptr || Src==nullptr || Length==0)
 		return 0;
@@ -186,7 +182,7 @@ uIntn WriteToStream(typename TStreamWriteBuffer::tElement const *Src,uIntn Lengt
 }
 
 template<class TStreamReadBuffer>
-uIntn ReadFromStream(typename TStreamReadBuffer::tElement *Dest,uIntn Length,TStreamReadBuffer *Buffer)
+inline uIntn ReadFromStream(typename TStreamReadBuffer::tElement *Dest,uIntn Length,TStreamReadBuffer *Buffer)noexcept(true)
 {
 	if(Buffer==nullptr || Dest==nullptr || Length==0)
 		return 0;
@@ -255,16 +251,19 @@ private:
 class cLoopbackStreamBuffer
 {
 public:
-	typedef void TElement;
+	typedef void tElement;
 
-	cLoopbackStreamBuffer();
-	~cLoopbackStreamBuffer();
+	cLoopbackStreamBuffer()noexcept(true);
+	~cLoopbackStreamBuffer()noexcept(true);
 
-	cMemory GetReadBuffer(void)const;
-	cConstMemory GatherReadBuffer(uIntn Size);
-	void DismissReadBuffer(uIntn Size);
-	cMemory ReserveWriteBuffer(uIntn Size);
-	void CommitWriteBuffer(uIntn Size);
+	cMemory GetReadBuffer(void)const noexcept(true);
+	cConstMemory GatherReadBuffer(uIntn Size)noexcept(true);
+	void DismissReadBuffer(uIntn Size)noexcept(true);
+	cMemory ReserveWriteBuffer(uIntn Size)noexcept(true);
+	void CommitWriteBuffer(uIntn Size)noexcept(true);
+
+	uIntn ReadTo(void *Buffer,uIntn Size)noexcept(true);
+	uIntn WriteFrom(const void *Buffer,uIntn Size)noexcept(true);
 
 private:
 	cMemoryBuffer fBuffer;
@@ -276,21 +275,21 @@ class cAsyncLoopbackStreamBuffer
 public:
 	typedef void tElement;
 
-	cAsyncLoopbackStreamBuffer();
-	~cAsyncLoopbackStreamBuffer();
+	cAsyncLoopbackStreamBuffer()noexcept(true);
+	~cAsyncLoopbackStreamBuffer()noexcept(true);
 
 	uIntn BufferSizeLimit=cnVar::TIntegerValue<uIntn>::Max;
 
-	bool IsReadAvailable(void)const;
+	bool IsReadAvailable(void)const noexcept(true);
 
-	cConstMemory GatherReadBuffer(uIntn Size);
-	void DismissReadBuffer(uIntn Size);
+	cConstMemory GatherReadBuffer(uIntn Size)noexcept(true);
+	void DismissReadBuffer(uIntn Size)noexcept(true);
 
-	cMemory ReserveWriteBuffer(uIntn Size);
-	void CommitWriteBuffer(uIntn Size);
+	cMemory ReserveWriteBuffer(uIntn Size)noexcept(true);
+	void CommitWriteBuffer(uIntn Size)noexcept(true);
 
-	uIntn ReadTo(void *Buffer,uIntn Size);
-	uIntn WriteFrom(const void *Buffer,uIntn Size);
+	uIntn ReadTo(void *Buffer,uIntn Size)noexcept(true);
+	uIntn WriteFrom(const void *Buffer,uIntn Size)noexcept(true);
 
 protected:
 	struct cBufferItem
@@ -309,17 +308,34 @@ class cStreamReadPackingBuffer
 {
 public:
 	typedef void TElement;
-	cStreamReadPackingBuffer();
-	~cStreamReadPackingBuffer();
+	cStreamReadPackingBuffer()noexcept(true);
+	~cStreamReadPackingBuffer()noexcept(true);
 
-	void Clear(void);
+	void Clear(void)noexcept(true);
 
-	void StartBuffer(const void *Buffer,uIntn BufferSize);
-	uIntn FinishBuffer(void);
-	void QueueAllBuffer(void);
+	void StartBuffer(const void *Buffer,uIntn BufferSize)noexcept(true);
+	uIntn FinishBuffer(void)noexcept(true);
+	void QueueAllBuffer(void)noexcept(true);
 
-	cConstMemory GatherReadBuffer(uIntn QuerySize);
-	void DismissReadBuffer(uIntn Size);
+	cConstMemory GatherReadBuffer(uIntn QuerySize)noexcept(true);
+	void DismissReadBuffer(uIntn Size)noexcept(true);
+
+	template<class T>
+	const T* QueryData(uIntn Size=sizeof(T))noexcept(true){
+		auto PackedData=GatherReadBuffer(Size);
+		if(PackedData.Length<Size)
+			return nullptr;
+		return static_cast<const T*>(PackedData.Pointer);
+	}
+
+	template<class T>
+	void FinishData(const T *)noexcept(true){
+		return DismissReadBuffer(sizeof(T));
+	}
+
+	void FinishData(uIntn Size)noexcept(true){
+		return DismissReadBuffer(Size);
+	}
 private:
 	cMemoryBuffer fDataBuffer;
 	uIntn fDataStartIndex;

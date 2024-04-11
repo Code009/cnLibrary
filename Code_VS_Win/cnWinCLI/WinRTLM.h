@@ -2,7 +2,6 @@
 
 #define	WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <cnRTL\CRTHeader.h>
 
 #include <cnWinCLI\cnWinCLI.h>
 #include <cnRTL\cnRTLCore.h>
@@ -19,20 +18,20 @@ struct TKRuntime::ThreadNotification
 	CRITICAL_SECTION CS;
 	CONDITION_VARIABLE CondVar;
 
-	ThreadNotification(){
+	ThreadNotification()noexcept(true){
 		::InitializeCriticalSection(&CS);
 		::InitializeConditionVariable(&CondVar);
 	}
-	~ThreadNotification(){
+	~ThreadNotification()noexcept(true){
 		::DeleteCriticalSection(&CS);
 	}
 
-	void Start(void){
+	void Start(void)noexcept(true){
 		Notified=false;
 	}
-	void Finish(void){
+	void Finish(void)noexcept(true){
 	}
-	void Wait(void){
+	void Wait(void)noexcept(true){
 		if(Notified)
 			return;
 
@@ -40,7 +39,7 @@ struct TKRuntime::ThreadNotification
 		::SleepConditionVariableCS(&CondVar,&CS,INFINITE);
 		::LeaveCriticalSection(&CS);
 	}
-	void Notify(void){
+	void Notify(void)noexcept(true){
 		Notified=true;
 		::WakeConditionVariable(&CondVar);
 	}
@@ -54,14 +53,14 @@ namespace cnRTL{
 class cAsyncTaskState
 {
 public:
-	cAsyncTaskState();
-	~cAsyncTaskState();
+	cAsyncTaskState()noexcept(true);
+	~cAsyncTaskState()noexcept(true);
 
-	void Reset(void);
-	void SetDone(void);
+	void Reset(void)noexcept(true);
+	void SetDone(void)noexcept(true);
 
-	bool IsDone(void)const;
-	bool SetNotify(iProcedure *NotifyProcedure);
+	bool IsDone(void)const noexcept(true);
+	bool SetNotify(iProcedure *NotifyProcedure)noexcept(true);
 
 protected:
 
@@ -73,11 +72,11 @@ protected:
 class cAsyncTask : public iAsyncTask
 {
 public:
-	cAsyncTask();
-	~cAsyncTask();
+	cAsyncTask()noexcept(true);
+	~cAsyncTask()noexcept(true);
 
-	virtual bool cnLib_FUNC IsDone(void)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)override;
+	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
 
 protected:
 	cAsyncTaskState fTaskState;
@@ -87,11 +86,11 @@ protected:
 class cManualAsyncTask : public cAsyncTask
 {
 public:
-	cManualAsyncTask();
-	~cManualAsyncTask();
+	cManualAsyncTask()noexcept(true);
+	~cManualAsyncTask()noexcept(true);
 
-	void Reset(void);
-	void SetDone(void);
+	void Reset(void)noexcept(true);
+	void SetDone(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
@@ -100,28 +99,28 @@ namespace cnWinRTL{
 class cWinExclusiveFlag
 {
 public:
-	cWinExclusiveFlag(bool InitalRun=false);
+	cWinExclusiveFlag(bool InitalRun=false)noexcept(true);
 
-	bool Acquire(void);
-	bool Release(void);
+	bool Acquire(void)noexcept(true);
+	bool Release(void)noexcept(true);
 
-	void Continue(void);
+	void Continue(void)noexcept(true);
 
-	bool IsRunning(void)const;
+	bool IsRunning(void)const noexcept(true);
 };
 //---------------------------------------------------------------------------
 // cnRTL/WinThread.h
 class cCriticalSection 
 {
 public:
-	cCriticalSection();
-	~cCriticalSection();
+	cCriticalSection()noexcept(true);
+	~cCriticalSection()noexcept(true);
 
 	cCriticalSection(const cCriticalSection&)=delete;
 
-	void Acquire(void);
-	bool TryAcquire(void);
-	void Release(void);
+	void Acquire(void)noexcept(true);
+	bool TryAcquire(void)noexcept(true);
+	void Release(void)noexcept(true);
 
 protected:
 	CRITICAL_SECTION fCriticalSection;
@@ -130,11 +129,11 @@ protected:
 // cnRTL/WinGDI.h
 struct cGDIBitmapSection
 {
-	cGDIBitmapSection();
-	~cGDIBitmapSection();
+	cGDIBitmapSection()noexcept(true);
+	~cGDIBitmapSection()noexcept(true);
 	
-	void Clear(void);
-	void Setup(HDC DC,int NewWidth,int NewHeight);
+	void Clear(void)noexcept(true);
+	void Setup(HDC DC,int NewWidth,int NewHeight)noexcept(true);
 
 	HANDLE Section;
 	HBITMAP Bitmap;

@@ -37,7 +37,7 @@ namespace cnString{
 //	return: the position(index) of first matched string
 //  return uintMax if not found
 template<class TCharacter>
-inline uIntn Search(const TCharacter *Src,const typename cnVar::TTypeDef<TCharacter>::Type *Dest)
+inline uIntn Search(const TCharacter *Src,const typename cnVar::TTypeDef<TCharacter>::Type *Dest)noexcept(true)
 {
 	cnLib_ASSERT(Src!=nullptr);
 	cnLib_ASSERT(Dest!=nullptr);
@@ -61,7 +61,7 @@ inline uIntn Search(const TCharacter *Src,const typename cnVar::TTypeDef<TCharac
 //	[in]Length		max length of string or shift table
 //	return: length
 template<class TCharacter>
-inline uIntn KMP_Search_GetShiftTable(const TCharacter *Dest,uIntn *ShiftTable,uIntn Length)
+inline uIntn KMP_Search_GetShiftTable(const TCharacter *Dest,uIntn *ShiftTable,uIntn Length)noexcept(true)
 {
 	cnLib_ASSERT(Dest!=nullptr);
 	cnLib_ASSERT(ShiftTable!=nullptr);
@@ -87,7 +87,7 @@ inline uIntn KMP_Search_GetShiftTable(const TCharacter *Dest,uIntn *ShiftTable,u
 }
 
 template<class TCharacter,uIntn SrcLength,uIntn TableLength>
-inline uIntn KMP_Search_GetShiftTable(const TCharacter (&Dest)[SrcLength],const uIntn (&ShiftTable)[TableLength],uIntn Length=SrcLength){
+inline uIntn KMP_Search_GetShiftTable(const TCharacter (&Dest)[SrcLength],const uIntn (&ShiftTable)[TableLength],uIntn Length=SrcLength)noexcept(true){
 	static constexpr uIntn MaxLength=TableLength>SrcLength?SrcLength:TableLength;
 	return KMP_Search_GetShiftTable(Dest,ShiftTable,Length>MaxLength?MaxLength:Length);
 }
@@ -99,7 +99,7 @@ inline uIntn KMP_Search_GetShiftTable(const TCharacter (&Dest)[SrcLength],const 
 //	[in]ShiftTable	shift table for sub string
 //	return: the position(index) of first matched string,	uintMax if not found
 template<class TCharacter>
-inline uIntn KMP_Search(const TCharacter *Src,const TCharacter *Dest,const uIntn *ShiftTable)
+inline uIntn KMP_Search(const TCharacter *Src,const TCharacter *Dest,const uIntn *ShiftTable)noexcept(true)
 {
 	cnLib_ASSERT(Src!=nullptr);
 	cnLib_ASSERT(Dest!=nullptr);
@@ -131,7 +131,7 @@ inline uIntn KMP_Search(const TCharacter *Src,const TCharacter *Dest,const uIntn
 //	[in]ShiftTable	shift table for sub string
 //	return: the position(index) of first matched string,	uintMax if not found
 template<class TSrc,class TCharacter>
-inline uIntn KMP_Search(TSrc &Src,const TCharacter *Dest,const uIntn *ShiftTable)
+inline uIntn KMP_Search(TSrc &Src,const TCharacter *Dest,const uIntn *ShiftTable)noexcept(true)
 {
 	cnLib_ASSERT(Dest!=nullptr);
 	cnLib_ASSERT(ShiftTable!=nullptr);
@@ -161,46 +161,43 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_USER_DEFINED_LITERALS >= 200809L
 	
-inline cArrayConstant<uChar8> operator ""_cArray(const uChar8 *Ptr,tSize Length){
+inline cArrayConstant<uChar8> operator ""_cArray(const uChar8 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar8> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
-inline cArrayConstant<uChar16> operator ""_cArray(const uChar16 *Ptr,tSize Length){
+inline cArrayConstant<uChar16> operator ""_cArray(const uChar16 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar16> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
-inline cArrayConstant<uChar32> operator ""_cArray(const uChar32 *Ptr,tSize Length){
+inline cArrayConstant<uChar32> operator ""_cArray(const uChar32 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar32> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
 
-inline cString<uChar8> operator ""_cString(const uChar8 *Ptr,tSize Length){
+inline cString<uChar8> operator ""_cString(const uChar8 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar8> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
-inline cString<uChar16> operator ""_cString(const uChar16 *Ptr,tSize Length){
+inline cString<uChar16> operator ""_cString(const uChar16 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar16> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
-inline cString<uChar32> operator ""_cString(const uChar32 *Ptr,tSize Length){
+inline cString<uChar32> operator ""_cString(const uChar32 *Ptr,tSize Length)noexcept(true){
 	cArrayConstant<uChar32> r;
 	r.Pointer=Ptr;
 	r.Length=Length;
 	return r;
 }
-
-
-
 
 //---------------------------------------------------------------------------
 namespace StringStream{
@@ -208,7 +205,7 @@ namespace StringStream{
 extern const char HexBytesWrite_HexTextMap[];
 
 template<class TStreamWriteBuffer>
-inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uIntn Length)
+inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uIntn Length)noexcept(true)
 {
 	auto CachedWriteBuffer=cnRTL::CachedStreamWriteBuffer<16>(WriteBuffer);
 
@@ -238,19 +235,19 @@ inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uInt
 }	// namespace StringStream
 //---------------------------------------------------------------------------
 
-struct cStringWriteHexBytes
+struct cStringStreamHexBytes
 {
 	const void *Data;
 	uIntn Length;
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringWriteHexBytes &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringStreamHexBytes &Src)noexcept(true){
 		return StringStream::WriteHexBytes(WriteBuffer,Src.Data,Src.Length);
 	}
 };
 
-inline cStringWriteHexBytes StringWriteHexBytes(const void *Data,uIntn Length){
-	cStringWriteHexBytes StringWrite={
+inline cStringStreamHexBytes StringStreamHexBytes(const void *Data,uIntn Length)noexcept(true){
+	cStringStreamHexBytes StringWrite={
 		Data,
 		Length,
 	};
@@ -263,7 +260,7 @@ namespace StringStream{
 //---------------------------------------------------------------------------
 
 template<class TStreamWriteBuffer,class TSrcChar>
-inline bool WriteConvertEncoding(TStreamWriteBuffer &WriteBuffer,iTextEncodingConverter *Converter,const TSrcChar *Src,uIntn SrcLength)
+inline bool WriteConvertEncoding(TStreamWriteBuffer &WriteBuffer,iTextEncodingConverter *Converter,const TSrcChar *Src,uIntn SrcLength)noexcept(true)
 {
 	typedef typename TStreamWriteBuffer::tElement TCharacter;
 	if(Converter==nullptr){
@@ -309,7 +306,7 @@ inline bool WriteConvertEncoding(TStreamWriteBuffer &WriteBuffer,iTextEncodingCo
 }
 
 template<class TStringWriteStream,class TSrcChar>
-inline bool WriteConvertEncoding(TStringWriteStream&& WriteBuffer,iTextEncodingConverter *Converter,const TSrcChar *Src,uIntn SrcLength)
+inline bool WriteConvertEncoding(TStringWriteStream&& WriteBuffer,iTextEncodingConverter *Converter,const TSrcChar *Src,uIntn SrcLength)noexcept(true)
 {
 	return WriteConvertEncoding(WriteBuffer,Converter,Src,SrcLength);
 }
@@ -317,21 +314,21 @@ inline bool WriteConvertEncoding(TStringWriteStream&& WriteBuffer,iTextEncodingC
 }	// namespace StringStream
 //---------------------------------------------------------------------------
 template<class TCharacter>
-struct cStringWriteConvertEncoding
+struct cStringStreamConvertEncoding
 {
 	iTextEncodingConverter *Converter;
 	const TCharacter *Src;
 	uIntn SrcLength;
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringWriteConvertEncoding &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringStreamConvertEncoding &Src)noexcept(true){
 		return StringStream::WriteConvertEncoding(WriteBuffer,Src.Converter,Src.Src,Src.SrcLength);
 	}
 };
 
 template<class TCharacter>
-cStringWriteConvertEncoding<TCharacter> StringWriteConvertEncoding(iTextEncodingConverter *Converter,const TCharacter *Src,uIntn SrcLength){
-	cStringWriteConvertEncoding<TCharacter> StringWrite={
+cStringStreamConvertEncoding<TCharacter> StringStreamConvertEncoding(iTextEncodingConverter *Converter,const TCharacter *Src,uIntn SrcLength){
+	cStringStreamConvertEncoding<TCharacter> StringWrite={
 		Converter,
 		Src,
 		SrcLength
@@ -358,7 +355,7 @@ cnLib_ENUM_BEGIN(ufInt8,CharacterConversionSymbol)
 namespace StringStream{
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer,class TCharacterConversionMap>
-inline bool WriteDigits(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap,ufInt8 *DigitBuffer,uIntn OutputCount)
+inline bool WriteDigits(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap,ufInt8 *DigitBuffer,uIntn OutputCount)noexcept(true)
 {
 	if(OutputCount==0){
 		return true;
@@ -391,7 +388,7 @@ inline bool WriteDigits(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap 
 
 //---------------------------------------------------------------------------
 template<class TStreamWriteBuffer,class TStringItemConversion,class TCharacterConversionMap>
-bool WriteFormatItem(TStreamWriteBuffer &WriteBuffer,TStringItemConversion &ItemConversion,TCharacterConversionMap &ConversionMap,ufInt16 Width,bool AlignLeft,bool AlignCenter)
+bool WriteFormatItem(TStreamWriteBuffer &WriteBuffer,TStringItemConversion &ItemConversion,TCharacterConversionMap &ConversionMap,ufInt16 Width,bool AlignLeft,bool AlignCenter)noexcept(true)
 {
 	typedef typename TStreamWriteBuffer::tElement tCharacter;
 
@@ -467,7 +464,7 @@ bool WriteFormatItem(TStreamWriteBuffer &WriteBuffer,TStringItemConversion &Item
 //---------------------------------------------------------------------------
 
 template<class TStringItemConversion,class TCharacterConversionMap>
-struct cStringWriteFormatItem
+struct cStringStreamFormatItem
 {
 	TStringItemConversion &ItemConversion;
 	TCharacterConversionMap &ConversionMap;
@@ -476,14 +473,14 @@ struct cStringWriteFormatItem
 	bool AlignCenter;
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringWriteFormatItem &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringStreamFormatItem &Src)noexcept(true){
 		return StringStream::WriteFormatItem(WriteBuffer,Src.ItemConversion,Src.ConversionMap,Src.Width,Src.AlignLeft,Src.AlignCenter);
 	}
 };
 
 template<class TStringItemConversion,class TCharacterConversionMap>
-cStringWriteFormatItem<TStringItemConversion,TCharacterConversionMap> StringWriteFormatItem(TStringItemConversion &ItemConversion,TCharacterConversionMap &ConversionMap,ufInt16 Width,bool AlignLeft,bool AlignCenter){
-	cStringWriteFormatItem<TStringItemConversion,TCharacterConversionMap> StringWrite={
+inline cStringStreamFormatItem<TStringItemConversion,TCharacterConversionMap> StringStreamFormatItem(TStringItemConversion &ItemConversion,TCharacterConversionMap &ConversionMap,ufInt16 Width,bool AlignLeft,bool AlignCenter)noexcept(true){
+	cStringStreamFormatItem<TStringItemConversion,TCharacterConversionMap> StringWrite={
 		ItemConversion,
 		ConversionMap,
 		Width,
@@ -497,7 +494,7 @@ template<uIntn MaxDigits>
 class cFormatStringIntegerConversion
 {
 public:
-	uIntn CalculateLength(void)const{
+	uIntn CalculateLength(void)const noexcept(true){
 		uIntn TotalLength=fOutputDigitCount;
 		TotalLength+=fLeadingZero;
 		TotalLength+=fPrefixLength;
@@ -506,7 +503,7 @@ public:
 	}
 
 	template<class TStreamWriteBuffer,class TCharacterConversionMap>
-	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap){
+	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap)noexcept(true){
 	
 		typedef typename TStreamWriteBuffer::tElement TCharacter;
 		// sign
@@ -549,7 +546,7 @@ public:
 	template<ufInt8 Radix,class TInteger>
 	typename cnVar::TTypeConditional<void,
 		cnVar::TIntegerConversion<TInteger>::IsMatch
-	>::Type SetValue(TInteger Value)
+	>::Type SetValue(TInteger Value)noexcept(true)
 	{
 		bool Sign=cnMath::SetAbsolute(Value);
 
@@ -598,8 +595,8 @@ public:
 
 	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
-		!cnVar::TIntegerConversion<typename cnVar::RemoveCVRef<T>::Type>::IsMatch
-	>::Type SetValue(T &&Value){
+		!cnVar::TIntegerConversion<typename cnVar::TRemoveCVRef<T>::Type>::IsMatch
+	>::Type SetValue(T &&Value)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TIntegerConversion<T>::MatchSize==0){
 			fOutputDigitCount=0;
 			return;
@@ -610,7 +607,7 @@ public:
 		return SetValue<Radix>(IntValue);
 	}
 
-	void SetPrecision(ufInt16 Precision){
+	void SetPrecision(ufInt16 Precision)noexcept(true){
 		if(fOutputDigitCount<Precision){
 			// need fill zeros
 			fLeadingZero=Precision-fOutputDigitCount;
@@ -621,7 +618,7 @@ public:
 	}
 
 	template<ufInt8 Radix,class T>
-	void SetValueAs(T &&Value,ufInt8 IntegerSize,bool Signed){
+	void SetValueAs(T &&Value,ufInt8 IntegerSize,bool Signed)noexcept(true){
 		
 		if(IntegerSize==0){
 			IntegerSize=cnVar::TIntegerConversion<T>::MatchSize;
@@ -630,6 +627,9 @@ public:
 		switch(IntegerSize){
 		default:
 			fOutputDigitCount=0;
+			fLeadingZero=0;
+			fPrefixLength=0;
+			fWriteSign=0;
 			return;
 		case 1:
 			if(Signed){
@@ -703,7 +703,7 @@ template<uIntn MaxDigits>
 class cFormatStringFloatConversion
 {
 public:
-	uIntn CalculateLength(void)const{
+	uIntn CalculateLength(void)const noexcept(true){
 		uIntn TotalLength=fIntegerDigits+fFractionDigits;
 		TotalLength+=fIntegerLeadingZero+fDotZero+fFractionTailingZero;
 		TotalLength+=fWriteDot;
@@ -711,7 +711,7 @@ public:
 	}
 
 	template<class TStreamWriteBuffer,class TCharacterConversionMap>
-	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap){
+	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap)noexcept(true){
 	
 		typedef typename TStreamWriteBuffer::tElement TCharacter;
 		// sign
@@ -796,7 +796,7 @@ public:
 	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
 		cnVar::TFloatConversion<T>::IsMatch
-	>::Type SetValue(T Value){
+	>::Type SetValue(T Value)noexcept(true){
 		bool Sign=cnMath::SetAbsolute(Value);
 		fDigitCount=static_cast<ufInt16>(cnString::ConvertFloatToDigits<Radix>(Value,fExponent,fDigitBuffer,MaxDigits));
 
@@ -868,7 +868,7 @@ public:
 	template<ufInt8 Radix,class T>
 	typename cnVar::TTypeConditional<void,
 		!cnVar::TFloatConversion<typename cnVar::TRemoveCVRef<T>::Type>::IsMatch
-	>::Type SetValue(T &&Value){
+	>::Type SetValue(T &&Value)noexcept(true){
 		if cnRTL_IFCONSTEXPR(cnVar::TFloatConversion<T>::MatchSize==0){
 			fDigitCount=0;
 			return;
@@ -881,7 +881,7 @@ public:
 
 	
 	template<ufInt8 Radix,class T>
-	void SetValueAs(T &&Value,ufInt8 FloatSize){
+	void SetValueAs(T &&Value,ufInt8 FloatSize)noexcept(true){
 		
 		if(FloatSize==0){
 			FloatSize=cnVar::TFloatConversion<T>::MatchSize;
@@ -906,11 +906,11 @@ public:
 	}
 
 
-	sfInt16 GetExponent(void)const{
+	sfInt16 GetExponent(void)const noexcept(true){
 		return fExponent;
 	}
 
-	void SetFormat(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
+	void SetFormat(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 
 		if(fExponent<0){
 			// 0. ...
@@ -1016,7 +1016,7 @@ template<uIntn MaxDigits>
 class cFormatStringFloatScientificConversion : public cFormatStringFloatConversion<MaxDigits>
 {
 public:
-	uIntn CalculateLength(void)const{
+	uIntn CalculateLength(void)const noexcept(true){
 		uIntn TotalLength=cFormatStringFloatConversion<MaxDigits>::CalculateLength();
 		TotalLength+=fExpPrefixLength;
 		TotalLength+=fExponentConversion.CalculateLength();
@@ -1024,7 +1024,7 @@ public:
 	}
 
 	template<class TStreamWriteBuffer,class TCharacterConversionMap>
-	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap){
+	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap)noexcept(true){
 		if(cFormatStringFloatConversion<MaxDigits>::Write(WriteBuffer,ConversionMap)==false)
 			return false;
 		if(fOutputExp==false)
@@ -1041,18 +1041,18 @@ public:
 
 
 	template<ufInt8 Radix,class T>
-	void SetValue(T &&Value){
+	void SetValue(T &&Value)noexcept(true){
 		cFormatStringFloatConversion<MaxDigits>::SetValue<Radix>(Value);
 		UpdateExponent<Radix>();
 	}
 
 	template<ufInt8 Radix,class T>
-	void SetValueAs(T &&Value,ufInt8 FloatSize){
-		cFormatStringFloatConversion<MaxDigits>::SetValueAs<Radix>(Value,FloatSize);
+	void SetValueAs(T &&Value,ufInt8 FloatSize)noexcept(true){
+		cFormatStringFloatConversion<MaxDigits>::template SetValueAs<Radix>(Value,FloatSize);
 		UpdateExponent<Radix>();
 	}
 
-	void SetFormat(eFloatNumberConversionFormat Format,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
+	void SetFormat(eFloatNumberConversionFormat Format,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 		switch(Format){
 		case FloatNumberConversionFormat::Fraction:
 			return SetFormatF(IntegerPrecision,FractionMinPrecision,FractionMaxPrecision);
@@ -1063,12 +1063,12 @@ public:
 		}
 	}
 
-	void SetFormatF(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
+	void SetFormatF(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 		fOutputExp=false;
 		return cFormatStringFloatConversion<MaxDigits>::SetFormat(IntegerPrecision,FractionMinPrecision,FractionMaxPrecision);
 	}
 
-	void SetFormatE(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
+	void SetFormatE(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 		this->fDotZero=0;
 		if(this->fDigitCount==0){
 			// 0
@@ -1110,7 +1110,7 @@ public:
 		fOutputExp=true;
 		fExponentConversion.SetPrecision(IntegerPrecision);
 	}
-	void SetFormatG(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision){
+	void SetFormatG(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 
 		if(this->fExponent>-4 && static_cast<ufInt16>(this->fExponent)<FractionMaxPrecision){
 			SetFormatF(IntegerPrecision,FractionMinPrecision,FractionMaxPrecision-1-this->fExponent);
@@ -1127,10 +1127,10 @@ protected:
 	char fExpPrefix[1];
 
 	template<ufInt8 Radix>
-	void UpdateExponent(void){
+	void UpdateExponent(void)noexcept(true){
 		fExponentConversion.PositiveSign=true;
 		fExponentConversion.RadixPrefix=false;
-		fExponentConversion.SetValue<Radix>(this->fExponent);
+		fExponentConversion.template SetValue<Radix>(this->fExponent);
 
 		switch(Radix){
 		case 16:
@@ -1159,11 +1159,11 @@ protected:
 template<class TCharacter>
 struct cFormatStringCharacterConversionMap
 {
-	static TCharacter Ascii(char c){
+	static TCharacter Ascii(char c)noexcept(true){
 		return static_cast<TCharacter>(c);
 	}
 
-	static TCharacter Symbol(eCharacterConversionSymbol s){
+	static TCharacter Symbol(eCharacterConversionSymbol s)noexcept(true){
 		switch(s){
 		default:
 			return static_cast<TCharacter>('?');
@@ -1174,11 +1174,11 @@ struct cFormatStringCharacterConversionMap
 		}
 	}
 
-	static TCharacter Sign(bool s){
+	static TCharacter Sign(bool s)noexcept(true){
 		return static_cast<TCharacter>(s?'-':'+');
 	}
 
-	static TCharacter Digit(ufInt8 Digit){
+	static TCharacter Digit(ufInt8 Digit)noexcept(true){
 		if(Digit<10)
 			return static_cast<TCharacter>('0'+Digit);
 		return static_cast<TCharacter>('?');
@@ -1193,7 +1193,7 @@ struct cFormatStringIntegerCharacterConversionMap : cFormatStringCharacterConver
 	TCharacter HexBase=static_cast<TCharacter>('A');
 
 
-	TCharacter Digit(ufInt8 Digit){
+	TCharacter Digit(ufInt8 Digit)noexcept(true){
 		if(Digit<10)
 			return static_cast<TCharacter>(DigitBase+Digit);
 		Digit-=10;
@@ -1216,7 +1216,7 @@ namespace StringStream{
 //---------------------------------------------------------------------------
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
+inline bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)noexcept(true)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1234,7 +1234,7 @@ bool WriteFormatInt(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,uf
 }
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
+inline bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)noexcept(true)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1253,7 +1253,7 @@ bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,
 }
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision,eFloatNumberConversionFormat FormatNotation,ufInt16 Width)
+inline bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision,eFloatNumberConversionFormat FormatNotation,ufInt16 Width)noexcept(true)
 {
 	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement TCharacter;
 
@@ -1272,19 +1272,19 @@ bool WriteFormatFloatNotation(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt16 I
 }
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatFloatF(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
+inline bool WriteFormatFloatF(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)noexcept(true)
 {
 	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Fraction,Width);
 }
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatFloatE(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
+inline bool WriteFormatFloatE(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)noexcept(true)
 {
 	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Scientific,Width);
 }
 
 template<ufInt8 Radix=10,class TStreamWriteBuffer,class T>
-bool WriteFormatFloatG(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)
+inline bool WriteFormatFloatG(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Precision,ufInt16 Width)noexcept(true)
 {
 	return WriteFormatFloatNotation<Radix>(WriteBuffer,Value,1,Precision,Precision,FloatNumberConversionFormat::Compact,Width);
 }
@@ -1327,7 +1327,7 @@ cnLib_ENUM_BEGIN(ufInt8,FormatStringArgumentSize)
 // string format item settings
 struct cFormatStringTokenParameter
 {
-	void SetDefault(void);
+	void SetDefault(void)noexcept(true);
 
 	eFormatStringTokenType TokenType;
 
@@ -1379,7 +1379,7 @@ struct cFormatStringStreamOutput
 	cnStream::cCountingStreamWriteBuffer<TStreamWriteBuffer> WriteBuffer;
 	cnVar::cVarPack<const TArgs&...> Args;
 
-	bool Output(const cFormatStringToken<tCharacter> &Token){
+	bool Output(const cFormatStringToken<tCharacter> &Token)noexcept(true){
 		switch(Token.TokenType){
 		case FormatStringTokenType::Literal:	// format string
 			if(Token.FormatString.Length!=0){
@@ -1422,7 +1422,7 @@ protected:
 	
 	struct cWriter
 	{
-		cWriter(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)
+		cWriter(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)noexcept(true)
 			: WriteBuffer(Owner->WriteBuffer)
 			, Token(Token)
 		{
@@ -1488,14 +1488,14 @@ protected:
 			ufInt16 *Dest;
 
 			template<class TValue>
-			void operator ()(TValue Value)const{
+			void operator ()(TValue Value)const noexcept(true){
 				*Dest=cnVar::TIntegerConversion<TValue>::template Cast<ufInt16>(Value);
 			}
 
 
 		};
 
-		void LoadOption(const cFormatStringTokenParameter &Token){
+		void LoadOption(const cFormatStringTokenParameter &Token)noexcept(true){
 			Token.AlignLeft;
 			Token.ConversionAlternativeForm;
 			Token.ConversionUpperCase;
@@ -1511,7 +1511,7 @@ protected:
 		using cWriter::cWriter;
 
 		template<class TValue>
-		void operator ()(TValue Value)const{
+		void operator ()(TValue Value)const noexcept(true){
 			tCharacter c=0;
 			if(cnVar::TryCastTo(c,Value)){
 				this->WriteResult=ArrayStream::WriteElement(this->WriteBuffer,c);
@@ -1522,7 +1522,7 @@ protected:
 		}
 	};
 
-	bool CharacterToStream(const cFormatStringToken<tCharacter> &Token){
+	bool CharacterToStream(const cFormatStringToken<tCharacter> &Token)noexcept(true){
 		cWriterCharacter Writer(this,Token);
 		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
@@ -1533,7 +1533,7 @@ protected:
 		using cWriter::cWriter;
 
 		template<class TValue>
-		void operator ()(TValue Value)const{
+		void operator ()(TValue Value)const noexcept(true){
 			const tCharacter *pStr=0;
 			if(cnVar::TryCastTo(pStr,Value)==false){
 				this->WriteResult=true;
@@ -1551,7 +1551,7 @@ protected:
 		}
 	};
 
-	bool StringToStream(const cFormatStringToken<tCharacter> &Token){
+	bool StringToStream(const cFormatStringToken<tCharacter> &Token)noexcept(true){
 		cWriterString Writer(this,Token);
 		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Writer,Args.All());
 		return Writer.WriteResult;
@@ -1564,7 +1564,7 @@ protected:
 		ufInt8 IntegerSize;
 
 		
-		cWriterInteger(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)
+		cWriterInteger(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)noexcept(true)
 			: cWriter(Owner,Token)
 		{
 			switch(Token.SizeModifier){
@@ -1601,7 +1601,7 @@ protected:
 		}
 
 		template<class TValue>
-		void operator ()(TValue Value)const{
+		void operator ()(TValue Value)const noexcept(true){
 
 			cFormatStringIntegerCharacterConversionMap<tCharacter> ConversionMap;
 			cFormatStringIntegerConversion<128> IntConversion;
@@ -1619,7 +1619,7 @@ protected:
 	};
 	
 	template<ufInt8 Radix>
-	bool IntegerToStream(const cFormatStringToken<tCharacter> &Token,bool Signed){
+	bool IntegerToStream(const cFormatStringToken<tCharacter> &Token,bool Signed)noexcept(true){
 		cWriterInteger<Radix> Writer(this,Token);
 		Writer.Signed=Signed;
 		if(Writer.DefaultPrecision){
@@ -1638,7 +1638,7 @@ protected:
 		eFloatNumberConversionFormat NotationFormat;
 		ufInt8 FloatSize;
 
-		cWriterFloat(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)
+		cWriterFloat(cFormatStringStreamOutput *Owner,const cFormatStringTokenParameter &Token)noexcept(true)
 			: cWriter(Owner,Token)
 		{
 			switch(Token.SizeModifier){
@@ -1672,7 +1672,7 @@ protected:
 
 
 		template<class TValue>
-		void operator ()(TValue Value)const{
+		void operator ()(TValue Value)const noexcept(true){
 
 			cFormatStringFloatCharacterConversionMap<tCharacter> ConversionMap;
 			cFormatStringFloatScientificConversion<64> FloatConversion;
@@ -1691,7 +1691,7 @@ protected:
 	};
 	
 	template<ufInt8 Radix>
-	bool FloatToStream(const cFormatStringToken<tCharacter> &Token,eFloatNumberConversionFormat NotationFormat){
+	bool FloatToStream(const cFormatStringToken<tCharacter> &Token,eFloatNumberConversionFormat NotationFormat)noexcept(true){
 		cWriterFloat<Radix> Writer(this,Token);
 		Writer.NotationFormat=NotationFormat;
 		if(Writer.DefaultPrecision){
@@ -1707,18 +1707,18 @@ protected:
 		uIntn TotalLengthWritten;
 
 		template<class TValue>
-		void operator ()(TValue)const{
+		void operator ()(TValue)const noexcept(true){
 		}
 
-		void operator ()(uIntn *Ptr)const{
+		void operator ()(uIntn *Ptr)const noexcept(true){
 			*Ptr=TotalLengthWritten;
 		}
 		template<class T>
-		void operator ()(const T *)const{
+		void operator ()(const T *)const noexcept(true){
 		}
 	};
 	
-	void IntegerFromWrittenLength(const cFormatStringToken<tCharacter> &Token){
+	void IntegerFromWrittenLength(const cFormatStringToken<tCharacter> &Token)noexcept(true){
 		cReaderInteger Reader;
 		Reader.TotalLengthWritten=WriteBuffer.TotalWritten;
 		cnVar::VarPackCallAt(Token.ValueArgumentIndex,Reader,Args.All());
@@ -1734,7 +1734,7 @@ struct cFormatStringStreamOutput<TStreamWriteBuffer>
 	cnStream::cCountingStreamWriteBuffer<TStreamWriteBuffer> WriteBuffer;
 	cnVar::cVarPack<> Args;
 
-	bool Output(const cFormatStringToken<tCharacter> &Token){
+	bool Output(const cFormatStringToken<tCharacter> &Token)noexcept(true){
 		if(Token.FormatString.Length!=0){
 			return ArrayStream::WriteArray(WriteBuffer,Token.FormatString.Pointer,Token.FormatString.Length);
 		}
@@ -1755,9 +1755,9 @@ struct cFormatStringParseStateAction
 class cFormatStringParseStateTransistion
 {
 public:
-	void Reset(void);
-	cFormatStringParseStateAction Process(uIntn Char,cFormatStringTokenParameter &TokenParameter);
-	void ProcessEnd(cFormatStringTokenParameter &TokenParameter);
+	void Reset(void)noexcept(true);
+	cFormatStringParseStateAction Process(uIntn Char,cFormatStringTokenParameter &TokenParameter)noexcept(true);
+	void ProcessEnd(cFormatStringTokenParameter &TokenParameter)noexcept(true);
 protected:
 	static const cFormatStringParseStateAction ActionNone;
 	static const cFormatStringParseStateAction ActionOutput;
@@ -1810,7 +1810,7 @@ protected:
 	};
 	static const cStateTransitionItem FormatStringAnalyseTransistion[sMax][ctMax];
 
-	static eCharType CharType(uIntn c);
+	static eCharType CharType(uIntn c)noexcept(true);
 	static cnRTL_CONSTVAR uIntn CharMapLen='z'+1;
 	static const eCharType FormatOutput_CharMap[CharMapLen];
 };
@@ -1821,7 +1821,7 @@ template<class TCharacter>
 class cFormatStringParser
 {
 public:
-	void Reset(const TCharacter *Format,uIntn MaxLength){
+	void Reset(const TCharacter *Format,uIntn MaxLength)noexcept(true){
 		fFormatString=Format;
 		fFormatStringLength=MaxLength;
 
@@ -1830,7 +1830,7 @@ public:
 		fTransistion.Reset();
 	}
 
-	bool Run(void){
+	bool Run(void)noexcept(true){
 		while(fFormatStringLength>0){
 			TCharacter CurChar=*fFormatString;
 			if(CurChar==0){
@@ -1865,11 +1865,11 @@ public:
 		return false;
 	}
 
-	cFormatStringToken<TCharacter>& Value(void){	return fOutput;	}
+	cFormatStringToken<TCharacter>& Value(void)noexcept(true){	return fOutput;	}
 
-	bool operator ()(){	return Run();	}
+	bool operator ()()noexcept(true){	return Run();	}
 
-	cFormatStringToken<TCharacter>& operator *(void){	return fOutput;	}
+	cFormatStringToken<TCharacter>& operator *(void)noexcept(true){	return fOutput;	}
 
 protected:
 	const TCharacter *fFormatString;
@@ -1892,7 +1892,7 @@ namespace StringStream{
 // Args...			[in]	format arguments
 // return true if write completed, or false the stream cannot write more data
 template<class TStreamWriteBuffer,class TParser,class...TArgs>
-bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,TParser&& Parser,const cnVar::cVarPack<TArgs...> &Args)
+inline bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,TParser&& Parser,const cnVar::cVarPack<TArgs...> &Args)noexcept(true)
 {
 	cFormatStringStreamOutput<TStreamWriteBuffer,TArgs...> Output={
 		static_cast<TStreamWriteBuffer>(WriteBuffer),
@@ -1914,7 +1914,7 @@ bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,TParser&& Parser,const c
 // Args...			[in]	format arguments
 // return true if write completed, or false the stream cannot write more data
 template<class TCharacter,class TStreamWriteBuffer,class...TArgs>
-bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,const TCharacter *FormatString,const TArgs&...Args)
+inline bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,const TCharacter *FormatString,const TArgs&...Args)noexcept(true)
 {
 	cFormatStringParser<TCharacter> FormatParser;
 	FormatParser.Reset(FormatString,cnString::StringMaxLength);
@@ -1927,21 +1927,21 @@ bool WriteFormatString(TStreamWriteBuffer&& WriteBuffer,const TCharacter *Format
 //---------------------------------------------------------------------------
 
 template<class TCharacter,class...TArgs>
-struct cStringWriteFormat
+struct cStringStreamFormat
 {
 	cnVar::cVarPack<const TArgs&...> Args;
 	cFormatStringParser<TCharacter> FormatParser;
 
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,cStringWriteFormat Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,cStringStreamFormat Src)noexcept(true){
 		return StringStream::WriteFormatString(WriteBuffer,Src.FormatParser,Src.Args);
 	}
 };
 
 template<class TCharacter,class...TArgs>
-cStringWriteFormat<TCharacter,TArgs...> StringWriteFormat(const TCharacter *FormatString,const TArgs&...Args){
-	cStringWriteFormat<TCharacter,TArgs...> StringWrite={
+inline cStringStreamFormat<TCharacter,TArgs...> StringStreamFormat(const TCharacter *FormatString,const TArgs&...Args)noexcept(true){
+	cStringStreamFormat<TCharacter,TArgs...> StringWrite={
 		cnVar::VarRefPack(Args...)
 	};
 	StringWrite.FormatParser.Reset(FormatString,cnString::StringMaxLength);
@@ -1956,12 +1956,12 @@ cStringWriteFormat<TCharacter,TArgs...> StringWriteFormat(const TCharacter *Form
 // [in]Args...		variable argument list
 // return total output length
 template<class TCharacter,class...TArgs>
-uIntn SPrint(TCharacter *Dest,uIntn DestLength,const TCharacter *FormatString,const TArgs&...Args)
+inline uIntn SPrint(TCharacter *Dest,uIntn DestLength,const TCharacter *FormatString,const TArgs&...Args)noexcept(true)
 {
 	auto WriteBuffer=cnStream::ArrayStreamWriteBuffer(Dest,DestLength-1);
 	cnStream::cCountingStreamWriteBuffer<decltype(WriteBuffer)> CountedWriteBuffer(WriteBuffer);
 
-	CountedWriteBuffer+=StringWriteFormat(FormatString,Args...);
+	CountedWriteBuffer+=StringStreamFormat(FormatString,Args...);
 
 	Dest[CountedWriteBuffer.TotalWritten]=0;
 	return CountedWriteBuffer.TotalWritten;
@@ -1974,7 +1974,7 @@ uIntn SPrint(TCharacter *Dest,uIntn DestLength,const TCharacter *FormatString,co
 // [in]Args...		variable argument list
 // return total output length
 template<class TCharacter,uIntn DestLength, class...TArgs>
-uIntn SPrint(TCharacter (&Dest)[DestLength],const TCharacter *FormatString, const TArgs&...Args)
+inline uIntn SPrint(TCharacter (&Dest)[DestLength],const TCharacter *FormatString, const TArgs&...Args)noexcept(true)
 {
 	return SPrint(Dest,DestLength,FormatString,Args...);
 }
@@ -1984,7 +1984,7 @@ namespace StringStream{
 //---------------------------------------------------------------------------
 
 template<class TStreamWriteBuffer>
-inline bool WriteGUID(TStreamWriteBuffer&& WriteBuffer,const void *Value)
+inline bool WriteGUID(TStreamWriteBuffer&& WriteBuffer,const void *Value)noexcept(true)
 {
 	// {00000000-1111-2222-3333-333333333333}
 	//  33221100 1100 1100 0011 223344556677
@@ -2020,17 +2020,17 @@ inline bool WriteGUID(TStreamWriteBuffer&& WriteBuffer,const void *Value)
 }	// namespace StringStream
 //---------------------------------------------------------------------------
 
-struct cStringWriteGUID
+struct cStringStreamGUID
 {
 	const void *Value;
 	
 	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringWriteGUID &Src){
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cStringStreamGUID &Src)noexcept(true){
 		return StringStream::WriteGUID(WriteBuffer,Src.Value);
 	}
 };
-inline cStringWriteGUID StringWriteGUID(const void *Value){
-	cStringWriteGUID StringWrite={
+inline cStringStreamGUID StringStreamGUID(const void *Value)noexcept(true){
+	cStringStreamGUID StringWrite={
 		Value,
 	};
 	return StringWrite;
@@ -2039,7 +2039,7 @@ inline cStringWriteGUID StringWriteGUID(const void *Value){
 //---------------------------------------------------------------------------
 
 template<class TCharacter,class TSrcCharacter>
-inline cStringBuffer<TCharacter> CreateStringConvertEncoding(iTextEncodingConverter *Converter,const TSrcCharacter *Src,uIntn SrcLength){
+inline cStringBuffer<TCharacter> CreateStringConvertEncoding(iTextEncodingConverter *Converter,const TSrcCharacter *Src,uIntn SrcLength)noexcept(true){
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteConvertEncoding(Buffer.StreamWriteBuffer(),Converter,Src,SrcLength);
 	return Buffer;
@@ -2049,7 +2049,7 @@ inline cStringBuffer<TCharacter> CreateStringConvertEncoding(iTextEncodingConver
 //---------------------------------------------------------------------------
 	
 template<class TCharacter,class...TArgs>
-inline cStringBuffer<TCharacter> CreateStringFormat(const TCharacter *FormatString,const TArgs&...Args)
+inline cStringBuffer<TCharacter> CreateStringFormat(const TCharacter *FormatString,const TArgs&...Args)noexcept(true)
 {
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteFormatString(Buffer.StreamWriteBuffer(),FormatString,Args...);
@@ -2058,25 +2058,25 @@ inline cStringBuffer<TCharacter> CreateStringFormat(const TCharacter *FormatStri
 
 
 template<ufInt8 Radix=10,class TCharacter,class TInteger>
-inline cStringBuffer<TCharacter> CreateStringInteger(TInteger&& SrcInteger,ufInt8 Precision=1,ufInt16 Width=0){
+inline cStringBuffer<TCharacter> CreateStringInteger(TInteger&& SrcInteger,ufInt8 Precision=1,ufInt16 Width=0)noexcept(true){
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteFormatInt<Radix>(Buffer.StreamWriteBuffer(),static_cast<TInteger&&>(SrcInteger),Precision,Width);
 	return Buffer;
 }
 template<ufInt8 Radix=10,class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloat(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
+inline cStringBuffer<TCharacter> CreateStringFloat(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0)noexcept(true){
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteFormatFloat<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
 }
 template<uInt8 Radix=10,class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloatE(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
+inline cStringBuffer<TCharacter> CreateStringFloatE(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0)noexcept(true){
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteFormatFloatE<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
 }
 template<uInt8 Radix=10,class TCharacter>
-inline cStringBuffer<TCharacter> CreateStringFloatG(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0){
+inline cStringBuffer<TCharacter> CreateStringFloatG(const double &SrcData,ufInt8 Precision=6,ufInt16 Width=0)noexcept(true){
 	cStringBuffer<TCharacter> Buffer;
 	StringStream::WriteFormatFloatG<Radix>(Buffer.StreamWriteBuffer(),SrcData,Precision,Width);
 	return Buffer;
@@ -2090,13 +2090,13 @@ inline cStringBuffer<TCharacter> CreateStringFloatG(const double &SrcData,ufInt8
 
 //---------------------------------------------------------------------------
 template<class...VT>
-cnLib_DEPRECATED inline iPtr<iFileName>	FileNameT(iFileName *FileName,const uChar16 *Name,VT...Names){
+cnLib_DEPRECATED inline iPtr<iFileName>	FileNameT(iFileName *FileName,const uChar16 *Name,VT...Names)noexcept(true){
 	const uChar16* Path[sizeof...(VT)+1]={Name,Names...};
 	return FileName->MakeName(Path,sizeof...(VT)+1);
 }
 //---------------------------------------------------------------------------
 template<class...VT>
-inline iPtr<iFileName> MakeFileNameT(iFileName *FileName,const uChar16 *Name,VT...Names){
+inline iPtr<iFileName> MakeFileNameT(iFileName *FileName,const uChar16 *Name,VT...Names)noexcept(true){
 	const uChar16* Path[sizeof...(VT)+1]={Name,Names...};
 	return FileName->MakeName(Path,sizeof...(VT)+1);
 }
@@ -2105,49 +2105,49 @@ template<class TPathCharacter,class TCharacter,TCharacter SplitterCharacter,clas
 class cStringFilePathTranslated
 {
 public:
-	cStringFilePathTranslated(){}
-	~cStringFilePathTranslated(){}
+	cStringFilePathTranslated()noexcept(true){}
+	~cStringFilePathTranslated()noexcept(true){}
 
-	cStringFilePathTranslated(cString<TPathCharacter> Path)
+	cStringFilePathTranslated(cString<TPathCharacter> Path)noexcept(true)
 		: fPath(cnVar::MoveCast(Path))
 	{
 	}
-	cStringFilePathTranslated(const cStringFilePathTranslated &Src)
+	cStringFilePathTranslated(const cStringFilePathTranslated &Src)noexcept(true)
 		: fPath(Src.fPath)
 		, fPathItems(Src.fPathItems)
 	{
 	}
-	cStringFilePathTranslated(cStringFilePathTranslated &&Src)
+	cStringFilePathTranslated(cStringFilePathTranslated &&Src)noexcept(true)
 		: fPath(cnVar::MoveCast(Src.fPath))
 		, fPathItems(cnVar::MoveCast(Src.fPathItems))
 	{
 	}
 
 
-	uIntn GetDepth(void){
+	uIntn GetDepth(void)noexcept(true){
 		SetupPathItems();
 		return fPathItems.GetCount();
 	}
-	operator const TPathCharacter*()const{
+	operator const TPathCharacter*()const noexcept(true){
 		return fPath;
 	}
-	const cString<TPathCharacter>& GetPath(void)const{
+	const cString<TPathCharacter>& GetPath(void)const noexcept(true){
 		return fPath;
 	}
-	uIntn GetPathLength(void)const{
+	uIntn GetPathLength(void)const noexcept(true){
 		return fPath->Length;
 	}
 
-	const cString<TCharacter>& GetName(){
+	const cString<TCharacter>& GetName()noexcept(true){
 		SetupPathItems();
 		return fPathItems[fPathItems.GetCount()-1].Name;
 	}
-	const cString<TCharacter>& GetName(uIntn Index){
+	const cString<TCharacter>& GetName(uIntn Index)noexcept(true){
 		SetupPathItems();
 		return fPathItems[Index].Name;
 	}
 
-	cStringFilePathTranslated MakeParentName(void){
+	cStringFilePathTranslated MakeParentName(void)noexcept(true){
 		SetupPathItems();
 
 		uIntn Count=fPathItems.GetCount();
@@ -2163,7 +2163,7 @@ public:
 		};
 		return cStringFilePathTranslated(cString<TPathCharacter>(fPath->Pointer,PathItem.PathEndOffset),ParentPathItems);
 	}
-	cStringFilePathTranslated MakeFileName(const TCharacter*const *Path,uIntn Depth){
+	cStringFilePathTranslated MakeFileName(const TCharacter*const *Path,uIntn Depth)noexcept(true){
 		SetupPathItems();
 
 		cStringBuffer<TPathCharacter> NewPath(fPath.GetArray());
@@ -2211,13 +2211,13 @@ protected:
 	};
 	cSeqList<cPathItem> fPathItems;
 
-	cStringFilePathTranslated(cString<TPathCharacter> Path,cSeqList<cPathItem> PathItems)
+	cStringFilePathTranslated(cString<TPathCharacter> Path,cSeqList<cPathItem> PathItems)noexcept(true)
 		: fPath(cnVar::MoveCast(Path))
 		, fPathItems(cnVar::MoveCast(PathItems))
 	{
 	}
 
-	void SetupPathItems(void){
+	void SetupPathItems(void)noexcept(true){
 		if(fPathItems.GetCount()!=0){
 			return;
 		}
@@ -2227,7 +2227,7 @@ protected:
 		ReloadPathItems();
 	}
 
-	void ReloadPathItems(void){
+	void ReloadPathItems(void)noexcept(true){
 		fPathItems.Clear();
 		auto PathString=fPath->Pointer;
 		auto PathLength=fPath->Length;
@@ -2253,10 +2253,10 @@ protected:
 
 };
 //---------------------------------------------------------------------------
-ufInt8 UnicodeChar8To32(uChar32 &Dest,const uChar8 *Src,uIntn SrcLength);
-ufInt8 UnicodeChar16To32(uChar32 &Dest,const uChar16 *Src,uIntn SrcLength);
-ufInt8 UnicodeChar8From32(uChar8 *Dest,uIntn DestLength,uChar32 Src);
-ufInt8 UnicodeChar16From32(uChar16 *Dest,uIntn DestLength,uChar32 Src);
+ufInt8 UnicodeChar8To32(uChar32 &Dest,const uChar8 *Src,uIntn SrcLength)noexcept(true);
+ufInt8 UnicodeChar16To32(uChar32 &Dest,const uChar16 *Src,uIntn SrcLength)noexcept(true);
+ufInt8 UnicodeChar8From32(uChar8 *Dest,uIntn DestLength,uChar32 Src)noexcept(true);
+ufInt8 UnicodeChar16From32(uChar16 *Dest,uIntn DestLength,uChar32 Src)noexcept(true);
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------

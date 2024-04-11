@@ -19,26 +19,26 @@ namespace cnLib_THelper{
 //---------------------------------------------------------------------------
 namespace Async_TH{
 //---------------------------------------------------------------------------
-template<class TAtomicIntegerOperator,uIntn RingIndexCount,uIntn RingIndex>
+template<class TAtomicInteger,uIntn RingIndexCount,uIntn RingIndex>
 struct cRingIndexFunc
 {
-	static typename TAtomicIntegerOperator::tVariable LoadIndex(const typename TAtomicIntegerOperator::tAtomic (&Indices)[RingIndexCount],uIntn)noexcept(true){
+	static typename TAtomicInteger::tInteger LoadIndex(const typename TAtomicInteger::tAtomic (&Indices)[RingIndexCount],uIntn)noexcept(true){
 		cnLib_STATIC_ASSERT(RingIndex<RingIndexCount,"Invalid RingIndex");
-		return TAtomicIntegerOperator::AcquireLoad(Indices[RingIndex]);
+		return TAtomicInteger::AcquireLoad(Indices[RingIndex]);
 	}
 };
-template<class TAtomicIntegerOperator,uIntn RingIndexCount>
-struct cRingIndexFunc<TAtomicIntegerOperator,RingIndexCount,cnVar::TIntegerValue<uIntn>::Max>
+template<class TAtomicInteger,uIntn RingIndexCount>
+struct cRingIndexFunc<TAtomicInteger,RingIndexCount,cnVar::TIntegerValue<uIntn>::Max>
 {
-	static typename TAtomicIntegerOperator::tVariable LoadIndex(const typename TAtomicIntegerOperator::tAtomic (&Indices)[RingIndexCount],uIntn TotalSize)noexcept(true){
-		return static_cast<typename TAtomicIntegerOperator::tVariable>(TAtomicIntegerOperator::AcquireLoad(Indices[RingIndexCount-1])+TotalSize);
+	static typename TAtomicInteger::tInteger LoadIndex(const typename TAtomicInteger::tAtomic (&Indices)[RingIndexCount],uIntn TotalSize)noexcept(true){
+		return static_cast<typename TAtomicInteger::tInteger>(TAtomicInteger::AcquireLoad(Indices[RingIndexCount-1])+TotalSize);
 	}
 };
-template<class TAtomicIntegerOperator,uIntn RingIndexCount>
-struct cRingIndexFunc<TAtomicIntegerOperator,RingIndexCount,RingIndexCount>
+template<class TAtomicInteger,uIntn RingIndexCount>
+struct cRingIndexFunc<TAtomicInteger,RingIndexCount,RingIndexCount>
 {
-	static typename TAtomicIntegerOperator::tVariable LoadIndex(const typename TAtomicIntegerOperator::tAtomic (&Indices)[RingIndexCount],uIntn)noexcept(true){
-		return TAtomicIntegerOperator::AcquireLoad(Indices[RingIndexCount-1]);
+	static typename TAtomicInteger::tInteger LoadIndex(const typename TAtomicInteger::tAtomic (&Indices)[RingIndexCount],uIntn)noexcept(true){
+		return TAtomicInteger::AcquireLoad(Indices[RingIndexCount-1]);
 	}
 };
 //---------------------------------------------------------------------------
@@ -59,7 +59,7 @@ class cRingIndex
 public:
 	cnLib_STATIC_ASSERT(SizeBit<cnVar::TIntegerValue<uIntn>::BitCount,"SizeBit too large");
 	typedef TIndex tIndex;
-	typedef TKRuntime::TAtomicInteger<TIndex> tAtomicIntegerOperator;
+	typedef TKRuntime::TAtomicInteger<sizeof(TIndex)> tAtomicInteger;
 	cnLib_STATIC_ASSERT(RingIndexCount>=2,"require RingIndexCount>=2");
 
 	cRingIndex()noexcept(true){
@@ -97,7 +97,7 @@ public:
 	// return index
 	template<uIntn RingIndex>
 	tIndex LoadIndex(void)const noexcept(true){
-		return cnLib_THelper::Async_TH::cRingIndexFunc<tAtomicIntegerOperator,RingIndexCount,RingIndex>::LoadIndex(fIndices,TotalSize);
+		return cnLib_THelper::Async_TH::cRingIndexFunc<tAtomicInteger,RingIndexCount,RingIndex>::LoadIndex(fIndices,TotalSize);
 	}
 
 	// StoreIndex
@@ -109,7 +109,7 @@ public:
 	{
 		cnLib_ASSERT(IsValidIndex<RingIndex>(NewIndex));
 
-		return tAtomicIntegerOperator::ReleaseStore(fIndices[RingIndex],NewIndex);
+		return tAtomicInteger::ReleaseStore(fIndices[RingIndex],NewIndex);
 	}
 
 	// Reserve
@@ -210,7 +210,7 @@ public:
 
 protected:
 
-	typename tAtomicIntegerOperator::tAtomic fIndices[RingIndexCount];
+	typename tAtomicInteger::tAtomic fIndices[RingIndexCount];
 
 	static cnLib_CONSTVAR uIntn TotalSize=1<<SizeBit;
 	// SizeMask
@@ -227,7 +227,7 @@ class cRingIndex<TIndex,RingIndexCount,0>
 {
 public:
 	typedef TIndex tIndex;
-	typedef TKRuntime::TAtomicInteger<TIndex> tAtomicIntegerOperator;
+	typedef TKRuntime::TAtomicInteger<sizeof(TIndex)> tAtomicInteger;
 	cnLib_STATIC_ASSERT(RingIndexCount>=2,"require RingIndexCount>=2");
 
 	cRingIndex()noexcept(true)
@@ -272,7 +272,7 @@ public:
 	// return index
 	template<uIntn RingIndex>
 	tIndex LoadIndex(void)const noexcept(true){
-		return cnLib_THelper::Async_TH::cRingIndexFunc<tAtomicIntegerOperator,RingIndexCount,RingIndex>::LoadIndex(fIndices,fSizeMask+1);
+		return cnLib_THelper::Async_TH::cRingIndexFunc<tAtomicInteger,RingIndexCount,RingIndex>::LoadIndex(fIndices,fSizeMask+1);
 	}
 
 	// StoreIndex
@@ -284,7 +284,7 @@ public:
 	{
 		cnLib_ASSERT(IsValidIndex<RingIndex>(NewIndex));
 
-		return tAtomicIntegerOperator::ReleaseStore(fIndices[RingIndex],NewIndex);
+		return tAtomicInteger::ReleaseStore(fIndices[RingIndex],NewIndex);
 	}
 
 
@@ -387,7 +387,7 @@ public:
 	}
 protected:
 
-	typename tAtomicIntegerOperator::tAtomic fIndices[RingIndexCount];
+	typename tAtomicInteger::tAtomic fIndices[RingIndexCount];
 	tIndex fSizeMask;
 };
 //---------------------------------------------------------------------------

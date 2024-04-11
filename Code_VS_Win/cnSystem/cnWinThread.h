@@ -21,15 +21,15 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual FILETIME cnLib_FUNC GetFileTime(void)=0;
-	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)=0;
+	virtual FILETIME cnLib_FUNC GetFileTime(void)noexcept(true)=0;
+	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)noexcept(true)=0;
 };
 //- Waitable object ---------------------------------------------------------
 class cnLib_INTERFACE iWaitableObject : public iInterface
 {
 public:
 
-	virtual HANDLE cnLib_FUNC GetWaitHandle(void)=0;
+	virtual HANDLE cnLib_FUNC GetWaitHandle(void)noexcept(true)=0;
 };
 //- thread ------------------------------------------------------------------
 class cnLib_INTERFACE iWinThread : public iWaitableObject
@@ -38,13 +38,16 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual DWORD cnLib_FUNC GetThreadID(void)=0;
+	virtual DWORD cnLib_FUNC GetThreadID(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iThreadPoolHandleWaiter : public iReference
 {
 public:
-	virtual void SetWait(HANDLE WaitHandle,PFILETIME Timeout)=0;
+	// SetWait
+	//  WaitHandle	in	Waitable handle to wait on, nullptr for cancel wait
+	//	Timeout		in	timeout time, nullptr for never timeout
+	virtual void SetWait(HANDLE WaitHandle,PFILETIME Timeout)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iWinThreadPool : public iInterface
@@ -53,7 +56,7 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)=0;
+	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept(true)> *Callback)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -62,7 +65,7 @@ namespace cnWindows{
 extern const LARGE_INTEGER SystemTimeEpochAsFileTime;
 extern iWinThreadPool *const DefaultThreadPool;
 //---------------------------------------------------------------------------
-iPtr<iThreadPool>			cnLib_FUNC CreateThreadPool(void);
+iPtr<iThreadPool>			cnLib_FUNC CreateThreadPool(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWindows
 //---------------------------------------------------------------------------

@@ -26,7 +26,7 @@
 
 #else
 
-#define	cnLibrary_CPPFEATURELEVEL	3
+#define	cnLibrary_CPPFEATURELEVEL	99
 
 #endif
 
@@ -69,23 +69,10 @@
 
 #endif	// cnLibrary_CPPEXCLUDE_NOEXCEPT
 
-#if cnLibrary_CPPFEATURE_EXCEPTIONS >= 199711L
-#if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-#define	cnLib_NOEXCEPTEXPR(...)	noexcept(__VA_ARGS__)
-#else
-#define	cnLib_NOEXCEPTEXPR(...)	false
-#endif
-// cnLibrary_CPPFEATURE_EXCEPTIONS >= 199711L
-#else
-// cnLibrary_CPPFEATURE_EXCEPTIONS < 199711L
-#define	cnLib_NOEXCEPTEXPR(...)	true
-#endif	// cnLibrary_CPPFEATURE_EXCEPTIONS < 199711L
-
-
 #if cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L
 
 #define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_arg_type_,_comp_func_)\
-	auto operator <=> (_arg_type_ CompareValue)const noexcept(cnLib_NOEXCEPTEXPR(_comp_func_(CompareValue))) \
+	auto operator <=> (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))) \
 		-> decltype(_comp_func_(CompareValue)){	return _comp_func_(CompareValue);	}
 
 // cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L
@@ -93,10 +80,10 @@
 // cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L
 
 #define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_arg_type_,_comp_func_)\
-	bool operator < (_arg_type_ CompareValue)const noexcept(cnLib_NOEXCEPTEXPR(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)<0;	}\
-	bool operator > (_arg_type_ CompareValue)const noexcept(cnLib_NOEXCEPTEXPR(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)>0;	}\
-	bool operator <= (_arg_type_ CompareValue)const noexcept(cnLib_NOEXCEPTEXPR(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)<=0;	}\
-	bool operator >= (_arg_type_ CompareValue)const noexcept(cnLib_NOEXCEPTEXPR(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)>=0;	}\
+	bool operator < (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)<0;	}\
+	bool operator > (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)>0;	}\
+	bool operator <= (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)<=0;	}\
+	bool operator >= (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)>=0;	}\
 
 #endif	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L
 //---------------------------------------------------------------------------
@@ -845,7 +832,7 @@ struct TDefaultCompareResult
 
 template<class TCompare1,class TCompare2>
 inline auto DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(cnLib_NOEXCEPTEXPR(Value1<=>Value2))
+	noexcept(noexcept(Value1<=>Value2))
 	-> decltype(Value1<=>Value2)
 {
 	return Value1<=>Value2;
@@ -861,7 +848,7 @@ struct TDefaultCompareResult
 
 template<class TCompare1,class TCompare2>
 inline sfInt8 DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(cnLib_NOEXCEPTEXPR(Value1==Value2) && cnLib_NOEXCEPTEXPR(Value1<Value2))
+	noexcept(noexcept(Value1==Value2) && noexcept(Value1<Value2))
 {
 	sfInt8 ne=static_cast<sfInt8>(!(Value1==Value2));
 	sfInt8 lt=-static_cast<sfInt8>(Value1<Value2);

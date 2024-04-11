@@ -9,15 +9,15 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcExclusiveProcedure::bcExclusiveProcedure()
+bcExclusiveProcedure::bcExclusiveProcedure()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcExclusiveProcedure::~bcExclusiveProcedure()
+bcExclusiveProcedure::~bcExclusiveProcedure()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcExclusiveProcedure::ProcedureThreadRunLoop(void)
+void bcExclusiveProcedure::ProcedureThreadRunLoop(void)noexcept
 {
 	do{
 		do{
@@ -26,7 +26,7 @@ void bcExclusiveProcedure::ProcedureThreadRunLoop(void)
 	}while(!fExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void bcExclusiveProcedure::Run(void)
+void bcExclusiveProcedure::Run(void)noexcept
 {
 	if(!fExclusiveFlag.Acquire()){
 		return;
@@ -36,26 +36,26 @@ void bcExclusiveProcedure::Run(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::bcAsyncExclusiveProcedure()
+bcAsyncExclusiveProcedure::bcAsyncExclusiveProcedure()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::~bcAsyncExclusiveProcedure()
+bcAsyncExclusiveProcedure::~bcAsyncExclusiveProcedure()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::cProcedure::Execute(void)
+void bcAsyncExclusiveProcedure::cProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcAsyncExclusiveProcedure::fProcedure);
 	return Host->ProcedureThreadRunLoop();
 }
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::operator iProcedure*()
+bcAsyncExclusiveProcedure::operator iProcedure*()noexcept
 {
 	return &fProcedure;
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)
+void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)noexcept
 {
 	cnLib_ASSERT(AsyncProc!=nullptr);
 	if(fExclusiveFlag.Acquire()){
@@ -63,7 +63,7 @@ void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count)
+void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count)noexcept
 {
 	cnLib_ASSERT(AsyncProc!=nullptr);
 
@@ -84,22 +84,22 @@ void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn C
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cCancellationFlag::Reset(void)
+void cCancellationFlag::Reset(void)noexcept
 {
 	fFlag=cfNormal;
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::Complete(void)
+bool cCancellationFlag::Complete(void)noexcept
 {
 	return fFlag.Release.CmpStore(cfNormal,cfCompleted);
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::Cancel(void)
+bool cCancellationFlag::Cancel(void)noexcept
 {
 	return fFlag.Release.CmpStore(cfNormal,cfCancelled);
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::IsCancelled(void)const
+bool cCancellationFlag::IsCancelled(void)const noexcept
 {
 	return fFlag==cfCancelled;
 }

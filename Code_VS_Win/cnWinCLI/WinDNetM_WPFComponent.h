@@ -46,8 +46,8 @@ private:
 class mcWPFHwndSource
 {
 public:
-	mcWPFHwndSource();
-	~mcWPFHwndSource();
+	mcWPFHwndSource()noexcept(true);
+	~mcWPFHwndSource()noexcept(true);
 protected:
 #if _MANAGED
 	mcGCRefT<rcWPFHwndSource> fWPFHwnd;
@@ -59,19 +59,19 @@ protected:
 	Float32 fWindowLayoutScale;
 	Float32 fWindowDPIScale;
 
-	virtual void WindowAttach(void)=0;
-	virtual void WindowDetach(void)=0;
-	virtual bool WindowMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)=0;
-	virtual void WindowShutdownFinished(bool Shutdown)=0;
+	virtual void WindowAttach(void)noexcept(true)=0;
+	virtual void WindowDetach(void)noexcept(true)=0;
+	virtual bool WindowMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)noexcept(true)=0;
+	virtual void WindowShutdownFinished(bool Shutdown)noexcept(true)=0;
 
 private:
 #if _MANAGED
 	friend rcWPFHwndSource;
 
-	void __clrcall WPFSourceAttach(rcWPFHwndSource ^WPFHwnd);
-	void __clrcall WPFSourceDetach(void);
-	System::IntPtr WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled);
-	void __clrcall WPFDispatcherFinishNotify(bool Shutdown);
+	void __clrcall WPFSourceAttach(rcWPFHwndSource ^WPFHwnd)noexcept(true);
+	void __clrcall WPFSourceDetach(void)noexcept(true);
+	System::IntPtr WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept(true);
+	void __clrcall WPFDispatcherFinishNotify(bool Shutdown)noexcept(true);
 
 
 #endif // _MANAGED
@@ -84,8 +84,8 @@ class mcWPFHwndSourceAsWindow : public mcWPFHwndSource
 {
 	friend cWPFHwndSourceAsWindow;
 
-	mcWPFHwndSourceAsWindow();
-	~mcWPFHwndSourceAsWindow();
+	mcWPFHwndSourceAsWindow()noexcept(true);
+	~mcWPFHwndSourceAsWindow()noexcept(true);
 
 protected:
 
@@ -96,7 +96,7 @@ private:
 #endif // _MANAGED
 };
 //---------------------------------------------------------------------------
-iPtr<iWindow> DNetCreateWPFHwndSourceAsWindow(mcDNetUIThreadDispatcher *Dispatcher);
+iPtr<iWindow> DNetCreateWPFHwndSourceAsWindow(mcDNetUIThreadDispatcher *Dispatcher)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------

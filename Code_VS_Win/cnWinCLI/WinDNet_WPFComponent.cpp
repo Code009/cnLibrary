@@ -8,13 +8,13 @@ using namespace cnWin;
 //using namespace DNet;
 
 //---------------------------------------------------------------------------
-iPtr<iWindow> cnWin::DNetCreateWPFHwndSourceAsWindow(mcDNetUIThreadDispatcher *Dispatcher)
+iPtr<iWindow> cnWin::DNetCreateWPFHwndSourceAsWindow(mcDNetUIThreadDispatcher *Dispatcher)noexcept
 {
 	return iCreate<cWPFHwndSourceAsWindow>(static_cast<cDNetUIThread*>(Dispatcher));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFHwndSourceAsWindow::cWPFHwndSourceAsWindow(cDNetUIThread *UIThread)
+cWPFHwndSourceAsWindow::cWPFHwndSourceAsWindow(cDNetUIThread *UIThread)noexcept
 	: fUIThread(UIThread)
 	//, fWindowDPI(96)
 {
@@ -22,18 +22,18 @@ cWPFHwndSourceAsWindow::cWPFHwndSourceAsWindow(cDNetUIThread *UIThread)
 	Registration->Register(this);
 }
 //---------------------------------------------------------------------------
-cWPFHwndSourceAsWindow::~cWPFHwndSourceAsWindow()
+cWPFHwndSourceAsWindow::~cWPFHwndSourceAsWindow()noexcept
 {
 	auto Registration=cnSystem::GetSystemDependentRegistration();
 	Registration->Unregister(this);
 }
 //---------------------------------------------------------------------------
-void cWPFHwndSourceAsWindow::VirtualStarted(void)noexcept(true)
+void cWPFHwndSourceAsWindow::VirtualStarted(void)noexcept
 {
 	//fUIThread->mAttachDispatcher(&fDispatcherFinishNotify);
 }
 //---------------------------------------------------------------------------
-void cWPFHwndSourceAsWindow::VirtualStopped(void)noexcept(true)
+void cWPFHwndSourceAsWindow::VirtualStopped(void)noexcept
 {
 	//if(fUIThread->mDetachDispatcher(&fDispatcherFinishNotify)){
 	//	// wait for notification
@@ -43,32 +43,32 @@ void cWPFHwndSourceAsWindow::VirtualStopped(void)noexcept(true)
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cWPFHwndSourceAsWindow::DependentCreateDescription(void)
+rPtr< iArrayReference<const uChar16> > cWPFHwndSourceAsWindow::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Desc=cnRTL::CreateStringFormat(u"cWPFWindow %p",this);
 	return Desc.Token();
 }
 //---------------------------------------------------------------------------
-void cWPFHwndSourceAsWindow::DependentShutdownNotification(void)
+void cWPFHwndSourceAsWindow::DependentShutdownNotification(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-void* cWPFHwndSourceAsWindow::CastInterface(iTypeID IID)noexcept(true)
+void* cWPFHwndSourceAsWindow::CastInterface(iTypeID IID)noexcept
 {
 	return ImpCastInterface<iWindow>(this,IID);
 }
 //---------------------------------------------------------------------------
-HWND cWPFHwndSourceAsWindow::GetHandle(void)
+HWND cWPFHwndSourceAsWindow::GetHandle(void)noexcept
 {
 	return fWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool cWPFHwndSourceAsWindow::CheckThread(void)
+bool cWPFHwndSourceAsWindow::CheckThread(void)noexcept
 {
 	return fUIThread->IsCurrent();
 }
 //---------------------------------------------------------------------------
-bool cWPFHwndSourceAsWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+bool cWPFHwndSourceAsWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)noexcept
 {
 	switch(msg){
 	case WM_DPICHANGED:
@@ -118,7 +118,7 @@ bool cWPFHwndSourceAsWindow::WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT
 	return Processed;
 }
 //---------------------------------------------------------------------------
-void cWPFHwndSourceAsWindow::WindowAttach(void)
+void cWPFHwndSourceAsWindow::WindowAttach(void)noexcept
 {
 	fWindowState.WindowAttached(fWindowHandle);
 	fWindowDPI=GetWindowDPI(fWindowHandle);
@@ -129,7 +129,7 @@ void cWPFHwndSourceAsWindow::WindowAttach(void)
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFHwndSourceAsWindow::WindowDetach(void)
+void cWPFHwndSourceAsWindow::WindowDetach(void)noexcept
 {
 	fWindowState.WindowDetached();
 
@@ -138,38 +138,38 @@ void cWPFHwndSourceAsWindow::WindowDetach(void)
 	}
 }
 //---------------------------------------------------------------------------
-cDNetUIThread* cWPFHwndSourceAsWindow::GetWPFUIThread(void)
+cDNetUIThread* cWPFHwndSourceAsWindow::GetWPFUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-iUIThread* cWPFHwndSourceAsWindow::GetUIThread(void)
+iUIThread* cWPFHwndSourceAsWindow::GetUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-eUIState cWPFHwndSourceAsWindow::GetUIState(void)const
+eUIState cWPFHwndSourceAsWindow::GetUIState(void)const noexcept
 {
 	return fWindowState.GetUIState();
 }
 //---------------------------------------------------------------------------
-Float32 cWPFHwndSourceAsWindow::GetLayoutScale(void)const
+Float32 cWPFHwndSourceAsWindow::GetLayoutScale(void)const noexcept
 {
 	return fWindowLayoutScale;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFHwndSourceAsWindow::GetContentScale(void)const
+Float32 cWPFHwndSourceAsWindow::GetContentScale(void)const noexcept
 {
 	return fWindowLayoutScale;
 ;
 }
 //---------------------------------------------------------------------------
-HWND cWPFHwndSourceAsWindow::GetWindowHandle(void)
+HWND cWPFHwndSourceAsWindow::GetWindowHandle(void)noexcept
 {
 	return fWindowHandle;
 }
 //---------------------------------------------------------------------------
-bool cWPFHwndSourceAsWindow::InsertMessageHandler(iWindowMessageHandler *Handler,sfInt8 Order)
+bool cWPFHwndSourceAsWindow::InsertMessageHandler(iWindowMessageHandler *Handler,sfInt8 Order)noexcept
 {
 	if(CheckThread()==false)
 		return false;
@@ -182,7 +182,7 @@ bool cWPFHwndSourceAsWindow::InsertMessageHandler(iWindowMessageHandler *Handler
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFHwndSourceAsWindow::RemoveMessageHandler(iWindowMessageHandler *Handler)
+bool cWPFHwndSourceAsWindow::RemoveMessageHandler(iWindowMessageHandler *Handler)noexcept
 {
 	if(CheckThread()==false)
 		return false;
@@ -194,7 +194,7 @@ bool cWPFHwndSourceAsWindow::RemoveMessageHandler(iWindowMessageHandler *Handler
 	return false;
 }
 //---------------------------------------------------------------------------
-iWindowClient* cWPFHwndSourceAsWindow::GetClient(void)
+iWindowClient* cWPFHwndSourceAsWindow::GetClient(void)noexcept
 {
 	//if(fWindowClient!=nullptr)
 	//	return fWindowClient->WPFWindowGetInterface();
@@ -202,12 +202,12 @@ iWindowClient* cWPFHwndSourceAsWindow::GetClient(void)
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iWindowFrame* cWPFHwndSourceAsWindow::GetFrame(void)
+iWindowFrame* cWPFHwndSourceAsWindow::GetFrame(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iVariable> cWPFHwndSourceAsWindow::QueryAffixedVariable(const void *Token)
+rPtr<iVariable> cWPFHwndSourceAsWindow::QueryAffixedVariable(const void *Token)noexcept
 {
 	return nullptr;
 }
