@@ -28,6 +28,33 @@ const wchar_t *utow(const uChar16 *Str)noexcept(true);
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
+template<HANDLE InvalidHandleValue>
+struct bcWin32Handle
+{
+	HANDLE Handle;
+
+	bcWin32Handle()noexcept(true):Handle(InvalidHandleValue){}
+	bcWin32Handle(HANDLE InitalHandle)noexcept(true):Handle(InitalHandle){}
+	~bcWin32Handle()noexcept(true){
+		if(Handle!=InvalidHandleValue){
+			::CloseHandle(Handle);
+		}
+	}
+
+	void TransferHandle(HANDLE NewHandle)noexcept(true){
+		if(Handle!=InvalidHandleValue){
+			::CloseHandle(Handle);
+		}
+		Handle=NewHandle;
+	}
+	void Close(void)noexcept(true){
+		TransferHandle(InvalidHandleValue);
+	}
+};
+//---------------------------------------------------------------------------
+typedef bcWin32Handle<INVALID_HANDLE_VALUE> cWin32Handle;
+typedef bcWin32Handle<nullptr> cWin32PointerHandle;
+//---------------------------------------------------------------------------
 class cTextEncodingConverter_UnicodeToMultiByte : public iTextEncodingConverter
 {
 public:

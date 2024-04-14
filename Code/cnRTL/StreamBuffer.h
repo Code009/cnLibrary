@@ -255,6 +255,8 @@ public:
 
 	cLoopbackStreamBuffer()noexcept(true);
 	~cLoopbackStreamBuffer()noexcept(true);
+	
+	uIntn BufferSizeLimit=cnVar::TIntegerValue<uIntn>::Max;
 
 	cMemory GetReadBuffer(void)const noexcept(true);
 	cConstMemory GatherReadBuffer(uIntn Size)noexcept(true);

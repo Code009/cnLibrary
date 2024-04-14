@@ -145,6 +145,11 @@ void cCoreAudioRenderEndpoint::QueueWaveTimer(void)noexcept
 	WriteQueueReportBufferAvailable(false);
 }
 //---------------------------------------------------------------------------
+uIntn cCoreAudioRenderEndpoint::GetMaxWriteBufferSize(void)noexcept
+{
+	return fBufferFrameCount*fFrameSize;
+}
+//---------------------------------------------------------------------------
 cMemory cCoreAudioRenderEndpoint::ReserveWriteBuffer(uIntn)noexcept
 {
     HRESULT hr;
@@ -328,6 +333,11 @@ void cCoreAudioCaptureEndpoint::QueueWaveTimer(void)noexcept
 iReference* cCoreAudioCaptureEndpoint::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
+}
+//---------------------------------------------------------------------------
+uIntn cCoreAudioCaptureEndpoint::GetMaxReadBufferSize(void)noexcept
+{
+	return fBufferFrameCount*fFrameSize;
 }
 //---------------------------------------------------------------------------
 cConstMemory cCoreAudioCaptureEndpoint::GatherReadBuffer(uIntn)noexcept

@@ -127,6 +127,11 @@ bool bcBufferedRWQueue::IsWriteDataEnded(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
+uIntn bcBufferedRWQueue::GetMaxReadBufferSize(void)noexcept
+{
+	return fReadDataQueue.BufferSizeLimit;
+}
+//---------------------------------------------------------------------------
 cConstMemory bcBufferedRWQueue::GatherReadBuffer(uIntn QuerySize)noexcept
 {
 	return fReadDataQueue.GatherReadBuffer(QuerySize);
@@ -138,6 +143,11 @@ void bcBufferedRWQueue::DismissReadBuffer(uIntn Size)noexcept
 	if(Size!=0){
 		ReadBufferNotify();
 	}
+}
+//---------------------------------------------------------------------------
+uIntn bcBufferedRWQueue::GetMaxWriteBufferSize(void)noexcept
+{
+	return fWriteDataQueue.BufferSizeLimit;
 }
 //---------------------------------------------------------------------------
 cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept

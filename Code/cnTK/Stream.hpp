@@ -25,43 +25,45 @@ namespace cnStream{
 //
 // GatherReadBuffer
 //	gather read data to buffer
-//	the parameter Length is the demand of the caller, the stream may return any length of data depend on its state.
-//	the stream only returns zero length of data when it reached the end of the stream, pairing with DismissReadBuffer in this situation is optional.
+//	the parameter Length is the demand of the caller, the stream should return data at least has the specified length.
+//	if the stream returns smaller data buffer than requested, the caller will assume the stream currently has no more data.
+//	when the stream returns not null data buffer, the caller must pair this call with DismissReadBuffer. if the caller is not going to dismiss any data, call DismissReadBuffer with 0.
+//	when the stream returns zero length of data , calling DismissReadBuffer is optional, and the only valid paramerter is 0.
 // Length			number of elements needed to gather for reading.
 // return array of data buffer for reading. length of the returned buffer may less or greater than Length requested
-// return null array if reached the end of stream
+// return null array if stream currently has no data available
 //	cArray<const T> GatherReadBuffer(uIntn Length);
 //
 // DismissReadBuffer
 //	dismiss length of read data in the last call to GatherReadBuffer.
-//	the function must pair with GatherReadBuffer, even if no data needs to be dismissed.
-//	If no data needs to be dismissed after the last call to GatherReadBuffer, pass 0 in parameter Length to complete the pair.
-//	If call this function without a call to GatherReadBuffer, the behavior is undefined.
-//	If call this function with Length exceed the length of returned buffer by GatherReadBuffer, the behavior is undefined.
+//	Length parameter must less or equal than the length of data returned from GatherReadBuffer. when passing a length greater than the returned data buffer , the behavior is undefined.
+//	the function must pair with GatherReadBuffer which returning not null data buffer, if no data needs to be dismissed , pass 0 in parameter Length to complete the pair.
+//	if this function is called without a call to GatherReadBuffer, the behavior is undefined.
 //	All buffer return by last call to GatherReadBuffer will be unavailable after this call, caller should not access any part of the buffer after the function.
 // Length		length of data to dismiss, in elements
 //	void DismissReadBuffer(uIntn Length);
 //};
+
 // TStreamWriteBuffer<T>
 //{
 //	typedef T tElement;
 //
 // ReserveWriteBuffer
 //	reserve write buffer. uncommited buffer content will not be preserved
-//	the parameter Length is the demand of the caller, the stream buffer may return any length of data depend on its state.
-//	the stream buffer only returns zero length of data when it reached the end of the stream, pairing with CommitWriteBuffer in this situation is optional.
+//	the parameter Length is the demand of the caller, the stream buffer should return a buffer have at least specified length.
+//	if the stream returns smaller data buffer than requested, the caller will assume the stream currently can not provide such large buffer.
+//	when the stream returns not null data buffer, the caller must pair this call with CommitWriteBuffer. if the caller is not going to commit any data, call CommitWriteBuffer with 0.
+//	when the stream returns zero length of data , calling CommitWriteBuffer is optional, and the only valid paramerter is 0.
 // Length		number of elements to reserve for writing.
-// return array of data buffer for writing. length of the returned buffer may less or greater than Length requested
-// return null array if reached the end of stream
+// return array of data buffer for writing. length of the returned buffer may greater than Length requested
+// return null array if buffer cannot provide buffer at the specified length
 //	cArray<T> ReserveWriteBuffer(uIntn Length);
 //
 // CommitWriteBuffer
 //	commit length of read data in the last call to ReserveWriteBuffer.
-//	the function must pair with ReserveWriteBuffer, even if no data needs to be committed.
-//	If no data needs to be committed after the last call to ReserveWriteBuffer, pass 0 in parameter Length to complete the pair.
-//	If call this function without call to ReserveWriteBuffer, the behavior is undefined.
-//	if call this function with Length exceed the length of returned buffer by ReserveWriteBuffer, the behavior is undefined.
-//  calling this function with zero Length when reserved null buffer is an no-op
+//	Length parameter must less or equal than the length of data returned from ReserveWriteBuffer. when passing a length greater than the returned data buffer , the behavior is undefined.
+//	the function must pair with ReserveWriteBuffer which returning not null data buffer, if no data needs to be commited , pass 0 in parameter Length to complete the pair.
+//	if this function is called without a call to ReserveWriteBuffer, the behavior is undefined.
 //	All buffer return by last call to ReserveWriteBuffer will be unavailable after this call, caller should not access any part of the buffer after the function.
 // Length		length of data to commit, in elements
 //	void CommitWriteBuffer(uIntn Length);
@@ -461,364 +463,6 @@ inline cStreamWriteBufferBinaryAdapter<TStreamWrtieBuffer> StreamWriteBufferBina
 {
 	return cStreamWriteBufferBinaryAdapter<TStreamWrtieBuffer>(WriteBuffer);
 }
-//---------------------------------------------------------------------------
-template<class TStreamReadBuffer,uIntn CacheLength>
-class cCachedStreamReadBuffer
-{
-public:
-	typedef typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement tElement;
-	typedef typename cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
-
-	cnLib_STATIC_ASSERT(cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
-	cnLib_STATIC_ASSERT(cnVar::TIsMoveAssignNoexcept<tElement>::Value,"noexcept move assignment required");
-
-	template<class T>
-	cCachedStreamReadBuffer(T cnLib_UREF ReadBuffer)noexcept(true)
-		: fReadBuffer(cnLib_UREFCAST(T)(ReadBuffer)),fCachedLength(0){}
-
-	cArray<const tElement> GatherReadBuffer(uIntn Length)noexcept(noexcept(fReadBuffer.GatherReadBuffer(Length)))
-	{
-		cArray<const tElement> RetArray;
-		if(fCachedLength==0){
-			// try to gather whole request
-			RetArray=fReadBuffer.GatherReadBuffer(Length);
-			if(RetArray.Length==0){
-				// no more data
-				RetArray.Pointer=nullptr;
-				RetArray.Length=0;
-				return RetArray;
-			}
-			if(RetArray.Length>=Length){
-				return RetArray;
-			}
-			// limit Length with cache size
-			if(Length>CacheLength){
-				Length=CacheLength;
-			}
-
-		}
-		else{
-			if(fCachedLength>=Length){
-				// do NOT return cache without a buffer even if the cache fits requirement by itself
-				Length=CacheLength-fCachedLength;
-				RetArray=fReadBuffer.GatherReadBuffer(Length);
-				if(Length>RetArray.Length){
-					Length=RetArray.Length;
-				}
-				tArrayOperator::Copy(ArrayOffsetPointer(fCache,fCachedLength),RetArray.Pointer,Length);
-				RetArray.Pointer=fCache;
-				RetArray.Length=Length;
-				return RetArray;
-			}
-			// limit Length with cache size
-			if(Length>CacheLength){
-				Length=CacheLength;
-			}
-			Length-=fCachedLength;
-			goto PopupteNextBuffer;
-		}
-		// build up cache
-		while(RetArray.Length<Length){
-			// merge whole block
-			tArrayOperator::Copy(ArrayOffsetPointer(fCache,fCachedLength),RetArray.Pointer,RetArray.Length);
-			fCachedLength+=RetArray.Length;
-			fReadBuffer.DismissReadBuffer(RetArray.Length);
-			Length-=RetArray.Length;
-PopupteNextBuffer:
-			// gather next buffer
-			RetArray=fReadBuffer.GatherReadBuffer(Length);
-			if(RetArray.Length==0){
-				// end of stream
-				// return whatever in the cache
-				RetArray.Pointer=fCache;
-				RetArray.Length=fCachedLength;
-				return RetArray;
-			}
-		}
-		// enough data in cache, copy last block
-		tArrayOperator::Copy(ArrayOffsetPointer(fCache,fCachedLength),RetArray.Pointer,Length);
-		RetArray.Pointer=fCache;
-		RetArray.Length=Length;
-		return RetArray;
-	}
-	void DismissReadBuffer(uIntn Size)noexcept(noexcept(fReadBuffer.DismissReadBuffer(Size)))
-	{
-		if(fCachedLength==IndexNotFound)
-			return;	// stream already ended
-		if(Size<fCachedLength){
-			// recycle remain cache
-			uIntn NewCachedLength=fCachedLength-Size;
-			tArrayOperator::Move(fCache,ArrayOffsetPointer(fCache,Size),NewCachedLength);
-			fCachedLength=NewCachedLength;
-			fReadBuffer.DismissReadBuffer(0);
-		}
-		else{
-			// dismiss all cache
-			uIntn DismissSize=Size-fCachedLength;
-			fCachedLength=0;
-			fReadBuffer.DismissReadBuffer(DismissSize);
-		}
-	}
-protected:
-	TStreamReadBuffer fReadBuffer;
-	uIntn fCachedLength;
-	tElement fCache[CacheLength];
-};
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer,uIntn CacheLength>
-class cCachedStreamWriteBuffer
-{
-public:
-	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement tElement;
-	typedef typename cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
-
-	cnLib_STATIC_ASSERT(cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
-	cnLib_STATIC_ASSERT(cnVar::TIsMoveAssignNoexcept<tElement>::Value,"noexcept move assignment required");
-#if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-	cnLib_STATIC_ASSERT(noexcept(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer(0)),"noexcept CommitWriteBuffer required");
-#endif // !cnLibrary_CPPEXCLUDE_NOEXCEPT
-
-
-	template<class T>
-	cCachedStreamWriteBuffer(T cnLib_UREF WriteBuffer)noexcept(true)
-		: fWriteBuffer(cnLib_UREFCAST(T)(WriteBuffer)),fCachedLength(0){}
-
-	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(noexcept(fWriteBuffer.ReserveWriteBuffer(Length)))
-	{
-		if(fCachedLength!=0){
-			if(fCachedLength==IndexNotFound){
-				// cache in use
-				return NullArray;
-			}
-			CommitCached();
-			if(fCachedLength!=0)	// cannot commit more data
-				return NullArray;
-		}
-		cArray<tElement> RetArray=fWriteBuffer.ReserveWriteBuffer(Length);
-		if(RetArray.Length==0){
-			fCachedLength=IndexNotFound;	// mark direct commit
-			return RetArray;
-		}
-		if(RetArray.Length>Length || RetArray.Length>=CacheLength){
-			fCachedLength=IndexNotFound;	// mark direct commit
-			return RetArray;
-		}
-		fWriteBuffer.CommitWriteBuffer(0);
-		RetArray.Pointer=fCache;
-		RetArray.Length=CacheLength;
-		return RetArray;
-	}
-	void CommitWriteBuffer(uIntn Size)noexcept(noexcept(fWriteBuffer.CommitWriteBuffer(Size)))
-	{
-		if(fCachedLength==IndexNotFound){
-			fCachedLength=0;
-			// direct commit
-			return fWriteBuffer.CommitWriteBuffer(Size);
-		}
-		if(Size==0){
-			fCachedLength=0;
-			return;
-		}
-		fCachedLength=Size>CacheLength?CacheLength:Size;
-		CommitCached();
-	}
-
-	uIntn GetOverflowLength(void)noexcept(true){
-		if(fCachedLength==IndexNotFound){
-			return 0;
-		}
-		return fCachedLength;
-	}
-	cArray<tElement> GetOverflow(void)noexcept(true){
-		if(fCachedLength==IndexNotFound){
-			return NullArray;
-		}
-		cArray<tElement> RetArray;
-		RetArray.Pointer=fCache;
-		RetArray.Length=fCachedLength;
-		return RetArray;
-	}
-protected:
-	TStreamWriteBuffer fWriteBuffer;
-	uIntn fCachedLength;
-	tElement fCache[CacheLength];
-
-	void CommitCached(void)noexcept(noexcept(fWriteBuffer.ReserveWriteBuffer(fCachedLength)))
-	{
-		uIntn CommitIndex=0;
-		uIntn CacheRemainLength=fCachedLength;
-		auto RetArray=fWriteBuffer.ReserveWriteBuffer(fCachedLength);
-
-		while(RetArray.Length<CacheRemainLength){
-			if(RetArray.Length==0){
-				// no more buffer
-				tElement *RemainCache=ArrayOffsetPointer(fCache,CommitIndex);
-				tArrayOperator::Move(fCache,RemainCache,CacheRemainLength);
-				//for(uIntn i=0;i<CacheRemainLength;i++){
-				//	fCache[i]=cnLib_UREFCAST(tElement)(RemainCache[i]);
-				//}
-				fCachedLength=CacheRemainLength;
-				return;
-			}
-			tArrayOperator::Move(RetArray.Pointer,ArrayOffsetPointer(fCache,CommitIndex),RetArray.Length);
-			CommitIndex+=RetArray.Length;
-			//for(uIntn i=0;i<RetArray.Length;i++){
-			//	RetArray.Pointer[i]=cnLib_UREFCAST(tElement)(fCache[CommitIndex++]);
-			//}
-			fWriteBuffer.CommitWriteBuffer(RetArray.Length);
-			CacheRemainLength-=RetArray.Length;
-		
-			RetArray=fWriteBuffer.ReserveWriteBuffer(CacheRemainLength);
-		}
-		// commit final block
-		tArrayOperator::Move(RetArray.Pointer,ArrayOffsetPointer(fCache,CommitIndex),CacheRemainLength);
-		//for(uIntn i=0;i<CacheRemainLength;i++){
-		//	RetArray.Pointer[i]=cnLib_UREFCAST(tElement)(fCache[CommitIndex++]);
-		//}
-		fWriteBuffer.CommitWriteBuffer(CacheRemainLength);
-		fCachedLength=0;
-	}
-};
-//---------------------------------------------------------------------------
-#if 0
-template<,class TStreamReadBuffer>
-class cMemoryCachedStreamReadBuffer
-{
-public:
-	cMemoryCachedStreamReadBuffer(TStreamReadBuffer *ReadBuffer)
-		: fReadBuffer(ReadBuffer),fCachedLength(0){}
-
-	cArray<typename TStreamReadBuffer::TElement const> GatherReadBuffer(uIntn Length){
-		cArray<typename TStreamReadBuffer::TElement const> RetArray;
-		if(fCachedLength!=0){
-			if(fReadBuffer==nullptr || fCachedLength>=Length){
-				RetArray.Pointer=fCache;
-				RetArray.Length=fCachedLength;
-				return RetArray;
-			}
-		}
-		else{
-			if(fReadBuffer==nullptr){
-				RetArray.Pointer=nullptr;
-				RetArray.Length=0;
-				return RetArray;
-			}
-		}
-		RetArray=fReadBuffer->GatherReadBuffer(Length);
-		while(fCachedLength+RetArray.Length<Length){
-			for(uIntn i=0;i<RetArray.Length;i++){
-				fCache[fCachedLength++]=RetArray.Pointer[i];
-			}
-			Length-=RetArray.Length;
-			fReadBuffer->DismissReadBuffer(RetArray.Length);
-
-		
-			RetArray=fReadBuffer->GatherReadBuffer(Length);
-			if(RetArray.Length==0){
-				fReadBuffer=nullptr;	// end of stream
-				RetArray.Pointer=fCache;
-				RetArray.Length=fCachedLength;
-				return RetArray;
-			}
-		}
-		// cache full
-		for(uIntn i=0;i<Length;i++){
-			fCache[fCachedLength+i]=RetArray.Pointer[i];
-		}
-		RetArray.Pointer=fCache;
-		RetArray.Length=CacheLength;
-		return RetArray;
-	}
-	uIntn DismissReadBuffer(uIntn Size){
-		if(Size<fCachedLength){
-			// recycle remain cache
-			uIntn NewCachedLength=fCachedLength-Size;
-			for(uIntn i=0;i<NewCachedLength;i++){
-				fCache[i]=cnLib_UREFCAST(typename TStreamReadBuffer::TElement)(fCache[Size+i]);
-			}
-			fCachedLength=NewCachedLength;
-			return Size;
-		}
-		// dismiss all cache
-		uIntn Dismissed;
-		if(fReadBuffer==nullptr){
-			// dismiss all cache
-			Dismissed=fCachedLength;
-		}
-		else{
-			Dismissed=fReadBuffer->DismissReadBuffer(Size-fCachedLength);
-			Dismissed+=fCachedLength;
-		}
-		fCachedLength=0;
-		return Dismissed;
-	}
-protected:
-	typename TStreamReadBuffer::TElement fCache[CacheLength];
-	uIntn fCachedLength;
-	TStreamReadBuffer *fReadBuffer;
-};
-#endif // 0
-//---------------------------------------------------------------------------
-template<class TAllocationOperator,class TStreamWriteBuffer>
-class cMemoryCachedStreamWriteBuffer
-{
-public:
-
-	typedef typename TStreamWriteBuffer::tElement tElement;
-
-	cnLib_STATIC_ASSERT(cnVar::TIsCopyAssignNoexcept<tElement>::Value,"noexcept copy assignment required");
-	cnLib_STATIC_ASSERT(cnVar::TIsMoveAssignNoexcept<tElement>::Value,"noexcept move assignment required");
-#if !defined(cnLibrary_CPPEXCLUDE_NOEXCEPT)
-	cnLib_STATIC_ASSERT(noexcept(cnVar::DeclVal<TStreamWriteBuffer>().CommitWriteBuffer),"noexcept CommitWriteBuffer required");
-#endif
-
-	cMemoryCachedStreamWriteBuffer(TStreamWriteBuffer *WriteBuffer)noexcept(true)
-		: fWriteBuffer(WriteBuffer),fReservedMemory(NullArray){}
-
-	cArray<tElement> ReserveWriteBuffer(uIntn Length)noexcept(true)
-	{
-		cArray<tElement> RetArray=fWriteBuffer->ReserveWriteBuffer(Length);
-		if(RetArray.Length>Length){
-			return RetArray;
-		}
-		if(fCache.Length<Length){
-			fCache.SetLength(Length);
-		}
-		fReservedMemory=RetArray;
-		return fCache;
-	}
-	void CommitWriteBuffer(uIntn Size)noexcept(true)
-	{
-		if(fReservedMemory.Length==0){
-			// direct commit
-			return fWriteBuffer->CommitWriteBuffer(Size);
-		}
-		if(Size>fCache.Length)
-			Size=fCache.Length;
-		uIntn Commited=0;
-		while(Size>fReservedMemory.Length){
-			TKRuntime::TMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,fReservedMemory.Length);
-			for(uIntn i=0;i<fReservedMemory.Length;i++){
-				fReservedMemory.Pointer[i]=cnLib_UREFCAST(tElement)(fCache.Pointer[Commited+i]);
-			}
-			fWriteBuffer->CommitWriteBuffer(fReservedMemory.Length);
-			Size-=fReservedMemory.Length;
-			Commited+=fReservedMemory.Length;
-			fReservedMemory=fWriteBuffer->ReserveWriteBuffer(Size);
-			if(fReservedMemory.Length==0){
-				return;
-			}
-		}
-		TKRuntime::TMemory<sizeof(tElement)>::Copy(fReservedMemory.Pointer,fCache.Pointer+Commited,Size);
-		fReservedMemory.Pointer=nullptr;
-		fReservedMemory.Length=0;
-		return fWriteBuffer->CommitWriteBuffer(Size);
-	}
-protected:
-	cnDataStruct::cArrayBlock<TAllocationOperator,tElement> fCache;
-	cArray<tElement> fReservedMemory;
-	TStreamWriteBuffer *fWriteBuffer;
-};
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 

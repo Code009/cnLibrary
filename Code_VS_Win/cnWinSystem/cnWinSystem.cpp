@@ -21,7 +21,6 @@ static ufInt8 cnWin_ExitFunctionCount=0;
 //---------------------------------------------------------------------------
 void cnWin::CPPInitialize(void)noexcept
 {
-#pragma message(cnLib_FILE_LINE ": TODO - exception handling")
 	const CPPInitProc* Proc=&cnWin_InitSegS+1;
 	while(Proc<&cnWin_InitSegE){
 		if((*Proc)!=nullptr){
@@ -33,7 +32,6 @@ void cnWin::CPPInitialize(void)noexcept
 //---------------------------------------------------------------------------
 void cnWin::CPPFinalize(void)noexcept
 {
-#pragma message(cnLib_FILE_LINE ": TODO - exception handling")
 	while(cnWin_ExitFunctionCount!=0){
 		cnWin_ExitFunctionCount--;
 		(*cnWin_ExitFunctions[cnWin_ExitFunctionCount])();

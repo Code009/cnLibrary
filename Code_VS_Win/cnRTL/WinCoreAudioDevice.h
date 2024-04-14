@@ -42,6 +42,7 @@ public:
 protected:
 	void VirtualStopped(void)noexcept(true);
 
+	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)override;
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)noexcept(true)override;
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
@@ -87,6 +88,7 @@ public:
 protected:
 	void VirtualStopped(void)noexcept(true);
 
+	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)override;
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
 	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 

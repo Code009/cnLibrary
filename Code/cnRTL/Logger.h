@@ -80,7 +80,7 @@ public:
 	template<class...TArgs>	void Report(const uChar16*,TArgs&&...)noexcept(true){}
 };
 //---------------------------------------------------------------------------
-template<int LogLevel>
+template<uIntn LogLevel>
 class cLog : public bcLog
 {
 public:

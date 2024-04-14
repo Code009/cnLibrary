@@ -128,6 +128,7 @@ public:
 	bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferSize)noexcept(true);
 	~bcReadQueueFromStream()noexcept(true);
 
+	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)override;
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
 	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 
@@ -138,17 +139,16 @@ protected:
 private:
 	iStream *fStream;
 
-	cRingIndex<uInt8,3,1> fReadItemRing;
+	cRingIndex<ufInt8,3,1> fReadItemRing;
 	cExclusiveFlag fProcessTaskExclusiveFlag;
 
 	struct{
 		iPtr<iStreamTask> Task;
 		void *Buffer;
-		uIntn SizeCompleted;
-		bool Result;
+		uIntn ValidSize;
+		uIntn ValidOffset;
 	}fReadItem[2];
 	uIntn fReadBufferSize;
-	uIntn fCurReadOffset;
 
 	void OnStartRead(void)noexcept(true);
 	class cTaskProcedure : public iProcedure
@@ -167,6 +167,9 @@ public:
 	bcWriteQueueFromStream(iStream *Stream)noexcept(true);
 	~bcWriteQueueFromStream()noexcept(true);
 
+	uIntn WriteBufferSizeLimit=65536;
+
+	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)override;
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
@@ -181,10 +184,9 @@ private:
 
 	struct cWriteItem{
 		iPtr<iStreamTask> Task;
-		void *SourceBuffer;
-		uIntn SourceBufferSize;
+		cMemoryBlock SourceBuffer;
+		uIntn SourceBufferSize=0;
 	}fWriteItem[2];
-	static constexpr uIntn SourceBufferTotalSize=65536;
 
 	void SendWriteBuffer(cWriteItem &Item)noexcept(true);
 

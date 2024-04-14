@@ -341,6 +341,9 @@ cMemory cLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {
 	uIntn NewCapacity=fBuffer->Length+QuerySize;
 	if(NewCapacity>fBuffer->Capacity){
+		if(NewCapacity>BufferSizeLimit){
+			NewCapacity=BufferSizeLimit;
+		}
 		fBuffer.SetCapacity(NewCapacity);
 	}
 	cMemory WriteBuffer;

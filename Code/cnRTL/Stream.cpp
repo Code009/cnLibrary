@@ -1437,6 +1437,11 @@ void bcWriteToReadQueue::ReadQueueClosed(void)noexcept
 	WriteQueueReportTerminated();
 }
 //---------------------------------------------------------------------------
+uIntn bcWriteToReadQueue::GetMaxWriteBufferSize(void)noexcept
+{
+	return fBufferQueue.BufferSizeLimit;
+}
+//---------------------------------------------------------------------------
 cMemory bcWriteToReadQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {
 	auto WriteBuffer=fBufferQueue.ReserveWriteBuffer(QuerySize);
@@ -1455,6 +1460,11 @@ void bcWriteToReadQueue::CommitWriteBuffer(uIntn Size)noexcept
 
 	// notify data available for reading
 	ReadQueueReportBufferAvailable(false);
+}
+//---------------------------------------------------------------------------
+uIntn bcWriteToReadQueue::GetMaxReadBufferSize(void)noexcept
+{
+	return fBufferQueue.BufferSizeLimit;
 }
 //---------------------------------------------------------------------------
 cConstMemory bcWriteToReadQueue::GatherReadBuffer(uIntn QuerySize)noexcept
@@ -2050,6 +2060,11 @@ bool cBufferedExtEndpoint::IsWriteDataEnded(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
+uIntn cBufferedExtEndpoint::GetMaxReadBufferSize(void)noexcept
+{
+	return fReadDataQueue.BufferSizeLimit;
+}
+//---------------------------------------------------------------------------
 cConstMemory cBufferedExtEndpoint::GatherReadBuffer(uIntn QuerySize)noexcept
 {
 	return fReadDataQueue.GatherReadBuffer(QuerySize);
@@ -2058,6 +2073,11 @@ cConstMemory cBufferedExtEndpoint::GatherReadBuffer(uIntn QuerySize)noexcept
 void cBufferedExtEndpoint::DismissReadBuffer(uIntn Size)noexcept
 {
 	return fReadDataQueue.DismissReadBuffer(Size);
+}
+//---------------------------------------------------------------------------
+uIntn cBufferedExtEndpoint::GetMaxWriteBufferSize(void)noexcept
+{
+	return fWriteDataQueue.BufferSizeLimit;
 }
 //---------------------------------------------------------------------------
 cMemory cBufferedExtEndpoint::ReserveWriteBuffer(uIntn QuerySize)noexcept

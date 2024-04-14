@@ -808,18 +808,18 @@ inline T* rExtract(rPtr<T> &Src,uInt32 Tag)noexcept(true)
 }
 //---------------------------------------------------------------------------
 namespace cnRTL{
-//---------------------------------------------------------------------------
-template<uIntn CacheLength,class TStreamReadBuffer>
-inline cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)noexcept(true)
-{
-	return cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength>(static_cast<TStreamReadBuffer&&>(ReadBuffer));
-}
-//---------------------------------------------------------------------------
-template<uIntn CacheLength,class TStreamWriteBuffer>
-inline cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
-{
-	return cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));
-}
+////---------------------------------------------------------------------------
+//template<uIntn CacheLength,class TStreamReadBuffer>
+//inline cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)noexcept(true)
+//{
+//	return cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength>(static_cast<TStreamReadBuffer&&>(ReadBuffer));
+//}
+////---------------------------------------------------------------------------
+//template<uIntn CacheLength,class TStreamWriteBuffer>
+//inline cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
+//{
+//	return cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));
+//}
 //---------------------------------------------------------------------------
 namespace ArrayStream{
 //---------------------------------------------------------------------------

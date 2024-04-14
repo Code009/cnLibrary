@@ -447,11 +447,13 @@ public:
 
 	// Write Queue
 
+	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)override;
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
 	// Read Queue
 
+	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)override;
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
 	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 
@@ -653,12 +655,14 @@ public:
 
 protected:
 
+	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)override;
 	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
 	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 	virtual void ReadQueueStarted(void)noexcept(true)override;
 	virtual void ReadQueueStopped(void)noexcept(true)override;
 	virtual void ReadQueueClosed(void)noexcept(true)override;
 
+	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)override;
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 	virtual void WriteQueueStarted(void)noexcept(true)override;

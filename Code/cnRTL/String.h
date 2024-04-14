@@ -207,14 +207,10 @@ extern const char HexBytesWrite_HexTextMap[];
 template<class TStreamWriteBuffer>
 inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uIntn Length)noexcept(true)
 {
-	auto CachedWriteBuffer=cnRTL::CachedStreamWriteBuffer<16>(WriteBuffer);
-
 	uIntn ByteIndex=0;
 	while(ByteIndex<Length){
-		auto Memory=CachedWriteBuffer.ReserveWriteBuffer((Length-ByteIndex)*2);
-		if(Memory.Length==0){
-			return false;
-		}
+		uIntn RequestLength=(Length-ByteIndex)*2;
+		auto Memory=WriteBuffer.ReserveWriteBuffer(RequestLength);
 		uIntn TextIndex=0;
 		while(TextIndex+2<Memory.Length){
 			uInt8 CurByte=static_cast<const uInt8*>(Data)[ByteIndex++];
@@ -225,7 +221,11 @@ inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uInt
 			if(ByteIndex>=Length)
 				break;
 		}
-		CachedWriteBuffer.CommitWriteBuffer(TextIndex);
+		WriteBuffer.CommitWriteBuffer(TextIndex);
+
+		if(Memory.Length<RequestLength){
+			return false;
+		}
 	}
 
 	return true;
@@ -266,7 +266,7 @@ inline bool WriteConvertEncoding(TStreamWriteBuffer &WriteBuffer,iTextEncodingCo
 	if(Converter==nullptr){
 		uIntn CopyLength=SrcLength;
 		if(CopyLength==0)
-			return 0;
+			return true;
 		auto WriteMemory=WriteBuffer.ReserveWriteBuffer(CopyLength);
 		if(CopyLength>WriteMemory.Length)
 			CopyLength=WriteMemory.Length;
@@ -286,7 +286,7 @@ inline bool WriteConvertEncoding(TStreamWriteBuffer &WriteBuffer,iTextEncodingCo
 
 		cArray<TCharacter> WriteMemory=WriteBuffer.ReserveWriteBuffer(EstimateLength);
 		if(WriteMemory.Length==0)
-			break;
+			return false;	// no more buffer
 
 		uIntn StreamConvertedSize=Converter->Convert(WriteMemory.Pointer,WriteMemory.Length*sizeof(TCharacter),Src,SrcLength*sizeof(TSrcChar),&SrcConvertedSize);
 		if(StreamConvertedSize==0){

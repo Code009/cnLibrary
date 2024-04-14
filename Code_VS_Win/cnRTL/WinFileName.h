@@ -31,16 +31,15 @@ inline typename cnVar::TTypeConditional<DWORD,
 	DWORD NameLength=Win32FileNameCheckFileName(Name);
 	if(NameLength==0)
 		return 0;
-	cMemoryCachedStreamWriteBuffer<typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type> CachedWriteBuffer(&WriteBuffer);
 	// copy string
-	auto NameBuffer=CachedWriteBuffer.ReserveWriteBuffer(1+NameLength);
+	auto NameBuffer=WriteBuffer.ReserveWriteBuffer(1+NameLength);
 	if(NameBuffer.Length<=NameLength){
-		CachedWriteBuffer.CommitWriteBuffer(0);
+		WriteBuffer.CommitWriteBuffer(0);
 		return 0;	// not enough buffer
 	}
 	NameBuffer.Pointer[0]='\\';
 	cnMemory::Copy(NameBuffer.Pointer+1,Name,NameLength*sizeof(wchar_t));
-	CachedWriteBuffer.CommitWriteBuffer(1+NameLength);
+	WriteBuffer.CommitWriteBuffer(1+NameLength);
 	return 1+NameLength;
 }
 //---------------------------------------------------------------------------
@@ -56,19 +55,18 @@ inline typename cnVar::TTypeConditional<DWORD,
 {
 	uIntn BufferLength=cnMath::IntRoundUp(MAX_PATH,256);
 	DWORD PathLength=0;
-	cMemoryCachedStreamWriteBuffer<typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type> CachedWriteBuffer(WriteBuffer);
-	while((NameBuffer=CachedWriteBuffer.ReserveWriteBuffer(BufferLength)).Length>PathLength){
+	while((NameBuffer=WriteBuffer.ReserveWriteBuffer(BufferLength)).Length>PathLength){
 		PathLength=::GetModuleFileNameW(ModuleHandle,NameBuffer.Pointer,static_cast<DWORD>(NameBuffer.Length));
 		if(PathLength==0){
 			// error
-			CachedWriteBuffer.CommitWriteBuffer(0);
+			WriteBuffer.CommitWriteBuffer(0);
 			return 0;
 		}
 		DWORD LastError=::GetLastError();
 		if(LastError==ERROR_SUCCESS){
 			break;
 		}
-		CachedWriteBuffer.CommitWriteBuffer(0);
+		WriteBuffer.CommitWriteBuffer(0);
 		if(LastError!=ERROR_INSUFFICIENT_BUFFER){
 			// error
 			return 0;

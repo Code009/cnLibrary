@@ -89,6 +89,8 @@ public:
 class cnLib_INTERFACE iReadQueue : public iReference
 {
 public:
+	typedef void tElement;
+
 	// StartRead
 	//	start reading from the data queue
 	// Callback		callback
@@ -104,7 +106,7 @@ public:
 
 	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)noexcept(true)=0;
 	
-	//virtual bool cnLib_FUNC IsReadBufferFull(void)noexcept(true)=0;
+	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)=0;
 
 	// GatherReadBuffer
 	//	gather read data to buffer
@@ -136,6 +138,8 @@ public:
 class cnLib_INTERFACE iWriteQueue : public iReference
 {
 public:
+	typedef void tElement;
+
 	// StartWrite
 	//	start writing to the data queue
 	// Callback		callback
@@ -152,12 +156,11 @@ public:
 
 	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)noexcept(true)=0;
 	
-	//virtual bool cnLib_FUNC IsWriteBufferFull(void)=0;
+	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)=0;
 
 	// ReserveWriteBuffer
 	//	reserve write buffer. uncommited buffer content will not be preserved
 	// Length		number of elements to query for writing.
-	//				the function is not necessarily return exactly same length of buffer, this length is a hint for the buffer object to optimatialze buffer allocation
 	// return array of data buffer for writing
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)=0;
 	// CommitWriteBuffer

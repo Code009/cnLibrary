@@ -401,7 +401,6 @@ bcReadQueueFromStream::bcReadQueueFromStream(iStream *Stream,uIntn PacketBufferS
 	fReadItem[1].Buffer=cnSystem::DefaultHeap::Alloc(fReadBufferSize,0);
 	cnLib_ASSERT(Stream!=nullptr);
 	fStream=Stream;
-	fCurReadOffset=0;
 
 	fReadItemRing.Reset();
 }
@@ -419,45 +418,84 @@ void bcReadQueueFromStream::NotificationStarted(void)noexcept
 	OnStartRead();
 }
 //---------------------------------------------------------------------------
+uIntn bcReadQueueFromStream::GetMaxReadBufferSize(void)noexcept
+{
+	return fReadBufferSize;
+}
+//---------------------------------------------------------------------------
 cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)noexcept
-{	UnusedParameter(QuerySize);	// ignore query size, just return whatever available
+{
+	ufInt8 ItemIndex;
+	ufInt8 ItemCount=fReadItemRing.Reserve<2>(ItemIndex,2);
+	if(ItemCount==0){
+		// no buffer available
+		return NullArray;
+	}
+	auto &Item=fReadItem[ItemIndex];
 
-	uInt8 ItemIndex;
-	if(fReadItemRing.ReserveItem<2>(ItemIndex)){
-		auto &Item=fReadItem[ItemIndex];
-		cnLib_ASSERT(Item.Task==nullptr);
-		if(Item.Result==false){
-			// error in stream
-			// clear read buffers
-	
-			auto Count=fReadItemRing.Reserve<2>(ItemIndex,4);
-			fReadItemRing.Commit<2>(Count);
-
-			ReadQueueReportBufferEmpty();
-
-			return NullArray;
-		}
-		cConstMemory Buffer;
-		Buffer.Pointer=cnMemory::PointerAddByteOffset(Item.Buffer,fCurReadOffset);
-		Buffer.Length=Item.SizeCompleted-fCurReadOffset;
+	cnLib_ASSERT(Item.Task==nullptr);
+		
+	cConstMemory Buffer;
+	Buffer.Pointer=cnMemory::PointerAddByteOffset(Item.Buffer,Item.ValidOffset);
+	if(ItemCount==1 || QuerySize<=Item.ValidSize){
+		Buffer.Length=Item.ValidSize;
 		return Buffer;
 	}
-	// no buffer available
-	return NullArray;
+	// try to merge buffer
+	auto &NextItem=fReadItem[!ItemIndex];
+	
+	if(Item.ValidOffset!=0){
+		cnMemory::Copy(Item.Buffer,Buffer.Pointer,Item.ValidSize);
+		Buffer.Pointer=Item.Buffer;
+	}
+	uIntn MergedSize=Item.ValidSize+NextItem.ValidSize;
+	if(MergedSize<=fReadBufferSize){
+		cnMemory::Copy(cnMemory::PointerAddByteOffset(Item.Buffer,Item.ValidSize),cnMemory::PointerAddByteOffset(NextItem.Buffer,NextItem.ValidOffset),NextItem.ValidSize);
+		Buffer.Length=MergedSize;
+
+		void *SwitchBuffer=NextItem.Buffer;
+		// switch and release empty buffer
+		NextItem.Buffer=Item.Buffer;
+		NextItem.ValidOffset=0;
+		NextItem.ValidSize=MergedSize;
+	
+		Item.Buffer=SwitchBuffer;
+		
+		fReadItemRing.Commit<2>(1);
+		// notify continue read
+		OnStartRead();
+	}
+	else{
+		uIntn ReadNextSize=fReadBufferSize-Item.ValidSize;
+		cnMemory::Copy(cnMemory::PointerAddByteOffset(Item.Buffer,Item.ValidSize),cnMemory::PointerAddByteOffset(NextItem.Buffer,NextItem.ValidOffset),ReadNextSize);
+		Item.ValidSize=fReadBufferSize;
+		Buffer.Length=fReadBufferSize;
+
+		NextItem.ValidOffset+=ReadNextSize;
+		NextItem.ValidSize-=ReadNextSize;
+	}
+
+	return Buffer;
 }
 //---------------------------------------------------------------------------
 void bcReadQueueFromStream::DismissReadBuffer(uIntn Size)noexcept
 {
-	fCurReadOffset+=Size;
 	uInt8 ItemIndex;
-	if(fReadItemRing.ReserveItem<2>(ItemIndex)){
-		auto &Item=fReadItem[ItemIndex];
-		if(fCurReadOffset>=Item.SizeCompleted){
-			fCurReadOffset=0;
-			fReadItemRing.CommitItem<2>();
-			UpdateQueueState(false);
-			OnStartRead();
-		}
+	if(fReadItemRing.ReserveItem<2>(ItemIndex)==false)
+		return;
+
+	auto &Item=fReadItem[ItemIndex];
+	if(Size<Item.ValidSize){
+		// advance read index
+		Item.ValidOffset+=Size;
+		Item.ValidSize-=Size;
+	}
+	else{
+		// release buffer
+		fReadItemRing.CommitItem<2>();
+		UpdateQueueState(false);
+		OnStartRead();
+
 	}
 }
 //---------------------------------------------------------------------------
@@ -480,7 +518,8 @@ void bcReadQueueFromStream::OnStartRead(void)noexcept
 		if(fReadItemRing.ReserveItem<0>(ItemIndex)==false)
 			return;
 		auto &Item=fReadItem[ItemIndex];
-		Item.SizeCompleted=0;
+		Item.ValidOffset=0;
+		Item.ValidSize=0;
 		auto Task=fStream->ReadAsync(Item.Buffer,fReadBufferSize);
 		Item.Task=Task;
 		if(Task!=nullptr){
@@ -521,8 +560,8 @@ void bcReadQueueFromStream::ProcessTask(void)noexcept
 				break;	// not completed
 
 			auto Task=MoveCast(Item.Task);
-			Item.Result=Task->GetResult(Item.SizeCompleted);
-			if(Item.Result==false){
+			bool Result=Task->GetResult(Item.ValidSize);
+			if(Result==false){
 				auto ErrorCode=GetStreamError(Task);
 				switch(ErrorCode){
 				case StreamError::Success:
@@ -536,15 +575,14 @@ void bcReadQueueFromStream::ProcessTask(void)noexcept
 					break;
 				}
 			}
-			if(Item.SizeCompleted==0 && fStream->IsEndOfReading()){
+			if(Item.ValidSize==0 && fStream->IsEndOfReading()){
 				// reached end of read stream
 				StreamEnded=true;
-				Item.Result=false;
 			}
 			else{
+				fReadItemRing.CommitItem<1>();
 				MoreAvailable=true;
 			}
-			fReadItemRing.CommitItem<1>();
 		}
 	
 	}while(fProcessTaskExclusiveFlag.Release()==false);
@@ -574,18 +612,11 @@ bcWriteQueueFromStream::bcWriteQueueFromStream(iStream *Stream)noexcept
 
 	fWriteItemRing.Reset();
 
-	for(auto &Item : fWriteItem){
-		Item.SourceBuffer=cnSystem::DefaultHeap::Alloc(SourceBufferTotalSize,0);
-		Item.SourceBufferSize=0;
-	}
 	WriteQueueReportBufferAvailable(false);
 }
 //---------------------------------------------------------------------------
 bcWriteQueueFromStream::~bcWriteQueueFromStream()noexcept
 {
-	for(auto &Item : fWriteItem){
-		cnSystem::DefaultHeap::Free(Item.SourceBuffer,SourceBufferTotalSize,0);
-	}
 }
 //---------------------------------------------------------------------------
 void bcWriteQueueFromStream::NotificationClosed(void)noexcept
@@ -603,9 +634,13 @@ void bcWriteQueueFromStream::NotificationClosed(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
+uIntn bcWriteQueueFromStream::GetMaxWriteBufferSize(void)noexcept
+{
+	return WriteBufferSizeLimit;
+}
+//---------------------------------------------------------------------------
 cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {	UnusedParameter(QuerySize);	// ignore query size, just return whatever
-#pragma message (cnLib_FILE_LINE ": TODO dynamic expand buffer")
 
 	uInt8 ItemIndex;
 	if(fWriteItemRing.ReserveItem<0>(ItemIndex)==false){
@@ -616,9 +651,17 @@ cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	cnLib_ASSERT(Item.SourceBufferSize==0);
 	Item.SourceBufferSize=0;
 
+	if(QuerySize>Item.SourceBuffer.Length){
+		QuerySize=BufferSizeRoundup(QuerySize);
+		if(QuerySize>WriteBufferSizeLimit){
+			QuerySize=WriteBufferSizeLimit;
+		}
+		Item.SourceBuffer.SetLength(QuerySize);
+	}
+
 	cMemory Buffer;
-	Buffer.Pointer=Item.SourceBuffer;
-	Buffer.Length=SourceBufferTotalSize;
+	Buffer.Pointer=Item.SourceBuffer.Pointer;
+	Buffer.Length=Item.SourceBuffer.Length;
 	return Buffer;
 }
 //---------------------------------------------------------------------------
@@ -630,7 +673,12 @@ void bcWriteQueueFromStream::CommitWriteBuffer(uIntn Size)noexcept
 		return;
 	}
 	auto &Item=fWriteItem[ItemIndex];
-	Item.SourceBufferSize=Size;
+	if(Size>Item.SourceBuffer.Length){
+		Item.SourceBufferSize=Item.SourceBuffer.Length;
+	}
+	else{
+		Item.SourceBufferSize=Size;
+	}
 
 	SendWriteBuffer(Item);
 }
