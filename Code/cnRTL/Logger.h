@@ -48,7 +48,7 @@ protected:
 class cLogStream
 {
 public:
-	cLogStream(bcLog *Log,cString<uChar16> Path)noexcept(true);
+	cLogStream(bcLog *Log,ufInt8 Level,cString<uChar16> Path)noexcept(true);
 
 	cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> StreamWriteBuffer(void)noexcept(true);
 	void CommitWriteBuffer(void)noexcept(true);
@@ -62,6 +62,7 @@ public:
 
 protected:
 	bcLog *fLog;
+	ufInt8 fLevel;
 	cString<uChar16> fPath;
 	cStringBuffer<uChar16> fTextBuffer;
 
@@ -72,7 +73,7 @@ protected:
 class cLogVoidStream
 {
 public:
-	cLogVoidStream(bcLog*,const uChar16*)noexcept(true){}
+	cLogVoidStream(bcLog*,ufInt8,const uChar16*)noexcept(true){}
 
 	cnStream::cVoidStreamBuffer<uChar16> StreamWriteBuffer(void)noexcept(true){	return cnStream::VoidStreamWriteBuffer<uChar16>();	}
 	void CommitWriteBuffer(void)noexcept(true){}
@@ -89,12 +90,12 @@ public:
 
 	template<uIntn Level,class TPath>
 	typename cnVar::TSelect<Level<LogLevel,cLogStream,cLogVoidStream>::Type MakeLogStream(TPath &&Path)noexcept(true){
-		return {this,cnVar::MoveCast(Path)};
+		return {this,Level,cnVar::MoveCast(Path)};
 	}
 
 	template<uIntn Level,class TPath,class...TArgs>
 	void Report(TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
-		typename cnVar::TSelect<Level<LogLevel,cLogStream,cLogVoidStream>::Type LogStream(this,cnVar::MoveCast(Path));
+		typename cnVar::TSelect<Level<LogLevel,cLogStream,cLogVoidStream>::Type LogStream(this,Level,cnVar::MoveCast(Path));
 		return LogStream.Report(FormatString,cnVar::Forward<TArgs>(Args)...);
 	}
 };

@@ -6,12 +6,14 @@ using namespace cnRTL;
 using namespace siPOSIX;
 
 
-#if 0
-
-
+//---------------------------------------------------------------------------
+iPtr<iFileStream> POSIXInterface::FSOpenFileStream(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
+{
+	return nullptr;
+}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-int siPOSIX::ConvertOpenFileFlags(eFileAccess AccessMode,eFileCreate CreateFlag)
+int siPOSIX::ConvertOpenFileFlags(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	int oflag=0;
 	switch(AccessMode&(FileAccess::Read|FileAccess::Write)){
@@ -44,17 +46,17 @@ int siPOSIX::ConvertOpenFileFlags(eFileAccess AccessMode,eFileCreate CreateFlag)
 //---------------------------------------------------------------------------
 #ifdef	siOS_POSIX_ENABLE_CODESETCONVERT
 //---------------------------------------------------------------------------
-cICONVTextEncodingConverter::cICONVTextEncodingConverter(iconv_t ConvHandle)
+cICONVTextEncodingConverter::cICONVTextEncodingConverter(iconv_t ConvHandle)noexcept
 	: fConvHandle(ConvHandle)
 {
 }
 //---------------------------------------------------------------------------
-cICONVTextEncodingConverter::~cICONVTextEncodingConverter()
+cICONVTextEncodingConverter::~cICONVTextEncodingConverter()noexcept
 {
 	iconv_close(fConvHandle);
 }
 //---------------------------------------------------------------------------
-uIntn cICONVTextEncodingConverter::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)
+uIntn cICONVTextEncodingConverter::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
 {
 	size_t inbytes=SrcSize;
 	size_t outbytes=DestSize;
@@ -77,27 +79,27 @@ uIntn cICONVTextEncodingConverter::Convert(void *Dest,uIntn DestSize,const void 
 #endif	// siOS_POSIX_ENABLE_CODESETCONVERT
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cFileSeqStream::cFileSeqStream(int FileHandle)
+cFileSeqStream::cFileSeqStream(int FileHandle)noexcept
 {
 	fFileHandle=FileHandle;
 	fEndOfReading=false;
 }
 //---------------------------------------------------------------------------
-cFileSeqStream::~cFileSeqStream()
+cFileSeqStream::~cFileSeqStream()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cFileSeqStream::Close(void)
+void cFileSeqStream::Close(void)noexcept
 {
 	close(fFileHandle);
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::IsEndOfReading(void)
+bool cFileSeqStream::IsEndOfReading(void)noexcept
 {
 	return fEndOfReading;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::SetEndOfStream(void)
+bool cFileSeqStream::SetEndOfStream(void)noexcept
 {
 	off_t off=lseek(fFileHandle,0,SEEK_CUR);
 	if(off<0)
@@ -105,7 +107,7 @@ bool cFileSeqStream::SetEndOfStream(void)
 	return ftruncate(fFileHandle,off)==0;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cFileSeqStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	auto ret=read(fFileHandle,Buffer,Size);
 	if(ret<0){
@@ -119,7 +121,7 @@ bool cFileSeqStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
+bool cFileSeqStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 {
 	auto ret=write(fFileHandle,Buffer,Size);
 	if(ret>=0){
@@ -130,7 +132,7 @@ bool cFileSeqStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)
 	return false;
 }
 //---------------------------------------------------------------------------
-uInt64 cFileSeqStream::GetPointer(void)
+uInt64 cFileSeqStream::GetPointer(void)noexcept
 {
 	off_t o=lseek(fFileHandle,0,SEEK_CUR);
 	if(o==-1){
@@ -139,38 +141,38 @@ uInt64 cFileSeqStream::GetPointer(void)
 	return o;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::MovePointerBegin(uInt64 Offset)
+bool cFileSeqStream::MovePointerBegin(uInt64 Offset)noexcept
 {
 	off_t o=lseek(fFileHandle,Offset,SEEK_SET);
 	return o!=-1;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::MovePointerCurrent(sInt64 Offset)
+bool cFileSeqStream::MovePointerCurrent(sInt64 Offset)noexcept
 {
 	off_t o=lseek(fFileHandle,Offset,SEEK_CUR);
 	return o!=-1;
 }
 //---------------------------------------------------------------------------
-bool cFileSeqStream::MovePointerEnd(sInt64 Offset)
+bool cFileSeqStream::MovePointerEnd(sInt64 Offset)noexcept
 {
 	off_t o=lseek(fFileHandle,Offset,SEEK_END);
 	return o!=-1;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-static cStringBuffer<char> CreateUnixFileName(const char *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth)
+static cStringBuffer<char> CreateUnixFileName(const char *BasePath,uIntn BasePathLength,const uChar16*const *Path,uIntn Depth)noexcept
 {
 
 	cStringBuffer<char> FileName(BasePath,BasePathLength);
 	cStringBuffer<char> NameBuffer;
 	for(uIntn i=0;i<Depth;i++){
 		NameBuffer.Clear();
-		auto Converter=cnSystem::UnicodeTranscoder(1,2);
-		cnString::ConvertEncodingToStream(cnStream::ArrayStreamWriteBuffer(NameBuffer.Storage()),Converter,Path[i],cnString::GetLength(Path[i]));
+		auto Converter=cnRTL::UnicodeTranscoder(1,2);
+		StringStream::WriteConvertEncoding(NameBuffer.StreamWriteBuffer(),Converter,Path[i],cnString::FindLength(Path[i]));
 		uIntn Length8=NameBuffer.GetLength();
 		if(Length8!=0){
 			uIntn si=FileName.GetLength();
-			FileName.Append(1+Length8);
+			FileName.Append(nullptr,1+Length8);
 			auto pStr=&FileName[si];
 			*pStr='/';
 			pStr++;
@@ -182,78 +184,83 @@ static cStringBuffer<char> CreateUnixFileName(const char *BasePath,uIntn BasePat
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cStringFileName::cStringFileName(cStringPath FilePath)
+cStringFileName::cStringFileName(cStringPath FilePath)noexcept
 	: fFilePath(cnVar::MoveCast(FilePath))
 {
 }
 //---------------------------------------------------------------------------
-cStringFileName::~cStringFileName()
+cStringFileName::~cStringFileName()noexcept
 {
 }
 //---------------------------------------------------------------------------
-eOrdering cStringFileName::Compare(const iFileName *Dest)const
+eiOrdering cStringFileName::Compare(iFileName *Dest)noexcept
 {
 	auto DestFileName=iCast<iPOSIXFileName>(Dest);
 	if(DestFileName==nullptr)
-		return Ordering::Different;
+		return iOrdering::Different;
 
 
 
 	sfInt8 Cmp=cnString::Compare(fFilePath.GetPath()->Pointer,DestFileName->GetPOSIXFileName());
 	if(Cmp==0)
-		return Ordering::Equal;
+		return iOrdering::Equal;
 	if(Cmp<0)
-		return Ordering::Less;
-	return Ordering::Greater;
+		return iOrdering::Less;
+	return iOrdering::Greater;
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cStringFileName::EnumFolder(void)
+rPtr<iFileEnumerator> cStringFileName::EnumFolder(void)noexcept
 {
 	auto &Path=fFilePath.GetPath();
 	return FileSystemEnum(Path,Path->Length,nullptr);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncNotification> cStringFileName::WatchFolder(void)
+rPtr<iAsyncNotification> cStringFileName::WatchFolder(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iFileObserver> cStringFileName::ObserveFolder(void)
+rPtr<iFileObserver> cStringFileName::ObserveFolder(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileSyncStream> cStringFileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileSyncStream> cStringFileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	return FileSystemOpenSeqStream(fFilePath,AccessMode,CreateFlag);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileStream> cStringFileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileStream> cStringFileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	return POSIXInterface::FSOpenFileStream(fFilePath,AccessMode,CreateFlag);
 }
 //---------------------------------------------------------------------------
-bool cStringFileName::IsExists(void)
+bool cStringFileName::IsExists(void)noexcept
 {
 	return FileSystemIsFileExists(fFilePath);
 }
 //---------------------------------------------------------------------------
-uInt64 cStringFileName::GetDataSize(void)
+uInt64 cStringFileName::GetDataSize(void)noexcept
 {
 	return FileSystemGetFileSize(fFilePath);
 }
 //---------------------------------------------------------------------------
-bool cStringFileName::HasData(void)
+bool cStringFileName::HasData(void)noexcept
 {
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cStringFileName::HasFolder(void)
+bool cStringFileName::HasFolder(void)noexcept
 {
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cStringFileName::CreateFolder(void)
+bool cStringFileName::Delete(void)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
+bool cStringFileName::CreateFolder(void)noexcept
 {
 	if(::mkdir(fFilePath,0777)==0)
 		return true;
@@ -261,36 +268,36 @@ bool cStringFileName::CreateFolder(void)
 	return false;
 }
 //---------------------------------------------------------------------------
-uIntn cStringFileName::CreateFolderPath(void)
+uIntn cStringFileName::CreateFolderPath(void)noexcept
 {
 #pragma message ("TODO - CreateFolderPath")
 	return uintMax;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cStringFileName::ParentFileName(void)
+iPtr<iFileName> cStringFileName::ParentFileName(void)noexcept
 {
 	if(fFilePath.GetDepth()<=1)
 		return nullptr;	// no parent
 	return iCreate<cStringFileName>(fFilePath.MakeParentName());
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cStringFileName::EnumFileNames(const uChar16 *Filter)
+rPtr<iFileEnumerator> cStringFileName::EnumFileNames(const uChar16 *Filter)noexcept
 {
 	auto &Path=fFilePath.GetPath();
 	return FileSystemEnum(Path,Path->Length,Filter);
 }
 //---------------------------------------------------------------------------
-const uChar16* cStringFileName::GetName(void)
+const uChar16* cStringFileName::GetName(void)noexcept
 {
 	return fFilePath.GetName();
 }
 //---------------------------------------------------------------------------
-uIntn cStringFileName::GetNameLength(void)
+uIntn cStringFileName::GetNameLength(void)noexcept
 {
 	return fFilePath.GetName().GetLength();
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cStringFileName::MakeName(const uChar16*const *Path,uIntn Depth)
+iPtr<iFileName> cStringFileName::MakeName(const uChar16*const *Path,uIntn Depth)noexcept
 {
 	auto NewFileName=fFilePath.MakeFileName(Path,Depth);
 	if(NewFileName.GetPathLength()==0)
@@ -298,28 +305,28 @@ iPtr<iFileName> cStringFileName::MakeName(const uChar16*const *Path,uIntn Depth)
 	return iCreate<cStringFileName>(cnVar::MoveCast(NewFileName));
 }
 //---------------------------------------------------------------------------
-const uChar8* cStringFileName::GetPOSIXFileName(void)
+const uChar8* cStringFileName::GetPOSIXFileName(void)noexcept
 {
 	return fFilePath;
 }
 //---------------------------------------------------------------------------
-uIntn cStringFileName::GetPOSIXFileNameLength(void)
+uIntn cStringFileName::GetPOSIXFileNameLength(void)noexcept
 {
 	return fFilePath.GetPathLength();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cFolderEnum::cFolderEnum(FTS *FindHandle)
+cFolderEnum::cFolderEnum(FTS *FindHandle)noexcept
 {
 	fFindHandle=FindHandle;
 }
 //---------------------------------------------------------------------------
-cFolderEnum::~cFolderEnum()
+cFolderEnum::~cFolderEnum()noexcept
 {
 	fts_close(fFindHandle);
 }
 //---------------------------------------------------------------------------
-iFile* cFolderEnum::GetCurrentFile(void)
+iFile* cFolderEnum::GetCurrentFile(void)noexcept
 {
 	cStringBuffer<char> Name;
 	Name.SetString(fCurrentFile->fts_name,fCurrentFile->fts_namelen);
@@ -330,7 +337,7 @@ iFile* cFolderEnum::GetCurrentFile(void)
 	return fCurrentFileName;
 }
 //---------------------------------------------------------------------------
-bool cFolderEnum::Fetch(void)
+bool cFolderEnum::Fetch(void)noexcept
 {
 	fCurrentFileName=nullptr;
 	fCurrentFile=fts_read(fFindHandle);
@@ -351,7 +358,7 @@ bool cFolderEnum::Fetch(void)
 	return true;
 }
 //---------------------------------------------------------------------------
-int siPOSIX::FileSystemOpenFD(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+int siPOSIX::FileSystemOpenFD(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	int oflag=0;
 	switch(AccessMode&(FileAccess::Read|FileAccess::Write)){
@@ -382,7 +389,7 @@ int siPOSIX::FileSystemOpenFD(const char *FileName,eFileAccess AccessMode,eFileC
 	return open(FileName,oflag,S_IRWXU);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileSyncStream> siPOSIX::FileSystemOpenSeqStream(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileSyncStream> siPOSIX::FileSystemOpenSeqStream(const char *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
 {
 	int FileHandle=FileSystemOpenFD(FileName,AccessMode,CreateFlag);
 	if(FileHandle==-1)
@@ -391,7 +398,7 @@ iPtr<iFileSyncStream> siPOSIX::FileSystemOpenSeqStream(const char *FileName,eFil
 	return iCreate<siPOSIX::cFileSeqStream>(FileHandle);
 }
 //---------------------------------------------------------------------------
-uInt64 siPOSIX::FileSystemGetFileSize(const char *FileName)
+uInt64 siPOSIX::FileSystemGetFileSize(const char *FileName)noexcept
 {
 	struct stat fs;
 	if(stat(FileName,&fs)!=0){
@@ -401,7 +408,7 @@ uInt64 siPOSIX::FileSystemGetFileSize(const char *FileName)
 	return fs.st_size;
 }
 //---------------------------------------------------------------------------
-bool siPOSIX::FileSystemIsFileExists(const char *FileName)
+bool siPOSIX::FileSystemIsFileExists(const char *FileName)noexcept
 {
 	if(access(FileName,F_OK)==0){
 		// exists
@@ -410,7 +417,7 @@ bool siPOSIX::FileSystemIsFileExists(const char *FileName)
 	return false;
 }
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromTemporaryFile(uInt64 Size)
+rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromTemporaryFile(uInt64 Size)noexcept
 {
 	static const char TempFileNameValue[]="/tmp/swap_file_XXXXX";
 	char TempFileName[sizeof(TempFileNameValue)];
@@ -431,7 +438,7 @@ rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromTemporaryFile(uInt64 S
 
 }
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromFile(const char *FileName,uInt64 Size,eFileAccess AccessMode)
+rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromFile(const char *FileName,uInt64 Size,eFileAccess AccessMode)noexcept
 {
 	if(FileName==nullptr){
 		return nullptr;
@@ -464,7 +471,7 @@ rPtr<iSwapMemory>		siPOSIX::FileSystemCreateSwapMemoryFromFile(const char *FileN
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> siPOSIX::FileSystemEnum(const char *FolderName,uIntn FolderNameLength,const uChar16 *Filter)
+rPtr<iFileEnumerator> siPOSIX::FileSystemEnum(const char *FolderName,uIntn FolderNameLength,const uChar16 *Filter)noexcept
 {
 	cString<char> TempName;
 
@@ -487,7 +494,7 @@ rPtr<iFileEnumerator> siPOSIX::FileSystemEnum(const char *FolderName,uIntn Folde
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> siPOSIX::FileSystemCreateTemporaryFile(const char *FolderName)
+iPtr<iFileName> siPOSIX::FileSystemCreateTemporaryFile(const char *FolderName)noexcept
 {
 	char TempFileTemplate[]="tmpXXXXXX.tmp";
 	mkstemp(TempFileTemplate);
@@ -498,4 +505,3 @@ iPtr<iFileName> siPOSIX::FileSystemCreateTemporaryFile(const char *FolderName)
 }
 //---------------------------------------------------------------------------
 
-#endif // 0

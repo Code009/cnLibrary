@@ -115,7 +115,7 @@ struct aTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
 
 	static void Release(T* const &Token)noexcept(true){
 		if(Token!=nullptr){
-			typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
+			cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 				cCPPLifeCycleSharedManager<T>,
 				cVirtualLifeCycleSharedManager<T>
 			>::Type::tLifeCycleActivation::Stop(Token);
@@ -133,18 +133,20 @@ inline aPtr<T> aTake(T *Object)noexcept(true)
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline typename cnVar::TSelect<0,aPtr<T>
-	, decltype(new T)
->::Type aCreate(void)noexcept(true)
+//inline typename cnVar::TSelect<0,aPtr<T>
+//	, decltype(new T)
+//>::Type aCreate(void)noexcept(true)
+inline aPtr<T> aCreate(void)noexcept(true)
 {
 	auto Object=new T;
 	aTokenOperator<T>::ManageShared(Object);
 	return aPtr<T>::TakeFromManual(Object);
 }
 template<class T,class...TArgs>
-inline typename cnVar::TSelect<0,aPtr<T>
-	, decltype(new T(cnVar::DeclVal<T>()))
->::Type aCreate(TArgs&&...Args)noexcept(true)
+//inline typename cnVar::TSelect<0,aPtr<T>
+//	, decltype(new T(cnVar::DeclVal<T>()))
+//>::Type aCreate(TArgs&&...Args)noexcept(true)
+inline aPtr<T> aCreate(TArgs&&...Args)noexcept(true)
 {
 	auto Object=new T(static_cast<TArgs&&>(Args)...);
 	aTokenOperator<T>::ManageShared(Object);
@@ -290,9 +292,10 @@ struct TReferenceLifeCycleTypes
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline typename cnVar::TSelect<0,rPtr<T>
-	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject)
->::Type rCreate(void)noexcept(true)
+//inline typename cnVar::TSelect<0,rPtr<T>
+//	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject)
+//>::Type rCreate(void)noexcept(true)
+inline rPtr<T> rCreate(void)noexcept(true)
 {
 	typedef typename TReferenceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject;
@@ -302,9 +305,10 @@ inline typename cnVar::TSelect<0,rPtr<T>
 }
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
-inline typename cnVar::TSelect<0,rPtr<T>
-	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
->::Type rCreate(TArgs&&...Args)noexcept(true)
+//inline typename cnVar::TSelect<0,rPtr<T>
+//	, decltype(new typename TReferenceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
+//>::Type rCreate(TArgs&&...Args)noexcept(true)
+inline rPtr<T> rCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef typename TReferenceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject(cnVar::Forward<TArgs>(Args)...);
@@ -398,9 +402,10 @@ struct TInterfaceLifeCycleTypes
 };
 //---------------------------------------------------------------------------
 template<class T>
-inline typename cnVar::TSelect<0,iPtr<T>
-	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject)
->::Type iCreate(void)noexcept(true)
+//inline typename cnVar::TSelect<0,iPtr<T>
+//	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject)
+//>::Type iCreate(void)noexcept(true)
+inline iPtr<T> iCreate(void)noexcept(true)
 {
 	typedef typename TInterfaceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject;
@@ -410,9 +415,10 @@ inline typename cnVar::TSelect<0,iPtr<T>
 }
 //---------------------------------------------------------------------------
 template<class T,class...TArgs>
-inline typename cnVar::TSelect<0,iPtr<T>
-	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
->::Type iCreate(TArgs&&...Args)noexcept(true)
+//inline typename cnVar::TSelect<0,iPtr<T>
+//	, decltype(new typename TInterfaceLifeCycleTypes<T>::tLifeCycleObject(cnVar::DeclVal<TArgs>()...))
+//>::Type iCreate(TArgs&&...Args)noexcept(true)
+inline iPtr<T> iCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef typename TInterfaceLifeCycleTypes<T>::tLifeCycleManager tLifeCycleManager;
 	auto Object=new typename tLifeCycleManager::tLifeCycleObject(cnVar::Forward<TArgs>(Args)...);
@@ -782,6 +788,8 @@ public:
 	>::Type tLifeCycleManager;
 
 	friend bcVirtualLifeCycle::cActivation<aCls>;
+	friend tLifeCycleManager;
+
 protected:
 
 	void RefClassAcquireReference(void)noexcept(true){	RefInc();	}
@@ -834,6 +842,9 @@ class arCls : public T
 	friend cAutoRecyclableClassRefTokenOperator<const T>;
 	friend cAutoClassWeakRefTokenOperator<arCls>;
 
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
+		cCPPLifeCycleRecyclableInstance,cVirtualLifeCycleRecyclableInstance
+	>::Type tLifeCycleInstance;
 public:
 	typedef T tClass;
 	using T::T;
@@ -844,19 +855,18 @@ public:
 	{
 		static void Start(TLifeCycleObject *Object)noexcept(true){
 			Object->arCls::RefReset();
-			cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
-				, cCPPLifeCycleRecyclableInstance::tActivation<arCls>
-				, cVirtualLifeCycleRecyclableInstance::tActivation<arCls>
-			>::Type::Start(Object);
+			tLifeCycleInstance::template tActivation<arCls>::Start(Object);
 		}
 		static void Stop(TLifeCycleObject *Object)noexcept(true){
 			Object->arCls::RefInvalidate();
-			cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
-				, cCPPLifeCycleRecyclableInstance::tActivation<arCls>
-				, cVirtualLifeCycleRecyclableInstance::tActivation<arCls>
-			>::Type::Stop(Object);
+			tLifeCycleInstance::template tActivation<arCls>::Stop(Object);
 		}
 	};
+
+	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
+		, bcCPPLifeCycleRecyclableManager< arCls,cRecyclableObjectAllocator<arCls> >
+		, bcVirtualLifeCycleRecyclableManager< arCls,cRecyclableObjectAllocator<arCls> >
+	>::Type tBaseLifeCycleManager;
 
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 		, cCPPLifeCycleRecyclableSharedManager<arCls,cRecyclableObjectAllocator<arCls> >
@@ -868,7 +878,10 @@ public:
 		, cVirtualLifeCycleRecyclableManager< arCls,cRecyclableObjectAllocator<arCls> >
 	>::Type tLifeCycleManager;
 
+	friend tLifeCycleInstance;
 	friend bcVirtualLifeCycle::cActivation<arCls>;
+	friend tBaseLifeCycleManager;
+	friend cRecyclableObjectAllocator<arCls>;
 
 protected:
 
@@ -953,9 +966,10 @@ inline aCls<T>* aClsExtract(aClsRef<T> &Src,uInt32 Tag)noexcept(true)
 }
 //---------------------------------------------------------------------------
 template<class T>
-inline typename cnVar::TSelect<0,aClsRef<T>
-	, decltype(new aCls<T>)
->::Type aClsCreate(void)noexcept(true)
+//inline typename cnVar::TSelect<0,aClsRef<T>
+//	, decltype(new aCls<T>)
+//>::Type aClsCreate(void)noexcept(true)
+inline aClsRef<T> aClsCreate(void)noexcept(true)
 {
 	auto NewObject=new aCls<T>;
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);
@@ -964,9 +978,10 @@ inline typename cnVar::TSelect<0,aClsRef<T>
 }
 
 template<class T,class...TArgs>
-inline typename cnVar::TSelect<0,aClsRef<T>
-	, decltype(new aCls<T>(cnVar::DeclVal<TArgs>()...))
->::Type aClsCreate(TArgs&&...Args)noexcept(true)
+//inline typename cnVar::TSelect<0,aClsRef<T>
+//	, decltype(new aCls<T>(cnVar::DeclVal<TArgs>()...))
+//>::Type aClsCreate(TArgs&&...Args)noexcept(true)
+inline aClsRef<T> aClsCreate(TArgs&&...Args)noexcept(true)
 {
 	auto NewObject=new aCls<T>(cnVar::Forward<TArgs>(Args)...);
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);

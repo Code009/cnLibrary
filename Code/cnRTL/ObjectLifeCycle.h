@@ -199,7 +199,7 @@ struct cCPPLifeCycleRecyclableInstance
 		virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true)=0;
 	};
 
-	cCPPLifeCycleRecyclableInstance *Next;
+	cCPPLifeCycleRecyclableInstance *LifeCycleManagerNext;
 	bcManager *LifeCycleManager;
 };
 //---------------------------------------------------------------------------
@@ -217,7 +217,7 @@ public:
 	typedef TLifeCycleObject tLifeCycleObject;
 	typedef typename tLifeCycleObject::template tActivation<tLifeCycleObject> tLifeCycleActivation;
 
-	static_assert(cnVar::TIsConvertible<TLifeCycleObject*,cCPPLifeCycleRecyclableInstance*>::Value,"Incorrect Instance");
+	//static_assert(cnVar::TIsConvertible<TLifeCycleObject*,cCPPLifeCycleRecyclableInstance*>::Value,"Incorrect Instance");
 
 	void Manage(tLifeCycleObject *Object)noexcept(true){	return bcManager::Manage(Object);	}
 
@@ -239,10 +239,10 @@ public:
 		}
 
 		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
-			return static_cast<tLifeCycleObject*>(Item->cCPPLifeCycleRecyclableInstance::Next);
+			return static_cast<tLifeCycleObject*>(Item->cCPPLifeCycleRecyclableInstance::LifeCycleManagerNext);
 		}
 		static void SetNext(tLifeCycleObject *Item,tLifeCycleObject *Next)noexcept(true){
-			Item->cCPPLifeCycleRecyclableInstance::Next=Next;
+			Item->cCPPLifeCycleRecyclableInstance::LifeCycleManagerNext=Next;
 		}
 	};
 
@@ -255,11 +255,10 @@ public:
 		return LCObject;
 	}
 
-	tLifeCycleObject* Query(void)noexcept(noexcept(new tLifeCycleObject)){
+	tLifeCycleObject* Query(void)noexcept(noexcept(TRecyclableObjectAllocator::New())){
 		auto LCObject=fRecycleStack.Pop();
 		if(LCObject==nullptr){
 			LCObject=TRecyclableObjectAllocator::New();
-			LCObject=new tLifeCycleObject;
 			Manage(LCObject);
 		}
 		Restore(LCObject);
@@ -270,18 +269,17 @@ public:
 
 protected:
 
-	tLifeCycleObject* FetchObjects(void){
+	tLifeCycleObject* FetchObjects(void)noexcept(true){
 		return fRecycleStack.Swap(nullptr);
 	}
 
-	void DeleteObjects(void)noexcept(true){
+	void DeleteObjects(void)noexcept(noexcept(TRecyclableObjectAllocator::Delete(cnVar::DeclVal<tLifeCycleObject*>()))){
 		auto ItemsToDelete=fRecycleStack.Swap(nullptr);
 		while(ItemsToDelete!=nullptr){
 			auto DeleteObject=ItemsToDelete;
 			ItemsToDelete=cSingleLinkItemOperator::GetNext(ItemsToDelete);
 
 			TRecyclableObjectAllocator::Delete(DeleteObject);
-			delete DeleteObject;
 		}
 	}
 
@@ -390,10 +388,10 @@ public:
 		}
 
 		static tLifeCycleObject* GetNext(const tLifeCycleObject *Item)noexcept(true){
-			return static_cast<tLifeCycleObject*>(Item->cVirtualLifeCycleRecyclableInstance::Next);
+			return static_cast<tLifeCycleObject*>(Item->cVirtualLifeCycleRecyclableInstance::LifeCycleManagerNext);
 		}
 		static void SetNext(tLifeCycleObject *Item,tLifeCycleObject *Next)noexcept(true){
-			Item->cVirtualLifeCycleRecyclableInstance::Next=Next;
+			Item->cVirtualLifeCycleRecyclableInstance::LifeCycleManagerNext=Next;
 		}
 	};
 

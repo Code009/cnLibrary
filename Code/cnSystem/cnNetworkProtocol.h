@@ -50,6 +50,22 @@ cnLib_ENUM_BEGIN(ufInt8,GATTFunctionState)
 	Inactive,
 	Active,
 }cnLib_ENUM_END(GATTFunctionState);
+
+cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties)
+{
+	None					=0x00,
+	Broadcast				=0x01,
+	Read					=0x02,
+	WriteWithoutResponse	=0x04,
+	Write					=0x08,
+	Notify					=0x10,
+	Indicate				=0x20,
+	AuthenticatedSignedWrites =0x40,
+	ExtendedProperties		=0x80,
+//	ReliableWrites			=0x100,
+//	WritableAuxiliaries		=0x200,
+}cnLib_INTENUM_END(GATTCharacteristicProperties);
+
 cnLib_ENUM_BEGIN(ufInt8,GATTCharacteristicNotification)
 {
 	None,
@@ -98,6 +114,7 @@ class cnLib_INTERFACE iGATTCharacteristicHandler
 public:
 	virtual void cnLib_FUNC GATTCharacteristStateChanged(void)noexcept(true)=0;
 
+	virtual void cnLib_FUNC GATTCharacteristEffectiveValueNotificationChanged(void)noexcept(true)=0;
 	virtual void cnLib_FUNC GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -115,11 +132,12 @@ public:
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)=0;
 
 	virtual rPtr< iArrayReference<const void> > cnLib_FUNC Read(void)noexcept(true)=0;
-
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)=0;
 
-	virtual iPtr< iAsyncFunction<bool> > cnLib_FUNC ConfigureNotification(eGATTCharacteristicNotification Notification)noexcept(true)=0;
+	virtual eGATTCharacteristicNotification cnLib_FUNC EffectiveValueNotification(void)noexcept(true)=0;
+	virtual eGATTCharacteristicNotification cnLib_FUNC GetValueNotification(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SetValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTCharacteristicObserver: public iAsyncNotification
@@ -165,6 +183,16 @@ public:
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
 	virtual rPtr<iGATTService> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)=0;
 	virtual iPtr<iAsyncTask> cnLib_FUNC ScanServices(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iGATTClient : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+
+	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cGATTUUID &ID)noexcept(true)=0;
+	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
+	
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTPeripheralHandler
@@ -268,6 +296,110 @@ public:
 
 	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC IsPowerOn(void)noexcept(true)=0;
+};
+
+
+//---------------------------------------------------------------------------
+class iGATTClientConnection : public iReference
+{
+public:
+	virtual eiOrdering cnLib_FUNC Compare(iGATTClientConnection *Dest)noexcept(true)=0;
+	virtual uIntn cnLib_FUNC GetMaxValueLength(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTClientSubscription
+{
+public:
+	virtual rPtr<iGATTClientConnection> cnLib_FUNC GetConnection(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServerDescriptor : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTDescriptorController
+{
+public:
+	virtual void cnLib_FUNC DescriptorClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorRead(iGATTClientConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorWrite(iGATTClientConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServerCharacteristic : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)=0;
+
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
+	virtual iGATTClientSubscription* cnLib_FUNC QuerySubscription(iGATTClientConnection *Connection)noexcept(true)=0;
+	virtual void cnLib_FUNC NotifyValue(iGATTClientSubscription *Subscription)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+struct cGATTCharacteristicParameter
+{
+	eGATTCharacteristicProperties Properties;
+	//eGATTProtectionLevel ReadProtection;
+	//eGATTProtectionLevel WriteProtection;
+};
+class iGATTCharacteristicController
+{
+public:
+	virtual void cnLib_FUNC CharacteristicClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC CharacteristicStateChanged(void)noexcept(true)=0;
+	virtual cGATTCharacteristicParameter cnLib_FUNC GetCharacteristicParameter(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ValueRead(iGATTClientConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC ValueWrite(iGATTClientConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
+	virtual void cnLib_FUNC ClientSubscribe(iGATTClientSubscription *Subscription)noexcept(true)=0;
+	virtual void cnLib_FUNC ClientUnsubscribe(iGATTClientSubscription *Subscription)noexcept(true)=0;
+	virtual bool cnLib_FUNC ValueNotify(iGATTClientSubscription *Subscription,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServerService : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)=0;
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetAdvertisementIncluded(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SetAdvertisementIncluded(bool Included)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServiceController
+{
+public:
+	virtual void cnLib_FUNC ServiceClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ServiceAdvertisementChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ServiceStateChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServerHandler
+{
+public:
+	virtual void cnLib_FUNC ServerClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ServerStateChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServer : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iGATTServerHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iGATTServerHandler *Handler)noexcept(true)=0;
+	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)=0;
+
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetAdvertisementActive(void)noexcept(true)=0;
+	virtual void cnLib_FUNC SetAdvertisementActive(bool Active)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{

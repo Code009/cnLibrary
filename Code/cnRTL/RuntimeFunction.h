@@ -637,6 +637,8 @@ public:
 	cnLib_CONSTEXPR_FUNC cExclusiveFlag():RunFlag(rfIdle){}
 	cnLib_CONSTEXPR_FUNC cExclusiveFlag(bool InitalRun):RunFlag(InitalRun?rfPending:rfIdle){}
 
+	void Reset(void)noexcept(true);
+
 	// Acquire
 	//	test if caller acquired the flag, if not ,request owner to continue
 	// return true if the flag is acquired

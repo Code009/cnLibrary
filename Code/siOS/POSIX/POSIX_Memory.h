@@ -39,12 +39,12 @@ class cMMapFile : public iSwapMemory
 	// _POSIX_SHARED_MEMORY_OBJECTS
 	// _POSIX_TYPED_MEMORY_OBJECTS
 public:
-	cMMapFile(int FileHandle,uIntn FileSize,int ProtectFlag=PROT_READ|PROT_WRITE);
-	~cMMapFile();
+	cMMapFile(int FileHandle,uIntn FileSize,int ProtectFlag=PROT_READ|PROT_WRITE)noexcept(true);
+	~cMMapFile()noexcept(true);
 
-	virtual uInt64	cnLib_FUNC GetSize(void)override;
-	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)override;
-	virtual bool	cnLib_FUNC Unmap(void *Pointer,uIntn Size)override;
+	virtual uInt64	cnLib_FUNC GetSize(void)noexcept(true)override;
+	virtual void*	cnLib_FUNC Map(uInt64 Offset,uIntn Size)noexcept(true)override;
+	virtual bool	cnLib_FUNC Unmap(void *Pointer,uIntn Size)noexcept(true)override;
 protected:
 	int fFileHandle;
 	int fProtectFlag;

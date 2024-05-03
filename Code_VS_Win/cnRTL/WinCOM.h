@@ -9,6 +9,12 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+template<class...T>
+struct TCOMInterfacePack
+	: cnVar::TTypePack<T...>
+{
+};
+//---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
 struct cBSTROwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<BSTR>
@@ -19,28 +25,13 @@ typedef cnVar::cPtrOwner<cBSTROwnerTokenOperator> apBSTR;
 //---------------------------------------------------------------------------
 apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
 BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
+
 //---------------------------------------------------------------------------
 inline IUnknown* iCastCOM(iInterface *Interface)noexcept(true){
 	auto COMInterface=iCast<iCOMInterface>(Interface);
 	if(COMInterface==nullptr)
 		return nullptr;
 	return COMInterface->GetCOMInterface();
-}
-//---------------------------------------------------------------------------
-template<class T>
-bool impCOMQueryInterface(T*,REFIID,_COM_Outptr_ void **)noexcept(true)
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-template<class TInterface,class...VT,class T>
-bool impCOMQueryInterface(T *Object,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)
-{
-	if(__uuidof(TInterface)==riid){
-		*ppvObject=static_cast<TInterface*>(Object);
-		return true;
-	}
-	return impCOMQueryInterface<VT...>(Object,riid,ppvObject);
 }
 //---------------------------------------------------------------------------
 template<class TFunction>
@@ -135,20 +126,6 @@ inline REFIID COMUUID(const COMPtr<T>&)noexcept(true){
 	return __uuidof(T);
 }
 //---------------------------------------------------------------------------
-// COM
-//---------------------------------------------------------------------------
-template<class TDestInterface,class T>
-inline COMPtr<TDestInterface> COMQueryInterface(const T &Src)noexcept(true)
-{
-	if(Src==nullptr)
-		return nullptr;
-	COMPtr<TDestInterface> ci;
-	HRESULT hr = Src->QueryInterface(__uuidof(TDestInterface),COMRetPtr(ci));
-	if(hr!=S_OK)
-		return nullptr;
-	return ci;
-}
-//---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
@@ -156,23 +133,150 @@ inline COMPtr<TDestInterface> COMQueryInterface(const T &Src)noexcept(true)
 namespace cnLib_THelper{
 namespace RTL_TH{
 //---------------------------------------------------------------------------
-template<class TCOMInterface>
-class cCOMImplementation : public TCOMInterface, public cnRTL::cRTLAllocator
+template<class TEnable,class TCOMImplementation>
+struct cCOMCallQueryInterface
+{
+	static bool COMQueryInterface(TCOMImplementation *,REFIID ,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *)noexcept(true)
+	{	return false;	}
+};
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+
+template<class TCOMImplementation>
+struct cCOMCallQueryInterface<typename cnVar::TSelect<0,void,decltype(&TCOMImplementation::COMQueryInterface)>::Type,TCOMImplementation>
+{
+	static bool COMQueryInterface(TCOMImplementation *Implementation,REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)
+	{	return Implementation->COMQueryInterface(riid,ppvObject);	}
+};
+#else
+
+#ifndef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+template<class TCOMImplementation>
+struct cCOMCallQueryInterface<typename cnVar::TTypeConditional<void,sizeof(bool)==sizeof(cnVar::DeclVal<TCOMImplementation>().COMQueryInterface(0,IID_IUnknown,0))>::Type,TCOMImplementation>
+{
+	static bool COMQueryInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)
+	{	return Implementation->COMQueryInterfcace(riid,ppvObject);	}
+};
+
+#endif // !cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+
+#endif
+//---------------------------------------------------------------------------
+template<bool CallCOMQueryInterface,class...TInterfaces>
+struct cCOMQueryInterfaceImplemenetaton;
+template<bool CallCOMQueryInterface>
+struct cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface>
+{
+	template<class TImplementation>
+	static bool FindInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		return cCOMCallQueryInterface<void,TImplementation>::COMQueryInterface(Implementation,riid,ppvObject);
+	}
+};
+template<>
+struct cCOMQueryInterfaceImplemenetaton<false>
+{
+	template<class TImplementation>
+	static bool FindInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		return false;
+	}
+};
+
+template<bool CallCOMQueryInterface,class TInterface,class...TInterfaces>
+struct cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TInterface,TInterfaces...>
+{
+	typedef TInterface tPrimaryInterface;
+
+	template<class TImplementation>
+	static bool FindInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		if(riid==__uuidof(TInterface)){
+			*ppvObject=static_cast<TInterface*>(Implementation);
+			return true;
+		}
+		return cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TInterfaces...>::FindInterface(Implementation,riid,ppvObject);
+	}
+
+	template<class TImplementation>
+	static bool ImplementQueryInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		if(riid==__uuidof(IUnknown)){
+			*ppvObject=static_cast<IUnknown*>(static_cast<TInterface*>(Implementation));
+			return true;
+		}
+		return FindInterface(Implementation,riid,ppvObject);
+	}
+};
+template<bool CallCOMQueryInterface,class...TPackInterfaces,class...TInterfaces>
+struct cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TCOMInterfacePack<TPackInterfaces...>,TInterfaces...>
+{
+	typedef typename cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TPackInterfaces...>::tPrimaryInterface tPrimaryInterface;
+
+	template<class TImplementation>
+	static bool FindInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		if(cCOMQueryInterfaceImplemenetaton<false,TPackInterfaces...>::FindInterface(Implementation,riid,ppvObject)){
+			return true;
+		}
+		return cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TInterfaces...>::FindInterface(Implementation,riid,ppvObject);
+	}
+
+	template<class TImplementation>
+	static bool ImplementQueryInterface(TImplementation *Implementation,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
+		if(cCOMQueryInterfaceImplemenetaton<false,TPackInterfaces...>::ImplementQueryInterface(Implementation,riid,ppvObject)){
+			return true;
+		}
+		return cCOMQueryInterfaceImplemenetaton<CallCOMQueryInterface,TInterfaces...>::FindInterface(Implementation,riid,ppvObject);
+	}
+};
+
+template<class TInterfaceTypePack>
+struct cCOMQueryInterface;
+
+template<class...TInterfaces>
+struct cCOMQueryInterface< TCOMInterfacePack<TInterfaces...> >
+	: cCOMQueryInterfaceImplemenetaton<true,TInterfaces...>{};
+
+//---------------------------------------------------------------------------
+}	// namespace RTL_TH
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnRTL{
+//---------------------------------------------------------------------------
+template<class TCOMObject>
+inline bool COMObjectQueryInterface(TCOMObject *Object,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)
+{
+	return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMObject::tCOMInterfacePack>::ImplementQueryInterface<TCOMObject>(Object,riid,ppvObject);
+}
+//---------------------------------------------------------------------------
+// COM
+//---------------------------------------------------------------------------
+template<class TDestInterface,class TCOMObject>
+inline TDestInterface* COMObjectQueryInterface(TCOMObject *Src)noexcept(true)
+{
+	if(Src==nullptr)
+		return nullptr;
+	TDestInterface *ci;
+	if(COMObjectQueryInterface(Src,__uuidof(TDestInterface),reinterpret_cast<void**>(&ci))){
+		return ci;
+	}
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+template<class TCOMImplementation>
+class cCOMImplementation : public TCOMImplementation, public cnRTL::cRTLAllocator
 {
 private:
 	cnRTL::cAtomicVar<uIntn> fRefCount=1;
+	
 public:
-	using TCOMInterface::TCOMInterface;
+	using TCOMImplementation::TCOMImplementation;
 	~cCOMImplementation()=default;
 
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)override{
-		if(riid==IID_IUnknown){
-			*ppvObject=TCOMInterface::COMUnknown();
-			fRefCount.Free++;
-			return S_OK;
-		}
-		if(TCOMInterface::COMQueryInterface(riid,ppvObject)){
-			fRefCount.Free++;
+
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)override{
+
+		if(COMObjectQueryInterface<TCOMImplementation>(this,riid,ppvObject)){
+			++fRefCount.Free;
 			return S_OK;
 		}
 		*ppvObject=nullptr;
@@ -185,28 +289,66 @@ public:
 	}
 
 	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
-		if(fRefCount.Free--==1){
+		if(--fRefCount.Free==0){
 			delete this;
 		}
 		return 0;
 	}
 };
 //---------------------------------------------------------------------------
-}	// namespace RTL_TH
-}	// namespace cnLib_THelper
-//---------------------------------------------------------------------------
-namespace cnLibrary{
-//---------------------------------------------------------------------------
-namespace cnRTL{
-//---------------------------------------------------------------------------
 template<class T>
 inline COMPtr<T> COMCreate(void)noexcept(true){
-	return COMPtr<T>::TakeFromManual(new cnLib_THelper::RTL_TH::cCOMImplementation<T>);
+	return COMPtr<T>::TakeFromManual(new cCOMImplementation<T>);
 }
 template<class T,class...TArgs>
 inline COMPtr<T> COMCreate(TArgs&&...Args)noexcept(true){
-	return COMPtr<T>::TakeFromManual(new cnLib_THelper::RTL_TH::cCOMImplementation<T>(cnVar::Forward<TArgs>(Args)...));
+	return COMPtr<T>::TakeFromManual(new cCOMImplementation<T>(cnVar::Forward<TArgs>(Args)...));
 }
+
+#if cnLibrary_CPPFEATURE_DECLTYPE >=200707L && cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO >= 201606L
+
+
+template<auto MemberOffset>
+struct cCOMInnerMemberInterfaceTranslator
+{
+	typedef typename cnLib_THelper::RTL_TH::cCOMQueryInterface<typename cnVar::TTypeComponent<decltype(MemberOffset)>::tClass::tCOMInterfacePack>
+		::tPrimaryInterface tPrimaryInterface;
+	
+	static tPrimaryInterface* GetPrimary(typename cnVar::TTypeComponent<decltype(MemberOffset)>::tMember *Object){
+		return static_cast<tPrimaryInterface*>(cnMemory::GetObjectFromMemberPointer(Object,MemberOffset));
+	}
+};
+
+template<class T,class TInnerMemberInterfaceTranslator>
+class COMInnerMember : public T
+{
+private:
+public:
+	//IUnknown *Outter;
+
+	using T::T;
+
+	bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true){
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::FindInterface<T>(this,riid,ppvObject);
+	}
+
+    virtual HRESULT STDMETHODCALLTYPE QueryInterface(
+        /* [in] */ REFIID riid,
+        /* [iid_is][out] */ _COM_Outptr_ void **ppvObject)noexcept(true)
+	{
+		return TInnerMemberInterfaceTranslator::GetPrimary(this)->QueryInterface(riid,ppvObject);
+	}
+
+    virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true){
+		return TInnerMemberInterfaceTranslator::GetPrimary(this)->AddRef();
+	}
+
+    virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true){
+		return TInnerMemberInterfaceTranslator::GetPrimary(this)->Release();
+	}
+};
+
+#endif // cnLibrary_CPPFEATURE_DECLTYPE >=200707L && cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO >= 201606L
 //---------------------------------------------------------------------------
 template<class T>
 class COMInnerObject : public T
@@ -216,6 +358,11 @@ public:
 	IUnknown *Outter;
 
 	using T::T;
+
+	
+	bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true){
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::FindInterface<T>(this,riid,ppvObject);
+	}
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
         /* [in] */ REFIID riid,
@@ -236,7 +383,7 @@ public:
 class iCOMInnerReference
 {
 public:
-	virtual void COMDelete(void)noexcept(true)=0;
+	virtual void COMInnerDelete(void)noexcept(true)=0;
 	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -247,20 +394,20 @@ public:
 namespace cnLib_THelper{
 namespace RTL_TH{
 //---------------------------------------------------------------------------
-template<class TCOMInterface>
-class cCOMInnerImplementation : public cnRTL::COMInnerObject<TCOMInterface>, public cnRTL::iCOMInnerReference, public cnRTL::cRTLAllocator
+template<class TCOMImplementation>
+class cCOMInnerImplementation : public cnRTL::COMInnerObject<TCOMImplementation>, public cnRTL::iCOMInnerReference, public cnRTL::cRTLAllocator
 {
 private:
 	cnRTL::cAtomicVar<uIntn> fRefCount=1;
 public:
-	using cnRTL::COMInnerObject<TCOMInterface>::COMInnerObject;
+	using cnRTL::COMInnerObject<TCOMImplementation>::COMInnerObject;
 	~cCOMInnerImplementation()=default;
 
-	virtual void COMDelete(void)noexcept(true)override{
+	virtual void COMInnerDelete(void)noexcept(true)override{
 		delete this;
 	}
 	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)override{
-		return TCOMInterface::COMQueryInterface(riid,ppvObject);
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMImplementation::tCOMInterfacePack>::FindInterface<TCOMImplementation>(this,riid,ppvObject);
 	}
 };
 //---------------------------------------------------------------------------
@@ -308,7 +455,7 @@ struct cCOMInnerOwnerTokenOperator
 
 	static void Release(const TOwnerToken &Token)noexcept(true){
 		if(Token.Reference!=nullptr)
-			Token.Reference->COMDelete();
+			Token.Reference->COMInnerDelete();
 	}
 };
 //---------------------------------------------------------------------------

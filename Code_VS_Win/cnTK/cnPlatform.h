@@ -280,10 +280,12 @@
 // c++11 exp SFINAE
 // c++17 Aggregate initialization of classes with base classes 
 // c++17 Class template argument deduction
-// c++17 Non-type template parameters with auto type 
 // c++17 Replacement of class objects containing reference members
 // c++17 Pack expansions in using-declarations
 #if _MSC_VER >= 1914
+
+// c++17 Non-type template parameters with auto type 
+#define	cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO	201606L
 
 #endif	// _MSC_VER >= 1914
 

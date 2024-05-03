@@ -113,12 +113,10 @@ cnLib_GlobalVar	iDatagramProtocol*const		cnSystem::UDP				=&cnWin::UDP;
 
 // UI
 
-// Console
-
-cnLib_GlobalVar	iTextStreamOutput*const		cnSystem::DebugLogStream	=&cnWin::DebugTextOutput;
-
-
 // cnWindows
+
+cnLib_GlobalVar	iTextStreamOutput*const		cnWindows::DebugLogStream	=&cnWin::DebugTextOutput;
+
 cnLib_GlobalVar	iWinThreadPool *const		cnWindows::DefaultThreadPool			=&vcDefaultThreadPool::gInstance;
 
 

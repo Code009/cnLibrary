@@ -59,8 +59,7 @@ public:
 	cOleInPlaceUIWindowComponent()noexcept(true);
 	~cOleInPlaceUIWindowComponent()noexcept(true);
 
-	IUnknown* COMUnknown(void)noexcept(true);
-    bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IOleInPlaceUIWindow,IOleWindow> tCOMInterfacePack;
 
 	cOLEInPlaceUIForm *ToolForm=nullptr;
 
@@ -98,8 +97,7 @@ public:
 	cOleInPlaceFrameComponent()noexcept(true);
 	~cOleInPlaceFrameComponent()noexcept(true);
 
-	IUnknown* COMUnknown(void)noexcept(true);
-    bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IOleWindow,IOleInPlaceUIWindow,IOleInPlaceFrame> tCOMInterfacePack;
 
 	cOLEInPlaceUIForm *ToolForm=nullptr;
 
@@ -158,8 +156,8 @@ protected:
 class bCOMOleClientSite : public IOleClientSite
 {
 public:
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	
+	typedef TCOMInterfacePack<IOleClientSite> tCOMInterfacePack;
 
 // IOleClientSite
 
@@ -202,8 +200,7 @@ class bCOMAdviseSink : public IAdviseSink
 {
 public:
 
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IAdviseSink> tCOMInterfacePack;
 
 // IAdviseSink
 
@@ -230,8 +227,8 @@ public:
 class bCOMOleControlSite : public IOleControlSite
 {
 public:
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	
+	typedef TCOMInterfacePack<IOleControlSite> tCOMInterfacePack;
 
 	// IOleControlSite
  
@@ -262,8 +259,7 @@ class bCOMDispatch : public IDispatch
 {
 public:
 
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IDispatch> tCOMInterfacePack;
 
 // IDispatch
 
@@ -311,8 +307,7 @@ public:
 
 	cOLEInPlaceControl *InPlaceControl;
 
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IOleWindow,IOleInPlaceSite> tCOMInterfacePack;
 
 protected:
 
@@ -373,7 +368,8 @@ public:
 
 	// COM
 
-	IUnknown* COMUnknown(void)noexcept(true);
+	typedef TCOMInterfacePack<bCOMOleClientSite::tCOMInterfacePack,bCOMAdviseSink::tCOMInterfacePack> tCOMInterfacePack;
+
 	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
 
 protected:
@@ -406,9 +402,10 @@ public:
 	void SetOleObject(IOleObject *OLEObject)noexcept(true);
 
 	// COM
-
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	
+	typedef TCOMInterfacePack<bCOMOleClientSite::tCOMInterfacePack
+		,bCOMOleControlSite::tCOMInterfacePack,bCOMDispatch::tCOMInterfacePack
+	> tCOMInterfacePack;
 
 protected:
 	// OLE Object
@@ -469,8 +466,7 @@ public:
 	cOLEInPlaceWindowlessControl *InPlaceControl;
 
 
-	IUnknown* COMUnknown(void)noexcept(true);
-	bool COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IOleWindow,IOleInPlaceSite,IOleInPlaceSiteEx,IOleInPlaceSiteWindowless> tCOMInterfacePack;
 
 protected:
 

@@ -5,6 +5,35 @@ using namespace cnRTL;
 using namespace cnRTL::UWP;
 
 //---------------------------------------------------------------------------
+namespace cnLibrary::cnRTL::UWP{
+//---------------------------------------------------------------------------
+class cCOMReleaseProcedure : public iProcedure,public cCPPLifeCycleRecyclableInstance,public cRTLAllocator
+{
+public:
+	COMPtr<IUnknown> Interface;
+
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
+		Interface=nullptr;
+	
+		cCPPLifeCycleRecyclableInstance::tActivation<cCOMReleaseProcedure>::Stop(this);
+	}
+};
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary::cnRTL::UWP
+//---------------------------------------------------------------------------
+void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept
+{
+	typedef cCPPLifeCycleRecyclableSharedManager< cCOMReleaseProcedure,cRecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
+
+	auto *Manager=tLifeCycleManager::GetSharedManager();
+	auto ReleaseProc=Manager->Query();
+
+	cCPPLifeCycleRecyclableInstance::tActivation<cCOMReleaseProcedure>::Start(ReleaseProc);
+	ReleaseProc->Interface=cnVar::MoveCast(Interface);
+
+	cnSystem::DefaultThreadPool->Execute(nullptr,ReleaseProc);
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cHStringReference::operator HSTRING()noexcept
 {
@@ -106,26 +135,29 @@ COMPtr<ABI::Windows::Storage::Streams::IBuffer> UWP::MakeBufferFromData(const vo
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUWPMemoryBuffer::COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept
+cUWPMemoryBufferWriteStreamBuffer::cUWPMemoryBufferWriteStreamBuffer(COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter)noexcept
+	: fDataWriter(cnVar::MoveCast(DataWriter))
 {
-	if(riid==__uuidof(IInspectable)){
-		*ppvObject=static_cast<IInspectable*>(this);
-		return true;
-	}
-	if(riid==__uuidof(IWeakReferenceSource)){
-		*ppvObject=static_cast<IWeakReferenceSource*>(this);
-		return true;
-	}
-	if(riid==__uuidof(ABI::Windows::Storage::Streams::IBuffer)){
-		*ppvObject=static_cast<ABI::Windows::Storage::Streams::IBuffer*>(this);
-		return true;
-	}
-	if(riid==__uuidof(Windows::Storage::Streams::IBufferByteAccess)){
-		*ppvObject=static_cast<Windows::Storage::Streams::IBufferByteAccess*>(this);
-		return true;
-	}
-	return false;
 }
+//---------------------------------------------------------------------------
+cUWPMemoryBufferWriteStreamBuffer::~cUWPMemoryBufferWriteStreamBuffer()noexcept
+{
+}
+//---------------------------------------------------------------------------
+cMemory cUWPMemoryBufferWriteStreamBuffer::ReserveWriteBuffer(uIntn Length)noexcept
+{
+	if(fBuffer.Length<Length){
+		fBuffer.SetLength(Length);
+	}
+
+	return fBuffer;
+}
+//---------------------------------------------------------------------------
+void cUWPMemoryBufferWriteStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept
+{
+	fDataWriter->WriteBytes(Length,static_cast<BYTE*>(fBuffer.Pointer));
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetWeakReference( /* [retval][out] */ __RPC__deref_out_opt IWeakReference **weakReference)noexcept
 {
@@ -176,6 +208,34 @@ HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::Buffer(byte **value)noexcept
 {
 	*value=reinterpret_cast<byte*>(Data.GetPointer());
 	return S_OK;
+}
+//---------------------------------------------------------------------------
+cMemory cUWPMemoryBuffer::ReserveWriteBuffer(uIntn Length)noexcept
+{
+	uIntn Capacity=Data.GetCapacity();
+	uIntn Size=Data.GetSize();
+	uIntn SizeRemain=Capacity-Size;
+	if(SizeRemain<Length){
+		Data.SetCapacity(Size+Length);
+	}
+	cMemory RetMem;
+	RetMem.Pointer=Data.GetPointer(Size);
+	Capacity=Data.GetCapacity();
+	RetMem.Length=Capacity-Size;
+	return RetMem;
+}
+//---------------------------------------------------------------------------
+void cUWPMemoryBuffer::CommitWriteBuffer(uIntn Length)noexcept
+{
+	uIntn Capacity=Data.GetCapacity();
+	uIntn Size=Data.GetSize();
+	uIntn SizeRemain=Capacity-Size;
+	if(SizeRemain<Length){
+		Data.SetSize(Capacity);
+	}
+	else{
+		Data.SetSize(Size+Length);
+	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -44,8 +44,9 @@ void bcLog::Submit(aClsConstRef<cLogMessage> Message)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLogStream::cLogStream(bcLog *Log,cString<uChar16> Path)noexcept
+cLogStream::cLogStream(bcLog *Log,uInt8 Level,cString<uChar16> Path)noexcept
 	: fLog(Log)
+	, fLevel(Level)
 	, fPath(cnVar::MoveCast(Path))
 {
 }
@@ -63,6 +64,7 @@ void cLogStream::CommitWriteBuffer(void)noexcept
 void cLogStream::Submit(cString<uChar16> Text)noexcept
 {
 	auto LogMessage=aClsCreate<cLogMessage>();
+	LogMessage->Level=fLevel;
 	LogMessage->Time=cnSystem::GetSystemTimeNow();
 	LogMessage->Path=fPath;
 	LogMessage->Text=cnVar::MoveCast(Text);

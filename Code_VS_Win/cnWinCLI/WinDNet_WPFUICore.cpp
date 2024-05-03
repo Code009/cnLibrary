@@ -463,36 +463,28 @@ iUIThread* cDNetUIApplication::GetMainUIThread(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cDNetUIApplication::cMainWindowMessageHandler::WindowAttached(void)noexcept
+cDNetUIApplication::cWindowsUISession::cWindowsUISession()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cDNetUIApplication::cMainWindowMessageHandler::WindowDetached(void)noexcept
+cDNetUIApplication::cWindowsUISession::~cWindowsUISession()noexcept
 {
-	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDNetUIApplication::fMainWindowMessageHandler);
-	Host->mNotifyStopRun();
+	Owner->mNotifyStopRun();
 }
 //---------------------------------------------------------------------------
-bool cDNetUIApplication::cMainWindowMessageHandler::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept
-{Result,MsgParam;
-	return false;
-}
-//---------------------------------------------------------------------------
-void cDNetUIApplication::cMainWindowMessageHandler::WindowMessageProcessed(LRESULT Result,const cWindowMessageParam &MsgParam)noexcept
-{Result,MsgParam;
-}
-//---------------------------------------------------------------------------
-void cDNetUIApplication::UIMain(iWindow *MainWindow,int CmdShow)noexcept
+void cDNetUIApplication::cWindowsUISession::Terminate(void)noexcept
 {
-	MainWindow->InsertMessageHandler(&fMainWindowMessageHandler);
+	Owner->mNotifyStopRun();
+}
+//---------------------------------------------------------------------------
+void cDNetUIApplication::UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept
+{
+	auto Session=rCreate<cWindowsUISession>();
+	Session->Owner=this;
 
-
-	HWND MainWindowHandle=MainWindow->GetWindowHandle();
-	::ShowWindow(MainWindowHandle,CmdShow);
+	SessionHandler->Execute(Session);
 
 	// message loop
 	mWPFUIMain();
-
-	MainWindow->RemoveMessageHandler(&fMainWindowMessageHandler);
 }
 //---------------------------------------------------------------------------

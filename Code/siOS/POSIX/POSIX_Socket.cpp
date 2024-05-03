@@ -7,7 +7,7 @@ using namespace siPOSIX;
 
 
 //---------------------------------------------------------------------------
-void siPOSIX::SetupSocket(int s)
+void siPOSIX::SetupSocket(int s)noexcept
 {
 	int r;
 	//int nonblocking=1;
@@ -25,7 +25,7 @@ void siPOSIX::SetupSocket(int s)
 	}
 }
 //---------------------------------------------------------------------------
-eiOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2)
+eiOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2)noexcept
 {
 	if(addr1->sa_family!=addr2->sa_family)
 		return iOrdering::Different;
@@ -77,50 +77,50 @@ eiOrdering siPOSIX::SocketAddressCompare(const sockaddr *addr1,const sockaddr *a
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cSocketAddressBuffer::cSocketAddressBuffer()
+cSocketAddressBuffer::cSocketAddressBuffer()noexcept
 {
 	fBuffer.SetSize(sizeof(sockaddr));
 }
 //---------------------------------------------------------------------------
-cSocketAddressBuffer::~cSocketAddressBuffer()
+cSocketAddressBuffer::~cSocketAddressBuffer()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cSocketAddressBuffer::Clear(void)
+void cSocketAddressBuffer::Clear(void)noexcept
 {
 	fBuffer.Clear();
 }
 //---------------------------------------------------------------------------
-sockaddr* cSocketAddressBuffer::SockAddr(void)const
+sockaddr* cSocketAddressBuffer::SockAddr(void)const noexcept
 {
 	return static_cast<sockaddr*>(fBuffer->Pointer);
 }
 //---------------------------------------------------------------------------
-socklen_t cSocketAddressBuffer::SockAddrLen(void)const
+socklen_t cSocketAddressBuffer::SockAddrLen(void)const noexcept
 {
 	return static_cast<socklen_t>(fBuffer->Length);
 }
 //---------------------------------------------------------------------------
-void cSocketAddressBuffer::SetSockAddrLen(socklen_t len)
+void cSocketAddressBuffer::SetSockAddrLen(socklen_t len)noexcept
 {
 	if(len<sizeof(sockaddr))
 		len=sizeof(sockaddr);
 	return fBuffer.SetSize(len);
 }
 //---------------------------------------------------------------------------
-socklen_t cSocketAddressBuffer::GetCapacity(void)const
+socklen_t cSocketAddressBuffer::GetCapacity(void)const noexcept
 {
 	return static_cast<socklen_t>(fBuffer.GetCapacity());
 }
 //---------------------------------------------------------------------------
-void cSocketAddressBuffer::SetCapacity(socklen_t len)
+void cSocketAddressBuffer::SetCapacity(socklen_t len)noexcept
 {
 	if(len<sizeof(sockaddr))
 		len=sizeof(sockaddr);
 	return fBuffer.SetCapacity(len);
 }
 //---------------------------------------------------------------------------
-bool cSocketAddressBuffer::SetAddressFamily(sa_family_t sa_family)
+bool cSocketAddressBuffer::SetAddressFamily(sa_family_t sa_family)noexcept
 {
 	auto *saddr=SockAddr();
 	switch(sa_family){

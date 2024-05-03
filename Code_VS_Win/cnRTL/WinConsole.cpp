@@ -402,8 +402,6 @@ void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)noexcept
 cWin32ConsoleInput::cWin32ConsoleInput(HANDLE InputHandle,iDispatch *Dispatch)noexcept
 	: fInputHandle(InputHandle)
 	, fDispatch(Dispatch)
-	, fConsoleInputWaiter(cnWindows::DefaultThreadPool->CreateHandleWaiter(&fInnerReference,&fConsoleHandleWaitProcedure))
-	, fConsoleProcessWork(fDispatch->CreateWork(&fInnerReference,&fConsoleInputProcessProcedure))
 {
 }
 //---------------------------------------------------------------------------
@@ -414,10 +412,14 @@ cWin32ConsoleInput::~cWin32ConsoleInput()noexcept
 void cWin32ConsoleInput::VirtualStarted(void)noexcept
 {
 	cDualReference::VirtualStarted();
+	fConsoleInputWaiter=cnWindows::DefaultThreadPool->CreateHandleWaiter(&fInnerReference,&fConsoleHandleWaitProcedure);
+	fConsoleProcessWork=fDispatch->CreateWork(&fInnerReference,&fConsoleInputProcessProcedure);
 }
 //---------------------------------------------------------------------------
 void cWin32ConsoleInput::VirtualStopped(void)noexcept
 {
+	fConsoleInputWaiter=nullptr;
+	fConsoleProcessWork=nullptr;
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
@@ -451,7 +453,6 @@ bool cWin32ConsoleInput::StartHandle(iReference *Reference,iConsoleInputHandler 
 	fHandleStartFlag.Release.Store(false);
 	return true;
 
-	fConsoleInputWaiter->SetWait(fInputHandle,nullptr);
 }
 //---------------------------------------------------------------------------
 void cWin32ConsoleInput::StopHandle(void)noexcept(true)
@@ -478,7 +479,10 @@ void cWin32ConsoleInput::NotifyConsoleInputProcess(void)noexcept
 {
 	if(fInputThreadExclusiveFlag.Acquire()==false)
 		return;
-
+	if(fConsoleProcessWork==nullptr){
+		fInputThreadExclusiveFlag.Reset();
+		return;
+	}
 	fConsoleProcessWork->Start();
 }
 //---------------------------------------------------------------------------

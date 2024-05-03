@@ -18,6 +18,8 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace UWP{
 //---------------------------------------------------------------------------
+void COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept(true);
+//---------------------------------------------------------------------------
 struct cHStringReference
 {
 	HSTRING_HEADER Header;
@@ -124,6 +126,20 @@ public:
 cStringBuffer<uChar16> CreateStringFromHandle(HSTRING String)noexcept(true);
 cStringBuffer<wchar_t> CreateWStringFromHandle(HSTRING String)noexcept(true);
 //---------------------------------------------------------------------------
+class cUWPMemoryBufferWriteStreamBuffer : public iWriteStreamBuffer
+{
+public:
+	cUWPMemoryBufferWriteStreamBuffer(COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter)noexcept(true);
+	~cUWPMemoryBufferWriteStreamBuffer()noexcept(true);
+
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)override;
+
+protected:
+	cMemoryBlock fBuffer;
+	COMPtr<ABI::Windows::Storage::Streams::IDataWriter> fDataWriter;
+};
+//---------------------------------------------------------------------------
 #if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0x50000
 //---------------------------------------------------------------------------
 uInt8* GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept(true);
@@ -135,35 +151,35 @@ class cCOMWeakReference : public IWeakReference
 {
 public:
 	COMPtr<T> fFakeWeakRef;
-	IUnknown* COMUnknown()noexcept(true){	return this;	}
 
-	bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
-		if(riid==__uuidof(IWeakReference)){
-			*ppvObject=static_cast<IWeakReference*>(this);
-			return true;
-		}
-		return false;
-	}
+	typedef TCOMInterfacePack<IWeakReference> tCOMInterfacePack;
 
     virtual HRESULT STDMETHODCALLTYPE Resolve( 
         /* [in] */ __RPC__in REFIID riid,
         /* [iid_is][out] */ __RPC__deref_out IInspectable **objectReference)override
 	{
-		auto Unknow=fFakeWeakRef->COMUnknown();
-		return Unknow->QueryInterface(riid,reinterpret_cast<void**>(objectReference));
+		return E_NOTIMPL;
+		//auto Unknow=fFakeWeakRef->COMUnknown();
+		//return Unknow->QueryInterface(riid,reinterpret_cast<void**>(objectReference));
 	}
 };
 //---------------------------------------------------------------------------
-class cUWPMemoryBuffer : public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess, public IWeakReferenceSource
+class cUWPMemoryBuffer
+	: public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess
+	, public IWeakReferenceSource, public IAgileObject
+	, public iWriteStreamBuffer
 {
 public:
 	using ABI::Windows::Storage::Streams::IBuffer::AddRef;
 	using ABI::Windows::Storage::Streams::IBuffer::Release;
 	cMemoryBuffer Data;
 
-	IUnknown* COMUnknown()noexcept(true){	return static_cast<ABI::Windows::Storage::Streams::IBuffer*>(this);	}
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)override;
 
-	bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true);
+	typedef TCOMInterfacePack<IAgileObject, IWeakReferenceSource
+		, ABI::Windows::Storage::Streams::IBuffer, Windows::Storage::Streams::IBufferByteAccess
+	> tCOMInterfacePack;
 
 	virtual HRESULT STDMETHODCALLTYPE GetWeakReference( /* [retval][out] */ __RPC__deref_out_opt IWeakReference **weakReference)noexcept(true)override;
 
@@ -249,7 +265,7 @@ public:
 private:
 	COMPtr< ABI::Windows::Foundation::IAsyncOperation<T> > fTask;
 
-	class cCompletionHandler : public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>
+	class cCompletionHandler : public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>, public IAgileObject
 	{
 	public:
 		cCoroutineHandleOperator::tHandle CoHandle;
@@ -258,15 +274,9 @@ private:
 			return S_OK;
 		}
 
-		IUnknown* COMUnknown(void)noexcept(true){	return this;	}
-		bool COMQueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true){
-			if(riid==__uuidof(ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>)){
-				*ppvObject=this;
-				return true;
-			}
-			return false;
-		}
-
+		typedef TCOMInterfacePack<IAgileObject
+			, ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>
+		> tCOMInterfacePack;
 	};
 	COMPtr< cCompletionHandler > fHandler;
 };
@@ -287,18 +297,16 @@ template<class TImplement,class TEventInvokeFunctionPtr,class TSenderDecl,class.
 class cTypedEventHandlerImplementation;
 
 template<class TImplement,class TClass,class TSender,class...TArgs,class TSenderDecl,class...TArgsDecl>
-class cTypedEventHandlerImplementation<TImplement,void (TClass::*)(TSender,TArgs...)noexcept(true),TSenderDecl,TArgsDecl...> : public TImplement, public ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>
+class cTypedEventHandlerImplementation<TImplement,void (TClass::*)(TSender,TArgs...)noexcept(true),TSenderDecl,TArgsDecl...> : public TImplement, public ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>, public IAgileObject
 {
 public:
+
+	typedef TCOMInterfacePack<ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>
+		,IAgileObject> tCOMInterfacePack;
+
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
-		if(riid==__uuidof(IUnknown)){
+		if(COMObjectQueryInterface(this,riid,ppvObject)){
 			this->EventIncReference();
-			*ppvObject=static_cast<IUnknown*>(this);
-			return S_OK;
-		}
-		if(riid==__uuidof(ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>)){
-			this->EventIncReference();
-			*ppvObject=static_cast<ABI::Windows::Foundation::ITypedEventHandler<TSenderDecl,TArgsDecl...>*>(this);
 			return S_OK;
 		}
 		*ppvObject=nullptr;
@@ -324,18 +332,16 @@ template<class TImplement,class TSenderDecl,class...TArgsDecl>
 using cTypedEventHandler=cTypedEventHandlerImplementation<TImplement,decltype(&TImplement::EventInvoke),TSenderDecl,TArgsDecl...>;
 //---------------------------------------------------------------------------
 template<class TImplement,class TResult>
-class cAsyncOperationCompletedHandler : public TImplement, public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>
+class cAsyncOperationCompletedHandler : public TImplement, public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>, public IAgileObject
 {
 public:
+
+	typedef TCOMInterfacePack<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>
+		,IAgileObject> tCOMInterfacePack;
+
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
-		if(riid==__uuidof(IUnknown)){
+		if(COMObjectQueryInterface(this,riid,ppvObject)){
 			this->EventIncReference();
-			*ppvObject=static_cast<IUnknown*>(this);
-			return S_OK;
-		}
-		if(riid==__uuidof(ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>)){
-			this->EventIncReference();
-			*ppvObject=static_cast<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TResult>*>(this);
 			return S_OK;
 		}
 		*ppvObject=nullptr;
@@ -358,7 +364,7 @@ public:
 };
 //---------------------------------------------------------------------------
 template<class TInterface,class TUWPResult>
-class cInterfaceFromAsyncOperation : public TInterface, protected ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>
+class cInterfaceFromAsyncOperation : public TInterface, protected ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>, protected IAgileObject
 {
 public:
 	cInterfaceFromAsyncOperation()noexcept(true){}
@@ -387,6 +393,8 @@ public:
 		}
 	}
 
+	typedef TCOMInterfacePack<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>
+		,IAgileObject> tCOMInterfacePack;
 
 protected:
 	COMPtr< ABI::Windows::Foundation::IAsyncOperation<TUWPResult*> > fAsyncOp;
@@ -394,14 +402,8 @@ protected:
 
 
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
-		if(riid==__uuidof(IUnknown)){
+		if(COMObjectQueryInterface(this,riid,ppvObject)){
 			iIncReference(this,'evet');
-			*ppvObject=static_cast<IUnknown*>(this);
-			return S_OK;
-		}
-		if(riid==__uuidof(ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>)){
-			iIncReference(this,'evet');
-			*ppvObject=static_cast<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>*>(this);
 			return S_OK;
 		}
 		*ppvObject=nullptr;

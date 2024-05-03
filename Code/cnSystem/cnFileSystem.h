@@ -99,21 +99,12 @@ cnLib_ENUM_BEGIN(ufInt8,FileChange)
 	RenameOld			=0x4,
 }cnLib_ENUM_END(FileChange);
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iFileChangeEnumerator : public iReference
-{
-public:
-	virtual bool cnLib_FUNC Fetch(void)noexcept(true)=0;
-
-	virtual iFile*	cnLib_FUNC GetCurrentFile(void)noexcept(true)=0;
-	virtual eFileChange cnLib_FUNC GetChange(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
 class cnLib_INTERFACE iFileObserver : public iAsyncNotification
 {
 public:
+	virtual iPtr<iFile> cnLib_FUNC FetchFileChange(eFileChange &Change)noexcept(true)=0;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
-	virtual rPtr<iFileEnumerator> cnLib_FUNC EnumCurrentFiles(void)noexcept(true)=0;
-	virtual rPtr<iFileChangeEnumerator> cnLib_FUNC FetchFileChange(void)noexcept(true)=0;
+	virtual rPtr<iFileEnumerator> cnLib_FUNC ResetChanges(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_INTENUM_BEGIN(ufInt8,FileAccess)

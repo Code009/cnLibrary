@@ -11,7 +11,7 @@ iPtr<iWindowClient> cnUI::CreateUIWindow(HWND Parent,const wchar_t *WindowText,D
 		return nullptr;
 	}
 
-	auto Window=cnWindows::CreateHWND(Parent,WindowText,Style,ExStyle);
+	auto Window=cnWindows::CreateWindowHandle(Parent,WindowText,Style,ExStyle);
 	if(Window==nullptr)
 		return nullptr;
 
@@ -227,7 +227,7 @@ bool cPopupStaticWindow::SetClientView(iUIView *View)noexcept
 void cPopupStaticWindow::SetupOwnerWindow(HWND OwnerWindowHandle)noexcept
 {
 	if(fWindow==nullptr){
-		fWindow=cnWindows::CreateHWND(OwnerWindowHandle,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
+		fWindow=cnWindows::CreateWindowHandle(OwnerWindowHandle,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
 	}
 	else{
 		HWND OwnerRootWindow=::GetAncestor(OwnerWindowHandle,GA_ROOT);
@@ -335,7 +335,7 @@ bool cPopupWindow::SetClientView(iUIView *View)noexcept
 void cPopupWindow::SetupOwnerWindow(HWND OwnerWindow)noexcept
 {
 	if(fWindow==nullptr){
-		fWindow=cnWindows::CreateHWND(OwnerWindow,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
+		fWindow=cnWindows::CreateWindowHandle(OwnerWindow,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
 		fWindow->InsertMessageHandler(this);
 		fWindowClient->SetWindow(fWindow);
 	}

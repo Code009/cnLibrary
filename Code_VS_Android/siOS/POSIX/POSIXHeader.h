@@ -7,6 +7,8 @@
 
 #include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <android/api-level.h>
 
 /* POSIX_Memory*/
 /* _POSIX_MEMORY_PROTECTION */
@@ -14,14 +16,17 @@
 #include <sys/mman.h>
 #define	siOS_POSIX_ENABLE_MAPFILE
 
+/* POSIX_Time */
+
+#include <time.h>
+#define	siOS_POSIX_ENABLE_TIME
 
 /* POSIX_LOCALE */
 
-#if	TARGET_OS_OSX
+#if __ANDROID_API__ >= 28
 
 #include <iconv.h>
 #define	siOS_POSIX_ENABLE_CODESETCONVERT
-
 #endif
 
 /* POSIX_Thread */

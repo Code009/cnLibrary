@@ -22,13 +22,13 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
 
-	virtual const uChar8* cnLib_FUNC GetPOSIXFileName(void)=0;
-	virtual uIntn cnLib_FUNC GetPOSIXFileNameLength(void)=0;
+	virtual const uChar8* cnLib_FUNC GetPOSIXFileName(void)noexcept(true)=0;
+	virtual uIntn cnLib_FUNC GetPOSIXFileNameLength(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
-rPtr<iSwapMemory>	cnLib_FUNC CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode);
+rPtr<iSwapMemory>	cnLib_FUNC CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------

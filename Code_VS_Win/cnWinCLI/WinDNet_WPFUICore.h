@@ -165,20 +165,21 @@ public:
 
 
 	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)override;
-	virtual void cnLib_FUNC UIMain(iWindow *MainWindow,int CmdShow)noexcept(true)override;
+	virtual void cnLib_FUNC UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept(true)override;
 
 private:
 	iPtr<cDNetUIThread> fUIThread;
 
-	class cMainWindowMessageHandler : public iWindowMessageHandler
+	class cWindowsUISession : public iWindowsUISession
 	{
 	public:
-		virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
-		virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
-		virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept(true)override;
-		virtual void cnLib_FUNC WindowMessageProcessed(LRESULT Result,const cWindowMessageParam &MsgParam)noexcept(true)override;
-	private:
-	}fMainWindowMessageHandler;
+		cDNetUIApplication *Owner;
+		cWindowsUISession()noexcept(true);
+		~cWindowsUISession()noexcept(true);
+
+		virtual void cnLib_FUNC Terminate(void)noexcept(true)override;
+	};
+
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

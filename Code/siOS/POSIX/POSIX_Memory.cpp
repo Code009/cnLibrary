@@ -107,29 +107,29 @@ uIntn cnLib_FUNC VirtualMemory::GetAllocationGranularity(void)
 #ifdef	siOS_POSIX_ENABLE_MAPFILE
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cMMapFile::cMMapFile(int FileHandle,uIntn FileSize,int ProtectFlag)
+cMMapFile::cMMapFile(int FileHandle,uIntn FileSize,int ProtectFlag)noexcept
 {
 	fFileHandle=FileHandle;
 	fFileSize=FileSize;
 	fProtectFlag=ProtectFlag;
 }
 //---------------------------------------------------------------------------
-cMMapFile::~cMMapFile()
+cMMapFile::~cMMapFile()noexcept
 {
 	::close(fFileHandle);
 }
 //---------------------------------------------------------------------------
-uInt64 cMMapFile::GetSize(void)
+uInt64 cMMapFile::GetSize(void)noexcept
 {
 	return fFileSize;
 }
 //---------------------------------------------------------------------------
-void* cMMapFile::Map(uInt64 Offset,uIntn Size)
+void* cMMapFile::Map(uInt64 Offset,uIntn Size)noexcept
 {
 	return mmap(nullptr,Size,fProtectFlag,MAP_SHARED,fFileHandle,Offset);
 }
 //---------------------------------------------------------------------------
-bool cMMapFile::Unmap(void *Pointer,uIntn Size)
+bool cMMapFile::Unmap(void *Pointer,uIntn Size)noexcept
 {
 	return munmap(Pointer,Size)==0;
 }

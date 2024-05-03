@@ -307,9 +307,9 @@ public:
 	virtual void cnLib_FUNC StopNotify(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyCallback(bool IdleNotify)noexcept(true)override;
 	virtual bool cnLib_FUNC IsClosed(void)noexcept(true)override;
+	virtual iPtr<iFile> cnLib_FUNC FetchFileChange(eFileChange &Change)noexcept(true)override;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)override;
-	virtual rPtr<iFileEnumerator> cnLib_FUNC EnumCurrentFiles(void)noexcept(true)override;
-	virtual rPtr<iFileChangeEnumerator> cnLib_FUNC FetchFileChange(void)noexcept(true)override;
+	virtual rPtr<iFileEnumerator> cnLib_FUNC ResetChanges(void)noexcept(true)override;
 
 protected:
 
@@ -337,7 +337,8 @@ protected:
 		eFileChange Change;
 	};
 
-	class cChangeEnum : public iFileChangeEnumerator
+
+	class cChangeEnum
 	{
 	public:
 		cChangeEnum(cWinShellFolderItemObserver *Owner)noexcept(true);
@@ -345,9 +346,9 @@ protected:
 
 		cSeqList< cChangeItem > ChangeList;
 
-		virtual bool cnLib_FUNC Fetch(void)noexcept(true)override;
-		virtual iFile* cnLib_FUNC GetCurrentFile(void)noexcept(true)override;
-		virtual eFileChange cnLib_FUNC GetChange(void)noexcept(true)override;
+		virtual bool cnLib_FUNC Fetch(void)noexcept(true);
+		virtual iFile* cnLib_FUNC GetCurrentFile(void)noexcept(true);
+		virtual eFileChange cnLib_FUNC GetChange(void)noexcept(true);
 	protected:
 		rInnerPtr<cWinShellFolderItemObserver> fOwner;
 		uIntn fCurrentIndex;

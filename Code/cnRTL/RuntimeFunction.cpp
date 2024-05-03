@@ -399,6 +399,11 @@ bool cExclusiveFlag::IsRunning(void)const noexcept
 	return RunFlag!=rfIdle;
 }
 //---------------------------------------------------------------------------
+void cExclusiveFlag::Reset(void)noexcept
+{
+	RunFlag=rfIdle;
+}
+//---------------------------------------------------------------------------
 bool cExclusiveFlag::Acquire(void)noexcept
 {
 	auto PrevRunFlag=RunFlag.Acquire<<=rfPending;

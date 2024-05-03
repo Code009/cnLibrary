@@ -17,6 +17,40 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+class cnLib_INTERFACE iReadStreamBuffer
+{
+public:
+	typedef void tElement;
+
+	// GatherReadBuffer
+	//	gather read data to buffer
+	// Length			number of elements to gather for reading.
+	// return array of data buffer for reading
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Length)noexcept(true)=0;
+	// DismissReadBuffer
+	//	dismiss length of read data . Caller should not access returned read buffer after the call
+	// Length		length of data to dismiss, in elements
+	// return length of data dismissed
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Length)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iWriteStreamBuffer
+{
+public:
+	typedef void tElement;
+
+	// ReserveWriteBuffer
+	//	reserve write buffer. uncommited buffer content will not be preserved
+	// Length		number of elements to query for writing.
+	// return array of data buffer for writing
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Length)noexcept(true)=0;
+	// CommitWriteBuffer
+	//	commit data in write buffer. Caller should not access the write buffer after the call
+	// Length		length of data to commit, in elements
+	// return length of data commited
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE iAsyncNotificationCallback
 {
 public:

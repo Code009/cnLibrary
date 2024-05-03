@@ -12,6 +12,198 @@
 #include <cnTK/TKMacrosDeclare.inc>
 
 //---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnVar{
+//---------------------------------------------------------------------------
+template<class T>
+struct TTypeComponent
+{
+};
+
+// storage type
+
+template<class T>
+struct TTypeComponent<const T>{
+	typedef T tDistinct;
+};
+
+template<class T>
+struct TTypeComponent<volatile T>{
+	typedef T tDistinct;
+};
+
+
+template<class T>
+struct TTypeComponent<const volatile T>{
+	typedef T tDistinct;
+};
+
+// pointer
+
+template<class T>
+struct TTypeComponent<T*>
+{
+	typedef T tPointed;
+};
+
+// reference
+
+template<class T>
+struct TTypeComponent<T&>
+{
+	typedef T tReferenced;
+};
+
+template<class T>
+struct TTypeComponent<T&&>
+{
+	typedef T tReferenced;
+};
+
+// array
+
+template<class T,uIntn ArrayLength>
+struct TTypeComponent<T[ArrayLength]>
+{
+	typedef T tElement;
+	static cnLib_CONSTVAR uIntn Length=ArrayLength;
+};
+
+template<class T>
+struct TTypeComponent<T[]>
+{
+	typedef T tElement;
+};
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+// function
+
+template<class TRet,class...TArgs>
+struct TTypeComponent<TRet (TArgs...)>
+{
+	typedef TRet tReturn;
+	TTypePack<TArgs...> tArguments;
+	static cnLib_CONSTVAR uIntn ArgumentCount=sizeof...(TArgs);
+	static cnLib_CONSTVAR bool NoException=false;
+};
+
+
+template<class TRet,class...TArgs>
+struct TTypeComponent<TRet (*)(TArgs...)>
+	: TTypeComponent<TRet (TArgs...)>
+{
+};
+
+#if cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+template<class TRet,class...TArgs>
+struct TTypeComponent<TRet (TArgs...)noexcept>
+	: TTypeComponent<TRet (TArgs...)>
+{
+	static cnLib_CONSTVAR bool NoException=true;
+};
+
+
+template<class TRet,class...TArgs>
+struct TTypeComponent<TRet (*)(TArgs...)noexcept>
+	: TTypeComponent<TRet (TArgs...)noexcept>
+{
+};
+
+#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+// Member Pointer
+
+template<class TClass,class TMember>
+struct TTypeComponent<TMember TClass::*>
+{
+	typedef TClass tClass;
+	typedef TMember tMember;
+};
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+// Member Function Pointer
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)>
+	: TTypeComponent<TRet (*)(TArgs...)>
+{
+	typedef TClass tClass;
+	typedef TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)const>
+	: TTypeComponent<TRet (*)(TArgs...)>
+{
+	typedef TClass tClass;
+	typedef const TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)volatile>
+	: TTypeComponent<TRet (*)(TArgs...)>
+{
+	typedef TClass tClass;
+	typedef volatile TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)const volatile>
+	: TTypeComponent<TRet (*)(TArgs...)>
+{
+	typedef TClass tClass;
+	typedef const volatile TClass tClassArgument;
+};
+
+#if cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)noexcept>
+	: TTypeComponent<TRet (*)(TArgs...)noexcept>
+{
+	typedef TClass tClass;
+	typedef TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)const noexcept>
+	: TTypeComponent<TRet (*)(TArgs...)noexcept>
+{
+	typedef TClass tClass;
+	typedef const TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)volatile noexcept>
+	: TTypeComponent<TRet (*)(TArgs...)noexcept>
+{
+	typedef TClass tClass;
+	typedef volatile TClass tClassArgument;
+};
+
+template<class TClass,class TRet,class...TArgs>
+struct TTypeComponent<TRet (TClass::*)(TArgs...)const volatile noexcept>
+	: TTypeComponent<TRet (*)(TArgs...)noexcept>
+{
+	typedef TClass tClass;
+	typedef const volatile TClass tClassArgument;
+};
+
+#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+//---------------------------------------------------------------------------
+}	// namespace cnVar
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
 namespace cnLib_THelper{
 namespace Var_TH{
 
@@ -52,7 +244,7 @@ struct IsClass<typename cnVar::TSelect<0,void,int T::*>::Type,T>
 
 }	// namespace Var_TH
 }	// namespace cnLib_THelper
-	//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{

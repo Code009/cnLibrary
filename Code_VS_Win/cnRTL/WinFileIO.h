@@ -290,9 +290,9 @@ public:
 
 	// iFileObserver
 
+	virtual iPtr<iFile> cnLib_FUNC FetchFileChange(eFileChange &Change)noexcept(true)override;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)override;
-	virtual rPtr<iFileEnumerator> cnLib_FUNC EnumCurrentFiles(void)noexcept(true)override;
-	virtual rPtr<iFileChangeEnumerator> cnLib_FUNC FetchFileChange(void)noexcept(true)override;
+	virtual rPtr<iFileEnumerator> cnLib_FUNC ResetChanges(void)noexcept(true)override;
 
 protected:
 
@@ -327,6 +327,7 @@ private:
 		FILETIME LastWriteTime;
 	};
 	cSeqMap<cString<wchar_t>,cFileInfo> fFileMap;
+	cCriticalSection fFileMapCS;
 	
 	class cFileEnum : public iFileEnumerator
 	{
@@ -352,9 +353,6 @@ private:
 
 	static void AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd)noexcept(true);
 	void SetupFileInfo(cFileInfo &Info,const wchar_t *FileName)noexcept(true);
-	void ReloadFileMap(void)noexcept(true);
-	rPtr<iFileChangeEnumerator> CompareFileMap(void)noexcept(true);
-	void RefreshFileMap(void)noexcept(true);
 
 	class cDirectoryReadChangeObject : public bcNTFileOverlappedIOHandle::bcIOObject
 	{
@@ -369,47 +367,25 @@ private:
 		static const DWORD ReadChangeBufferSize=65536-512;
 	}fDirectoryReadChangeObject;
 
-	cExclusiveFlag fReadChangeFlag;
-	bool fRestartTrack;
+	cExclusiveFlag fProcessChangeFlag;
+	bool fLostTrack=false;
 	bool fReadInProgress=false;
-	void ContinueRead(void)noexcept(true);
+	void NotifyProcessChanges(void)noexcept(true);
 
 	void DirectoryReadCompleted(void)noexcept(true);
-	void DirectoryReadError(void)noexcept(true);
 	struct cPendingChangeItem : cRTLAllocator
 	{
 		cPendingChangeItem *Next;
 		cString<wchar_t> Name;
 		eFileChange Change;
 	};
-	cAtomicStackSO<cPendingChangeItem> fPendingChangeStack;
-	void DirectoryReadParse(void)noexcept(true);
+	cAtomicQueueSO<cPendingChangeItem> fPendingChangeQueue;
+	cAtomicStack<cPendingChangeItem> fChangeItemRecycler;
+	void CatchFileChanges(void)noexcept(true);
+	void ResetChangeQueue(void)noexcept(true);
+	void ResetFileChanges(void)noexcept(true);
+	bool DirectoryReadParse(void)noexcept(true);
 
-	class cFileChangeEnum : public iFileChangeEnumerator
-	{
-	public:
-		virtual bool cnLib_FUNC Fetch(void)noexcept(true)override;
-
-		virtual iFile*	cnLib_FUNC GetCurrentFile(void)noexcept(true)override;
-		virtual eFileChange cnLib_FUNC GetChange(void)noexcept(true)override;
-	
-		cString<wchar_t> FolderPath;
-
-		cSeqMap<cString<wchar_t>,cFileInfo> OldFiles;
-		struct cFileChangeInfo
-		{
-			cString<wchar_t> Name;
-			eFileChange Change;
-		};
-		cSeqList<cFileChangeInfo> ChangeList;
-
-		iPtr<iFileName> (*CreateFileName)(cString<wchar_t> Path)noexcept(true);
-		iPtr<iFileName> CurrentFile;
-		
-		uIntn EnumIndex=cnVar::TIntegerValue<uIntn>::Max;
-		ufInt8 EnumPart=0;
-	};
-	void CommitPendingChanges(cFileChangeEnum *ChangeEnum)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA

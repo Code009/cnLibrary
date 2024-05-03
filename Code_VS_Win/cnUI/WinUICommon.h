@@ -15,6 +15,7 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnUI{
 	using cnRTL::COMPtr;
+	using cnRTL::COMInnerMember;
 	using cnRTL::COMInnerObject;
 	using cnRTL::COMInnerPtr;
 

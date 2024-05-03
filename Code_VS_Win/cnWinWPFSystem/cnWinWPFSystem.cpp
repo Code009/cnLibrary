@@ -437,7 +437,7 @@ iPtr<iOwnerFocusWindowClient> cnWindows::CreateOwnerFocusWindowClient(void)noexc
 	return nullptr;
 }
 
-iPtr<iWindow> cnWindows::CreateHWND(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept
+iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept
 {
 	return cnWin::DNetCreateWPFWindow(Parent,WindowText,Style,ExStyle,X,Y,Width,Height,ChildID);
 }

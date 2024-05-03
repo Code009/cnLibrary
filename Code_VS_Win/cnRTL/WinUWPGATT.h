@@ -87,8 +87,12 @@ class cGATTCharacteristic : public iGATTCharacteristic, public cDualReference
 
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadResult GattReadResult;
 	typedef ABI::Windows::Foundation::IAsyncOperation<GattReadResult*> IBLEReadAsyncOp;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteResult GattWriteResult;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattWriteResult IGattWriteResult;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattWriteResult*> IBLEWriteAsyncOp;
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCommunicationStatus GattCommunicationStatus;
-	typedef ABI::Windows::Foundation::IAsyncOperation<GattCommunicationStatus> IBLEWriteAsyncOp;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattCommunicationStatus> IBLECommunicationAsyncOp;
+	
 
 public:
 	cGATTCharacteristic(cGATTService *Owner,const cGATTUUID & ID)noexcept(true);
@@ -113,7 +117,9 @@ public:
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)override;
 
-	virtual iPtr< iAsyncFunction<bool> > cnLib_FUNC ConfigureNotification(eGATTCharacteristicNotification Notification)noexcept(true)override;
+	virtual eGATTCharacteristicNotification cnLib_FUNC EffectiveValueNotification(void)noexcept(true)override;
+	virtual eGATTCharacteristicNotification cnLib_FUNC GetValueNotification(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)override;
 
 	void ServiceInvalidateCharacteristic(void)noexcept(true);
 	void ServiceUpdateCharacteristic(IBLECharacteristic *Characteristic)noexcept(true);
@@ -150,6 +156,11 @@ private:
 	}fMainProcessState;
 	bool fNeedNotifyCharacteristicState=false;
 	bool fDescriptorNeedRefresh=false;
+	ufInt8 fConfigureNotificationState=0;
+
+	eGATTCharacteristicNotification fEffectiveNotificationConfig=GATTCharacteristicNotification::None;
+	eGATTCharacteristicNotification fTargetNotificationConfig=GATTCharacteristicNotification::None;
+	eGATTCharacteristicNotification fWritingNotificationConfig;
 
 	rPtr<iAsyncProcedure> fMainProcessWork;
 
@@ -162,7 +173,7 @@ private:
 
 	bool MainProcess(void)noexcept(true);
 	void MainProcessStateChange(void)noexcept(true);
-	void MainProcess_Idle(void)noexcept(true);
+	bool MainProcess_Idle(void)noexcept(true);
 	void MainProcess_RefreshDescriptorDone(void)noexcept(true);
 
 	class cBLEValueChangedHandler
@@ -215,41 +226,22 @@ private:
 	public:
 		void EventIncReference(void)noexcept(true);
 		void EventDecReference(void)noexcept(true);
-		void EventInvoke(IBLEWriteAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+		void EventInvoke(IBLECommunicationAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
 	};
 	cAsyncOperationCompletedHandler<cWriteCompleteHandler,GattCommunicationStatus> fWriteCompleteHandler;
 
-	class cConfigureNotificationTask : public iAsyncFunction<bool>, public iReference
+	class cConfigureNotificationHandler
 	{
+		cGATTCharacteristic* GetHost(void)noexcept(true);
 	public:
-		cConfigureNotificationTask(cGATTCharacteristic *Owner)noexcept(true);
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(IBLEWriteAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
 
-		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
-		virtual void cnLib_FUNC Cancel(void)noexcept(true)override;
-		virtual bool cnLib_FUNC GetResult(void)noexcept(true)override;
-
-		bool Config(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattClientCharacteristicConfigurationDescriptorValue DescValue)noexcept(true);
-
-
-	protected:
-		rPtr<cGATTCharacteristic> fOwner;
-
-		cAsyncTaskState fTaskState;
-		GattCommunicationStatus fResult;
-
-		void ConfigureDone(IBLEWriteAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
-
-		class cConfigureNotificationHandler
-		{
-			cConfigureNotificationTask* GetHost(void)noexcept(true);
-		public:
-			void EventIncReference(void)noexcept(true);
-			void EventDecReference(void)noexcept(true);
-			void EventInvoke(IBLEWriteAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
-		};
-		cAsyncOperationCompletedHandler<cConfigureNotificationHandler,GattCommunicationStatus> fConfigureNotificationHandler;
+		HRESULT hrResult;
+		COMPtr<IGattWriteResult> Result;
 	};
+	cAsyncOperationCompletedHandler<cConfigureNotificationHandler,GattWriteResult*> fConfigureNotificationHandler;
 };
 //---------------------------------------------------------------------------
 class cGATTService : public iGATTService, public cDualReference
@@ -711,9 +703,502 @@ protected:
 	iPtr<iDispatch> fDispatch;
 
 };
+//---------------------------------------------------------------------------
+rPtr<iGATTPeripheralCentral> OpenGATTCentral(iDispatch *Dispatch)noexcept(true);
+//---------------------------------------------------------------------------
+class cGATTServer;
+class cGATTServerService;
+class cGATTServerCharacteristic;
+//---------------------------------------------------------------------------
+class cGATTServerDescriptor : public iGATTServerDescriptor, public cDualReference
+{
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalDescriptor GattLocalDescriptor;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalDescriptor IGattLocalDescriptor;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalDescriptorParameters GattLocalDescriptorParameters;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalDescriptorParameters IGattLocalDescriptorParameters;
 
-rPtr<iGATTPeripheralCentral> OpenGATTPeripheral(iDispatch *Dispatch)noexcept(true);
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalDescriptorResult GattLocalDescriptorResult;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalDescriptorResult IGattLocalDescriptorResult;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattLocalDescriptorResult*> ICreateLocalDescAsyncOp;
+public:
+	cGATTServerDescriptor(cGATTServerCharacteristic *Owner,const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true);
 
+	const cGATTUUID &GetID(void)const noexcept;
+	iDispatch* GetDispatch(void)const noexcept(true);
+	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
+
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
+
+	void DescriptorShutdown(void)noexcept(true);
+	void CharacteristicNotifyStateChange(void)noexcept(true);
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+
+	rPtr<cGATTServerCharacteristic> fOwner;
+	cGATTUUID fDescriptorID;
+	iPtr<iDispatch> fDispatch;
+	COMPtr<IGattLocalDescriptor> fDescriptor;
+	rPtr<iReference> fControllerReference;
+	iGATTDescriptorController *fController;
+
+private:
+
+	rPtr<iAsyncProcedure> fMainProcessWork;
+
+	cExclusiveFlag fMainProcessExclusiveFlag;
+	eGATTFunctionState fFuncState=GATTFunctionState::Scanning;
+	bool fShutdown=false;
+	bool fNeedNotifyFunctionStateChange=false;
+	ufInt8 fCreateProviderState=0;
+
+	void SetupDescriptor(void)noexcept(true);
+	void ClearDescriptor(void)noexcept(true);
+
+	class cMainProcessProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fMainProcessProcedure;
+	void MainProcessThread(void)noexcept(true);
+	void NotifyMainProcess(void)noexcept(true);
+
+	bool MainProcess(void)noexcept(true);
+
+	class cCreateLocalDescCompleteHandler
+	{
+		cGATTServerDescriptor* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(ICreateLocalDescAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+
+		HRESULT hrResult;
+		COMPtr<IGattLocalDescriptorResult> Result;
+	};
+	cAsyncOperationCompletedHandler<cCreateLocalDescCompleteHandler,GattLocalDescriptorResult*> fCreateLocalDescCompleteHandler;
+
+};
+//---------------------------------------------------------------------------
+class cGATTServerCharacteristic : public iGATTServerCharacteristic, public cDualReference
+{
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalCharacteristic GattLocalCharacteristic;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalCharacteristic IGattLocalCharacteristic;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalCharacteristicParameters GattLocalCharacteristicParameters;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalCharacteristicParameters IGattLocalCharacteristicParameters;
+
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalCharacteristicResult GattLocalCharacteristicResult;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalCharacteristicResult IGattLocalCharacteristicResult;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattLocalCharacteristicResult*> ICreateLocalCharAsyncOp;
+
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCommunicationStatus GattCommunicationStatus;
+
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadRequestedEventArgs GattReadRequestedEventArgs;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattReadRequestedEventArgs IGattReadRequestedEventArgs;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteRequestedEventArgs GattWriteRequestedEventArgs;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattWriteRequestedEventArgs IGattWriteRequestedEventArgs;
+
+	typedef ABI::Windows::Foundation::IDeferral IDeferral;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSession IGattSession;
+	typedef ABI::Windows::Devices::Bluetooth::IBluetoothDeviceId IBluetoothDeviceId;
+	
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSubscribedClient GattSubscribedClient;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSubscribedClient IGattSubscribedClient;
+
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadRequest GattReadRequest;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattReadRequest IGattReadRequest;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattWriteRequest GattWriteRequest;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattWriteRequest IGattWriteRequest;
+	
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattReadRequest*> IGetReadRequestAsyncOp;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattWriteRequest*> IGetWriteRequestAsyncOp;
+
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattClientNotificationResult GattClientNotificationResult;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattClientNotificationResult IGattClientNotificationResult;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattClientNotificationResult*> IClientNotifyValueAsyncOp;
+
+public:
+	cGATTServerCharacteristic(cGATTServerService *Owner,const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true);
+
+	IGattLocalCharacteristic* GetLocalCharacteristic(void)const noexcept(true);
+	const cGATTUUID &GetID(void)const noexcept;
+	iDispatch* GetDispatch(void)const noexcept(true);
+	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
+
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)override;
+
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
+	virtual void cnLib_FUNC NotifyValue(iGATTClientSubscription *Subscription)noexcept(true)override;
+	virtual iGATTClientSubscription* cnLib_FUNC QuerySubscription(iGATTClientConnection *Connection)noexcept(true)override;
+
+	void DescriptorNotifyClosed(cGATTServerDescriptor *Descriptor)noexcept(true);
+	void DescriptorNotifyTreeChanged(void)noexcept(true);
+
+	void CharacteristicShutdown(void)noexcept(true);
+	void ServiceNotifyStateChange(void)noexcept(true);
+
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+
+	rPtr<cGATTServerService> fOwner;
+	cGATTUUID fCharacteristicID;
+	COMPtr<IGattLocalCharacteristic> fCharacteristic;
+	iPtr<iDispatch> fDispatch;
+	rPtr<iReference> fControllerReference;
+	iGATTCharacteristicController *fController;
+	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerDescriptor>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fDescriptorMap;
+	
+private:
+
+	rPtr<iAsyncProcedure> fMainProcessWork;
+	rPtr<iAsyncProcedure> fRequestProcessWork;
+
+	enum{
+		 vnIdle,
+		 vnCommand,
+		 vnAwait,
+	};
+
+	cExclusiveFlag fMainProcessExclusiveFlag;
+	cExclusiveFlag fRequestProcessExclusiveFlag;
+	eGATTFunctionState fFuncState=GATTFunctionState::Scanning;
+	bool fShutdown=false;
+	bool fNeedNotifyFunctionStateChange=false;
+	ufInt8 fCreateProviderState=0;
+	bool fValueNotifyUpdate=false;
+	bool fBroadcastValueNotify=false;
+	ufInt8 fBroadcastValueNotifyState=0;
+	bool fSubscribedClientChanged=false;
+
+	void SetupCharacteristic(void)noexcept(true);
+	void ClearCharacteristic(void)noexcept(true);
+
+	class cMainProcessProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fMainProcessProcedure;
+	void MainProcessThread(void)noexcept(true);
+	void NotifyMainProcess(void)noexcept(true);
+
+	bool MainProcess(void)noexcept(true);
+
+
+	class cClientConnection : public iGATTClientConnection
+	{
+	public:
+		COMPtr<IGattSession> Session;
+
+		virtual eiOrdering cnLib_FUNC Compare(iGATTClientConnection *Dest)noexcept(true)override{
+			return iOrdering::Different;
+		}
+
+		virtual uIntn cnLib_FUNC GetMaxValueLength(void)noexcept(true)override{
+			return 20;
+		}
+	};
+
+	class cClientSubscription : public iGATTClientSubscription, public iReference
+	{
+	public:
+		rInnerPtr<cGATTServerCharacteristic> Owner;
+		COMPtr<IGattSubscribedClient> Client;
+
+		virtual rPtr<iGATTClientConnection> cnLib_FUNC GetConnection(void)noexcept(true)override{return nullptr;}
+
+		bool NeedUpdateValue=false;
+		ufInt8 UpdateValueState=0;
+
+		class cClientNotifyValueCompleteHandler
+		{
+			cClientSubscription* GetHost(void)noexcept(true);
+		public:
+			void EventIncReference(void)noexcept(true);
+			void EventDecReference(void)noexcept(true);
+			void EventInvoke(IClientNotifyValueAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+		};
+		cAsyncOperationCompletedHandler<cClientNotifyValueCompleteHandler,GattClientNotificationResult*> ClientNotifyValueCompleteHandler;
+	};
+
+	cnRTL::cSeqMap< cHString,rPtr<cClientSubscription> > fSubscribedClientMap;
+
+	rPtr<cClientConnection> QueryClient(IGattSession *Session)noexcept(true);
+
+	void MainProcess_ValueBroadcastNotify(ABI::Windows::Storage::Streams::IDataWriter *DataWriter)noexcept(true);
+	void MainProcess_ValueNotify(cClientSubscription *Subscription,ABI::Windows::Storage::Streams::IDataWriter *DataWriter)noexcept(true);
+
+	struct cReadRequestItem
+	{
+		arCls<cReadRequestItem> *Next;
+		COMPtr<IGattSession> Session;
+		COMPtr<IDeferral> Deferal;
+		COMPtr<IGattReadRequest> Request;
+
+		class cGetReadRequestCompleteHandler
+		{
+		public:
+			cGATTServerCharacteristic *Owner;
+			void EventIncReference(void)noexcept(true);
+			void EventDecReference(void)noexcept(true);
+			void EventInvoke(IGetReadRequestAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+		};
+		cAsyncOperationCompletedHandler<cGetReadRequestCompleteHandler,GattReadRequest*> GetReadRequestCompleteHandler;
+	};
+	cnRTL::cAtomicQueueSO< arCls<cReadRequestItem> > fReadRequestQueue;
+	cnRTL::arClsSharedObjectRecycler<cReadRequestItem> fReadRequestItemRecycler;
+
+	struct cWriteRequestItem
+	{
+		arCls<cWriteRequestItem> *Next;
+		COMPtr<IGattSession> Session;
+		COMPtr<IDeferral> Deferal;
+		COMPtr<IGattWriteRequest> Request;
+
+		class cGetWriteRequestCompleteHandler
+		{
+		public:
+			cGATTServerCharacteristic *Owner;
+			void EventIncReference(void)noexcept(true);
+			void EventDecReference(void)noexcept(true);
+			void EventInvoke(IGetWriteRequestAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+		};
+		cAsyncOperationCompletedHandler<cGetWriteRequestCompleteHandler,GattWriteRequest*> GetWriteRequestCompleteHandler;
+	};
+	cnRTL::cAtomicQueueSO< arCls<cWriteRequestItem> > fWriteRequestQueue;
+	cnRTL::arClsSharedObjectRecycler<cWriteRequestItem> fWriteRequestItemRecycler;
+
+	class cRequestProcessProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fRequestProcessProcedure;
+	void RequestProcessThread(void)noexcept(true);
+	void NotifyRequestProcess(void)noexcept(true);
+
+	void RequestProcess(void)noexcept(true);
+	
+	class cReadRequestedHandler
+	{
+		cGATTServerCharacteristic* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(IGattLocalCharacteristic *sender,IGattReadRequestedEventArgs *args)noexcept(true);
+	};
+	cTypedEventHandler<cReadRequestedHandler,GattLocalCharacteristic*,GattReadRequestedEventArgs*> fReadRequestedHandler;
+
+	class cWriteRequestedHandler
+	{
+		cGATTServerCharacteristic* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(IGattLocalCharacteristic *sender,IGattWriteRequestedEventArgs *args)noexcept(true);
+	};
+	cTypedEventHandler<cWriteRequestedHandler,GattLocalCharacteristic*,GattWriteRequestedEventArgs*> fWriteRequestedHandler;
+
+	class cSubscribedClientsChangedHandler
+	{
+		cGATTServerCharacteristic* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(IGattLocalCharacteristic *sender,IInspectable *args)noexcept(true);
+	};
+	cTypedEventHandler<cSubscribedClientsChangedHandler,GattLocalCharacteristic*,IInspectable*> fSubscribedClientsChangedHandler;
+
+	EventRegistrationToken fReadRequestedEventToken;
+	EventRegistrationToken fWriteRequestedEventToken;
+	EventRegistrationToken fSubscribedClientsChangedEventToken;
+
+
+	class cCreateLocalCharCompleteHandler
+	{
+		cGATTServerCharacteristic* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(ICreateLocalCharAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+
+		HRESULT hrResult;
+		COMPtr<IGattLocalCharacteristicResult> Result;
+	};
+	cAsyncOperationCompletedHandler<cCreateLocalCharCompleteHandler,GattLocalCharacteristicResult*> fCreateLocalCharCompleteHandler;
+
+};
+//---------------------------------------------------------------------------
+class cGATTServerService : public iGATTServerService, public cDualReference
+{
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattServiceProvider GattServiceProvider;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProvider IGattServiceProvider;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattLocalService GattLocalService;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalService IGattLocalService;
+	
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattServiceProviderAdvertisementStatus GattServiceProviderAdvertisementStatus;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderAdvertisingParameters IGattServiceProviderAdvertisingParameters;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattServiceProviderAdvertisementStatusChangedEventArgs GattServiceProviderAdvertisementStatusChangedEventArgs;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderAdvertisementStatusChangedEventArgs IGattServiceProviderAdvertisementStatusChangedEventArgs;
+	
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattServiceProviderResult GattServiceProviderResult;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderResult IGattServiceProviderResult;
+	typedef ABI::Windows::Foundation::IAsyncOperation<GattServiceProviderResult*> ICreateServiceProviderAsyncOp;
+public:
+	cGATTServerService(cGATTServer *Owner,const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true);
+
+	IGattServiceProvider* GetServiceProvider(void)const noexcept(true);
+	IGattLocalService* GetLocalService(void)const noexcept(true);
+	const cGATTUUID &GetID(void)const noexcept;
+	iDispatch* GetDispatch(void)const noexcept(true);
+	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
+
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)override;
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)override;
+	virtual bool cnLib_FUNC GetAdvertisementIncluded(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetAdvertisementIncluded(bool Included)noexcept(true)override;
+
+	void CharacteristicNotifyClosed(cGATTServerCharacteristic *Characteristic)noexcept(true);
+	void CharacteristicNotifyTreeChanged(void)noexcept(true);
+	void ServiceShutdown(void)noexcept(true);
+	void ServerNotifyStateChange(void)noexcept(true);
+	void ServerNotifyAdvertisementState(void)noexcept(true);
+	void ServerActivate(IGattServiceProvider *Provider)noexcept(true);
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+	rPtr<cGATTServer> fOwner;
+	cGATTUUID fServiceID;
+	COMPtr<IGattServiceProvider> fServiceProvider;
+	COMPtr<IGattLocalService> fService;
+	iPtr<iDispatch> fDispatch;
+	rPtr<iReference> fControllerReference;
+	iGATTServiceController *fController;
+	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerCharacteristic>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fCharacteristicMap;
+
+private:
+
+	rPtr<iAsyncProcedure> fMainProcessWork;
+
+	cExclusiveFlag fMainProcessExclusiveFlag;
+	bool fShutdown=false;
+	eGATTFunctionState fFuncState=GATTFunctionState::Scanning;
+	bool fNeedNotifyFunctionStateChange=false;
+	bool fNeedUpdateAdvertisement=false;
+	ufInt8 fCreateProviderState=0;
+
+	bool fNotifiedIsAdvertising=false;
+	bool fAdvertisementActivated=false;
+	bool fAdvertisementRequireRestart=false;
+	bool fAdvertisementIncluded=false;
+
+	void CreateServiceProvider(void)noexcept(true);
+
+	class cMainProcessProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fMainProcessProcedure;
+	void MainProcessThread(void)noexcept(true);
+	void NotifyMainProcess(void)noexcept(true);
+
+	bool MainProcess(void)noexcept(true);
+
+	void ProcessAdvertisement(void)noexcept(true);
+
+	class cCreateServiceProviderCompleteHandler
+	{
+		cGATTServerService* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(ICreateServiceProviderAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept(true);
+
+		HRESULT hrResult;
+		COMPtr<IGattServiceProviderResult> Result;
+	};
+	cAsyncOperationCompletedHandler<cCreateServiceProviderCompleteHandler,GattServiceProviderResult*> fCreateServiceProviderCompleteHandler;
+
+	class cAdvertisementStatusChangedHandler
+	{
+		cGATTServerService* GetHost(void)noexcept(true);
+	public:
+		void EventIncReference(void)noexcept(true);
+		void EventDecReference(void)noexcept(true);
+		void EventInvoke(IGattServiceProvider *sender,IGattServiceProviderAdvertisementStatusChangedEventArgs *args)noexcept(true);
+	};
+	cTypedEventHandler<cAdvertisementStatusChangedHandler,GattServiceProvider*,GattServiceProviderAdvertisementStatusChangedEventArgs*> fAdvertisementStatusChangedHandler;
+
+	EventRegistrationToken fAdvertisementStatusChangedToken;
+};
+//---------------------------------------------------------------------------
+class cGATTServer : public iGATTServer, public cDualReference
+{
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattServiceProvider GattServiceProvider;
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProvider IGattServiceProvider;
+	
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderStatics IGattServiceProviderStatics;
+public:
+	cGATTServer(iDispatch *Dispatch,COMPtr<IGattServiceProviderStatics> ProviderStatic)noexcept(true);
+
+	IGattServiceProviderStatics* GetProviderStatic(void)const noexcept(true);
+	iDispatch* GetDispatch(void)const noexcept(true);
+	eGATTFunctionState ServerGetFunctionState(void)noexcept(true);
+
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
+	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual bool cnLib_FUNC InsertHandler(iGATTServerHandler *Handler)noexcept(true)override;
+	virtual bool cnLib_FUNC RemoveHandler(iGATTServerHandler *Handler)noexcept(true)override;
+
+	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)override;
+
+	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
+	virtual bool cnLib_FUNC GetAdvertisementActive(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetAdvertisementActive(bool Active)noexcept(true)override;
+
+	void ServiceNotifyClosed(cGATTServerService *Service)noexcept(true);
+	void ServiceNotifyCreated(cGATTServerService *Service)noexcept(true);
+
+	void ServerShutdown(void)noexcept(true);
+	bool ServerAdvertisementIsActive(void)const noexcept(true);
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+
+	COMPtr<IGattServiceProviderStatics> fProviderStatic;
+	iPtr<iDispatch> fDispatch;
+
+private:
+
+	cSeqSet<iGATTServerHandler*> fHandlers;
+	rPtr<iAsyncProcedure> fMainProcessWork;
+
+	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerService>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fServiceMap;
+	cSeqMap< cGATTUUID,COMPtr<IGattServiceProvider>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fProviderMap;
+
+	cExclusiveFlag fMainProcessExclusiveFlag;
+	bool fShutdown=false;
+	eGATTFunctionState fFunctionState;
+	bool fNeedNotifyFunctionStateChange=false;
+	bool fEffectiveAdvertisementActive=false;
+
+	bool fAdvertisementActive=false;
+
+	class cMainProcessProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fMainProcessProcedure;
+	void MainProcessThread(void)noexcept(true);
+	void NotifyMainProcess(void)noexcept(true);
+
+	bool MainProcess(void)noexcept(true);
+
+};
+//---------------------------------------------------------------------------
+rPtr<iGATTServer> CreateGATTServer(iDispatch *Dispatch)noexcept(true);
+//---------------------------------------------------------------------------
 #if 0
 
 

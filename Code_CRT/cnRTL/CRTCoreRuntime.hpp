@@ -168,12 +168,12 @@ struct TKRuntime::TString : CPPRuntime::TString<ElementSize>
 	}
 
 	static uIntn Copy(void *Dest,uIntn DestLength,const void *Src)noexcept(true){
-#if defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL>0
+//#if defined(_ITERATOR_DEBUG_LEVEL) && _ITERATOR_DEBUG_LEVEL>0
 		// prevent VC complaint about unchecked iterator
-		auto DestIterator=stdext::checked_array_iterator<tUInt*>(static_cast<tUInt*>(Dest),DestLength);
-#else
+		//auto DestIterator=stdext::checked_array_iterator<tUInt*>(static_cast<tUInt*>(Dest),DestLength);
+//#else
 		auto DestIterator=static_cast<tUInt*>(Dest);
-#endif // defined(_ITERATOR_DEBUG_LEVEL)
+//#endif // defined(_ITERATOR_DEBUG_LEVEL)
 		auto r=std::copy_if(static_cast<const tUInt*>(Src),static_cast<const tUInt*>(Src)+DestLength,DestIterator,[](const tUInt &c){	return c!=0;	});
 		uIntn CopyedLength=std::distance(DestIterator,r);
 		static_cast<tUInt*>(Dest)[CopyedLength]=0;

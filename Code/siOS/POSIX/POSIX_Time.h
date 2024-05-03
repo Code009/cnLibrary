@@ -6,6 +6,7 @@
 #define __cnLib_siOS_POSIX_Time_H__
 
 #include <time.h>
+#include <siOS/POSIX/POSIXHeader.h>
 
 #include <cnRTL/cnRTLCore.h>
 #include <cnSystem/cnData.h>
@@ -15,37 +16,28 @@
 namespace cnLibrary{
 namespace siPOSIX{
 //---------------------------------------------------------------------------
-#if _POSIX_C_SOURCE >=200112L
+#ifdef siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
-class cTimepoint : public iTimepoint
+uInt64 timespecToNanoSeconds(const timespec &tv)noexcept(true);
+timespec timespecFromNanoSeconds(sInt64 Seconds)noexcept(true);
+uInt64 GetSystemTimeNow(void)noexcept(true);
+//---------------------------------------------------------------------------
+class cTimesepcTimepoint : public iTimepoint
 {
+public:
+	cTimesepcTimepoint()noexcept(true);
+	cTimesepcTimepoint(sInt64 NanoSecondsSinceUnixEPoch)noexcept(true);
+	~cTimesepcTimepoint()noexcept(true);
+
+	virtual sInt64 cnLib_FUNC SystemTime(void)noexcept(true)override;
+	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)noexcept(true)override;
+
+	static void timespecFromTime(timespec &tv,iTimepoint *RefTime)noexcept(true);
 protected:
 	timespec fValue;
-
-	~cTimepoint();
-public:
-	cTimepoint();
-	cTimepoint(sint64 NanoSecondsSinceUnixEPoch);
-
-	virtual sint64 cnLib_FUNC SystemTime(void)const override;
-	virtual sint64 cnLib_FUNC SinceTime(const iTimepoint *Time)const override;
-
-	static sint64 timespecToNanoSeconds(const timespec &tv);
-	static void NanoSecondsTotimespec(timespec &tv,sint64 Seconds);
-	static void timespecFromTime(timespec &tv,const iTimepoint *RefTime);
 };
 //---------------------------------------------------------------------------
-class cTimeNow : public iTimepoint
-{
-public:
-	cTimeNow();
-	~cTimeNow();
-
-	virtual sInt64 cnLib_FUNC SystemTime(void)override;
-	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)override;
-
-};
-#endif	//_POSIX_C_SOURCE >=200112L
+#endif	// siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 }	// namespace siPOSIX

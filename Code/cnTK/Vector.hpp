@@ -76,23 +76,24 @@ public:
 	
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cVectorStorage()=default;
+	cVectorStorage(const cVectorStorage&)=default;
 #else
-	cnLib_CONSTEXPR cVectorStorage()noexcept(true){}
-#endif
-
+	cnLib_CONSTEXPR_FUNC cVectorStorage()noexcept(true){}
 	cVectorStorage(const cVectorStorage &Src)noexcept(true){
 		for(uIntn i=0;i<VectorCount;i++){
 			fVectors[i]=Src.fVectors[i];
 		}
 	}
+#endif
 
-#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+
+#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L && cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	template<class...TArgs>
-	cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
+	cnLib_CONSTEXPR_FUNC cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
 		: fVectors{v0,static_cast<TArgs&&>(v)...}{}
 
-#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L && cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	operator tElement*()noexcept(true){
 		return reinterpret_cast<tElement*>(fVectors);
@@ -182,20 +183,21 @@ public:
 
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cVectorStorage()=default;
+	cVectorStorage(const cVectorStorage&)=default;
 #else
-	cnLib_CONSTEXPR cVectorStorage()noexcept(true){}
+	cnLib_CONSTEXPR_FUNC cVectorStorage()noexcept(true){}
+	cnLib_CONSTEXPR_FUNC cVectorStorage(const cVectorStorage &Src)noexcept(true)
+		: fVector(Src.fVector){}
 #endif
 
-	cVectorStorage(const cVectorStorage &Src)noexcept(true)
-		: fVector(Src.fVector){}
 
-#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L && cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	template<class...TArgs>
-	cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
+	cnLib_CONSTEXPR_FUNC cVectorStorage(typename TVectorOperator::tElement v0,TArgs&&...v)noexcept(true)
 		: fVector{v0,static_cast<tElement>(v)...}{}
 
-#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+#endif // cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L && cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 	
 	operator tElement*()noexcept(true){
@@ -292,14 +294,18 @@ public:
 	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tFloatOperatorPack,TElement,ElementCount>::tVectorOperator tVectorOperator;
 	typedef typename TVectorOperatorSelector<typename TKRuntime::tVectorOperatorEnumeration<TElement>::tFloatOperatorPack,TElement,ElementCount>::tVectorStorage tVectorStorage;
 
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVector()=default;
+#else
+	cnLib_CONSTEXPR_FUNC cVector()noexcept(true){}
+#endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+
 	template<uIntn SrcElementCount>
-	cVector(const cVector<TElement,SrcElementCount> &Src)noexcept(true)
+	cnLib_CONSTEXPR_FUNC cVector(const cVector<TElement,SrcElementCount> &Src)noexcept(true)
 		: tVectorStorage(Src){}
 
 #if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
 	using tVectorStorage::tVectorStorage;
-#else
-	cnLib_CONSTEXPR_FUNC cIntegerVector()noexcept(true){}
 #endif
 	using tVectorStorage::operator =;
 
@@ -409,11 +415,12 @@ template<class TElement,uIntn RowCount,uIntn ColCount>	class cMatrixC;
 //---------------------------------------------------------------------------
 
 template<class TElement,uIntn RowCount,uIntn ColCount>
-class cMatrixR
+class cMatrixR : protected TArrayClassDecl<cVector<TElement,ColCount>,RowCount>::Type
 {
 public:
 	typedef cVector<TElement,ColCount> tVector;
 	typedef typename tVector::tElement tElement;
+	typedef typename TArrayClassDecl<tVector,RowCount>::Type tArrayStorage;
 	
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cMatrixR()=default;
@@ -421,6 +428,10 @@ public:
 	cnLib_CONSTEXPR_FUNC cMatrixR()noexcept(true){}
 #endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 
+	
+#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
+	using tArrayStorage::tArrayStorage;
+#endif
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 	template<class...TArgs>
@@ -433,13 +444,13 @@ public:
 
 	cMatrixR(const cMatrixR &Src)noexcept(true){
 		for(uIntn i=0;i<RowCount;i++){
-			fRow[i]=Src.fRow[i];
+			this->Array[i]=Src.Array[i];
 		}
 	}
 	cMatrixR& operator =(const cMatrixR &Src)noexcept(true){
 		if(this!=&Src){
 			for(uIntn i=0;i<RowCount;i++){
-				fRow[i]=Src.fRow[i];
+				this->Array[i]=Src.Array[i];
 			}
 		}
 		return *this;
@@ -458,22 +469,22 @@ public:
 
 	void Load(const tElement *Array)noexcept(true){
 		for(uIntn i=0;i<RowCount;i++){
-			fRow[i].Load(Array+i*ColCount);
+			this->Array[i].Load(Array+i*ColCount);
 		}
 	}
 	void Store(tElement *Array)const noexcept(true){
 		for(uIntn i=0;i<RowCount;i++){
-			fRow[i].Store(Array+i*ColCount);
+			this->Array[i].Store(Array+i*ColCount);
 		}
 	}
 	void LoadA(const tElement *Array)noexcept(true){
 		for(uIntn i=0;i<RowCount;i++){
-			fRow[i].LoadA(Array+i*ColCount);
+			this->Array[i].LoadA(Array+i*ColCount);
 		}
 	}
 	void StoreA(tElement *Array)const noexcept(true){
 		for(uIntn i=0;i<RowCount;i++){
-			fRow[i].StoreA(Array+i*ColCount);
+			this->Array[i].StoreA(Array+i*ColCount);
 		}
 	}
 	void LoadTranspose(const tElement *Array)noexcept(true){
@@ -482,21 +493,21 @@ public:
 			for(uIntn col=0;col<ColCount;col++){
 				TempArray[col]=Array[col*RowCount+row];
 			}
-			fRow[row].LoadA(TempArray);
+			this->Array[row].LoadA(TempArray);
 		}
 	}
 
-	operator tVector* (void)noexcept(true)			{	return fRow;	}
-	operator const tVector* (void)const	noexcept(true){	return fRow;	}
+	operator tVector* (void)noexcept(true)			{	return this->Array;	}
+	operator const tVector* (void)const	noexcept(true){	return this->Array;	}
 
 	tElement operator ()(uIntn Row,uIntn Col)noexcept(true){
-		return fRow[Row][Col];
+		return this->Array[Row][Col];
 	}
 
 	typename TTypeConditional<tElement*,tVector::PaddingLength==0>::Type Cells(void)noexcept(true)
-	{	return static_cast<tElement*>(fRow[0]);	}
+	{	return static_cast<tElement*>(this->Array[0]);	}
 	typename TTypeConditional<const tElement*,tVector::PaddingLength==0>::Type Cells(void)const noexcept(true)
-	{	return static_cast<const tElement*>(fRow[0]);	}
+	{	return static_cast<const tElement*>(this->Array[0]);	}
 
 	const cMatrixC<TElement,ColCount,RowCount>& Transpose(void)const noexcept(true){
 		return *reinterpret_cast<const cMatrixC<TElement,ColCount,RowCount>*>(this);
@@ -520,33 +531,38 @@ public:
 	*/
 		// result rows
 		for(uIntn Row=0;Row<RowCount;Row++){
-			fRow[Row].Zero();
+			this->Array[Row].Zero();
 		}
 
 		for(uIntn MulIndex=0;MulIndex<MulCount;MulIndex++){
 			for(uIntn Row=0;Row<RowCount;Row++){
 				tVector t=RightRows[MulIndex] * VectorFill(LeftCells(Row,MulIndex));
-				fRow[Row]+=t;
+				this->Array[Row]+=t;
 			}
 		}
 
 	}
-protected:
-	tVector fRow[RowCount];
 };
 
 template<class TElement,uIntn RowCount,uIntn ColCount>
-class cMatrixC
+class cMatrixC : protected TArrayClassDecl<cVector<TElement,RowCount>,ColCount>::Type
 {
 public:
 	typedef cVector<TElement,RowCount> tVector;
 	typedef typename tVector::tElement tElement;
+	typedef typename TArrayClassDecl<tVector,ColCount>::Type tArrayStorage;
 	
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
 	cMatrixC()=default;
 #else
 	cnLib_CONSTEXPR_FUNC cMatrixC()noexcept(true){}
 #endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	
+	
+#if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
+	using tArrayStorage::tArrayStorage;
+#endif
+
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
@@ -561,13 +577,13 @@ public:
 
 	cMatrixC(const cMatrixC &Src)noexcept(true){
 		for(uIntn i=0;i<ColCount;i++){
-			fCol[i]=Src.fCol[i];
+			this->Array[i]=Src.Array[i];
 		}
 	}
 	cMatrixC& operator =(const cMatrixC &Src)noexcept(true){
 		if(this!=&Src){
 			for(uIntn i=0;i<ColCount;i++){
-				fCol[i]=Src.fCol[i];
+				this->Array[i]=Src.Array[i];
 			}
 		}
 		return *this;
@@ -587,22 +603,22 @@ public:
 
 	void Load(const tElement *Array)noexcept(true){
 		for(uIntn i=0;i<ColCount;i++){
-			fCol[i].Load(Array+i*RowCount);
+			this->Array[i].Load(Array+i*RowCount);
 		}
 	}
 	void Store(tElement *Array)const noexcept(true){
 		for(uIntn i=0;i<ColCount;i++){
-			fCol[i].Store(Array+i*RowCount);
+			this->Array[i].Store(Array+i*RowCount);
 		}
 	}
 	void LoadA(const tElement *Array)noexcept(true){
 		for(uIntn i=0;i<ColCount;i++){
-			fCol[i].LoadA(Array+i*RowCount);
+			this->Array[i].LoadA(Array+i*RowCount);
 		}
 	}
 	void StoreA(tElement *Array)const noexcept(true){
 		for(uIntn i=0;i<ColCount;i++){
-			fCol[i].StoreA(Array+i*RowCount);
+			this->Array[i].StoreA(Array+i*RowCount);
 		}
 	}
 	void LoadTranspose(const tElement *Array)noexcept(true){
@@ -611,7 +627,7 @@ public:
 			for(uIntn row=0;row<RowCount;row++){
 				TempArray[row]=Array[row*RowCount+col];
 			}
-			fCol[col].LoadA(TempArray);
+			this->Array[col].LoadA(TempArray);
 		}
 	}
 
@@ -620,17 +636,17 @@ public:
 		return *reinterpret_cast<const cMatrixR<TElement,ColCount,RowCount>*>(this);
 	}
 
-	operator tVector* (void)noexcept(true)			{	return fCol;	}
-	operator const tVector* (void)const	noexcept(true){	return fCol;	}
+	operator tVector* (void)noexcept(true)			{	return this->Array;	}
+	operator const tVector* (void)const	noexcept(true){	return this->Array;	}
 
 	tElement operator ()(uIntn Row,uIntn Col)noexcept(true){
-		return fCol[Col][Row];
+		return this->Array[Col][Row];
 	}
 
 	typename TTypeConditional<tElement*,tVector::PaddingLength==0>::Type Cells(void)noexcept(true)
-	{	return static_cast<tElement*>(fCol[0]);	}
+	{	return static_cast<tElement*>(this->Array[0]);	}
 	typename TTypeConditional<const tElement*,tVector::PaddingLength==0>::Type Cells(void)const noexcept(true)
-	{	return static_cast<const tElement*>(fCol[0]);	}
+	{	return static_cast<const tElement*>(this->Array[0]);	}
 
 	template<uIntn MulCount,class TRightCellAccessor>
 	void MatrixMultiply(const tVector *LeftColumns,TRightCellAccessor RightCells)noexcept(true){
@@ -650,7 +666,7 @@ public:
 	*/
 		// result columns
 		for(uIntn Col=0;Col<ColCount;Col++){
-			fCol[Col].Zero();
+			this->Array[Col].Zero();
 		}
 
 		for(uIntn MulIndex=0;MulIndex<MulCount;MulIndex++){
@@ -658,13 +674,11 @@ public:
 				tVector RightRow;
 				RightRow.Fill(RightCells(MulIndex,Col));
 				tVector t=LeftColumns[MulIndex] * RightRow;
-				fCol[Col]+=t;
+				this->Array[Col]+=t;
 			}
 		}
 
 	}
-protected:
-	tVector fCol[ColCount];
 };
 
 

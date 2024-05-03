@@ -236,6 +236,66 @@ struct cMultiArray
 };
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+//---------------------------------------------------------------------------
+namespace cnVar{
+//---------------------------------------------------------------------------
+
+template<class T,uIntn Length>
+struct TArrayClassDecl;
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class T,uIntn Length>
+struct TArrayClassDecl
+{
+	struct Type{
+		T Array[Length];
+	};
+};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class TTypePack,class TIndexSequence>
+struct cArrayClassStorage;
+
+template<class T,class...VT,uIntn...Indics>
+struct cArrayClassStorage< TTypePack<T,VT...>,TValueSequence<uIntn,Indics...> >
+{
+
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cArrayClassStorage()=default;
+	cArrayClassStorage(const cArrayClassStorage&)=default;
+#else
+	cnLib_CONSTEXPR_FUNC cArrayClassStorage()noexcept(true){}
+	cnLib_CONSTEXPR_FUNC cArrayClassStorage(const cArrayClassStorage &Src)
+		: Array{Src.Array[Indics]...}{}
+#endif // !cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+
+#if cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+
+	cnLib_CONSTEXPR_FUNC cArrayClassStorage(T v0,VT...v)noexcept(true)
+		: Array{v0,v...}{}
+
+#endif	// cnLibrary_CPPFEATURE_INITIALIZER_LIST >= 200806L
+	T Array[1+sizeof...(VT)];
+};
+
+template<class T,uIntn Length>
+struct TArrayClassDecl
+	: TTypeDef<
+		cnVar::cArrayClassStorage<
+			typename TMakeTypePackRepeat< TTypePack<>,Length,T>::Type,
+			typename TMakeIndexSequence< TValueSequence<uIntn>,Length>::Type
+		>
+	>{};
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+//---------------------------------------------------------------------------
+}	// namespace cnVar
 //---------------------------------------------------------------------------
 namespace cnDataStruct{
 //---------------------------------------------------------------------------

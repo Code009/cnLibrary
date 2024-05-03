@@ -712,6 +712,9 @@ struct TTypePack
 {
 	template<uIntn TypeIndex>	struct tTypeByIndex : TSelect<TypeIndex,VT...>{};
 	static cnLib_CONSTVAR uIntn Count=sizeof...(VT);
+
+	template<class TExtend>	struct tExtend : TTypeDef< TTypePack<VT...,TExtend> >{};
+	template<class TForType>	struct Declarator;
 };
 
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
@@ -723,6 +726,8 @@ struct TTypePack
 {
 	template<uIntn TypeIndex>	struct tTypeByIndex : TSelect<TypeIndex,cnLib_VARIADIC_TEMPLATE_EXPAND>{};
 	static cnLib_CONSTVAR uIntn Count=cnLib_VARIADIC_TEMPLATE_PARAMETER_COUNT;
+
+	template<class TForType>	struct Declarator;
 };
 
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
@@ -755,6 +760,7 @@ static cnLib_CONSTVAR T SelectValue=TSelectValue<Index,T,Values...>::Value;
 
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
+
 template<bool...Values>				struct TBooleanValuesAnd				: cnVar::TConstantValueFalse{};
 template<bool v>					struct TBooleanValuesAnd<v>				: cnVar::TConstantValueBool<v>{};
 template<bool v0,bool v1,bool...vv>	struct TBooleanValuesAnd<v0,v1,vv...>	: cnVar::TBooleanValuesAnd<v1,vv...>{};
@@ -764,6 +770,15 @@ template<bool...Values>					struct TBooleanValuesOr					: cnVar::TConstantValueF
 template<bool v>						struct TBooleanValuesOr<v>				: cnVar::TConstantValueBool<v>{};
 template<bool v0,bool v1,bool...vv>		struct TBooleanValuesOr<v0,v1,vv...>	: cnVar::TConstantValueTrue{};
 template<bool v1,bool...vv>				struct TBooleanValuesOr<false,v1,vv...>	: cnVar::TBooleanValuesOr<v1,vv...>{};
+
+
+template<class TTypePack,uIntn Count,class TAppend>
+struct TMakeTypePackRepeat
+	: TMakeTypePackRepeat<typename TTypePack::template tExtend<TAppend>::Type,Count-1,TAppend>{};
+
+template<class TValueSequence,class TAppend>
+struct TMakeTypePackRepeat<TValueSequence,0,TAppend>
+	: TTypeDef<TValueSequence>{};
 
 
 template<class T,T...Values>

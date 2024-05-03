@@ -1162,10 +1162,8 @@ void bcWinShellFolderItemObserver::UpdateFolderMonitor(void)noexcept
 		if(fFolderIDList!=nullptr){
 
 			// create message window
-			auto WindowProvider=cnWindows::CreateWindowProvider();
-		
-			if(WindowProvider->Create(HWND_MESSAGE,nullptr,0)){
-				fNotifyWindow=iCast<iWindow>(WindowProvider);
+			fNotifyWindow=cnWindows::CreateWindowHandle(HWND_MESSAGE,nullptr,0,0,0,0,0,0,0);
+			if(fNotifyWindow!=nullptr){
 
 				SHChangeNotifyEntry cne;
 				cne.fRecursive=false;
@@ -1400,10 +1398,10 @@ bool cWinShellFolderItemObserver::IsClosed(void)noexcept
 //---------------------------------------------------------------------------
 void cWinShellFolderItemObserver::DiscardChanges(void)noexcept
 {
-	EnumCurrentFiles();
+	//EnumFileDiscardChange();
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWinShellFolderItemObserver::EnumCurrentFiles(void)noexcept
+rPtr<iFileEnumerator> cWinShellFolderItemObserver::ResetChanges(void)noexcept
 {
 	if(fChangeEnumInProgress)
 		return nullptr;
@@ -1443,7 +1441,7 @@ rPtr<iFileEnumerator> cWinShellFolderItemObserver::EnumCurrentFiles(void)noexcep
 	return rCreate<cWinShellFileNameEnum>(fHostWindow,fThreading,fFolder,cnVar::MoveCast(FolderEnum));
 }
 //---------------------------------------------------------------------------
-rPtr<iFileChangeEnumerator> cWinShellFolderItemObserver::FetchFileChange(void)noexcept
+iPtr<iFile> cWinShellFolderItemObserver::FetchFileChange(eFileChange &Change)noexcept
 {
 	if(fChangeEnumInProgress)
 		return nullptr;
@@ -1465,7 +1463,7 @@ rPtr<iFileChangeEnumerator> cWinShellFolderItemObserver::FetchFileChange(void)no
 	}
 	
 	fChangeEnumInProgress=true;
-	
+	/*
 	auto ChangeEnum=rCreate<cChangeEnum>(this);
 
 	auto CheckpointChildren=cnVar::MoveCast(fCheckpointChildren);
@@ -1502,8 +1500,8 @@ rPtr<iFileChangeEnumerator> cWinShellFolderItemObserver::FetchFileChange(void)no
 		// removed item
 		RemoveChangeItem.Change=FileChange::Remove;
 		RemoveChangeItem.ItemID=cnVar::MoveCast(RemovedChild);
-	}
-	return ChangeEnum;
+	}*/
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 bool cWinShellFolderItemObserver::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE *List)noexcept

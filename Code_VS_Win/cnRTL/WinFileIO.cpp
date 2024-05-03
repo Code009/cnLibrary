@@ -891,19 +891,24 @@ cNTFolderOverlappedIOHandleFileObserver::cNTFolderOverlappedIOHandleFileObserver
 	, fPath(cnVar::MoveCast(Path))
 	, fFindPath(Win32FileMakeFindName(fPath,fPath->Length,L"*"))
 	, fCallback(nullptr)
-	, fRestartTrack(true)
 	, fCreateFileName(CreateFileName)
 {
-	fDirectoryReadChangeObject.ReadChangeBuffer=cnSystem::DefaultHeap::Alloc(fDirectoryReadChangeObject.ReadChangeBufferSize,sizeof(DWORD));
+	fDirectoryReadChangeObject.ReadChangeBuffer=cnSystem::DefaultHeap::Alloc(cDirectoryReadChangeObject::ReadChangeBufferSize,sizeof(DWORD));
 }
 //---------------------------------------------------------------------------
 cNTFolderOverlappedIOHandleFileObserver::~cNTFolderOverlappedIOHandleFileObserver()noexcept
 {
-	cnSystem::DefaultHeap::Free(fDirectoryReadChangeObject.ReadChangeBuffer,fDirectoryReadChangeObject.ReadChangeBufferSize,sizeof(DWORD));
+	cnSystem::DefaultHeap::Free(fDirectoryReadChangeObject.ReadChangeBuffer,cDirectoryReadChangeObject::ReadChangeBufferSize,sizeof(DWORD));
 
 	fFolderIO->Close();
 
-	auto Items=fPendingChangeStack.Swap(nullptr);
+	auto Items=fPendingChangeQueue.DequeueAll();
+	while(Items!=nullptr){
+		auto DeleteItem=Items;
+		Items=Items->Next;
+		delete DeleteItem;
+	}
+	Items=fChangeItemRecycler.Swap(nullptr);
 	while(Items!=nullptr){
 		auto DeleteItem=Items;
 		Items=Items->Next;
@@ -960,6 +965,7 @@ iReference* cNTFolderOverlappedIOHandleFileObserver::NotificationInnerReference(
 //---------------------------------------------------------------------------
 void cNTFolderOverlappedIOHandleFileObserver::NotificationStarted(void)noexcept
 {
+	NotifyProcessChanges();
 	fCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
@@ -1005,27 +1011,61 @@ cnRTL::cString<wchar_t> cNTFolderOverlappedIOHandleFileObserver::MakeFileName(co
 	return Win32FileMakeName(fPath,fPath.GetLength(),&pFileName,1);
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::RefreshFileMap(void)noexcept
+iPtr<iFile> cNTFolderOverlappedIOHandleFileObserver::FetchFileChange(eFileChange &Change)noexcept
 {
-	if(fRestartTrack){
-		ContinueRead();
-		// replace current file list
-		ReloadFileMap();
+	if(fLostTrack){
+		auto AutoLock=TakeLock(&fFileMapCS);
+		if(fLostTrack){
+			CatchFileChanges();
+			fLostTrack=false;
+			NotifyProcessChanges();
+		}
 	}
-	else{
-		// apply changes to list
-		CommitPendingChanges(nullptr);
+	auto ChangeItem=fPendingChangeQueue.Dequeue();
+	if(ChangeItem==nullptr){
+		return nullptr;
 	}
+
+	Change=ChangeItem->Change;
+
+	cnRTL::cStringBuffer<wchar_t> PathBuffer=fPath.GetArray();
+	PathBuffer.AppendChar('\\');
+	PathBuffer.Append(ChangeItem->Name);
+	auto FileName=fCreateFileName(cnVar::MoveCast(PathBuffer));
+
+	fChangeItemRecycler.Push(ChangeItem);
+
+	return FileName;
 }
 //---------------------------------------------------------------------------
 void cNTFolderOverlappedIOHandleFileObserver::DiscardChanges(void)noexcept
 {
-	RefreshFileMap();
+	if(fLostTrack){
+		auto AutoLock=TakeLock(&fFileMapCS);
+		if(fLostTrack){
+			ResetFileChanges();
+			fLostTrack=false;
+			NotifyProcessChanges();
+		}
+
+	}
+	else{
+		ResetChangeQueue();
+	}
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::EnumCurrentFiles(void)noexcept
+rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::ResetChanges(void)noexcept
 {
-	RefreshFileMap();
+	auto AutoLock=TakeLock(&fFileMapCS);
+	if(fLostTrack){
+		ResetFileChanges();
+		fLostTrack=false;
+		NotifyProcessChanges();
+	}
+	else{
+		ResetChangeQueue();
+	}
+
 	auto Enum=rCreate<cFileEnum>();
 	Enum->CreateFileName=fCreateFileName;
 	Enum->FolderPath=fPath;
@@ -1036,22 +1076,6 @@ rPtr<iFileEnumerator> cNTFolderOverlappedIOHandleFileObserver::EnumCurrentFiles(
 	}
 	
 	return Enum;
-}
-//---------------------------------------------------------------------------
-rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::FetchFileChange(void)noexcept
-{
-	if(fRestartTrack){
-		ContinueRead();
-		// compare whole file list to get changes
-		return CompareFileMap();
-	}
-	else{
-		// apply changes to list and create enumeration
-		auto ChangeEnum=rCreate<cFileChangeEnum>();
-		ChangeEnum->CreateFileName=fCreateFileName;
-		CommitPendingChanges(ChangeEnum);
-		return ChangeEnum;
-	}
 }
 //---------------------------------------------------------------------------
 void cNTFolderOverlappedIOHandleFileObserver::AssignFileInfo(cFileInfo &Info,const WIN32_FIND_DATAW &fd)noexcept
@@ -1084,7 +1108,19 @@ void cNTFolderOverlappedIOHandleFileObserver::SetupFileInfo(cFileInfo &Info,cons
 	}
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::ReloadFileMap(void)noexcept
+void cNTFolderOverlappedIOHandleFileObserver::ResetChangeQueue(void)noexcept
+{
+	auto ChangeItems=fPendingChangeQueue.DequeueAll();
+	while(ChangeItems!=nullptr){
+		auto ChangeItem=ChangeItems;
+		ChangeItems=ChangeItems->Next;
+
+		ChangeItem->Name.Clear();
+		fChangeItemRecycler.Push(ChangeItem);
+	}
+}
+//---------------------------------------------------------------------------
+void cNTFolderOverlappedIOHandleFileObserver::ResetFileChanges(void)noexcept
 {
 	WIN32_FIND_DATAW fd;
 
@@ -1102,21 +1138,19 @@ void cNTFolderOverlappedIOHandleFileObserver::ReloadFileMap(void)noexcept
 	::FindClose(FindHandle);
 }
 //---------------------------------------------------------------------------
-rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::CompareFileMap(void)noexcept
+void cNTFolderOverlappedIOHandleFileObserver::CatchFileChanges(void)noexcept
 {
-	auto ChangeEnum=rCreate<cFileChangeEnum>();
-	ChangeEnum->CreateFileName=fCreateFileName;
-	ChangeEnum->OldFiles=cnVar::MoveCast(fFileMap);
+	auto OldFileMap=cnVar::MoveCast(fFileMap);
 	WIN32_FIND_DATAW fd;
 
 	HANDLE FindHandle=::FindFirstFileW(fFindPath,&fd);
 	if(FindHandle==INVALID_HANDLE_VALUE){
 		// error enumerate files
-		return nullptr;
+		return;
 	}
 
 	do{
-		auto OldFileItemPair=ChangeEnum->OldFiles.GetPair(fd.cFileName);
+		auto OldFileItemPair=OldFileMap.GetPair(fd.cFileName);
 		if(OldFileItemPair!=nullptr){
 			// exists
 			auto &FileItem=fFileMap[OldFileItemPair->Key];
@@ -1124,53 +1158,68 @@ rPtr<iFileChangeEnumerator> cNTFolderOverlappedIOHandleFileObserver::CompareFile
 
 			bool Changed=false;
 			if(Changed){
-				auto ChangeItem=ChangeEnum->ChangeList.Append();
+				auto ChangeItem=fChangeItemRecycler.Pop();
+				if(ChangeItem==nullptr)
+					ChangeItem=new cPendingChangeItem;
 				ChangeItem->Name=OldFileItemPair->Key;
 				ChangeItem->Change=FileChange::Update;
+			
+				fPendingChangeQueue.Enqueue(ChangeItem);
 			}
 		
-			ChangeEnum->OldFiles.RemovePair(OldFileItemPair);
+			OldFileMap.RemovePair(OldFileItemPair);
 		}
 		else{
 			// new file
-			auto ChangeItem=ChangeEnum->ChangeList.Append();
+			auto ChangeItem=fChangeItemRecycler.Pop();
+			if(ChangeItem==nullptr)
+				ChangeItem=new cPendingChangeItem;
 			ChangeItem->Name=fd.cFileName;
 			ChangeItem->Change=FileChange::Insert;
 
 			auto &FileItem=fFileMap[ChangeItem->Name];
 			AssignFileInfo(FileItem,fd);
 
+			fPendingChangeQueue.Enqueue(ChangeItem);
 		}
 
 	}while(::FindNextFileW(FindHandle,&fd));
 
-	::FindClose(FindHandle);
+	for(auto p : OldFileMap){
+		auto ChangeItem=fChangeItemRecycler.Pop();
+		if(ChangeItem==nullptr)
+			ChangeItem=new cPendingChangeItem;
+		ChangeItem->Name=p.Key;
+		ChangeItem->Change=FileChange::Remove;
+		fPendingChangeQueue.Enqueue(ChangeItem);
+	}
 
-	return ChangeEnum;
+	::FindClose(FindHandle);
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::ContinueRead(void)noexcept
+void cNTFolderOverlappedIOHandleFileObserver::NotifyProcessChanges(void)noexcept
 {
-	if(fReadChangeFlag.Acquire()==false)
+	if(fProcessChangeFlag.Acquire()==false)
 		return;
 
 	do{
-		fReadChangeFlag.Continue();
+		fProcessChangeFlag.Continue();
 
 		if(IsNotificationClosed())
 			continue;
 
-		if(fReadInProgress==false){
+		if(fLostTrack==false && fReadInProgress==false){
 			if(fDirectoryReadChangeObject.Read(fFolderIO)){
 				InnerIncReference('noti');
 				fReadInProgress=true;
 			}
 			else{
-				DirectoryReadError();
+				// error reading change, terminate observation
+				CloseQueue();
 			}
 		}
 
-	}while(fReadChangeFlag.Release()==false);
+	}while(fProcessChangeFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
 cNTFolderOverlappedIOHandleFileObserver* cNTFolderOverlappedIOHandleFileObserver::cDirectoryReadChangeObject::GetHost(void)noexcept
@@ -1207,35 +1256,35 @@ void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadCompleted(void)noexce
 	if(fDirectoryReadChangeObject.ErrorCode==ERROR_SUCCESS){
 		if(fDirectoryReadChangeObject.BytesCompleted==0){
 			// not enough buffer, lost track of changes
-			fRestartTrack=true;
+			fLostTrack=true;
 			AsyncQueueSetAvailable(false);
 		}
 		else{
 			// parse change info
-			DirectoryReadParse();
+			bool AnyUpdate=DirectoryReadParse();
+			if(AnyUpdate){
+				AsyncQueueSetAvailable(false);
+			}
 		}
 
 		if(IsNotificationClosed()==false){
-			ContinueRead();
+			NotifyProcessChanges();
 		}
 	}
 	else{
-		DirectoryReadError();
+		// read error, terminate observation
+		CloseQueue();
 	}
 
 	InnerDecReference('noti');
 }
 //---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadError(void)noexcept
+bool cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)noexcept
 {
-	// cannot track of changes
-	fRestartTrack=true;
-}
-//---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)noexcept
-{
-	DWORD CurOffset=0;
+	auto AutoLock=TakeLock(&fFileMapCS);
+
 	bool AnyUpdate=false;
+	DWORD CurOffset=0;
 	auto DirNotifyInfo=static_cast<FILE_NOTIFY_INFORMATION*>(fDirectoryReadChangeObject.ReadChangeBuffer);
 	while(DirNotifyInfo->NextEntryOffset!=0){
 		cnLib_ASSERT(DirNotifyInfo->NextEntryOffset>=sizeof(FILE_NOTIFY_INFORMATION));
@@ -1244,7 +1293,10 @@ void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)noexcept
 			break;
 		}
 
-		auto ChangeItem=new cPendingChangeItem;
+		auto ChangeItem=fChangeItemRecycler.Pop();
+		if(ChangeItem==nullptr){
+			ChangeItem=new cPendingChangeItem;
+		}
 		switch(DirNotifyInfo->Action){
 		case FILE_ACTION_ADDED:
 			ChangeItem->Change=FileChange::Insert;
@@ -1265,62 +1317,30 @@ void cNTFolderOverlappedIOHandleFileObserver::DirectoryReadParse(void)noexcept
 		}
 		ChangeItem->Name.SetString(DirNotifyInfo->FileName,DirNotifyInfo->FileNameLength);
 
-		fPendingChangeStack.Push(ChangeItem);
-
-		DirNotifyInfo=cnMemory::PointerAddByteOffset(DirNotifyInfo,DirNotifyInfo->NextEntryOffset);
-		AnyUpdate=true;
-	}
-	if(AnyUpdate){
-		AsyncQueueSetAvailable(false);
-	}
-}
-//---------------------------------------------------------------------------
-void cNTFolderOverlappedIOHandleFileObserver::CommitPendingChanges(cFileChangeEnum *ChangeEnum)noexcept
-{
-	auto ChangeList=fPendingChangeStack.Swap(nullptr);
-	if(ChangeList==nullptr)
-		return;
-
-	// reverse
-	cPendingChangeItem *Next=nullptr;
-	do{
-		cPendingChangeItem *ItemPrev=ChangeList->Next;
-
-		ChangeList->Next=Next;
-		Next=ChangeList;
-
-		ChangeList=ItemPrev;
-	}while(ChangeList!=nullptr);
-	
-	do{
-		ChangeList=Next;
-		Next=ChangeList->Next;
-
-		switch(ChangeList->Change){
+		
+		switch(ChangeItem->Change){
 		case FileChange::Insert:
 		case FileChange::RenameNew:
 		case FileChange::Update:
 			{
-				auto FileItem=fFileMap[ChangeList->Name];
-				SetupFileInfo(FileItem,ChangeList->Name);
+				auto FileItem=fFileMap[ChangeItem->Name];
+				SetupFileInfo(FileItem,ChangeItem->Name);
 			}
 			break;
 		case FileChange::Remove:
 		case FileChange::RenameOld:
 			{
-				fFileMap.Remove(ChangeList->Name);
+				fFileMap.Remove(ChangeItem->Name);
 			}
 			break;
 		}
 		
-		if(ChangeEnum!=nullptr){
-			auto Item=ChangeEnum->ChangeList.Append();
-			Item->Change=ChangeList->Change;
-			Item->Name=cnVar::MoveCast(ChangeList->Name);
-		}
-		delete ChangeList;
+		fPendingChangeQueue.Enqueue(ChangeItem);
 
-	}while(Next!=nullptr);
+		DirNotifyInfo=cnMemory::PointerAddByteOffset(DirNotifyInfo,DirNotifyInfo->NextEntryOffset);
+		AnyUpdate=true;
+	}
+	return AnyUpdate;
 }
 //---------------------------------------------------------------------------
 bool cNTFolderOverlappedIOHandleFileObserver::cFileEnum::Fetch(void)noexcept
@@ -1344,78 +1364,6 @@ iFile* cNTFolderOverlappedIOHandleFileObserver::cFileEnum::GetCurrentFile(void)n
 	}
 	return CurrentFile;
 }
-//---------------------------------------------------------------------------
-bool cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::Fetch(void)noexcept
-{
-	switch(EnumPart){
-	default:
-		return false;
-	case 0:	// removed
-		{
-			uIntn NextIndex=EnumIndex+1;
-			if(NextIndex<OldFiles.GetCount()){
-				EnumIndex=NextIndex;
-				return true;
-			}
-		}
-		EnumIndex=cnVar::TIntegerValue<uIntn>::Max;
-		EnumPart=1;
-		cnLib_SWITCH_FALLTHROUGH;
-	case 1:	// changed
-		{
-			uIntn NextIndex=EnumIndex+1;
-			if(NextIndex<ChangeList.GetCount()){
-				EnumIndex=NextIndex;
-				return true;
-			}
-		}
-		EnumPart=2;
-		return false;
-	}
-}
-//---------------------------------------------------------------------------
-iFile* cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetCurrentFile(void)noexcept
-{
-	if(CurrentFile==nullptr){
-		switch(EnumPart){
-		default:
-			return nullptr;
-		case 0:	// removed
-			{
-				auto CurFile=OldFiles.GetPairAt(EnumIndex);
-				cnRTL::cStringBuffer<wchar_t> PathBuffer=FolderPath.GetArray();
-				if(Win32FileNameStreamAppend(PathBuffer.StreamWriteBuffer(),CurFile->Key)!=0){
-					CurrentFile=(*CreateFileName)(cnVar::MoveCast(PathBuffer));
-				}
-			}
-		case 1:	// changed
-			{
-				auto &CurFile=ChangeList[EnumIndex];
-				cnRTL::cStringBuffer<wchar_t> PathBuffer=FolderPath.GetArray();
-				if(Win32FileNameStreamAppend(PathBuffer.StreamWriteBuffer(),CurFile.Name)!=0){
-					CurrentFile=(*CreateFileName)(cnVar::MoveCast(PathBuffer));
-				}
-			}
-		}
-	}
-	return CurrentFile;
-}
-//---------------------------------------------------------------------------
-eFileChange cNTFolderOverlappedIOHandleFileObserver::cFileChangeEnum::GetChange(void)noexcept
-{
-	switch(EnumPart){
-	default:
-		return FileChange::Update;
-	case 0:	// removed
-		return FileChange::Remove;
-	case 1:	// changed
-		{
-			auto CurFile=ChangeList[EnumIndex];
-			return CurFile.Change;
-		}
-	}
-}
-
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA

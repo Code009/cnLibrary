@@ -19,71 +19,71 @@ namespace siPOSIX{
 //---------------------------------------------------------------------------
 static constexpr int SocketInvalid=-1;
 //---------------------------------------------------------------------------
-void SetupSocket(int s);
+void SetupSocket(int s)noexcept(true);
 //---------------------------------------------------------------------------
-eiOrdering SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2);
+eiOrdering SocketAddressCompare(const sockaddr *addr1,const sockaddr *addr2)noexcept(true);
 //---------------------------------------------------------------------------
 class cSocketAddressBuffer
 {
+public:
+	cSocketAddressBuffer()noexcept(true);
+	~cSocketAddressBuffer()noexcept(true);
+
+	void Clear(void)noexcept(true);
+
+	sockaddr* SockAddr(void)const noexcept(true);
+	socklen_t SockAddrLen(void)const noexcept(true);
+	void SetSockAddrLen(socklen_t len)noexcept(true);
+
+	socklen_t GetCapacity(void)const noexcept(true);
+	void SetCapacity(socklen_t len)noexcept(true);
+
+	bool SetAddressFamily(sa_family_t sa_family)noexcept(true);
+
 protected:
 	cnRTL::cMemoryBuffer fBuffer;
-public:
-	cSocketAddressBuffer();
-	~cSocketAddressBuffer();
-
-	void Clear(void);
-
-	sockaddr* SockAddr(void)const;
-	socklen_t SockAddrLen(void)const;
-	void SetSockAddrLen(socklen_t len);
-
-	socklen_t GetCapacity(void)const;
-	void SetCapacity(socklen_t len);
-
-	bool SetAddressFamily(sa_family_t sa_family);
-
 };
 //---------------------------------------------------------------------------
 class bcStreamSocketEndpoint : public iConnection, public iEndpoint, public cnRTL::bcRWQueue
 {
 public:
-	bcStreamSocketEndpoint(int Socket);
-	~bcStreamSocketEndpoint();
+	bcStreamSocketEndpoint(int Socket)noexcept(true);
+	~bcStreamSocketEndpoint()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
-	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
+	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
-	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)override;
+	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;
 
 protected:
 	int fSocket;
 
-	void ReadContinue(void);
-	void WriteContinue(void);
+	void ReadContinue(void)noexcept(true);
+	void WriteContinue(void)noexcept(true);
 
-	virtual void OnReadWait(void)=0;
-	virtual void OnWriteWait(void)=0;
+	virtual void OnReadWait(void)noexcept(true)=0;
+	virtual void OnWriteWait(void)noexcept(true)=0;
 
 
 	// iWriteQueue
 
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)override;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
 	// iReadQueue
 
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn QuerySize)override;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn QuerySize)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 
 // bcRWQueue
 
-	virtual void WriteQueueClosed(void)override;
-	virtual void ReadQueueClosed(void)override;
+	virtual void WriteQueueClosed(void)noexcept(true)override;
+	virtual void ReadQueueClosed(void)noexcept(true)override;
 
 	iPtr<iAddress> fLocalAddress;
 	iPtr<iAddress> fRemoteAddress;
@@ -95,8 +95,8 @@ private:
 	// socket send
 
 	cnRTL::cAsyncLoopbackStreamBuffer fWriteQueueBuffer;
-	bool SendBufferWriteToSocketLoop(void);
-	void SendBufferWriteToSocket(void);
+	bool SendBufferWriteToSocketLoop(void)noexcept(true);
+	void SendBufferWriteToSocket(void)noexcept(true);
 
 	// socket recv
 
@@ -109,41 +109,41 @@ private:
 class bcDatagramSocketEndpoint : public iConnection, public iEndpoint, public cnRTL::bcRWQueue
 {
 public:
-	bcDatagramSocketEndpoint(int Socket);
-	~bcDatagramSocketEndpoint();
+	bcDatagramSocketEndpoint(int Socket)noexcept(true);
+	~bcDatagramSocketEndpoint()noexcept(true);
 
-	virtual void* cnLib_FUNC CastInterface(iTypeID IID)override;
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true)override;
 
-	virtual void cnLib_FUNC Close(void)override;
-	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)override;
-	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)override;
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
+	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
+	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
+	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
-	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)override;
-	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)override;
+	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
+	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;
 
 protected:
 	int fSocket;
 
-	void ReadContinue(void);
-	void WriteContinue(void);
+	void ReadContinue(void)noexcept(true);
+	void WriteContinue(void)noexcept(true);
 
-	virtual void OnReadWait(void)=0;
-	virtual void OnWriteWait(void)=0;
+	virtual void OnReadWait(void)noexcept(true)=0;
+	virtual void OnWriteWait(void)noexcept(true)=0;
 
 	// iWriteQueue
 
-	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)override;
-	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)override;
+	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn Size)noexcept(true)override;
+	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
 
 	// iReadQueue
 
-	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)override;
-	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)override;
+	virtual cConstMemory cnLib_FUNC GatherReadBuffer(uIntn Size)noexcept(true)override;
+	virtual void cnLib_FUNC DismissReadBuffer(uIntn Size)noexcept(true)override;
 
 	// bcRWQueue
-	virtual void WriteQueueClosed(void)override;
-	virtual void ReadQueueClosed(void)override;
+	virtual void WriteQueueClosed(void)noexcept(true)override;
+	virtual void ReadQueueClosed(void)noexcept(true)override;
 
 	iPtr<iAddress> fLocalAddress;
 	iPtr<iAddress> fRemoteAddress;
@@ -155,8 +155,8 @@ private:
 
 	cnRTL::cMemoryBlock fWriteBuffer;
 	uIntn fWriteDataSize;
-	bool SendBufferWriteToSocketLoop(void);
-	void SendBufferWriteToSocket(void);
+	bool SendBufferWriteToSocketLoop(void)noexcept(true);
+	void SendBufferWriteToSocket(void)noexcept(true);
 
 	// socket recv
 
@@ -167,22 +167,22 @@ private:
 
 };
 //---------------------------------------------------------------------------
-class bcSocketConnectionQueue : public cnRTL::bcConnectionQueue
+class bcSocketConnectionListener : public cnRTL::bcConnectionListener
 {
 public:
-	bcSocketConnectionQueue(int Socket);
-	~bcSocketConnectionQueue();
+	bcSocketConnectionListener(int Socket)noexcept(true);
+	~bcSocketConnectionListener()noexcept(true);
 
-	virtual iPtr<iConnection> cnLib_FUNC FetchConnection(void)override;
+	virtual iPtr<iConnection> cnLib_FUNC FetchConnection(void)noexcept(true)override;
 protected:
 	int fSocket;
 
-	void AcceptContinue(void);
+	void AcceptContinue(void)noexcept(true);
 
-	virtual iPtr<iConnection> OnAcceptCreateConnection(int Socket,const sockaddr *addr,socklen_t addrlen)=0;
-	virtual void OnAcceptWait(void)=0;
+	virtual iPtr<iConnection> OnAcceptCreateConnection(int Socket,const sockaddr *addr,socklen_t addrlen)noexcept(true)=0;
+	virtual void OnAcceptWait(void)noexcept(true)=0;
 
-	virtual void AsyncQueueNotify(void)override;
+	virtual void AsyncQueueNotify(void)noexcept(true)override;
 
 private:
 	bool fAcceptAvailable;

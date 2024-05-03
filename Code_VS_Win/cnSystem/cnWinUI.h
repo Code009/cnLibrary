@@ -158,11 +158,24 @@ public:
 	virtual void cnLib_FUNC UpdateOwner(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
+class cnLib_INTERFACE iWindowsUIApplicationCallback
+{
+public:
+	virtual void cnLib_FUNC OnStart(void)noexcept(true)=0;
+	virtual void cnLib_FUNC OnExit(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iWindowsUISession : public iReference
+{
+public:
+	virtual void cnLib_FUNC Terminate(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE iWindowsUIApplication : public iReference
 {
 public:
 	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)=0;
-	virtual void cnLib_FUNC UIMain(iWindow *MainWindow,int CmdShow)noexcept(true)=0;
+	virtual void cnLib_FUNC UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iMouseCursorSetter : public iInterface
@@ -275,7 +288,7 @@ namespace cnWindows{
 //---------------------------------------------------------------------------
 iWindow* cnLib_FUNC GetWindowFromHandle(HWND WindowHandle)noexcept(true);
 //---------------------------------------------------------------------------
-iPtr<iWindow> cnLib_FUNC CreateHWND(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0,LONG X=CW_USEDEFAULT,LONG Y=CW_USEDEFAULT,LONG Width=CW_USEDEFAULT,LONG Height=CW_USEDEFAULT,UINT ChildID=0)noexcept(true);
+iPtr<iWindow> cnLib_FUNC CreateWindowHandle(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0,LONG X=CW_USEDEFAULT,LONG Y=CW_USEDEFAULT,LONG Width=CW_USEDEFAULT,LONG Height=CW_USEDEFAULT,UINT ChildID=0)noexcept(true);
 rPtr<iWindowsUIApplication> cnLib_FUNC CreateWindowsUIApplication(void)noexcept(true);
 iPtr<iUIThread> cnLib_FUNC CreateUIThreadOnCurrentThread(void)noexcept(true);
 iPtr<iUIThread> cnLib_FUNC StartUIThread(void)noexcept(true);

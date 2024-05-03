@@ -4,87 +4,67 @@
 using namespace cnLibrary;
 using namespace siPOSIX;
 //---------------------------------------------------------------------------
-#if	_POSIX_C_SOURCE >= 200112L
-
+#ifdef siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
-cTimepoint::cTimepoint()
+uInt64 siPOSIX::timespecToNanoSeconds(const timespec &tv)noexcept
 {
-}
-//---------------------------------------------------------------------------
-cTimepoint::cTimepoint(sint64 NanoSecondsSinceUnixEPoch)
-{
-	NanoSecondsTotimespec(fValue,NanoSecondsSinceUnixEPoch);
-}
-//---------------------------------------------------------------------------
-cTimepoint::~cTimepoint()
-{
-}
-//---------------------------------------------------------------------------
-sint64 cTimepoint::timespecToNanoSeconds(const timespec &tv)
-{
-	sint64 NanoSeconds;
+	uInt64 NanoSeconds;
 	NanoSeconds=tv.tv_nsec;
 	NanoSeconds+=tv.tv_sec*Time_1s;
 	return NanoSeconds;
 }
 //---------------------------------------------------------------------------
-void cTimepoint::NanoSecondsTotimespec(timespec &tv,sint64 NanoSeconds)
+timespec siPOSIX::timespecFromNanoSeconds(sInt64 NanoSeconds)noexcept
 {
-	tv.tv_sec=NanoSeconds/Time_1s;
-	tv.tv_nsec=NanoSeconds%Time_1s;
+	timespec ts;
+	ts.tv_sec=NanoSeconds/Time_1s;
+	ts.tv_nsec=NanoSeconds%Time_1s;
+	return ts;
 }
 //---------------------------------------------------------------------------
-void cTimepoint::timespecFromTime(timespec &tv,const iTimepoint *RefTime)
+uInt64 siPOSIX::GetSystemTimeNow(void)noexcept
+{
+	timespec now;
+	clock_gettime(CLOCK_REALTIME,&now);
+	return timespecToNanoSeconds(now);
+}
+//---------------------------------------------------------------------------
+cTimesepcTimepoint::cTimesepcTimepoint()noexcept
+{
+}
+//---------------------------------------------------------------------------
+cTimesepcTimepoint::cTimesepcTimepoint(sInt64 NanoSecondsSinceUnixEPoch)noexcept
+{
+	fValue=timespecFromNanoSeconds(NanoSecondsSinceUnixEPoch);
+}
+//---------------------------------------------------------------------------
+cTimesepcTimepoint::~cTimesepcTimepoint()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cTimesepcTimepoint::timespecFromTime(timespec &tv,iTimepoint *RefTime)noexcept
 {
 	auto NanoSeconds=RefTime->SystemTime();
 
-	NanoSecondsTotimespec(tv,NanoSeconds);
-	tv.tv_sec+=cnSystem::EpochSecondsSinceUnix;
+	tv=timespecFromNanoSeconds(NanoSeconds);
+	tv.tv_sec+=cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 }
 //---------------------------------------------------------------------------
-sint64 cnLib_FUNC cTimepoint::SystemTime(void)const
+sInt64 cTimesepcTimepoint::SystemTime(void)noexcept
 {
 	return timespecToNanoSeconds(fValue);
 }
 //---------------------------------------------------------------------------
-sint64 cnLib_FUNC cTimepoint::SinceTime(const iTimepoint *Time)const
+sInt64 cTimesepcTimepoint::SinceTime(iTimepoint *Time)noexcept
 {
 	timespec ref;
 	timespecFromTime(ref,Time);
-	sint64 dsec=fValue.tv_sec-ref.tv_sec;
-	sint64 dns=fValue.tv_nsec-ref.tv_nsec;
-	sint64 d=dsec*Time_1s+dns;
+	sInt64 dsec=fValue.tv_sec-ref.tv_sec;
+	sInt64 dns=fValue.tv_nsec-ref.tv_nsec;
+	sInt64 d=dsec*Time_1s+dns;
 	return d;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cTimeNow::cTimeNow()
-{
-}
-//---------------------------------------------------------------------------
-cTimeNow::~cTimeNow()
-{
-}
-//---------------------------------------------------------------------------
-sint64 cnLib_FUNC cTimeNow::SystemTime(void)const
-{
-	timespec now;
-	clock_gettime(CLOCK_REALTIME,&now);
-	return cTimepoint::timespecToNanoSeconds(now);
-}
-//---------------------------------------------------------------------------
-sint64 cnLib_FUNC cTimeNow::SinceTime(const iTimepoint *Time)const
-{
-	timespec now,ref;
-	clock_gettime(CLOCK_REALTIME,&now);
-	cTimepoint::timespecFromTime(ref,Time);
-
-	sint64 dsec=now.tv_sec-ref.tv_sec;
-	sint64 dns=now.tv_nsec-ref.tv_nsec;
-	sint64 d=dsec*Time_1s+dns;
-	return d;
-}
-//---------------------------------------------------------------------------
-#endif	// _POSIX_C_SOURCE >= 200112L
+#endif	// siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
 

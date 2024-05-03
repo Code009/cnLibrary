@@ -164,24 +164,6 @@ cOleInPlaceUIWindowComponent::~cOleInPlaceUIWindowComponent()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOleInPlaceUIWindowComponent::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool cOleInPlaceUIWindowComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleWindow){
-		*ppvObject=static_cast<IOleWindow*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceUIWindow){
-		*ppvObject=static_cast<IOleInPlaceUIWindow*>(this);
-		return true;
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceUIWindowComponent::GetWindow( 
     /* [out] */ __RPC__deref_out_opt HWND *phwnd)noexcept
 {
@@ -264,28 +246,6 @@ cOleInPlaceFrameComponent::cOleInPlaceFrameComponent()noexcept
 //---------------------------------------------------------------------------
 cOleInPlaceFrameComponent::~cOleInPlaceFrameComponent()noexcept
 {
-}
-//---------------------------------------------------------------------------
-IUnknown* cOleInPlaceFrameComponent::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool cOleInPlaceFrameComponent::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleWindow){
-		*ppvObject=static_cast<IOleWindow*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceUIWindow){
-		*ppvObject=static_cast<IOleInPlaceUIWindow*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceFrame){
-		*ppvObject=static_cast<IOleInPlaceFrame*>(this);
-		return true;
-	}
-	return false;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::GetWindow( 
@@ -418,20 +378,6 @@ HRESULT STDMETHODCALLTYPE cOleInPlaceFrameComponent::TranslateAccelerator(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMOleClientSite::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool bCOMOleClientSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleClientSite){
-		*ppvObject=static_cast<IOleClientSite*>(this);
-		return true;
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleClientSite::SaveObject(void)noexcept
 {
 	return S_OK;
@@ -473,20 +419,6 @@ HRESULT STDMETHODCALLTYPE bCOMOleClientSite::RequestNewObjectLayout(void)noexcep
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMAdviseSink::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool bCOMAdviseSink::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IAdviseSink){
-		*ppvObject=static_cast<IAdviseSink*>(this);
-		return true;
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
 void STDMETHODCALLTYPE bCOMAdviseSink::OnDataChange( 
     /* [annotation][unique][in] */ 
     _In_  FORMATETC *pFormatetc,
@@ -515,20 +447,6 @@ void STDMETHODCALLTYPE bCOMAdviseSink::OnClose(void)noexcept
 {
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-IUnknown* bCOMOleControlSite::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool bCOMOleControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleControlSite){
-		*ppvObject=static_cast<IOleControlSite*>(this);
-		return true;
-	}
-	return false;
-}
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMOleControlSite::OnControlInfoChanged(void)noexcept
 {
@@ -627,20 +545,6 @@ HRESULT STDMETHODCALLTYPE bCOMOleControlSite::ShowPropertyFrame(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-IUnknown* bCOMDispatch::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool bCOMDispatch::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IDispatch){
-		*ppvObject=static_cast<IDispatch*>(this);
-		return true;
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE bCOMDispatch::GetTypeInfoCount( 
     /* [out] */ __RPC__out UINT *pctinfo)noexcept
 {
@@ -694,24 +598,6 @@ cOLEInPlaceSite::cOLEInPlaceSite()noexcept
 //---------------------------------------------------------------------------
 cOLEInPlaceSite::~cOLEInPlaceSite()noexcept
 {
-}
-//---------------------------------------------------------------------------
-IUnknown* cOLEInPlaceSite::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool cOLEInPlaceSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleWindow){
-		*ppvObject=static_cast<IOleWindow*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceSite){
-		*ppvObject=static_cast<IOleInPlaceSite*>(this);
-		return true;
-	}
-	return false;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::GetWindow(
@@ -802,7 +688,7 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSite::OnPosRectChange(
 //---------------------------------------------------------------------------
 cOLEDocumentSite::cOLEDocumentSite(cOLEInPlaceControl *Control)noexcept
 {
-	fInPlaceSite.Outter=COMUnknown();
+	fInPlaceSite.Outter=static_cast<IOleClientSite*>(this);
 	fInPlaceSite.InPlaceControl=Control;
 }
 //---------------------------------------------------------------------------
@@ -810,23 +696,10 @@ cOLEDocumentSite::~cOLEDocumentSite()noexcept
 {
 }
 //---------------------------------------------------------------------------
-IUnknown* cOLEDocumentSite::COMUnknown(void)noexcept
-{
-	return static_cast<IOleClientSite*>(this);
-}
-//---------------------------------------------------------------------------
 bool cOLEDocumentSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
-	if(bCOMOleClientSite::COMQueryInterface(riid,ppvObject)){
+	if(fInPlaceSite.COMInnerQueryInterface(riid,ppvObject))
 		return true;
-	}
-	if(bCOMAdviseSink::COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-
-	if(fInPlaceSite.COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
 
 	return false;
 }
@@ -886,26 +759,6 @@ bcOLEActiveXControlSite::bcOLEActiveXControlSite()noexcept
 //---------------------------------------------------------------------------
 bcOLEActiveXControlSite::~bcOLEActiveXControlSite()noexcept
 {
-}
-//---------------------------------------------------------------------------
-IUnknown* bcOLEActiveXControlSite::COMUnknown(void)noexcept
-{
-	return static_cast<IOleClientSite*>(this);
-}
-//---------------------------------------------------------------------------
-bool bcOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(bCOMOleClientSite::COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-	if(bCOMOleControlSite::COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-	if(bCOMDispatch::COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-	
-	return false;
 }
 //---------------------------------------------------------------------------
 IOleObject* bcOLEActiveXControlSite::GetOleObject(void)noexcept
@@ -1042,7 +895,7 @@ HRESULT STDMETHODCALLTYPE bcOLEActiveXControlSite::Invoke(
 //---------------------------------------------------------------------------
 cOLEActiveXControlSite::cOLEActiveXControlSite(cOLEInPlaceControl *Control)noexcept
 {
-	fInPlaceSite.Outter=COMUnknown();
+	fInPlaceSite.Outter=static_cast<IOleClientSite*>(this);
 	fInPlaceSite.InPlaceControl=Control;
 	Control->OLEActivation=this;
 }
@@ -1053,14 +906,9 @@ cOLEActiveXControlSite::~cOLEActiveXControlSite()noexcept
 //---------------------------------------------------------------------------
 bool cOLEActiveXControlSite::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
-	if(bcOLEActiveXControlSite::COMQueryInterface(riid,ppvObject)){
+	if(fInPlaceSite.COMInnerQueryInterface(riid,ppvObject))
 		return true;
-	}
 
-	if(fInPlaceSite.COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-	
 	return false;
 }
 //---------------------------------------------------------------------------
@@ -1111,32 +959,6 @@ cOLEInPlaceSiteWindowless::cOLEInPlaceSiteWindowless()noexcept
 //---------------------------------------------------------------------------
 cOLEInPlaceSiteWindowless::~cOLEInPlaceSiteWindowless()noexcept
 {
-}
-//---------------------------------------------------------------------------
-IUnknown* cOLEInPlaceSiteWindowless::COMUnknown(void)noexcept
-{
-	return this;
-}
-//---------------------------------------------------------------------------
-bool cOLEInPlaceSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
-{
-	if(riid==IID_IOleWindow){
-		*ppvObject=static_cast<IOleWindow*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceSite){
-		*ppvObject=static_cast<IOleInPlaceSite*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceSiteEx){
-		*ppvObject=static_cast<IOleInPlaceSiteEx*>(this);
-		return true;
-	}
-	if(riid==IID_IOleInPlaceSiteWindowless){
-		*ppvObject=static_cast<IOleInPlaceSiteWindowless*>(this);
-		return true;
-	}
-	return false;
 }
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::GetWindow(
@@ -1335,7 +1157,7 @@ HRESULT STDMETHODCALLTYPE cOLEInPlaceSiteWindowless::OnDefWindowMessage(
 //---------------------------------------------------------------------------
 cOLEActiveXControlSiteWindowless::cOLEActiveXControlSiteWindowless(cOLEInPlaceWindowlessControl *Control)noexcept
 {
-	fInPlaceSite.Outter=COMUnknown();
+	fInPlaceSite.Outter=static_cast<IOleClientSite*>(this);
 	fInPlaceSite.InPlaceControl=Control;
 	Control->OLEActivation=this;
 }
@@ -1346,11 +1168,7 @@ cOLEActiveXControlSiteWindowless::~cOLEActiveXControlSiteWindowless()noexcept
 //---------------------------------------------------------------------------
 bool cOLEActiveXControlSiteWindowless::COMQueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
-	if(bcOLEActiveXControlSite::COMQueryInterface(riid,ppvObject)){
-		return true;
-	}
-
-	if(fInPlaceSite.COMQueryInterface(riid,ppvObject)){
+	if(fInPlaceSite.COMInnerQueryInterface(riid,ppvObject)){
 		return true;
 	}
 	

@@ -309,11 +309,6 @@ using cResumable=cnAsync::cResumable<TRet,cCoroutineHandleOperator>;
 template<class TRet>
 using cCoroutine=cnAsync::cCoroutine<TRet,cCoroutineHandleOperator>;
 
-//---------------------------------------------------------------------------
-
-
-template<class TStreamWriteBuffer>
-using cMemoryCachedStreamWriteBuffer=cnStream::cMemoryCachedStreamWriteBuffer<cAllocationOperator,TStreamWriteBuffer>;
 
 //---------------------------------------------------------------------------
 }	//	namespace cnRTL

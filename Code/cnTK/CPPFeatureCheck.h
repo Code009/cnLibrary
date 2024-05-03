@@ -122,13 +122,11 @@
 // (C++17)201606L __cpp_structured_bindings			Structured bindings
 // (C++17)201611L __cpp_template_template_args		Matching of template template-arguments
 // (C++17)201611L __cpp_variadic_using				Pack expansions in using-declarations
-// (C++17)201606L __cpp_nontype_template_parameter_auto		Declaring non-type template parameters with auto
 // (C++17)201603L __has_cpp_attribute(fallthrough)			[[fallthrough]]
 // (C++17)201603L __has_cpp_attribute(maybe_unused)			[[maybe_unused]]
 // (C++17)201603L __has_cpp_attribute(nodiscard)			[[nodiscard]]
 
 // (C++17)201703L __cpp_deduction_guides			Template argument deduction for class templates
-// (C++20)201907L __cpp_deduction_guides			CTAD for aggregates and aliases
 
 // (C++17)201606L __cpp_aligned_new					Dynamic memory allocation for over-aligned data
 #define	cnLibrary_CPPFEATURE_ALIGNED_NEW		__cpp_aligned_new
@@ -142,8 +140,12 @@
 // (C++17)201510L __cpp_noexcept_function_type		Make exception specifications be part of the type system
 #define	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE		__cpp_noexcept_function_type
 
+// (C++17)201606L __cpp_nontype_template_parameter_auto		Declaring non-type template parameters with auto
+#define	cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO	__cpp_nontype_template_parameter_auto
+
 //- C++20 -------------------------------------------------------------------
 
+// (C++20)201907L __cpp_deduction_guides			CTAD for aggregates and aliases
 // (C++20)201907L __cpp_constexpr_dynamic_alloc		Operations for dynamic storage duration in constexpr functions
 // (C++20)201902L __cpp_aggregate_paren_init		Aggregate initialization in the form of direct initialization
 // (C++20)201806L __cpp_conditional_explicit		explicit(bool)
