@@ -585,8 +585,8 @@ public:
 class cnLib_INTERFACE iUITouchHandler
 {
 public:
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *TouchEvent)noexcept(true)=0;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *TouchEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC TouchDown(iUITouchEvent *TouchEvent)noexcept(true)=0;
+	virtual void cnLib_FUNC TouchUp(iUITouchEvent *TouchEvent)noexcept(true)=0;
 	virtual void cnLib_FUNC TouchLost(iUITouchEvent *TouchEvent)noexcept(true)=0;
 	virtual void cnLib_FUNC TouchMove(iUITouchEvent *TouchEvent)noexcept(true)=0;
 };

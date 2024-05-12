@@ -206,6 +206,24 @@ static cnLib_CONSTVAR uIntn IndexNotFound=~static_cast<uIntn>(0);
 namespace cnVar{
 //---------------------------------------------------------------------------
 
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+// cast return value as it is
+
+template<class TRet,class T>
+inline TRet ReturnCast(T&& Var)noexcept(true)
+{	return reinterpret_cast<TRet&&>(Var);	}
+
+// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+#else
+// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
+
+template<class TRet,class T>
+inline const TRet& ReturnCast(const T& Var)noexcept(true)
+{	return reinterpret_cast<const TRet&>(Var);	}
+
+#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
+
 template<bool v>
 struct TConstantValueBool
 {
@@ -578,15 +596,589 @@ static cnLib_CONSTVAR cNoInitialization *NoInitialization=0;
 inline void* operator new (cnLibrary::tSize,cnLibrary::cnVar::cNoInitialization *Pointer)noexcept(true){	return Pointer;}
 inline void operator delete(void *,cnLibrary::cnVar::cNoInitialization*)noexcept(true){}
 //---------------------------------------------------------------------------
+namespace cnLib_THelper{
+//---------------------------------------------------------------------------
+namespace Var_TH{
+//---------------------------------------------------------------------------
+template<class TValueDecl,class TNextDecl,bool NextZero>
+struct IntegerValueMSBCalc;
+
+template<class T,T v,T vn>
+struct IntegerValueMSBCalc<cnVar::TConstantValue<T,v>,cnVar::TConstantValue<T,vn>,false>
+	: IntegerValueMSBCalc<cnVar::TConstantValue<T,vn>,cnVar::TConstantValue<T,vn&(vn-1)>,(vn&(vn-1))==0>
+{};
+
+template<class T,T v,T vn,bool NextZero>
+struct IntegerValueMSBCalc< cnVar::TConstantValue<T,v>,cnVar::TConstantValue<T,vn>,NextZero >
+	: cnVar::TConstantValue<T,v>
+{
+};
+
+//---------------------------------------------------------------------------
+}	// namespace Var_TH
+//---------------------------------------------------------------------------
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
 namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnVar{
+
+template<class T,T v>
+struct TIntegerValueLSB
+	: cnVar::TConstantValue<T,v&~(v-1)>
+{
+};
+
+template<class T,T v>
+struct TIntegerValueMSB
+	: cnLib_THelper::Var_TH::IntegerValueMSBCalc<cnVar::TConstantValue<T,v>,cnVar::TConstantValue<T,v&(v-1)>,(v&(v-1))==0>
+{
+};
+
+//---------------------------------------------------------------------------
+
+#if cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L && cnLibrary_CPPFEATURE_DECLTYPE >=200707L
+
+template<class TCompare1,class TCompare2=TCompare1>
+struct TDefaultCompareResult
+	: TTypeDef<decltype(cnVar::DeclVal<TCompare1>()<=>cnVar::DeclVal<TCompare2>())>
+{
+};
+
+template<class TCompare1,class TCompare2>
+inline auto DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
+	noexcept(noexcept(Value1<=>Value2))
+	-> decltype(Value1<=>Value2)
+{
+	return Value1<=>Value2;
+}
+
+#else	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+template<class TCompare1,class TCompare2=TCompare1>
+struct TDefaultCompareResult
+	: TTypeDef<sfInt8>
+{
+};
+
+template<class TCompare1,class TCompare2>
+inline sfInt8 DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
+	noexcept(noexcept(Value1==Value2) && noexcept(Value1<Value2))
+{
+	sfInt8 ne=static_cast<sfInt8>(!(Value1==Value2));
+	sfInt8 lt=-static_cast<sfInt8>(Value1<Value2);
+	return ne|lt;
+}
+#endif	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION , cnLibrary_CPPFEATURE_DECLTYPE
+
+//---------------------------------------------------------------------------
+}	// namespace cnVar
+//---------------------------------------------------------------------------
+namespace TKRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn IntegerSize>
+struct TInteger;
+//{
+//	static T ReverseBytes(T Value)noexcept;
+//	static sfInt8 Compare(T Src1,T Src2)noexcept;
+//	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept;
+//	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept;
+//	static bool BitScanL(ufInt8 &BitIndex,tUInt Src)noexcept;
+//	static bool BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept;
+//	static bool BitTestAt(tUInt Src,ufInt8 BitIndex)noexcept;
+//	static bool BitSetAt(tUInt &Src,ufInt8 BitIndex)noexcept;
+//	static bool BitResetAt(tUInt &Src,ufInt8 BitIndex)noexcept;
+//	static bool BitComplementAt(tUInt &Src,ufInt8 BitIndex)noexcept;
+//	static tUInt RotateLeft(tUInt Src,ufInt8 Count)noexcept;
+//	static tUInt RotateRight(tUInt Src,ufInt8 Count)noexcept;
+//};
+
+//---------------------------------------------------------------------------
+}	// namespace TKRuntime
+//---------------------------------------------------------------------------
+namespace CPPRuntime{
+//---------------------------------------------------------------------------
+
+template<uIntn IntegerSize>
+struct TInteger_BitScan
+{
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize/2,false>::Type tUIntH;
+
+	static void L(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		if((Src&((static_cast<tUInt>(1)<<IntegerSize*ByteBitCount/2)-1))==0){
+			BitIndex+=IntegerSize*ByteBitCount/2;
+			Src>>=(IntegerSize*ByteBitCount/2);
+		}
+		return TInteger_BitScan<IntegerSize/2>::L(BitIndex,static_cast<tUIntH>(Src));
+	}
+	static void H(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		if(Src&((~static_cast<tUInt>(0))<<IntegerSize*ByteBitCount/2)){
+			BitIndex+=IntegerSize*ByteBitCount/2;
+			Src>>=(IntegerSize*ByteBitCount/2);
+		}
+		return TInteger_BitScan<IntegerSize/2>::H(BitIndex,static_cast<tUIntH>(Src));
+	}
+};
+template<>
+struct TInteger_BitScan<1>
+{
+	static void L(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
+		if((Src&0xF)==0){
+			BitIndex+=4;
+			Src>>=4;
+		}
+		if(Src&1){
+			return;
+		}
+		if(Src&0x2){
+			BitIndex+=1;
+		}
+		else if(Src&0x4){
+			BitIndex+=2;
+		}
+		else if(Src&0x8){
+			BitIndex+=3;
+		}
+	}
+	static void H(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
+		if(Src&0xF0){
+			BitIndex+=4;
+			Src>>=4;
+		}
+		if(Src&0x8){
+			BitIndex+=3;
+		}
+		else if(Src&0x4){
+			BitIndex+=2;
+		}
+		else if(Src&0x2){
+			BitIndex+=1;
+		}
+	}
+};
+
+template<uIntn IntegerSize>
+struct TInteger
+{
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
+	typedef typename cnVar::TIntegerOfSize<IntegerSize,true>::Type tSInt;
+
+	//	static T ReverseBytes(T Value)noexcept;
+
+	static sfInt8 Compare(tUInt Src1,tUInt Src2)noexcept(true){
+		return cnVar::DefaultCompare(Src1,Src2);
+	}
+
+	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept(true)
+	{
+		tUInt h=ValueHigh<<Count;
+		tUInt l=ValueLow>>(IntegerSize*ByteBitCount-Count);
+		return h|l;
+	}
+	static tUInt ShiftRightInto(tUInt ValueLow,tUInt ValueHigh,ufInt8 Count)noexcept(true)
+	{
+		tUInt l=ValueLow>>Count;
+		tUInt h=ValueHigh<<(IntegerSize*ByteBitCount-Count);
+		return h|l;
+	}
+
+	static bool BitScanL(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		if(Src==0){
+			return false;
+		}
+		BitIndex=0;
+		TInteger_BitScan<IntegerSize>::L(BitIndex,Src);
+		return true;
+	}
+	static bool BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+		if(Src==0){
+			return false;
+		}
+		BitIndex=0;
+		TInteger_BitScan<IntegerSize>::H(BitIndex,Src);
+		return true;
+	}
+
+
+	static bool BitTestAt(tUInt Src,ufInt8 BitIndex)noexcept(true){
+		return ( Src&(static_cast<tUInt>(1)<<BitIndex) )!=0;
+	}
+	static bool BitSetAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
+		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
+		bool r=( Dest&Mask )!=0;
+		if(!r){
+			Dest|=Mask;
+		}
+		return r;
+	}
+	static bool BitResetAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
+		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
+		bool r=( Dest&Mask )!=0;
+		if(r){
+			Dest&=~Mask;
+		}
+		return r;
+	}
+	static bool BitComplementAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
+		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
+		bool r=( Dest&Mask )!=0;
+		Dest^=Mask;
+		return r;
+	}
+
+	static tUInt RotateLeft(tUInt Src,ufInt8 Count)noexcept(true){
+		tUInt h=Src<<Count;
+		tUInt l=Src>>(IntegerSize*ByteBitCount-Count);
+		return h|l;
+	}
+	static tUInt RotateRight(tUInt Src,ufInt8 Count)noexcept(true){
+		tUInt l=Src>>Count;
+		tUInt h=Src<(IntegerSize*ByteBitCount-Count);
+		return h|l;
+	}
+
+};
+
+//---------------------------------------------------------------------------
+}	// namespace CPPRuntime
 //---------------------------------------------------------------------------
 namespace cnMemory{
 //---------------------------------------------------------------------------
 
+	
+template<eByteOrder TargetOrder,eByteOrder ValueOrder>
+struct TByteOrderConvert;
+
+template<cnMemory::eByteOrder Order>
+struct TByteOrderConvert<Order,Order>
+{
+	template<class T>
+	static T Convert(const T &Data)noexcept(true){
+		return Data;
+	}
+};
+
+template<>
+struct TByteOrderConvert<cnMemory::ByteOrder::LittleEndian,cnMemory::ByteOrder::BigEndian>
+{	// BigEndian -> LittleEndian
+	template<class T>
+	static T Convert(const T &Data)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+		return cnVar::ReturnCast<T>(
+			TKRuntime::TInteger<sizeof(T)>::ReverseBytes(reinterpret_cast<const tInt&>(Data))
+		);
+	}
+};
+
+template<>
+struct TByteOrderConvert<cnMemory::ByteOrder::BigEndian,cnMemory::ByteOrder::LittleEndian>
+{	// LittleEndian -> BigEndian
+	template<class T>
+	static T Convert(const T &Data)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+		return cnVar::ReturnCast<T>(
+			TKRuntime::TInteger<sizeof(T)>::ReverseBytes(reinterpret_cast<const tInt&>(Data))
+		);
+	}
+};
+
+
+// SwapByteOrder
+//	swap byte order between native and specified
+// [in]Value		bytes of data to swap
+// return converted data
+template<eByteOrder Order,class T>
+inline T SwapByteOrder(T Value)noexcept(true)
+{
+	return TByteOrderConvert<cnVar::TSelect<1,T,TKRuntime::NativeByteOrder>::Type::Value,Order>::Convert(Value);
+}
+
+// SwapLittleEndian
+//	swap byte order between native and little endian
+// [in]Value		little endian data
+// return converted data
+template<class T>
+inline T SwapLittleEndian(T Value)noexcept(true)
+{
+	return TByteOrderConvert<cnVar::TSelect<1,T,TKRuntime::NativeByteOrder>::Type::Value,ByteOrder::LittleEndian>::Convert(Value);
+}
+
+// SwapBigEndian
+//	swap byte order between native and big endian
+// [in]Value		big endian data
+// return converted data
+template<class T>
+inline T SwapBigEndian(T Value)noexcept(true)
+{
+	return TByteOrderConvert<cnVar::TSelect<1,T,TKRuntime::NativeByteOrder>::Type::Value,ByteOrder::BigEndian>::Convert(Value);
+}
+
+
+// UnalignedRead
+//	read from unaligned memory
+// Pointer	[in]	pointer to memory to read
+// return: content of pointer
+template<class T>
+inline T UnalignedRead(const T *Pointer)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+	return cnVar::ReturnCast<T>(
+		TKRuntime::TInteger<sizeof(T)>::UnalignedRead(reinterpret_cast<const tInt*>(Pointer))
+	);
+}
+
+// UnalignedWrite
+//	write to unaligned memory
+// Pointer	[out]	pointer to memory to write
+// Value			value to write
+template<class T>
+inline void UnalignedWrite(T *Pointer,const typename cnVar::TTypeDef<T>::Type &Value)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tInt;
+	return TKRuntime::TInteger<sizeof(T)>::UnalignedWrite(reinterpret_cast<tInt*>(Pointer),reinterpret_cast<tInt&>(Value));
+}
+
+
+
+// ShiftLeftInto
+//	Shift High while moving bits from Low
+// [in]High		uIntn to shift
+// [in]Low		bits to shift into Dest
+// [in]Count	counts to shift, must smaller than bit count of uIntn
+// return: High<<Count<<Low
+template<class T>
+inline T ShiftLeftInto(typename cnVar::TTypeDef<T>::Type High,T Low,ufInt8 Count)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::ShiftLeftInto(
+		static_cast<tUInt>(High),
+		static_cast<tUInt>(Low),
+		static_cast<uInt8>(Count)
+	));
+}
+// ShiftRightInto
+//	Shift Low while moving bits from High
+// [in]Low		uIntn to shift
+// [in]High		bits to shift into Dest
+// [in]Count	counts to shift, must smaller than bit count of uIntn
+// return: Low>>Count>>High
+template<class T>
+inline T ShiftRightInto(T Low,typename cnVar::TTypeDef<T>::Type High,uIntn Count)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::ShiftRightInto(
+		static_cast<tUInt>(Low),
+		static_cast<tUInt>(High),
+		static_cast<uInt8>(Count)
+	));
+}
+
+
+// BitScanL
+//	find least significant set bit
+// BitIndex	[out]	bit index of least significant set bit
+// Src				integer to scan
+// return: false if Src is 0
+template<class T>
+inline bool BitScanL(ufInt8 &BitIndex,const T &Src)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::BitScanL(BitIndex,static_cast<tUInt>(Src)));
+}
+
+// BitScanH
+//	find most significant set bit
+// BitIndex	[out]	bit index of most significant set bit
+// Src				uIntn to scan
+// return: false if Src is 0
+template<class T>
+inline bool BitScanH(ufInt8 &BitIndex,const T &Src)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::BitScanH(BitIndex,static_cast<tUInt>(Src)));
+}
+
+
+// BitTest
+//	test if bit is set at Index
+// Src		bits to test
+// Index	index of bit to test
+// return bit
+template<class T>
+inline bool BitTestAt(const T &Src,ufInt8 BitIndex)noexcept(true)
+{
+	return TKRuntime::TInteger<sizeof(T)>::BitTestAt(static_cast<typename cnVar::TIntegerOfSize<sizeof(T),false>::Type>(Src),BitIndex);
+}
+
+// BitSetAt
+//	set bit at Index
+// Dest	[in]	bits to test
+// Dest	[out]	bit at Index is set
+// Index		index of bit to set
+// return previous bit value
+template<class T>
+inline bool BitSetAt(T &Dest,ufInt8 BitIndex)noexcept(true)
+{
+	return TKRuntime::TInteger<sizeof(T)>::BitSetAt(reinterpret_cast<typename cnVar::TIntegerOfSize<sizeof(T),false>::Type&>(Dest),BitIndex);
+}
+
+// BitResetAt
+//	reset bit at Index
+// Dest	[in]	bits to test
+// Dest	[out]	bit at Index is reset
+// Index		index of bit to reset
+// return previous bit value
+template<class T>
+inline bool BitResetAt(T &Dest,ufInt8 BitIndex)noexcept(true)
+{
+	return TKRuntime::TInteger<sizeof(T)>::BitResetAt(reinterpret_cast<typename cnVar::TIntegerOfSize<sizeof(T),false>::Type&>(Dest),BitIndex);
+}
+
+// BitComplementAt
+//	toggle bit at Index
+// Dest	[in]	bits to test
+// Dest	[out]	bit at Index is reset
+// Index		index of bit to reset
+// return previous bit value
+template<class T>
+inline bool BitComplementAt(T &Dest,ufInt8 BitIndex)noexcept(true)
+{
+	return TKRuntime::TInteger<sizeof(T)>::BitComplementAt(reinterpret_cast<typename cnVar::TIntegerOfSize<sizeof(T),false>::Type&>(Dest),BitIndex);
+}
+
+
+// BitRotateLeft
+//	Rotate bits of Dest to left
+// Dest		uIntn to shift
+// Count	counts to shift, must smaller than bit count of UInt
+// return rotated result
+template<class T>
+inline T RotateLeft(const T &Dest,ufInt8 Count)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::RotateLeft(static_cast<tUInt>(Dest),Count));
+}
+
+// RotateRight
+//	Rotate bits of Dest to right
+// Dest		uIntn to shift
+// Count	counts to shift, must smaller than bit count of UInt
+// return rotated result
+template<class T>
+inline T RotateRight(const T &Dest,uIntn Count)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	return static_cast<T>(TKRuntime::TInteger<sizeof(T)>::RotateRight(static_cast<tUInt>(Dest),Count));
+}
+
+//---------------------------------------------------------------------------
+
+template<tSize BlockSize,tSize MSB>
+struct TPlainDataOrderOpeator1
+{
+	static bool Equal(const void *p1,const void *p2)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<MSB,false>::Type tInt;
+		tInt v1=*static_cast<const tInt*>(p1);
+		tInt v2=*static_cast<const tInt*>(p2);
+		if(v1!=v2)
+			return false;
+		return TPlainDataOrderOpeator1<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Equal(
+			static_cast<const tInt*>(p1)+1,static_cast<const tInt*>(p2)+1);
+	}
+	static sfInt8 Compare(const void *p1,const void *p2)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<MSB,false>::Type tInt;
+		tInt v1=*static_cast<const tInt*>(p1);
+		tInt v2=*static_cast<const tInt*>(p2);
+		if(v1!=v2){
+			v1=SwapBigEndian(v1);
+			v2=SwapBigEndian(v2);
+			sfInt8 lt=-static_cast<sfInt8>(v1<v2);
+			return lt|1;
+		}
+		return TPlainDataOrderOpeator1<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Compare(
+			static_cast<const tInt*>(p1)+1,static_cast<const tInt*>(p2)+1);
+	}
+};
+
+template<tSize IntSize>
+struct TPlainDataOrderOpeator1<IntSize,IntSize>
+{
+	static bool Equal(const void *p1,const void *p2)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tInt;
+		tInt v1=*static_cast<const tInt*>(p1);
+		tInt v2=*static_cast<const tInt*>(p2);
+		return v1==v2;
+	}
+	static sfInt8 Compare(const void *p1,const void *p2)noexcept(true){
+		typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tInt;
+		tInt v1=*static_cast<const tInt*>(p1);
+		tInt v2=*static_cast<const tInt*>(p2);
+		if(v1==v2){
+			return 0;
+		}
+		v1=SwapBigEndian(v1);
+		v2=SwapBigEndian(v2);
+		sfInt8 lt=-static_cast<sfInt8>(v1<v2);
+		return lt|1;
+	}
+};
+template<>
+struct TPlainDataOrderOpeator1<0,0>
+{
+	static bool Equal(const void*,const void*)noexcept(true){
+		return true;
+	}
+	static sfInt8 Compare(const void*,const void*)noexcept(true){
+		return 0;
+	}
+};
+
+template<tSize BlockSize>
+struct TPlainDataOrderOpeator
+{
+	static bool Equal(const void *p1,const void *p2)noexcept(true){
+		const uIntn IntLength=BlockSize/sizeof(uIntn);
+		const uIntn *a1=static_cast<const uIntn*>(p1);
+		const uIntn *a2=static_cast<const uIntn*>(p2);
+		for(uIntn i=0;i<IntLength;i++){
+			if(*a1++!=*a2++){
+				return false;
+			}
+		}
+		return TPlainDataOrderOpeator1<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Equal(a1,a2);
+	}
+	static sfInt8 Compare(const void *p1,const void *p2)noexcept(true){
+		const uIntn IntLength=BlockSize/sizeof(uIntn);
+		const uIntn *a1=static_cast<const uIntn*>(p1);
+		const uIntn *a2=static_cast<const uIntn*>(p2);
+		for(uIntn i=0;i<IntLength;i++){
+			uIntn v1=*a1++;
+			uIntn v2=*a2++;
+			if(v1!=v2){
+				v1=SwapBigEndian(v1);
+				v2=SwapBigEndian(v2);
+				sfInt8 lt=-static_cast<sfInt8>(v1<v2);
+				return lt|1;
+			}
+		}
+		return TPlainDataOrderOpeator1<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Compare(a1,a2);
+	}
+};
+
+
 template<uIntn Size>
 struct cPlainData
 {
-	uInt8 _space_[Size];
+	uInt8 RAW[Size];
+
+	sfInt8 Compare(const cPlainData &Dest)const noexcept(true){	return TPlainDataOrderOpeator<Size>::Compare(RAW,Dest.RAW);	}
+
+	bool operator ==(const cPlainData &Dest)const noexcept(true){	return TPlainDataOrderOpeator<Size>::Equal(RAW,Dest.RAW);	}
+	bool operator !=(const cPlainData &Dest)const noexcept(true){	return !TPlainDataOrderOpeator<Size>::Equal(RAW,Dest.RAW);	}
+
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cPlainData &,Compare)
 };
 
 template<>
@@ -832,47 +1424,6 @@ template<class T0,class T1,class T2,class T3>
 inline void UnusedParameter(T0 cnLib_UREF,T1 cnLib_UREF,T2 cnLib_UREF,T3 cnLib_UREF)noexcept(true){}
 
 #endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
-//---------------------------------------------------------------------------
-namespace cnVar{
-
-//---------------------------------------------------------------------------
-
-#if cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L && cnLibrary_CPPFEATURE_DECLTYPE >=200707L
-
-template<class TCompare1,class TCompare2=TCompare1>
-struct TDefaultCompareResult
-	: TTypeDef<decltype(cnVar::DeclVal<TCompare1>()<=>cnVar::DeclVal<TCompare2>())>
-{
-};
-
-template<class TCompare1,class TCompare2>
-inline auto DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(noexcept(Value1<=>Value2))
-	-> decltype(Value1<=>Value2)
-{
-	return Value1<=>Value2;
-}
-
-#else	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
-
-template<class TCompare1,class TCompare2=TCompare1>
-struct TDefaultCompareResult
-	: TTypeDef<sfInt8>
-{
-};
-
-template<class TCompare1,class TCompare2>
-inline sfInt8 DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(noexcept(Value1==Value2) && noexcept(Value1<Value2))
-{
-	sfInt8 ne=static_cast<sfInt8>(!(Value1==Value2));
-	sfInt8 lt=-static_cast<sfInt8>(Value1<Value2);
-	return ne|lt;
-}
-#endif	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION , cnLibrary_CPPFEATURE_DECLTYPE
-
-//---------------------------------------------------------------------------
-}	// namespace cnVar
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------

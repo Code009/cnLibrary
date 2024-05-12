@@ -41,7 +41,7 @@ inline T* __clrcall ManagedToPointer(interior_ptr<T> p)noexcept(true)
 }
 //---------------------------------------------------------------------------
 template<class TMemberClass,class TMember>
-inline typename TMemberClass* GetObjectFromManagedPointer(interior_ptr<TMember> Pointer,TMember TMemberClass::*MemberPointer)noexcept(true)
+inline TMemberClass* GetObjectFromManagedPointer(interior_ptr<TMember> Pointer,TMember TMemberClass::*MemberPointer)noexcept(true)
 {
 	typedef const volatile uInt8 TInterpret;
 	TInterpret *MemberOffsetPointer=&reinterpret_cast<TInterpret&>(static_cast<TMemberClass*>(nullptr)->*MemberPointer);
@@ -243,21 +243,21 @@ public:
 	}
 
 	__clrcall operator TManaged^(void)const noexcept(true){
-		auto &Handle=RefHandle();
+		auto &Handle=this->RefHandle();
 		return static_cast<TManaged^>(Handle.Target);
 	}
 	void __clrcall operator =(TManaged^ Object)noexcept(true){
-		auto &Handle=RefHandle();
+		auto &Handle=this->RefHandle();
 		Handle.Target=Object;
 	}
 
 	TManaged^ __clrcall Get(void)const noexcept(true){
-		auto &Handle=RefHandle();
+		auto &Handle=this->RefHandle();
 		return static_cast<TManaged^>(Handle.Target);
 	}
 
 	void __clrcall Set(TManaged^ Target)noexcept(true){
-		auto &Handle=RefHandle();
+		auto &Handle=this->RefHandle();
 		Handle.Target=Target;
 	}
 

@@ -497,13 +497,13 @@ public:
 	bool TouchAcquireExclusive(iUITouchHandler *Handler)noexcept(true);
 	void TouchReleaseExclusive(iUITouchHandler *Handler)noexcept(true);
 
-	void HandleBegin(iUITouchEvent *TouchEvent)noexcept(true);
-	void HandleEnd(iUITouchEvent *TouchEvent)noexcept(true);
+	void HandleDown(iUITouchEvent *TouchEvent)noexcept(true);
+	void HandleUp(iUITouchEvent *TouchEvent)noexcept(true);
 	void HandleLost(iUITouchEvent *TouchEvent)noexcept(true);
 	void HandleMove(iUITouchEvent *TouchEvent)noexcept(true);
 
-	void FilterBegin(iUITouchEvent *TouchEvent)noexcept(true);
-	void FilterEnd(iUITouchEvent *TouchEvent)noexcept(true);
+	void FilterDown(iUITouchEvent *TouchEvent)noexcept(true);
+	void FilterUp(iUITouchEvent *TouchEvent)noexcept(true);
 	void FilterLost(iUITouchEvent *TouchEvent)noexcept(true);
 	void FilterMove(iUITouchEvent *TouchEvent)noexcept(true);
 

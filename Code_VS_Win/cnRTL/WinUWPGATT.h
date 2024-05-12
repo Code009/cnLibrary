@@ -13,6 +13,8 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace UWP{
 //---------------------------------------------------------------------------
+cUUID GATTUUIDFromShort(ufInt32 ShortUUID)noexcept(true);
+//---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN10
 //---------------------------------------------------------------------------
 class cGATTService;
@@ -36,12 +38,12 @@ class cGATTDescriptor : public iGATTDescriptor, public cDualReference
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattDescriptor BLEDescriptor;
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDescriptor IBLEDescriptor;
 public:
-	cGATTDescriptor(cGATTCharacteristic *Owner,const cGATTUUID &ID)noexcept(true);
+	cGATTDescriptor(cGATTCharacteristic *Owner,const cUUID &ID)noexcept(true);
 	~cGATTDescriptor()noexcept(true);
 
-	cGATTUUID DescriptorUUID;
+	cUUID DescriptorUUID;
 
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTDescriptorHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTDescriptorHandler *Handler)noexcept(true)override;
@@ -95,24 +97,24 @@ class cGATTCharacteristic : public iGATTCharacteristic, public cDualReference
 	
 
 public:
-	cGATTCharacteristic(cGATTService *Owner,const cGATTUUID & ID)noexcept(true);
+	cGATTCharacteristic(cGATTService *Owner,const cUUID & ID)noexcept(true);
 	~cGATTCharacteristic()noexcept(true);
 	
 	iDispatch* GetDispatch(void)const noexcept(true);
 
-	cGATTUUID CharacteristcUUID;
+	cUUID CharacteristcUUID;
 
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTCharacteristicHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTCharacteristicHandler *Handler)noexcept(true)override;
 
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
 	virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)override;
-	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cGATTUUID &ID)noexcept(true)override;
+	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)override;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)override;
 
-	virtual rPtr< iArrayReference<const void> > cnLib_FUNC Read(void)noexcept(true)override;
+	virtual iPtr< iAsyncFunction<iConstMemoryReference> > cnLib_FUNC Read(void)noexcept(true)override;
 
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)override;
@@ -176,6 +178,20 @@ private:
 	bool MainProcess_Idle(void)noexcept(true);
 	void MainProcess_RefreshDescriptorDone(void)noexcept(true);
 
+	struct cValueNotification
+	{
+		cValueNotification *Next;
+		uInt64 Timestamp;
+		cMemoryBuffer Value;
+	};
+	cAtomicStackSO<cValueNotification> fValueNotificationStack;
+	cSharedLinkItemRecycler<cValueNotification> fValueNotificationRecycler;
+
+	cSeqMap<uInt64,cValueNotification*> fValueNotificationMap;
+
+	void ArrangeValueNotification(void)noexcept(true);
+	void NotifyValue(uInt64 Timestamp,const void *Data,uIntn Size)noexcept(true);
+
 	class cBLEValueChangedHandler
 	{
 		cGATTCharacteristic* GetHost(void)noexcept(true);
@@ -200,14 +216,16 @@ private:
 	cAsyncOperationCompletedHandler<cGetDescriptorsCompleteHandler,GattDescriptorsResult*> fGetDescriptorsCompleteHandler;
 
 
-	cSeqMap< cGATTUUID,cGATTDescriptor*,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fDescriptorMap;
+	//cSeqMap< cGATTUUID,cGATTDescriptor*,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fDescriptorMap;
+	cSeqMap<cUUID,cGATTDescriptor*> fDescriptorMap;
 
 	struct cDescriptorPair
 	{
 		cGATTDescriptor *Descriptor;
 		COMPtr<IBLEDescriptor> BLEDescriptor;
 	};
-	cSeqMap< cGATTUUID,cDescriptorPair,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fUpdateMap;
+	//cSeqMap< cGATTUUID,cDescriptorPair,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fUpdateMap;
+	cSeqMap<cUUID,cDescriptorPair> fUpdateMap;
 
 	class cReadCompleteHandler
 	{
@@ -265,22 +283,22 @@ class cGATTService : public iGATTService, public cDualReference
 	typedef ABI::Windows::Foundation::IAsyncOperation<GattCharacteristicsResult*> IBLEGetCharacteristicAsyncOp;
 
 public:
-	cGATTService(cGATTPeripheral *Owner,const cGATTUUID & ID)noexcept(true);
+	cGATTService(cGATTPeripheral *Owner,const cUUID &ID)noexcept(true);
 	~cGATTService()noexcept(true);
 
 	iDispatch* GetDispatch(void)const noexcept(true);
 
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)override;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTServiceHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *Handler)noexcept(true)override;
 
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
 	virtual iGATTPeripheral* cnLib_FUNC GetPeripheral(void)noexcept(true)override;
-	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cGATTUUID &ID)noexcept(true)override;
+	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cUUID &ID)noexcept(true)override;
 	virtual iPtr<iGATTCharacteristicObserver> cnLib_FUNC CreateCharacteristicObserver(void)noexcept(true)override;
 
-	cGATTUUID ServiceUUID;
+	cUUID ServiceUUID;
 	void PeripheralNotifyScanService(void)noexcept(true);
 	void PeripheralNotifyConnectionStatus(void)noexcept(true);
 	void PeripheralInvalidateService(void)noexcept(true);
@@ -408,14 +426,14 @@ private:
 	cAsyncOperationCompletedHandler<cGetCharacteristicsCompleteHandler,GattCharacteristicsResult*> fGetCharacteristicsCompleteHandler;
 
 
-	cSeqMap< cGATTUUID,cGATTCharacteristic*,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fCharacteristicMap;
+	cSeqMap<cUUID,cGATTCharacteristic*> fCharacteristicMap;
 
 	struct cCharacteristicPair
 	{
 		cGATTCharacteristic *Characteristic;
 		COMPtr<IBLECharacteristic> BLECharacteristic;
 	};
-	cSeqMap< cGATTUUID,cCharacteristicPair,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fUpdateMap;
+	cSeqMap<cUUID,cCharacteristicPair> fUpdateMap;
 
 };
 //---------------------------------------------------------------------------
@@ -442,6 +460,7 @@ public:
 
 	iDispatch* GetDispatch(void)const noexcept(true);
 
+	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iAddress* cnLib_FUNC GetPeripheralAddress(void)noexcept(true)override;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralHandler *Handler)noexcept(true)override;
@@ -450,7 +469,7 @@ public:
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
 	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)override;
 	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)override;
-	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cGATTUUID &ID)noexcept(true)override;
+	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)override;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)override;
 
 
@@ -506,7 +525,7 @@ private:
 
 	struct cGetServicesResult
 	{
-		cSeqMap< cGATTUUID,COMPtr<IBLEService>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > Map;
+		cSeqMap< cUUID,COMPtr<IBLEService> > Map;
 	};
 	aClsAtomicRef<cGetServicesResult> fGetServicesResult;
 
@@ -588,7 +607,7 @@ private:
 	};
 	cAsyncOperationCompletedHandler<cGetServicesCompleteHandler,GattDeviceServiceResult*> fGetServicesCompleteHandler;
 
-	cSeqMap< cGATTUUID,cGATTService*,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fServiceMap;
+	cSeqMap<cUUID,cGATTService*> fServiceMap;
 };
 //---------------------------------------------------------------------------
 class cGATTAdvertisementObserver : public iGATTAdvertisementObserver, public bcAsyncQueue, public cDualReference
@@ -611,7 +630,7 @@ public:
 	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)override;
 
 	virtual void cnLib_FUNC DiscardQueue(void)noexcept(true)override;
-	virtual rPtr<iGATTAdvertisement> cnLib_FUNC Fetch(void)noexcept(true)override;
+	virtual rPtr<iReference> cnLib_FUNC Fetch(cGATTAdvertisementInfo &Info)noexcept(true)override;
 
 protected:
 	void VirtualStarted(void)noexcept(true);
@@ -648,18 +667,17 @@ private:
 		virtual HRESULT STDMETHODCALLTYPE Invoke(IBLEWatcher *sender, _In_ ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementReceivedEventArgs *args)noexcept(true)override;
 	}fBLEReceivedHandler;
 	EventRegistrationToken fBLEReceivedToken;
-
-
-	class cAdvertisementData : public iGATTAdvertisement
+	
+	class cAdvertisementData : public iReference
 	{
 	public:
 		cAdvertisementData *Next;
-		virtual const cGATTAdvertisementInfo& cnLib_FUNC GetInfo(void)noexcept(true)override;
 
 		cGATTAdvertisementInfo Info;
 		iPtr<iAddress> Address;
 		cString<uChar16> LocalName;
-		cSeqList<cGATTUUID> ServiceUUIDs;
+		cSeqList<cUUID> ServiceUUIDs;
+		cString<wchar_t> DeviceID;
 		struct cManufacturerDataItem{
 			cMemoryBlock Data;
 			UINT16 CompanyID;
@@ -686,13 +704,14 @@ class cGATTPeripheralCentral : public iGATTPeripheralCentral
 public:
 	cGATTPeripheralCentral(iDispatch *Dispatch,COMPtr<IBLEDeviceStatics> BLEStatic)noexcept(true);
 
+	IBLEDeviceStatics* GetBLEStatic(void)const noexcept(true);
 	iDispatch* GetDispatch(void)const noexcept(true);
 
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)override;
 
-	virtual rPtr<iGATTPeripheral> cnLib_FUNC AccessPeripheral(iAddress *Address)noexcept(true)override;
+	virtual rPtr<iGATTPeripheral> cnLib_FUNC OpenPeripheral(iAddress *Address)noexcept(true)override;
 	virtual rPtr<iGATTAdvertisementObserver> cnLib_FUNC CreateAdvertisementObserver(void)noexcept(true)override;
 
 	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)override;
@@ -721,9 +740,9 @@ class cGATTServerDescriptor : public iGATTServerDescriptor, public cDualReferenc
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalDescriptorResult IGattLocalDescriptorResult;
 	typedef ABI::Windows::Foundation::IAsyncOperation<GattLocalDescriptorResult*> ICreateLocalDescAsyncOp;
 public:
-	cGATTServerDescriptor(cGATTServerCharacteristic *Owner,const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true);
+	cGATTServerDescriptor(cGATTServerCharacteristic *Owner,const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true);
 
-	const cGATTUUID &GetID(void)const noexcept;
+	const cUUID &GetID(void)const noexcept;
 	iDispatch* GetDispatch(void)const noexcept(true);
 	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
 
@@ -738,7 +757,7 @@ protected:
 	void VirtualStopped(void)noexcept(true);
 
 	rPtr<cGATTServerCharacteristic> fOwner;
-	cGATTUUID fDescriptorID;
+	cUUID fDescriptorID;
 	iPtr<iDispatch> fDispatch;
 	COMPtr<IGattLocalDescriptor> fDescriptor;
 	rPtr<iReference> fControllerReference;
@@ -819,16 +838,16 @@ class cGATTServerCharacteristic : public iGATTServerCharacteristic, public cDual
 	typedef ABI::Windows::Foundation::IAsyncOperation<GattClientNotificationResult*> IClientNotifyValueAsyncOp;
 
 public:
-	cGATTServerCharacteristic(cGATTServerService *Owner,const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true);
+	cGATTServerCharacteristic(cGATTServerService *Owner,const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true);
 
 	IGattLocalCharacteristic* GetLocalCharacteristic(void)const noexcept(true);
-	const cGATTUUID &GetID(void)const noexcept;
+	const cUUID &GetID(void)const noexcept;
 	iDispatch* GetDispatch(void)const noexcept(true);
 	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
 
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
-	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)override;
+	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)override;
 
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyValue(iGATTClientSubscription *Subscription)noexcept(true)override;
@@ -845,12 +864,12 @@ protected:
 	void VirtualStopped(void)noexcept(true);
 
 	rPtr<cGATTServerService> fOwner;
-	cGATTUUID fCharacteristicID;
+	cUUID fCharacteristicID;
 	COMPtr<IGattLocalCharacteristic> fCharacteristic;
 	iPtr<iDispatch> fDispatch;
 	rPtr<iReference> fControllerReference;
 	iGATTCharacteristicController *fController;
-	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerDescriptor>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fDescriptorMap;
+	cSeqMap< cUUID,rInnerPtr<cGATTServerDescriptor> > fDescriptorMap;
 	
 private:
 
@@ -1045,17 +1064,17 @@ class cGATTServerService : public iGATTServerService, public cDualReference
 	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderResult IGattServiceProviderResult;
 	typedef ABI::Windows::Foundation::IAsyncOperation<GattServiceProviderResult*> ICreateServiceProviderAsyncOp;
 public:
-	cGATTServerService(cGATTServer *Owner,const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true);
+	cGATTServerService(cGATTServer *Owner,const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true);
 
 	IGattServiceProvider* GetServiceProvider(void)const noexcept(true);
 	IGattLocalService* GetLocalService(void)const noexcept(true);
-	const cGATTUUID &GetID(void)const noexcept;
+	const cUUID &GetID(void)const noexcept;
 	iDispatch* GetDispatch(void)const noexcept(true);
 	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
 
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
-	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)override;
+	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)override;
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
 	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)override;
 	virtual bool cnLib_FUNC GetAdvertisementIncluded(void)noexcept(true)override;
@@ -1071,13 +1090,13 @@ protected:
 	void VirtualStarted(void)noexcept(true);
 	void VirtualStopped(void)noexcept(true);
 	rPtr<cGATTServer> fOwner;
-	cGATTUUID fServiceID;
+	cUUID fServiceID;
 	COMPtr<IGattServiceProvider> fServiceProvider;
 	COMPtr<IGattLocalService> fService;
 	iPtr<iDispatch> fDispatch;
 	rPtr<iReference> fControllerReference;
 	iGATTServiceController *fController;
-	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerCharacteristic>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fCharacteristicMap;
+	cSeqMap< cUUID,rInnerPtr<cGATTServerCharacteristic> > fCharacteristicMap;
 
 private:
 
@@ -1152,7 +1171,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTServerHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServerHandler *Handler)noexcept(true)override;
 
-	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)override;
+	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)override;
 
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)override;
 	virtual bool cnLib_FUNC GetAdvertisementActive(void)noexcept(true)override;
@@ -1175,8 +1194,8 @@ private:
 	cSeqSet<iGATTServerHandler*> fHandlers;
 	rPtr<iAsyncProcedure> fMainProcessWork;
 
-	cSeqMap< cGATTUUID,rInnerPtr<cGATTServerService>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fServiceMap;
-	cSeqMap< cGATTUUID,COMPtr<IGattServiceProvider>,cnDataStruct::cRAWDataItemOrderOperator<cGATTUUID> > fProviderMap;
+	cSeqMap< cUUID,rInnerPtr<cGATTServerService> > fServiceMap;
+	cSeqMap< cUUID,COMPtr<IGattServiceProvider> > fProviderMap;
 
 	cExclusiveFlag fMainProcessExclusiveFlag;
 	bool fShutdown=false;

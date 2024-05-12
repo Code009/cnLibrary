@@ -42,7 +42,7 @@ extern iDatagramProtocol*const UDP;
 // GATT
 //---------------------------------------------------------------------------
 
-typedef cnMemory::cPlainData<16> cGATTUUID;
+typedef cUUID cGATTUUID;
 cnLib_ENUM_BEGIN(ufInt8,GATTFunctionState)
 {
 	Absent,
@@ -88,7 +88,7 @@ public:
 class cnLib_INTERFACE iGATTDescriptor : public iReference
 {
 public:
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertHandler(iGATTDescriptorHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTDescriptorHandler *Handler)noexcept(true)=0;
@@ -121,17 +121,17 @@ public:
 class cnLib_INTERFACE iGATTCharacteristic : public iReference
 {
 public:
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertHandler(iGATTCharacteristicHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTCharacteristicHandler *Handler)noexcept(true)=0;
 
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
 	virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)=0;
-	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cGATTUUID &ID)noexcept(true)=0;
+	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)=0;
 
-	virtual rPtr< iArrayReference<const void> > cnLib_FUNC Read(void)noexcept(true)=0;
+	virtual iPtr< iAsyncFunction<iConstMemoryReference> > cnLib_FUNC Read(void)noexcept(true)=0;
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)=0;
 
@@ -161,14 +161,14 @@ public:
 class cnLib_INTERFACE iGATTService : public iReference
 {
 public:
-	virtual cGATTUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
+	virtual cUUID cnLib_FUNC GetUUID(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertHandler(iGATTServiceHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *Handler)noexcept(true)=0;
 
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
 	virtual iGATTPeripheral* cnLib_FUNC GetPeripheral(void)noexcept(true)=0;
-	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cGATTUUID &ID)noexcept(true)=0;
+	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTCharacteristicObserver> cnLib_FUNC CreateCharacteristicObserver(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ class cnLib_INTERFACE iGATTClient : public iReference
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 
-	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cGATTUUID &ID)noexcept(true)=0;
+	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
 	
 };
@@ -198,6 +198,7 @@ public:
 class cnLib_INTERFACE iGATTPeripheralHandler
 {
 public:
+	virtual void cnLib_FUNC GATTPeripheralClosed(void)noexcept(true)=0;
 	virtual void cnLib_FUNC GATTPeripheralStateChanged(void)noexcept(true)=0;
 	virtual void cnLib_FUNC GATTPeripheralNameChanged(void)noexcept(true)=0;
 };
@@ -205,6 +206,7 @@ public:
 class cnLib_INTERFACE iGATTPeripheral : public iReference
 {
 public:
+	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
 	virtual iAddress* cnLib_FUNC GetPeripheralAddress(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralHandler *Handler)noexcept(true)=0;
@@ -214,7 +216,7 @@ public:
 	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)=0;
 	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)=0;
 
-	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cGATTUUID &ID)noexcept(true)=0;
+	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
 	
 };
@@ -251,19 +253,15 @@ struct cGATTAdvertisementInfo
 {
 	iAddress *PeripheralAddress;
 	cArray<const uChar16> LocalName;
+	uInt64 AdvertiserAddress;
 	uInt64 Timestamp;
 	sfInt16 SignalStrength;
+	uInt8 AddressType;
 	eGATTAdvertisementType Type;
 	eGATTAdvertisementFlags Flags;
-	cArray<const cGATTUUID> ServiceUUIDs;
+	cArray<const cUUID> ServiceUUIDs;
 	cArray<const cGATTAdvertisementManufacturerData> ManufacturerData;
 	cArray<const cGATTAdvertisementSectionData> SectionData;
-};
-//---------------------------------------------------------------------------
-class iGATTAdvertisement : public iReference
-{
-public:
-	virtual const cGATTAdvertisementInfo& cnLib_FUNC GetInfo(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTAdvertisementObserver : public iAsyncNotification
@@ -274,7 +272,7 @@ public:
 	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)=0;
 
 	virtual void cnLib_FUNC DiscardQueue(void)noexcept(true)=0;
-	virtual rPtr<iGATTAdvertisement> cnLib_FUNC Fetch(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC Fetch(cGATTAdvertisementInfo &Info)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTPeripheralCentralHandler
@@ -290,7 +288,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)=0;
 
-	virtual rPtr<iGATTPeripheral> cnLib_FUNC AccessPeripheral(iAddress *Address)noexcept(true)=0;
+	virtual rPtr<iGATTPeripheral> cnLib_FUNC OpenPeripheral(iAddress *Address)noexcept(true)=0;
 
 	virtual rPtr<iGATTAdvertisementObserver> cnLib_FUNC CreateAdvertisementObserver(void)noexcept(true)=0;
 
@@ -335,7 +333,7 @@ class iGATTServerCharacteristic : public iReference
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cGATTUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)=0;
+	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)=0;
 
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
 	virtual iGATTClientSubscription* cnLib_FUNC QuerySubscription(iGATTClientConnection *Connection)noexcept(true)=0;
@@ -366,7 +364,7 @@ class iGATTServerService : public iReference
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cGATTUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)=0;
+	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)=0;
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC GetAdvertisementIncluded(void)noexcept(true)=0;
@@ -395,7 +393,7 @@ public:
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertHandler(iGATTServerHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServerHandler *Handler)noexcept(true)=0;
-	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cGATTUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)=0;
+	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)=0;
 
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC GetAdvertisementActive(void)noexcept(true)=0;

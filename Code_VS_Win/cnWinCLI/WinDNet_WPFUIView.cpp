@@ -642,7 +642,7 @@ void mcWPFView::WPFUIViewOnTouchDown(mcWPFTouchEventArgs &TouchEventArgs)noexcep
 	auto UIView=static_cast<cWPFUIView*>(this);
 	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
 
-	UIView->fTouchNotification.HandleBegin(&TouchEvent);
+	UIView->fTouchNotification.HandleDown(&TouchEvent);
 }
 //---------------------------------------------------------------------------
 void mcWPFView::WPFUIViewOnTouchDownFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
@@ -650,7 +650,7 @@ void mcWPFView::WPFUIViewOnTouchDownFilter(mcWPFTouchEventArgs &TouchEventArgs)n
 	auto UIView=static_cast<cWPFUIView*>(this);
 	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
 
-	UIView->fTouchNotification.FilterBegin(&TouchEvent);
+	UIView->fTouchNotification.FilterDown(&TouchEvent);
 }
 //---------------------------------------------------------------------------
 void mcWPFView::WPFUIViewOnTouchUp(mcWPFTouchEventArgs &TouchEventArgs)noexcept
@@ -658,7 +658,7 @@ void mcWPFView::WPFUIViewOnTouchUp(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 	auto UIView=static_cast<cWPFUIView*>(this);
 	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
 
-	UIView->fTouchNotification.HandleEnd(&TouchEvent);
+	UIView->fTouchNotification.HandleUp(&TouchEvent);
 }
 //---------------------------------------------------------------------------
 void mcWPFView::WPFUIViewOnTouchUpFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
@@ -666,7 +666,7 @@ void mcWPFView::WPFUIViewOnTouchUpFilter(mcWPFTouchEventArgs &TouchEventArgs)noe
 	auto UIView=static_cast<cWPFUIView*>(this);
 	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
 
-	UIView->fTouchNotification.FilterEnd(&TouchEvent);
+	UIView->fTouchNotification.FilterUp(&TouchEvent);
 }
 //---------------------------------------------------------------------------
 void mcWPFView::WPFUIViewOnTouchMove(mcWPFTouchEventArgs &TouchEventArgs)noexcept

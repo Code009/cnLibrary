@@ -12,17 +12,13 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-class cWindowClass
+class cWindowClass : public cnRTL::cnWinRTL::bcWindowClass
 {
 public:
-	operator LPCWSTR ();
 
 	cWindowClass(const WNDCLASSEXW *ClassInfo);
 	cWindowClass(const wchar_t *ClassName,WNDPROC WndClassProc,UINT style=0);
 	~cWindowClass();
-private:
-	// Window Class atom
-	ATOM fAtom;
 };
 //---------------------------------------------------------------------------
 struct cDialogEmptyTemplateData{
@@ -59,6 +55,28 @@ struct cModalDialogInitParameter
 // ModalDialog
 //	modal dialog box
 INT_PTR ModalDialog(const cModalDialogInitParameter &InitParameter,HWND Parent,DWORD Style,DWORD ExStyle);
+//---------------------------------------------------------------------------
+class cMessageThreadWindowClass : public cWindowClass
+{
+public:
+	static cMessageThreadWindowClass gMessageThreadWindowClass;
+
+	cMessageThreadWindowClass(const wchar_t *ClassName);
+
+	static LRESULT CALLBACK MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true);
+
+
+
+	struct cWindowMessageThreadParam
+	{
+		aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
+		TKRuntime::ThreadNotification CallerNotify;
+	};
+	static DWORD WINAPI MessageThreadProcedure(LPVOID Parameter)noexcept(true);
+
+	static aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> StartMessageThread(void)noexcept(true);
+};
+iPtr<cnRTL::cnWinRTL::cWindowMessageQueueDispatch> CreateWindowMessageDispathThread(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------

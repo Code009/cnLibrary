@@ -45,8 +45,8 @@ public:
 	cUITouchActionTap()noexcept(true);
 	~cUITouchActionTap()noexcept(true);
 
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchDown(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchUp(iUITouchEvent *Event)noexcept(true)override;
 	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
 
 	cUIPoint TapPos;
@@ -71,8 +71,8 @@ public:
 	~cUITouchActionLongPress()noexcept(true);
 
 
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchDown(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchUp(iUITouchEvent *Event)noexcept(true)override;
 	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
 	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)noexcept(true)override;
 
@@ -91,8 +91,8 @@ private:
 	void Start(iUITouchEvent *Event,const cUIPoint &Pos)noexcept(true);
 	void Stop(iUITouchEvent *Event)noexcept(true);
 protected:
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *Event)noexcept(true)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchDown(iUITouchEvent *Event)noexcept(true)override;
+	virtual void cnLib_FUNC TouchUp(iUITouchEvent *Event)noexcept(true)override;
 	virtual void cnLib_FUNC TouchLost(iUITouchEvent *Event)noexcept(true)override;
 	virtual void cnLib_FUNC TouchMove(iUITouchEvent *Event)noexcept(true)override;
 public:

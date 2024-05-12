@@ -72,7 +72,7 @@ struct TIntegerMemory
 template<uIntn ElementSize>
 struct TMemory
 {
-	static cnLib_CONSTVAR uIntn OperateSize=cnVar::TIntegerValue<uIntn>::tValueLSB<ElementSize>::Value;
+	static cnLib_CONSTVAR uIntn OperateSize=cnVar::TIntegerValueLSB<uIntn,ElementSize>::Value;
 	static cnLib_CONSTVAR uIntn Scale=ElementSize/OperateSize;
 	typedef typename cnVar::TIntegerOfSize<OperateSize,false>::Type tUInt;
 

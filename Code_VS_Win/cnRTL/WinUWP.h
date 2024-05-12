@@ -205,31 +205,8 @@ public:
 #endif	// WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0xA0000
 //---------------------------------------------------------------------------
 template<class T>
-struct TWindowsAsyncOperationResult;
-//---------------------------------------------------------------------------
-template<class T>
-struct TWindowsAsyncOperationResult<T *>
-{
-	typedef T RetType;
-	static T* Out(RetType & Ret)noexcept(true){
-		return &Ret;
-	}
-};
-//---------------------------------------------------------------------------
-template<class T>
-struct TWindowsAsyncOperationResult<T **>
-{
-	typedef COMPtr<T> RetType;
-	static T** Out(RetType & Ret)noexcept(true){
-		return COMRetPtrT(Ret);
-	}
-};
-//---------------------------------------------------------------------------
-template<class T>
 class cAsyncOperationAwaiter
 {
-	typedef typename TCOMFunctionInfo<decltype(&ABI::Windows::Foundation::IAsyncOperation<T>::GetResults)>::template Arguments<0>::Type TResuleOutParam;
-	typedef typename TWindowsAsyncOperationResult<TResuleOutParam>::RetType TResult;
 public:
 	cAsyncOperationAwaiter(ABI::Windows::Foundation::IAsyncOperation<T> *Task)noexcept(true):fTask(Task){}
 	~cAsyncOperationAwaiter()noexcept(true){}
@@ -249,7 +226,6 @@ public:
 	template<class TCoHandle>
 	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
 		fHandler=COMCreate<cCompletionHandler>();
-
 		cCoroutineHandleOperator::Assign(fHandler->CoHandle,static_cast<TCoHandle&&>(CoHandle));
 
 		if(FAILED(fTask->put_Completed(fHandler))){
@@ -257,10 +233,8 @@ public:
 		}
 		return true;
 	}
-	TResult await_resume(void)noexcept(true){
-		TResult Result;
-		fTask->GetResults(TWindowsAsyncOperationResult<TResuleOutParam>::Out(Result));
-		return Result;
+	ABI::Windows::Foundation::AsyncStatus await_resume(void)noexcept(true){
+		return fHandler->RetStatus;
 	}
 private:
 	COMPtr< ABI::Windows::Foundation::IAsyncOperation<T> > fTask;
@@ -268,8 +242,13 @@ private:
 	class cCompletionHandler : public ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>, public IAgileObject
 	{
 	public:
+		using ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>::AddRef;
+		using ABI::Windows::Foundation::IAsyncOperationCompletedHandler<T>::Release;
+
+		ABI::Windows::Foundation::AsyncStatus RetStatus;
 		cCoroutineHandleOperator::tHandle CoHandle;
-        virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *,ABI::Windows::Foundation::AsyncStatus)noexcept(true)override{
+        virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<T> *,ABI::Windows::Foundation::AsyncStatus Status)noexcept(true)override{
+			RetStatus=Status;
 			cCoroutineHandleOperator::Resume(CoHandle);
 			return S_OK;
 		}
@@ -360,64 +339,6 @@ public:
 	virtual HRESULT STDMETHODCALLTYPE Invoke(ABI::Windows::Foundation::IAsyncOperation<TResult> *AsyncOp,ABI::Windows::Foundation::AsyncStatus Status)noexcept(true)override{
 		this->EventInvoke(AsyncOp,Status);
 		return S_OK;
-	}
-};
-//---------------------------------------------------------------------------
-template<class TInterface,class TUWPResult>
-class cInterfaceFromAsyncOperation : public TInterface, protected ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>, protected IAgileObject
-{
-public:
-	cInterfaceFromAsyncOperation()noexcept(true){}
-	~cInterfaceFromAsyncOperation()noexcept(true){}
-		
-	bool SetupAsyncOp(COMPtr< ABI::Windows::Foundation::IAsyncOperation<TUWPResult*> > AsyncOp)noexcept(true){
-		if(fAsyncOp!=nullptr){
-			return false;
-		}
-
-		fAsyncOp=cnVar::MoveCast(AsyncOp);
-		HRESULT hr=fAsyncOp->put_Completed(this);
-		if(FAILED(hr)){
-			fAsyncOp=nullptr;
-			return false;
-		}
-		return true;
-	}
-	
-	void CancelAsyncOp(void)noexcept(true){
-		IAsyncInfo *AsyncInfo;
-		fAsyncOp->QueryInterface(&AsyncInfo);
-		if(AsyncInfo!=nullptr){
-			AsyncInfo->Cancel();
-			AsyncInfo->Release();
-		}
-	}
-
-	typedef TCOMInterfacePack<ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TUWPResult*>
-		,IAgileObject> tCOMInterfacePack;
-
-protected:
-	COMPtr< ABI::Windows::Foundation::IAsyncOperation<TUWPResult*> > fAsyncOp;
-	cAsyncTaskState fTaskState;
-
-
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept(true)override{
-		if(COMObjectQueryInterface(this,riid,ppvObject)){
-			iIncReference(this,'evet');
-			return S_OK;
-		}
-		*ppvObject=nullptr;
-		return E_NOINTERFACE;
-	}
-
-	virtual ULONG STDMETHODCALLTYPE AddRef(void)noexcept(true)override{
-		iIncReference(this,'evet');
-		return 0;
-	}
-
-	virtual ULONG STDMETHODCALLTYPE Release(void)noexcept(true)override{
-		iDecReference(this,'evet');
-		return 0;
 	}
 };
 //---------------------------------------------------------------------------

@@ -34,13 +34,13 @@ public:
 	{
 		static void Acquire(T *Token)noexcept(true){
 			if(Token!=nullptr){
-				cnLib_ASSERT(Token->fInnerReference.Ref!=0);
+				cnLib_ASSERT(Token->cDualReference::fInnerReference.Ref!=0);
 				Token->fInnerReference.Inc();
 			}
 		}
 		static void Release(T *Token)noexcept(true){
 			if(Token!=nullptr){
-				cnLib_ASSERT(Token->fInnerReference.Ref!=0);
+				cnLib_ASSERT(Token->cDualReference::fInnerReference.Ref!=0);
 				Token->fInnerReference.Dec();
 			}
 		}

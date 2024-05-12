@@ -14,6 +14,15 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
+class bcWindowClass
+{
+public:
+	operator LPCWSTR ()noexcept(true);
+protected:
+	// Window Class atom
+	ATOM fAtom;
+};
+//---------------------------------------------------------------------------
 class bcWindowSubclass
 {
 public:
@@ -83,6 +92,120 @@ HWND GetWindowHandleFromUIWindow(iUIArea *Area)noexcept(true);
 HWND GetWindowHandleFromUIView(iUIView *View)noexcept(true);
 iWindow* GetWindowFromUIWindow(iUIArea *Area)noexcept(true);
 iWindow* GetWindowFromUIView(iUIView *View)noexcept(true);
+//---------------------------------------------------------------------------
+class cWindowMessageThread : public cDualReference
+{
+public:
+	cWindowMessageThread()noexcept(true);
+	~cWindowMessageThread()noexcept(true);
+
+	void SetupCurrentThread(HWND MessageWindow)noexcept(true);
+
+	void MessageLoop(void)noexcept(true);
+
+	void Execute(iReference *Reference,iProcedure *Procedure)noexcept(true);
+	void ExecuteNoRef(iProcedure *Procedure)noexcept(true);
+	void ExecuteSync(iProcedure *Procedure)noexcept(true);
+	bool IsCurrentThread(void)const noexcept(true);
+
+	static bool MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true);
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+	
+	void FinishMessageLoop(void)noexcept(true);
+
+	DWORD fMessageThreadID;
+	HWND fMessageWindow;
+
+	static const UINT Message_Terminate;
+	static const UINT Message_Execute;
+	static const UINT Message_ExecuteRef;
+};
+//---------------------------------------------------------------------------
+class cWindowMessageQueueDispatch : public iDispatch
+{
+public:
+	cWindowMessageQueueDispatch(aClsRef<cWindowMessageThread> MessageThread)noexcept(true);
+	~cWindowMessageQueueDispatch()noexcept(true);
+
+	virtual void cnLib_FUNC Execute(iReference *Reference,iProcedure *Procedure)noexcept(true)override;
+	virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)override;
+	virtual rPtr<iAsyncTimer>		cnLib_FUNC CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)override;
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)override;
+	virtual void cnLib_FUNC ExecuteSync(iProcedure *Procedure)noexcept(true)override;
+	virtual iPtr<iAsyncTask> cnLib_FUNC ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept(true)override;
+
+protected:
+	aClsRef<cWindowMessageThread> fMessageThread;
+
+	class cAsyncProcedure : public iAsyncProcedure
+	{
+	public:
+		cAsyncProcedure(aClsRef<cWindowMessageThread> MessageThread,iReference *Reference,iProcedure *Procedure)noexcept(true);
+
+		virtual void cnLib_FUNC Start(void)noexcept(true)override;
+
+	protected:
+		aClsRef<cWindowMessageThread> fMessageThread;
+
+		iReference *fReference;
+		iProcedure *fProcedure;
+	};
+
+	class cAsyncProcedureNoRef : public iAsyncProcedure
+	{
+	public:
+		cAsyncProcedureNoRef(aClsRef<cWindowMessageThread> MessageThread,iProcedure *Procedure)noexcept(true);
+
+		virtual void cnLib_FUNC Start(void)noexcept(true)override;
+
+	protected:
+		aClsRef<cWindowMessageThread> fMessageThread;
+		iProcedure *fProcedure;
+	};
+
+	
+	class cAsyncTimer : public iAsyncTimer, public cDualReference
+	{
+	public:
+		cAsyncTimer(aClsRef<cWindowMessageThread> MessageThread,iReference *Reference,iProcedure *Procedure)noexcept(true);
+		~cAsyncTimer()noexcept(true);
+
+
+		virtual void cnLib_FUNC Start(uInt64 DueTime,uInt64 Period)noexcept(true)override;
+		virtual void cnLib_FUNC Stop(void)noexcept(true)override;
+
+
+	protected:
+		void VirtualStarted(void)noexcept(true);
+		void VirtualStopped(void)noexcept(true);
+
+		aClsRef<cWindowMessageThread> fMessageThread;
+
+		iReference *fReference;
+		iProcedure *fProcedure;
+
+	private:
+		cAtomicVar<ufInt8> fTimerState;
+		rPtr<iAsyncTimer> fThreadPoolTimer;
+		uInt64 fDueTime;
+		uInt64 fPeriod;
+		void StartTimer(uInt64 DueTime,uInt64 Period)noexcept(true);
+		void ClearTimer(void)noexcept(true);
+		void TimerHit(void)noexcept(true);
+		void ThreadPoolTimerHit(void)noexcept(true);
+		class cThreadPoolTimerProcedure : public iProcedure
+		{
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+		}fThreadPoolTimerProcedure;
+		class cTimerDispatchProcedure : public iProcedure
+		{
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+		}fTimerDispatchProcedure;
+	};
+
+};
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL
 //---------------------------------------------------------------------------

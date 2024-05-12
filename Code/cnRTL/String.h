@@ -212,7 +212,7 @@ inline bool WriteHexBytes(TStreamWriteBuffer&& WriteBuffer,const void *Data,uInt
 		uIntn RequestLength=(Length-ByteIndex)*2;
 		auto Memory=WriteBuffer.ReserveWriteBuffer(RequestLength);
 		uIntn TextIndex=0;
-		while(TextIndex+2<Memory.Length){
+		while(TextIndex+2<=Memory.Length){
 			uInt8 CurByte=static_cast<const uInt8*>(Data)[ByteIndex++];
 			Memory.Pointer[TextIndex]=HexBytesWrite_HexTextMap[CurByte>>4];
 			Memory.Pointer[TextIndex+1]=HexBytesWrite_HexTextMap[CurByte&0xF];
@@ -505,7 +505,7 @@ public:
 	template<class TStreamWriteBuffer,class TCharacterConversionMap>
 	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap)noexcept(true){
 	
-		typedef typename TStreamWriteBuffer::tElement TCharacter;
+		//typedef typename TStreamWriteBuffer::tElement TCharacter;
 		// sign
 		switch(fWriteSign){
 		case 0:
@@ -740,9 +740,30 @@ public:
 		if(ArrayStream::WriteFill(WriteBuffer,ConversionMap.Digit(0),fIntegerLeadingZero)==false)
 			return false;
 
+		uInt8 RoundingDigitBuffer[MaxDigits];
+		uInt8 *OutputDigitBuffer=fDigitBuffer;
+		if(fRoundDigitIndex<=fDigitCount && fDigitBuffer[fRoundDigitIndex]>=fRadix/2){
+			// needs rounding
+
+			ufInt8 RoundIndex=fRoundDigitIndex-1;
+			while(RoundIndex!=0){
+				uInt8 d=fDigitBuffer[RoundIndex]+1;
+				if(d<fRadix){
+					RoundingDigitBuffer[RoundIndex]=d;
+					cnMemory::Copy(RoundingDigitBuffer,fDigitBuffer,RoundIndex);
+					break;
+				}
+				RoundingDigitBuffer[RoundIndex]=0;
+
+				RoundIndex--;
+			}
+
+			OutputDigitBuffer=RoundingDigitBuffer;
+		}
+
 		if(fIntegerDigits!=0){
 			// integer digits
-			if(StringStream::WriteDigits(WriteBuffer,ConversionMap,fDigitBuffer,fIntegerDigits)==false)
+			if(StringStream::WriteDigits(WriteBuffer,ConversionMap,OutputDigitBuffer,fIntegerDigits)==false)
 				return false;
 
 			if(fFractionDigits!=0){	// N.N
@@ -752,7 +773,7 @@ public:
 						return false;
 				}
 				// fraction signification
-				if(StringStream::WriteDigits(WriteBuffer,ConversionMap,fDigitBuffer+fIntegerDigits,fFractionDigits)==false)
+				if(StringStream::WriteDigits(WriteBuffer,ConversionMap,OutputDigitBuffer+fIntegerDigits,fFractionDigits)==false)
 					return false;
 			}
 			else{					// N0.
@@ -777,7 +798,7 @@ public:
 				if(ArrayStream::WriteFill(WriteBuffer,ConversionMap.Digit(0),fDotZero)==false)
 					return false;
 				// fraction signification
-				if(StringStream::WriteDigits(WriteBuffer,ConversionMap,fDigitBuffer,fFractionDigits)==false)
+				if(StringStream::WriteDigits(WriteBuffer,ConversionMap,OutputDigitBuffer,fFractionDigits)==false)
 					return false;
 			}
 		}
@@ -797,6 +818,7 @@ public:
 	typename cnVar::TTypeConditional<void,
 		cnVar::TFloatConversion<T>::IsMatch
 	>::Type SetValue(T Value)noexcept(true){
+		fRadix=Radix;
 		bool Sign=cnMath::SetAbsolute(Value);
 		fDigitCount=static_cast<ufInt16>(cnString::ConvertFloatToDigits<Radix>(Value,fExponent,fDigitBuffer,MaxDigits));
 
@@ -910,46 +932,52 @@ public:
 		return fExponent;
 	}
 
-	void SetFormat(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
+	void SetFormat(sfInt16 FormatExponent,ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 
-		if(fExponent<0){
+		if(FormatExponent<0){
 			// 0. ...
 			fIntegerDigits=0;
 			fFractionDigits=static_cast<ufInt8>(fDigitCount);
 			fIntegerLeadingZero=IntegerPrecision;
 			fWriteDot=true;			
 			// .0nnn
-			fDotZero=static_cast<ufInt16>(-fExponent);
+			fDotZero=static_cast<ufInt16>(-FormatExponent);
 			ufInt16 TotalFractionLength=fDotZero+fFractionDigits;
 			if(TotalFractionLength==FractionMaxPrecision){
 				fFractionTailingZero=0;
+				fRoundDigitIndex=0xFF;	// no rounding
 			}
-			else if(TotalFractionLength==FractionMaxPrecision){
+			else if(TotalFractionLength>FractionMaxPrecision){
 				if(fDotZero>FractionMaxPrecision){
 					fDotZero=FractionMaxPrecision;
 					fFractionDigits=0;
+					fRoundDigitIndex=0xFF;	// no rounding
 				}
 				else{
 					fFractionDigits=static_cast<ufInt8>(FractionMaxPrecision-fDotZero);
+					fRoundDigitIndex=fFractionDigits;	// round position
 				}
 				fFractionTailingZero=0;
 			}
 			else if(TotalFractionLength<FractionMinPrecision){
 				// 0.0nn0
 				fFractionTailingZero=FractionMinPrecision-TotalFractionLength;
+				fRoundDigitIndex=0xFF;	// no rounding
 			}
-			else{
+			else{	// MinPrecition<TotalFractionLength<MaxPrecision
 				// 0.0nn
 				fFractionTailingZero=0;
+				fRoundDigitIndex=0xFF;	// no rounding
 			}
 		}
-		else if(static_cast<ufInt16>(fExponent)>=fDigitCount){
+		else if(static_cast<ufInt16>(FormatExponent)>=fDigitCount){
 			fIntegerDigits=static_cast<ufInt8>(fDigitCount);
 			fFractionDigits=0;
 			// nnn000.0
-			fDotZero=static_cast<ufInt16>(fExponent-fIntegerDigits);
+			fDotZero=static_cast<ufInt16>(FormatExponent-fIntegerDigits);
+			fRoundDigitIndex=0xFF;	// no rounding
 			
-			ufInt16 TotalIntegerLength=static_cast<ufInt16>(fExponent);
+			ufInt16 TotalIntegerLength=FormatExponent;
 			if(TotalIntegerLength<IntegerPrecision){
 				fIntegerLeadingZero=IntegerPrecision-TotalIntegerLength;
 			}
@@ -966,7 +994,7 @@ public:
 			}
 		}
 		else{
-			fIntegerDigits=static_cast<ufInt8>(fExponent);
+			fIntegerDigits=static_cast<ufInt8>(FormatExponent);
 			fFractionDigits=static_cast<ufInt8>(fDigitCount-fIntegerDigits);
 			// 0n.n...
 			if(fIntegerDigits<IntegerPrecision){
@@ -981,13 +1009,16 @@ public:
 
 			if(fFractionDigits>FractionMaxPrecision){
 				fFractionDigits=static_cast<ufInt8>(FractionMaxPrecision);
+				fRoundDigitIndex=fIntegerDigits+fFractionDigits;	// rounding position
 				fFractionTailingZero=0;
 			}
 			else if(fFractionDigits<FractionMinPrecision){
 				fFractionTailingZero=FractionMinPrecision-fFractionDigits;
+				fRoundDigitIndex=0xFF;	// no rounding
 			}
 			else{
 				fFractionTailingZero=0;
+				fRoundDigitIndex=0xFF;	// no rounding
 			}
 		}
 	}
@@ -1002,6 +1033,8 @@ protected:
 	char fPrefix[2];
 
 	// Formats
+	ufInt8 fRadix;
+	ufInt8 fRoundDigitIndex;
 	ufInt8 fIntegerDigits;
 	ufInt8 fFractionDigits;
 	ufInt16 fIntegerLeadingZero;
@@ -1065,8 +1098,15 @@ public:
 
 	void SetFormatF(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 		fOutputExp=false;
-		return cFormatStringFloatConversion<MaxDigits>::SetFormat(IntegerPrecision,FractionMinPrecision,FractionMaxPrecision);
+		return cFormatStringFloatConversion<MaxDigits>::SetFormat(this->fExponent,IntegerPrecision,FractionMinPrecision,FractionMaxPrecision);
 	}
+#if 1
+	void SetFormatE(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
+		cFormatStringFloatConversion<MaxDigits>::SetFormat(1,0,FractionMinPrecision,FractionMaxPrecision);
+		fOutputExp=true;
+		fExponentConversion.SetPrecision(IntegerPrecision);
+	}
+#else
 
 	void SetFormatE(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 		this->fDotZero=0;
@@ -1110,6 +1150,7 @@ public:
 		fOutputExp=true;
 		fExponentConversion.SetPrecision(IntegerPrecision);
 	}
+#endif // 1
 	void SetFormatG(ufInt16 IntegerPrecision,ufInt16 FractionMinPrecision,ufInt16 FractionMaxPrecision)noexcept(true){
 
 		if(this->fExponent>-4 && static_cast<ufInt16>(this->fExponent)<FractionMaxPrecision){
@@ -1496,13 +1537,13 @@ protected:
 		};
 
 		void LoadOption(const cFormatStringTokenParameter &Token)noexcept(true){
-			Token.AlignLeft;
-			Token.ConversionAlternativeForm;
-			Token.ConversionUpperCase;
-			Token.PadLeftZero;
-			Token.PositiveSign;
-			Token.ReserveSignSpace;
-			Token.SizeModifier;
+			//Token.AlignLeft;
+			//Token.ConversionAlternativeForm;
+			//Token.ConversionUpperCase;
+			//Token.PadLeftZero;
+			//Token.PositiveSign;
+			//Token.ReserveSignSpace;
+			//Token.SizeModifier;
 		}
 	};
 

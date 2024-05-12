@@ -134,8 +134,8 @@ protected:
 class TouchHandler : protected iUITouchHandler
 {
 protected:
-	virtual void cnLib_FUNC TouchBegin(iUITouchEvent *TouchEvent)noexcept(true)override;
-	virtual void cnLib_FUNC TouchEnd(iUITouchEvent *TouchEvent)noexcept(true)override;
+	virtual void cnLib_FUNC TouchDown(iUITouchEvent *TouchEvent)noexcept(true)override;
+	virtual void cnLib_FUNC TouchUp(iUITouchEvent *TouchEvent)noexcept(true)override;
 	virtual void cnLib_FUNC TouchLost(iUITouchEvent *TouchEvent)noexcept(true)override;
 	virtual void cnLib_FUNC TouchMove(iUITouchEvent *TouchEvent)noexcept(true)override;
 };

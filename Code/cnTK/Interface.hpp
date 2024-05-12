@@ -14,6 +14,9 @@
 #include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
 namespace cnLibrary{
+//---------------------------------------------------------------------------
+
+typedef cnMemory::cPlainData<16> cUUID;
 
 //---------------------------------------------------------------------------
 
@@ -859,6 +862,8 @@ class cnLib_INTERFACE iArrayReference : public iReference
 public:
 	virtual T* cnLib_FUNC GetArray(uIntn &Length)noexcept(true)=0;
 };
+typedef iArrayReference<void> iMemoryReference;
+typedef iArrayReference<const void> iConstMemoryReference;
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------

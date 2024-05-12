@@ -227,8 +227,8 @@ void MouseHandler::MouseUp(iUIMouseEvent*,eMouseButton)noexcept{}
 void MouseHandler::MouseWheel(iUIMouseEvent*,Float32,Float32)noexcept{}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void TouchHandler::TouchBegin(iUITouchEvent*)noexcept{}
-void TouchHandler::TouchEnd(iUITouchEvent*)noexcept{}
+void TouchHandler::TouchDown(iUITouchEvent*)noexcept{}
+void TouchHandler::TouchUp(iUITouchEvent*)noexcept{}
 void TouchHandler::TouchLost(iUITouchEvent*)noexcept{}
 void TouchHandler::TouchMove(iUITouchEvent*)noexcept{}
 //---------------------------------------------------------------------------

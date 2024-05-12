@@ -1174,12 +1174,6 @@ template<class T>
 inline typename TRemoveReference<T>::Type && MoveCast(T&& Var)noexcept(true)
 {	return static_cast<typename TRemoveReference<T>::Type&&>(Var);	}
 
-// cast return value as it is
-
-template<class TRet,class T>
-inline TRet ReturnCast(T&& Var)noexcept(true)
-{	return reinterpret_cast<TRet&&>(Var);	}
-
 // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 #else
 // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
@@ -1190,10 +1184,6 @@ inline T& Forward(T &Arg)noexcept(true)
 template<class T>
 inline T& MoveCast(T &Var)noexcept(true)
 {	return Var;	}
-
-template<class TRet,class T>
-inline const TRet& ReturnCast(const T& Var)noexcept(true)
-{	return reinterpret_cast<const TRet&>(Var);	}
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 

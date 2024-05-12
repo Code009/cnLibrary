@@ -587,7 +587,7 @@ void bcRWQueue::StopWrite(bool Terminate)noexcept
 void bcRWQueue::NotifyWrite(uIntn SizeToNotify)noexcept
 {
 	bool IdleNotify=SizeToNotify==0;
-	if(fReadQueueEnded)
+	if(fWriteQueueTerminated)
 		IdleNotify=true;
 	return fWriteAsyncQueue.NotifyQueue(IdleNotify);
 }

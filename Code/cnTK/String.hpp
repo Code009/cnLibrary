@@ -328,7 +328,7 @@ struct TStringConvertFloat
 		if(IntValue!=0){
 			Fraction=Value-IntValue;
 			sfInt16 e2;
-			IntValue=cnMath::FloatSplitExponent(IntValue,e2);
+			cnMath::FloatSplitExponent(IntValue,e2);
 			tFloat Scale=e2/log2r;
 			uIntn ScaleExp=static_cast<uIntn>(Scale);
 			if(ScaleExp>MaxSignificand){
@@ -356,7 +356,7 @@ struct TStringConvertFloat
 		else{
 			Fraction=Value;
 			sfInt16 e2;
-			Fraction=cnMath::FloatSplitExponent(Fraction,e2);
+			cnMath::FloatSplitExponent(Fraction,e2);
 
 			// all fraction
 			tFloat Scale=(-e2)/log2r;
@@ -1822,27 +1822,27 @@ public:
 
     bool operator == (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return cnString::Equal(StringArray.Pointer,String,StringArray.Length);
+		return cnString::Equal(StringArray.Pointer,String,StringArray.Length+1);
 	}
     bool operator != (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return !cnString::Equal(StringArray.Pointer,String,StringArray.Length);
+		return !cnString::Equal(StringArray.Pointer,String,StringArray.Length+1);
 	}
     bool operator < (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)<0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length+1)<0;
 	}
     bool operator <= (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)<=0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length+1)<=0;
 	}
     bool operator > (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)>0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length+1)>0;
 	}
     bool operator >= (const tCharacter *String)const noexcept(true){
     	tTokenArray StringArray=TConstStringTokenOperator::GetArray(fStringToken);
-		return cnString::Compare(StringArray.Pointer,String,StringArray.Length)>=0;
+		return cnString::Compare(StringArray.Pointer,String,StringArray.Length+1)>=0;
 	}
 
 protected:

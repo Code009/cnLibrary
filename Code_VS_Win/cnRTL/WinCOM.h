@@ -15,119 +15,6 @@ struct TCOMInterfacePack
 {
 };
 //---------------------------------------------------------------------------
-namespace cnRTL{
-//---------------------------------------------------------------------------
-struct cBSTROwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<BSTR>
-{
-	static void Release(const BSTR &Token)noexcept(true);
-};
-typedef cnVar::cPtrOwner<cBSTROwnerTokenOperator> apBSTR;
-//---------------------------------------------------------------------------
-apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
-BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
-
-//---------------------------------------------------------------------------
-inline IUnknown* iCastCOM(iInterface *Interface)noexcept(true){
-	auto COMInterface=iCast<iCOMInterface>(Interface);
-	if(COMInterface==nullptr)
-		return nullptr;
-	return COMInterface->GetCOMInterface();
-}
-//---------------------------------------------------------------------------
-template<class TFunction>
-struct TCOMFunctionInfo;
-
-template<class TClass,class TRet,class...TArgs>
-struct TCOMFunctionInfo<TRet (STDMETHODCALLTYPE TClass::*)(TArgs...)>
-	: cnLib_THelper::Var_TH::MemberFunctionInfo<TClass,TRet,TArgs...>
-{
-	typedef TClass ClassArgumentType;
-};
-//---------------------------------------------------------------------------
-template<class T>
-struct cCOMRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
-{
-	static void Acquire(T *Token)noexcept(true){	if(Token!=nullptr)	Token->AddRef();	}
-	static void Release(T *Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
-};
-
-template<class T>
-using COMPtr=cnVar::cPtrReference< cCOMRefTokenOperator<T> >;
-
-//---------------------------------------------------------------------------
-template<class T>
-inline COMPtr<T> COMTake(T *Src)noexcept(true)
-{
-	return COMPtr<T>::TakeFromManual(Src);
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline T* COMExtract(COMPtr<T> &Src)noexcept(true)
-{
-	return Src.ExtractToManual();
-}
-//---------------------------------------------------------------------------
-template<class TDest,class T>
-inline TDest* COMExtractAs(COMPtr<T> &Src)noexcept(true)
-{
-	return static_cast<TDest*>(Src.ExtractToManual());
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline COMPtr<T> COMTake(T *Src,uInt32 Tag)noexcept(true)
-{
-	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
-	return COMPtr<T>::TakeFromManual(Src);
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline T* COMExtract(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
-{
-	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
-	return Src.ExtractToManual();
-}
-//---------------------------------------------------------------------------
-template<class TDest,class T>
-inline T* COMExtractAs(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
-{
-	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
-	return static_cast<TDest*>(Src.ExtractToManual());
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline void** COMRetPtr(T* &Ptr)noexcept(true){
-	return reinterpret_cast<void**>(&Ptr);
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline void** COMRetPtr(COMPtr<T> &Ptr)noexcept(true){
-	Ptr=nullptr;
-	return reinterpret_cast<void**>(&Ptr.Token());
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline T** COMRetPtrT(T* &Ptr)noexcept(true){
-	return &Ptr;
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline T** COMRetPtrT(COMPtr<T> &Ptr)noexcept(true){
-	Ptr=nullptr;
-	return &Ptr.Token();
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline REFIID COMUUID(T* &)noexcept(true){
-	return __uuidof(T);
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline REFIID COMUUID(const COMPtr<T>&)noexcept(true){
-	return __uuidof(T);
-}
-//---------------------------------------------------------------------------
-}	// namespace cnRTL
-//---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 namespace cnLib_THelper{
@@ -234,6 +121,16 @@ template<class...TInterfaces>
 struct cCOMQueryInterface< TCOMInterfacePack<TInterfaces...> >
 	: cCOMQueryInterfaceImplemenetaton<true,TInterfaces...>{};
 
+template<class TEnable,class T>
+struct COMFindPrimaryInterface
+	: cnVar::TTypeDef<T>{};
+
+template<class T>
+struct COMFindPrimaryInterface<typename cnVar::TSelect< 0,void,typename T::tCOMInterfacePack>::Type,T>
+	: cnVar::TTypeDef<
+		typename cCOMQueryInterface<typename T::tCOMInterfacePack>::tPrimaryInterface
+	>{};
+
 //---------------------------------------------------------------------------
 }	// namespace RTL_TH
 }	// namespace cnLib_THelper
@@ -242,10 +139,127 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
+struct cBSTROwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<BSTR>
+{
+	static void Release(const BSTR &Token)noexcept(true);
+};
+typedef cnVar::cPtrOwner<cBSTROwnerTokenOperator> apBSTR;
+//---------------------------------------------------------------------------
+apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
+BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
+
+//---------------------------------------------------------------------------
+inline IUnknown* iCastCOM(iInterface *Interface)noexcept(true){
+	auto COMInterface=iCast<iCOMInterface>(Interface);
+	if(COMInterface==nullptr)
+		return nullptr;
+	return COMInterface->GetCOMInterface();
+}
+//---------------------------------------------------------------------------
+template<class TFunction>
+struct TCOMFunctionInfo;
+
+template<class TClass,class TRet,class...TArgs>
+struct TCOMFunctionInfo<TRet (STDMETHODCALLTYPE TClass::*)(TArgs...)>
+	: cnLib_THelper::Var_TH::MemberFunctionInfo<TClass,TRet,TArgs...>
+{
+	typedef TClass ClassArgumentType;
+};
+//---------------------------------------------------------------------------
+template<class T>
+struct cCOMRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
+{
+	//static void Acquire(T *Token)noexcept(true){	if(Token!=nullptr)	Token->AddRef();	}
+	//static void Release(T *Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
+	static void Acquire(T *Token)noexcept(true){
+		if(Token!=nullptr)	
+			static_cast<typename cnLib_THelper::RTL_TH::COMFindPrimaryInterface<void,T>::Type*>(Token)->AddRef();
+	}
+	static void Release(T *Token)noexcept(true){
+		if(Token!=nullptr)
+			static_cast<typename cnLib_THelper::RTL_TH::COMFindPrimaryInterface<void,T>::Type*>(Token)->Release();
+	}
+};
+
+template<class T>
+using COMPtr=cnVar::cPtrReference< cCOMRefTokenOperator<T> >;
+
+//---------------------------------------------------------------------------
+template<class T>
+inline COMPtr<T> COMTake(T *Src)noexcept(true)
+{
+	return COMPtr<T>::TakeFromManual(Src);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline T* COMExtract(COMPtr<T> &Src)noexcept(true)
+{
+	return Src.ExtractToManual();
+}
+//---------------------------------------------------------------------------
+template<class TDest,class T>
+inline TDest* COMExtractAs(COMPtr<T> &Src)noexcept(true)
+{
+	return static_cast<TDest*>(Src.ExtractToManual());
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline COMPtr<T> COMTake(T *Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
+	return COMPtr<T>::TakeFromManual(Src);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline T* COMExtract(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
+	return Src.ExtractToManual();
+}
+//---------------------------------------------------------------------------
+template<class TDest,class T>
+inline T* COMExtractAs(COMPtr<T> &Src,uInt32 Tag)noexcept(true)
+{
+	cnRTL_DEBUG_LOG_REFERENCE_INC(static_cast<T*>(Src),Tag);
+	return static_cast<TDest*>(Src.ExtractToManual());
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline void** COMRetPtr(T* &Ptr)noexcept(true){
+	return reinterpret_cast<void**>(&Ptr);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline void** COMRetPtr(COMPtr<T> &Ptr)noexcept(true){
+	Ptr=nullptr;
+	return reinterpret_cast<void**>(&Ptr.Token());
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline T** COMRetPtrT(T* &Ptr)noexcept(true){
+	return &Ptr;
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline T** COMRetPtrT(COMPtr<T> &Ptr)noexcept(true){
+	Ptr=nullptr;
+	return &Ptr.Token();
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline REFIID COMUUID(T* &)noexcept(true){
+	return __uuidof(T);
+}
+//---------------------------------------------------------------------------
+template<class T>
+inline REFIID COMUUID(const COMPtr<T>&)noexcept(true){
+	return __uuidof(T);
+}
+//---------------------------------------------------------------------------
 template<class TCOMObject>
 inline bool COMObjectQueryInterface(TCOMObject *Object,REFIID riid,_COM_Outptr_ void **ppvObject)noexcept(true)
 {
-	return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMObject::tCOMInterfacePack>::ImplementQueryInterface<TCOMObject>(Object,riid,ppvObject);
+	return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMObject::tCOMInterfacePack>::template ImplementQueryInterface<TCOMObject>(Object,riid,ppvObject);
 }
 //---------------------------------------------------------------------------
 // COM
@@ -319,6 +333,8 @@ struct cCOMInnerMemberInterfaceTranslator
 	}
 };
 
+#endif // cnLibrary_CPPFEATURE_DECLTYPE >=200707L && cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO >= 201606L
+
 template<class T,class TInnerMemberInterfaceTranslator>
 class COMInnerMember : public T
 {
@@ -329,7 +345,7 @@ public:
 	using T::T;
 
 	bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true){
-		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::FindInterface<T>(this,riid,ppvObject);
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::template FindInterface<T>(this,riid,ppvObject);
 	}
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
@@ -348,7 +364,6 @@ public:
 	}
 };
 
-#endif // cnLibrary_CPPFEATURE_DECLTYPE >=200707L && cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO >= 201606L
 //---------------------------------------------------------------------------
 template<class T>
 class COMInnerObject : public T
@@ -361,7 +376,7 @@ public:
 
 	
 	bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true){
-		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::FindInterface<T>(this,riid,ppvObject);
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename T::tCOMInterfacePack>::template FindInterface<T>(this,riid,ppvObject);
 	}
 
     virtual HRESULT STDMETHODCALLTYPE QueryInterface(
@@ -407,7 +422,7 @@ public:
 		delete this;
 	}
 	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)override{
-		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMImplementation::tCOMInterfacePack>::FindInterface<TCOMImplementation>(this,riid,ppvObject);
+		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMImplementation::tCOMInterfacePack>::template FindInterface<TCOMImplementation>(this,riid,ppvObject);
 	}
 };
 //---------------------------------------------------------------------------

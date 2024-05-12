@@ -15,6 +15,10 @@ using namespace cnRTL;
 using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
+bcWindowClass::operator LPCWSTR ()noexcept{
+	return reinterpret_cast<LPCWSTR>(fAtom);
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WINXP
 //---------------------------------------------------------------------------
@@ -212,5 +216,282 @@ iWindow* cnWinRTL::GetWindowFromUIView(iUIView *View)noexcept
 	if(View==nullptr)
 		return nullptr;
 	return GetWindowFromUIWindow(View->GetWindow());
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+const UINT cWindowMessageThread::Message_Terminate		=WM_USER+0;
+const UINT cWindowMessageThread::Message_Execute		=WM_USER+1;
+const UINT cWindowMessageThread::Message_ExecuteRef		=WM_USER+2;
+//---------------------------------------------------------------------------
+cWindowMessageThread::cWindowMessageThread()noexcept
+{
+}
+//---------------------------------------------------------------------------
+cWindowMessageThread::~cWindowMessageThread()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::VirtualStarted(void)noexcept
+{
+	cDualReference::VirtualStarted();
+	fMessageThreadID=0;
+	fMessageWindow=nullptr;
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::VirtualStopped(void)noexcept
+{
+	if(fMessageThreadID==0)
+		return;
+	::PostMessageW(fMessageWindow,Message_Terminate,0,reinterpret_cast<WPARAM>(this));
+	
+	cDualReference::VirtualStopped();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::SetupCurrentThread(HWND MessageWindow)noexcept
+{
+	fMessageThreadID=::GetCurrentThreadId();
+	fMessageWindow=MessageWindow;
+	InnerIncReference('mstp');
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::FinishMessageLoop(void)noexcept
+{
+	::DestroyWindow(fMessageWindow);
+	MSG msg;
+	while(::PeekMessageW(&msg,nullptr,0,0,PM_REMOVE)){
+		::TranslateMessage(&msg);
+		::DispatchMessageW(&msg);
+	}
+	::PostQuitMessage(0);
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageThread::MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept
+{
+	switch(uMsg){
+	case Message_Terminate:
+		{
+			auto Host=reinterpret_cast<cWindowMessageThread*>(lParam);
+			Host->FinishMessageLoop();
+			Host->InnerDecReference('mstp');
+		}
+		return true;
+	case Message_Execute:
+		reinterpret_cast<iProcedure*>(lParam)->Execute();
+		return true;
+	case Message_ExecuteRef:
+		reinterpret_cast<iProcedure*>(lParam)->Execute();
+		rDecReference(reinterpret_cast<iReference*>(wParam),'mexe');
+		return true;
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::MessageLoop(void)noexcept
+{
+	MSG msg;
+	while(::GetMessageW(&msg,nullptr,0,0)){
+		::TranslateMessage(&msg);
+		::DispatchMessageW(&msg);
+	}
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageThread::IsCurrentThread(void)const noexcept
+{
+	return ::GetCurrentThreadId()==fMessageThreadID;
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::Execute(iReference *Reference,iProcedure *Procedure)noexcept
+{
+	rIncReference(Reference,'mexe');
+	if(::PostMessageW(fMessageWindow,Message_ExecuteRef,reinterpret_cast<WPARAM>(Reference),reinterpret_cast<LPARAM>(Procedure))==FALSE){
+		rDecReference(Reference,'mexe');
+	}
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::ExecuteNoRef(iProcedure *Procedure)noexcept
+{
+	::PostMessageW(fMessageWindow,Message_Execute,0,reinterpret_cast<LPARAM>(Procedure));
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::ExecuteSync(iProcedure *Procedure)noexcept
+{
+	::SendMessageW(fMessageWindow,Message_Execute,0,reinterpret_cast<LPARAM>(Procedure));
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::cWindowMessageQueueDispatch(aClsRef<cWindowMessageThread> MessageThread)noexcept
+	: fMessageThread(cnVar::MoveCast(MessageThread))
+{
+}
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::~cWindowMessageQueueDispatch()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::Execute(iReference *Reference,iProcedure *Procedure)noexcept
+{
+	return fMessageThread->Execute(Reference,Procedure);
+}
+//---------------------------------------------------------------------------
+rPtr<iAsyncProcedure> cWindowMessageQueueDispatch::CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+{
+	if(Reference!=nullptr){
+		return rCreate<cAsyncProcedure>(fMessageThread,Reference,ThreadProcedure);
+	}
+	else{
+		return rCreate<cAsyncProcedureNoRef>(fMessageThread,ThreadProcedure);
+	}
+}
+//---------------------------------------------------------------------------
+rPtr<iAsyncTimer> cWindowMessageQueueDispatch::CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+{
+	return rCreate<cAsyncTimer>(fMessageThread,Reference,ThreadProcedure);
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageQueueDispatch::IsCurrentThread(void)noexcept
+{
+	return fMessageThread->IsCurrentThread();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::ExecuteSync(iProcedure *Procedure)noexcept
+{
+	return fMessageThread->ExecuteSync(Procedure);
+}
+//---------------------------------------------------------------------------
+iPtr<iAsyncTask> cWindowMessageQueueDispatch::ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::cAsyncProcedure::cAsyncProcedure(aClsRef<cWindowMessageThread> MessageThread,iReference *Reference,iProcedure *Procedure)noexcept(true)
+	: fMessageThread(cnVar::MoveCast(MessageThread))
+	, fReference(Reference)
+	, fProcedure(Procedure)
+{
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncProcedure::Start(void)noexcept
+{
+	fMessageThread->Execute(fReference,fProcedure);
+}
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::cAsyncProcedureNoRef::cAsyncProcedureNoRef(aClsRef<cWindowMessageThread> MessageThread,iProcedure *Procedure)noexcept
+	: fMessageThread(cnVar::MoveCast(MessageThread))
+	, fProcedure(Procedure)
+{
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncProcedureNoRef::Start(void)noexcept
+{
+	fMessageThread->ExecuteNoRef(fProcedure);
+}
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::cAsyncTimer::cAsyncTimer(aClsRef<cWindowMessageThread> MessageThread,iReference *Reference,iProcedure *Procedure)noexcept
+	: fMessageThread(cnVar::MoveCast(MessageThread))
+	, fReference(Reference)
+	, fProcedure(Procedure)
+	, fTimerState(0)
+	, fThreadPoolTimer(cnSystem::DefaultThreadPool->CreateTimer(&fInnerReference,&fThreadPoolTimerProcedure))
+{
+}
+//---------------------------------------------------------------------------
+cWindowMessageQueueDispatch::cAsyncTimer::~cAsyncTimer()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::VirtualStarted(void)noexcept
+{
+	cDualReference::VirtualStarted();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::VirtualStopped(void)noexcept
+{
+	ClearTimer();
+	cDualReference::VirtualStopped();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::Start(uInt64 DueTime,uInt64 Period)noexcept
+{
+	StartTimer(DueTime,Period);
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::Stop(void)noexcept
+{
+	ClearTimer();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::StartTimer(uInt64 DueTime,uInt64 Period)noexcept
+{
+	ufInt8 PrevState=0;
+	if(fTimerState.Acquire.CmpXchg(PrevState,1)){
+		if(fReference!=nullptr)
+			rIncReference(fReference,'time');
+	}
+	else{
+		if(PrevState!=2)
+			return;	// transisting state
+		// try to restart timer
+		if(fTimerState.Acquire.CmpStore(2,1)==false){
+			// failed to restart timer
+			return;
+		}
+	}
+	fDueTime=DueTime;
+	fPeriod=Period;
+	fThreadPoolTimer->Start(fDueTime,0);
+
+	fTimerState.Release.Store(2);
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::ClearTimer(void)noexcept
+{
+	if(fTimerState.Acquire.CmpStore(2,3)==false){
+		return;
+	}
+
+	fThreadPoolTimer->Stop();
+
+	if(fReference!=nullptr)
+		rDecReference(fReference,'time');
+
+	fTimerState.Release.Store(0);
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::cThreadPoolTimerProcedure::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTimer::fThreadPoolTimerProcedure);
+	return Host->ThreadPoolTimerHit();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::ThreadPoolTimerHit(void)noexcept
+{
+	if(fTimerState.Acquire.Load()!=2)
+		return;
+			
+	fMessageThread->Execute(&fInnerReference,&fTimerDispatchProcedure);
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::cTimerDispatchProcedure::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTimer::fTimerDispatchProcedure);
+	return Host->TimerHit();
+}
+//---------------------------------------------------------------------------
+void cWindowMessageQueueDispatch::cAsyncTimer::TimerHit(void)noexcept
+{
+	fProcedure->Execute();
+
+	if(fPeriod==0){
+		return;
+	}
+	auto Now=cnSystem::GetSystemTimeNow();
+	fDueTime+=fPeriod;
+	if(fDueTime<Now){
+		fDueTime=Now;
+		fMessageThread->Execute(&fInnerReference,&fTimerDispatchProcedure);
+	}
+	else{
+		fThreadPoolTimer->Start(fDueTime,0);
+	}
 }
 //---------------------------------------------------------------------------

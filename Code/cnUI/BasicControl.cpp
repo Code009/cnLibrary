@@ -627,7 +627,7 @@ void bcButton::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchBegin(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchDown(iUITouchEvent *TouchEvent)noexcept
 {
 	if(fTouchDownPointID!=nullptr)
 		return;
@@ -639,7 +639,7 @@ void bcButton::TouchBegin(iUITouchEvent *TouchEvent)noexcept
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchEnd(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchUp(iUITouchEvent *TouchEvent)noexcept
 {
 	if(TouchEvent->GetTouchID()==fTouchDownPointID){
 		fTouchDown=false;

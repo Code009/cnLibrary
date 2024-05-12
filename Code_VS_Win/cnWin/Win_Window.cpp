@@ -31,10 +31,6 @@ cWindowClass::~cWindowClass()
 		UnregisterClassW(reinterpret_cast<LPCWSTR>(fAtom),gModuleHandle);	
 }
 //---------------------------------------------------------------------------
-cWindowClass::operator LPCWSTR (){
-	return reinterpret_cast<LPCWSTR>(fAtom);
-}
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 INT_PTR CALLBACK cnWin::ModalDialogSubclassEmptyDlgProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {wParam;lParam;
@@ -102,5 +98,64 @@ INT_PTR cnWin::ModalDialog(const cModalDialogInitParameter &InitParameter,HWND P
 	DialogTemplateData.zero_windowClass=0;
 	DialogTemplateData.zero_title=0;
 	return ::DialogBoxIndirectParamW(gModuleHandle,reinterpret_cast<LPCDLGTEMPLATE>(&DialogTemplateData),Parent,ModalDialogSubclassInitDlgProc,reinterpret_cast<LONG_PTR>(&InitParameter));
+}
+//---------------------------------------------------------------------------
+cMessageThreadWindowClass::cMessageThreadWindowClass(const wchar_t *ClassName)
+	: cWindowClass(ClassName,MessageWindowProc,0)
+{
+}
+//---------------------------------------------------------------------------
+LRESULT CALLBACK cMessageThreadWindowClass::MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept
+{
+	if(cnWinRTL::cWindowMessageThread::cWindowMessageThread::MessageWindowProc(hWnd,uMsg,wParam,lParam)){
+		return 0;
+	}
+
+	return ::DefWindowProcW(hWnd,uMsg,wParam,lParam);
+}
+//---------------------------------------------------------------------------
+DWORD WINAPI cMessageThreadWindowClass::MessageThreadProcedure(LPVOID Parameter)noexcept
+{
+	rInnerPtr<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
+	{
+		auto ThreadParam=static_cast<cWindowMessageThreadParam*>(Parameter);
+		ThreadParam->MessageThread=aClsCreate<cnWinRTL::cWindowMessageThread>();
+		MessageThread=ThreadParam->MessageThread;
+
+		HWND MessageWindow=::CreateWindowExW(0,gMessageThreadWindowClass,nullptr,0,0,0,0,0,HWND_MESSAGE,nullptr,gModuleHandle,nullptr);
+	
+		MessageThread->SetupCurrentThread(MessageWindow);
+		
+		ThreadParam->CallerNotify.Notify();
+	}
+
+	MessageThread->MessageLoop();
+	return 0;
+}
+//---------------------------------------------------------------------------
+aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> cMessageThreadWindowClass::StartMessageThread(void)noexcept
+{
+	cWindowMessageThreadParam ThreadParam;
+
+	ThreadParam.CallerNotify.Start();
+
+	HANDLE ThreadHandle=::CreateThread(nullptr,0,MessageThreadProcedure,&ThreadParam,0,nullptr);
+
+
+	ThreadParam.CallerNotify.Wait();
+
+	ThreadParam.CallerNotify.Finish();
+	::CloseHandle(ThreadHandle);
+
+	return cnVar::MoveCast(ThreadParam.MessageThread);
+}
+//---------------------------------------------------------------------------
+iPtr<cnWinRTL::cWindowMessageQueueDispatch> cnWin::CreateWindowMessageDispathThread(void)noexcept
+{
+	auto MessageThread=cMessageThreadWindowClass::StartMessageThread();
+	if(MessageThread==nullptr)
+		return nullptr;
+
+	return iCreate<cnWinRTL::cWindowMessageQueueDispatch>(cnVar::MoveCast(MessageThread));
 }
 //---------------------------------------------------------------------------

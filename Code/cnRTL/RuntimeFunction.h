@@ -245,19 +245,19 @@ public:
 		return RetValue;
 	}
 
-	template<class TElement,uIntn ElementCount>
-	operator cnVar::cVector<TElement,ElementCount> ()const noexcept(true){
-		cnVar::cVector<TElement,ElementCount> RetValue;
-		RetValue.Fill(fValue);
-		return RetValue;
-	}
+	//template<class TElement,uIntn ElementCount>
+	//operator cnVar::cVector<TElement,ElementCount> ()const noexcept(true){
+	//	cnVar::cVector<TElement,ElementCount> RetValue;
+	//	RetValue.Fill(fValue);
+	//	return RetValue;
+	//}
 
-	template<class TElement,uIntn ElementCount>
-	operator cnVar::cIntegerVector<TElement,ElementCount> ()const noexcept(true){
-		cnVar::cIntegerVector<TElement,ElementCount> RetValue;
-		RetValue.Fill(fValue);
-		return RetValue;
-	}
+	//template<class TElement,uIntn ElementCount>
+	//operator cnVar::cIntegerVector<TElement,ElementCount> ()const noexcept(true){
+	//	cnVar::cIntegerVector<TElement,ElementCount> RetValue;
+	//	RetValue.Fill(fValue);
+	//	return RetValue;
+	//}
 
 private:
 	TValue fValue;

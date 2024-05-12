@@ -110,14 +110,12 @@ iPtr<iThread> cnSystem::StartThread(iProcedure *ThreadProcedure)noexcept
 	return cThread::StartThread(ThreadProcedure);
 }
 //- Thread ------------------------------------------------------------------
-#if 0
 
 iPtr<iDispatch> cnSystem::CreateDispatchThread(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - rpCreateDispatchThread")
-	return nullptr;
+	return cnWin::CreateWindowMessageDispathThread();
 }
-#endif // 0
+
 //- Current Thread ----------------------------------------------------------
 void cnSystem::CurrentThread::SwitchThread(void)noexcept
 {	::SwitchToThread();	}

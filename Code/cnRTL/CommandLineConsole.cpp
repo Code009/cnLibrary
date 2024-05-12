@@ -14,7 +14,7 @@ static cStringBuffer<uChar16> ToUpperCase(const uChar16 *String)noexcept
 	while(*String!=0){
 		uChar16 c=*String++;
 		if(c>=u'a' && c<=u'z')
-			c+=u'A'-u'a';
+			c+=static_cast<uChar16>(u'A'-u'a');
 		
 		Result.AppendChar(c);
 	}

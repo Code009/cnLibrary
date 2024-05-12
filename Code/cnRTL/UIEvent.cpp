@@ -518,17 +518,17 @@ void cUITouchEventNotification::TouchReleaseExclusive(iUITouchHandler *Handler)n
 {
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleBegin(iUITouchEvent *TouchEvent)noexcept
+void cUITouchEventNotification::HandleDown(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
-		Handler->TouchBegin(TouchEvent);
+		Handler->TouchDown(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::HandleEnd(iUITouchEvent *TouchEvent)noexcept
+void cUITouchEventNotification::HandleUp(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchHandlers){
-		Handler->TouchEnd(TouchEvent);
+		Handler->TouchUp(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
@@ -548,17 +548,17 @@ void cUITouchEventNotification::HandleMove(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterBegin(iUITouchEvent *TouchEvent)noexcept
+void cUITouchEventNotification::FilterDown(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
-		Handler->TouchBegin(TouchEvent);
+		Handler->TouchDown(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchEventNotification::FilterEnd(iUITouchEvent *TouchEvent)noexcept
+void cUITouchEventNotification::FilterUp(iUITouchEvent *TouchEvent)noexcept
 {
 	for(auto *Handler : fTouchFilters){
-		Handler->TouchEnd(TouchEvent);
+		Handler->TouchUp(TouchEvent);
 	}
 }
 //---------------------------------------------------------------------------

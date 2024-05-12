@@ -350,7 +350,7 @@ cPOSIXThread* cPOSIXThread::CurrentThread(void)noexcept
 
 	auto pThread=iExtract(NewThread,'thsp');
 	gModule.ThreadObject.setspecific(pThread);
-	return NewThread;
+	return pThread;
 
 }
 //---------------------------------------------------------------------------
