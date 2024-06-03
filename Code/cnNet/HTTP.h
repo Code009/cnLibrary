@@ -33,7 +33,7 @@ uIntn ParseHeaderMessage(ufInt16 *Pos,ufInt16 *Len,uIntn PosCount,const char *Li
 bool ParseHeaderParameter(ufInt16 &NameLen,const char *Line,uIntn LineLength)noexcept(true);
 void TrimLWS(ufInt16 &Pos,ufInt16 &Len,const char *Text,uIntn Length)noexcept(true);
 //---------------------------------------------------------------------------
-void AppendDate(cStringBuffer<char> &DateString,const iTimepoint *Time)noexcept(true);
+void AppendDate(cStringBuffer<char> &DateString,uInt64 SystemTime)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iClientProcessor
 {

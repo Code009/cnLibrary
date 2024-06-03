@@ -9,11 +9,6 @@ using namespace cnWin;
 //	cnSystem
 //---------------------------------------------------------------------------
 
-iDependentRegistration* cnSystem::GetSystemDependentRegistration(void)noexcept
-{
-	return &gSystemDependentRegistration;
-}
-
 void cnSystem::AssertionMessage(const char *Message)noexcept
 {
 	if(::MessageBoxA(nullptr,Message,"assert",MB_ICONERROR|MB_YESNO)==IDYES){
@@ -103,8 +98,7 @@ iPtr<iThread> cnSystem::StartThread(iProcedure *ThreadProcedure)noexcept
 //- Thread ------------------------------------------------------------------
 iPtr<iDispatch> cnSystem::CreateDispatchThread(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - rpCreateDispatchThread")
-	return nullptr;
+	return cnWin::CreateWindowMessageDispathThread();
 }
 //- Current Thread ----------------------------------------------------------
 void cnSystem::CurrentThread::SwitchThread(void)noexcept
@@ -156,14 +150,12 @@ iPtr<iUIView> cnSystem::CreateUIView(void)noexcept
 //---------------------------------------------------------------------------
 rPtr<iPopupWindowControl> cnSystem::CreatePopupWindowControl(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - iPopupWindowControl")
-	return nullptr;
+	return DNetCreatePopupWindowControl();
 }
 //---------------------------------------------------------------------------
 iUIThread* cnSystem::CurrentUIThread::GetUIThread(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - iUIThread")
-	return nullptr;
+	return cDNetUIThread::CurrentUIThread();
 }
 //---------------------------------------------------------------------------
 iDispatch* cnSystem::CurrentUIThread::GetDispatch(bool HighPriority)noexcept
@@ -393,6 +385,12 @@ rPtr<iODBC> cnWindows::ODBC(void)noexcept
 //---------------------------------------------------------------------------
 //- UI ----------------------------------------------------------------------
 //---------------------------------------------------------------------------
+
+rPtr<iWindowsConsoleHost> cnWindows::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept
+{
+	return cnWinRTL::CreateWindowsConsoleHost(Dispatch);
+}
+
 
 iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept
 {

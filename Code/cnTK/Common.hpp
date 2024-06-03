@@ -171,7 +171,7 @@ namespace cnLibrary{
 namespace cnMemory{
 cnLib_TYPELESS_ENUM_BEGIN(ByteOrder){
 	LittleEndian,
-		BigEndian,
+	BigEndian,
 }cnLib_TYPELESS_ENUM_END(ByteOrder);
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
@@ -212,7 +212,9 @@ namespace cnVar{
 
 template<class TRet,class T>
 inline TRet ReturnCast(T&& Var)noexcept(true)
-{	return reinterpret_cast<TRet&&>(Var);	}
+{
+	return reinterpret_cast<TRet&&>(Var);
+}
 
 // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 #else
@@ -220,7 +222,9 @@ inline TRet ReturnCast(T&& Var)noexcept(true)
 
 template<class TRet,class T>
 inline const TRet& ReturnCast(const T& Var)noexcept(true)
-{	return reinterpret_cast<const TRet&>(Var);	}
+{
+	return reinterpret_cast<const TRet&>(Var);
+}
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 
@@ -243,7 +247,7 @@ struct TConstantValueUIntn
 
 #if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
 
-template<class T, T v>
+template<class T,T v>
 struct TConstantValue
 {
 	static constexpr T Value=v;
@@ -254,15 +258,41 @@ constexpr T TConstantValue<T,v>::Value;
 // cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
 #else
 // cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
-template<class T, T v>
+template<class T,T v>
 struct TConstantValue
 {
 	static const T Value;
 };
-template<class T, T v>
-const T TConstantValue<T, v>::Value=v;
+template<class T,T v>
+const T TConstantValue<T,v>::Value=v;
 
 #endif	// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class T,T...Elements>
+struct TConstantArray
+{
+	static const T Value[sizeof...(Elements)];
+};
+
+template<class T,T...Elements>
+const T TConstantArray<T,Elements...>::Value[sizeof...(Elements)]={Elements...};
+
+
+template<class T,T...Elements>
+struct TConstantString
+{
+	static const T Value[];
+};
+template<class T,T...Elements>
+const T TConstantString<T,Elements...>::Value[]={
+	Elements...,0
+};
+
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
 
 template<class T>	struct TTypeDef{	typedef T Type;	};
 
@@ -647,8 +677,8 @@ struct TDefaultCompareResult
 
 template<class TCompare1,class TCompare2>
 inline auto DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(noexcept(Value1<=>Value2))
-	-> decltype(Value1<=>Value2)
+noexcept(noexcept(Value1<=>Value2))
+-> decltype(Value1<=>Value2)
 {
 	return Value1<=>Value2;
 }
@@ -663,7 +693,7 @@ struct TDefaultCompareResult
 
 template<class TCompare1,class TCompare2>
 inline sfInt8 DefaultCompare(const TCompare1 &Value1,const TCompare2 &Value2)
-	noexcept(noexcept(Value1==Value2) && noexcept(Value1<Value2))
+noexcept(noexcept(Value1==Value2) && noexcept(Value1<Value2))
 {
 	sfInt8 ne=static_cast<sfInt8>(!(Value1==Value2));
 	sfInt8 lt=-static_cast<sfInt8>(Value1<Value2);
@@ -803,11 +833,11 @@ struct TInteger
 
 
 	static bool BitTestAt(tUInt Src,ufInt8 BitIndex)noexcept(true){
-		return ( Src&(static_cast<tUInt>(1)<<BitIndex) )!=0;
+		return (Src&(static_cast<tUInt>(1)<<BitIndex))!=0;
 	}
 	static bool BitSetAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
 		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
-		bool r=( Dest&Mask )!=0;
+		bool r=(Dest&Mask)!=0;
 		if(!r){
 			Dest|=Mask;
 		}
@@ -815,7 +845,7 @@ struct TInteger
 	}
 	static bool BitResetAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
 		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
-		bool r=( Dest&Mask )!=0;
+		bool r=(Dest&Mask)!=0;
 		if(r){
 			Dest&=~Mask;
 		}
@@ -823,7 +853,7 @@ struct TInteger
 	}
 	static bool BitComplementAt(tUInt &Dest,ufInt8 BitIndex)noexcept(true){
 		tUInt Mask=static_cast<tUInt>(1)<<BitIndex;
-		bool r=( Dest&Mask )!=0;
+		bool r=(Dest&Mask)!=0;
 		Dest^=Mask;
 		return r;
 	}
@@ -847,7 +877,7 @@ struct TInteger
 namespace cnMemory{
 //---------------------------------------------------------------------------
 
-	
+
 template<eByteOrder TargetOrder,eByteOrder ValueOrder>
 struct TByteOrderConvert;
 
@@ -956,7 +986,7 @@ inline T ShiftLeftInto(typename cnVar::TTypeDef<T>::Type High,T Low,ufInt8 Count
 		static_cast<tUInt>(High),
 		static_cast<tUInt>(Low),
 		static_cast<uInt8>(Count)
-	));
+		));
 }
 // ShiftRightInto
 //	Shift Low while moving bits from High
@@ -972,7 +1002,7 @@ inline T ShiftRightInto(T Low,typename cnVar::TTypeDef<T>::Type High,uIntn Count
 		static_cast<tUInt>(Low),
 		static_cast<tUInt>(High),
 		static_cast<uInt8>(Count)
-	));
+		));
 }
 
 
@@ -1074,9 +1104,18 @@ inline T RotateRight(const T &Dest,uIntn Count)noexcept(true)
 }
 
 //---------------------------------------------------------------------------
+}	// namespace cnMemory
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+//---------------------------------------------------------------------------
+namespace cnLib_THelper{
+//---------------------------------------------------------------------------
+namespace Memory_TH{
+//---------------------------------------------------------------------------
+
 
 template<tSize BlockSize,tSize MSB>
-struct TPlainDataOrderOpeator1
+struct TPlainDataOrderOpeatorSmallTail
 {
 	static bool Equal(const void *p1,const void *p2)noexcept(true){
 		typedef typename cnVar::TIntegerOfSize<MSB,false>::Type tInt;
@@ -1084,7 +1123,7 @@ struct TPlainDataOrderOpeator1
 		tInt v2=*static_cast<const tInt*>(p2);
 		if(v1!=v2)
 			return false;
-		return TPlainDataOrderOpeator1<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Equal(
+		return TPlainDataOrderOpeatorSmallTail<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Equal(
 			static_cast<const tInt*>(p1)+1,static_cast<const tInt*>(p2)+1);
 	}
 	static sfInt8 Compare(const void *p1,const void *p2)noexcept(true){
@@ -1097,13 +1136,13 @@ struct TPlainDataOrderOpeator1
 			sfInt8 lt=-static_cast<sfInt8>(v1<v2);
 			return lt|1;
 		}
-		return TPlainDataOrderOpeator1<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Compare(
+		return TPlainDataOrderOpeatorSmallTail<BlockSize-MSB,cnVar::TIntegerValueMSB<tSize,BlockSize-MSB>::Value>::Compare(
 			static_cast<const tInt*>(p1)+1,static_cast<const tInt*>(p2)+1);
 	}
 };
 
 template<tSize IntSize>
-struct TPlainDataOrderOpeator1<IntSize,IntSize>
+struct TPlainDataOrderOpeatorSmallTail<IntSize,IntSize>
 {
 	static bool Equal(const void *p1,const void *p2)noexcept(true){
 		typedef typename cnVar::TIntegerOfSize<IntSize,false>::Type tInt;
@@ -1125,7 +1164,7 @@ struct TPlainDataOrderOpeator1<IntSize,IntSize>
 	}
 };
 template<>
-struct TPlainDataOrderOpeator1<0,0>
+struct TPlainDataOrderOpeatorSmallTail<0,0>
 {
 	static bool Equal(const void*,const void*)noexcept(true){
 		return true;
@@ -1134,6 +1173,17 @@ struct TPlainDataOrderOpeator1<0,0>
 		return 0;
 	}
 };
+
+//---------------------------------------------------------------------------
+}	// namespace Memory_TH
+//---------------------------------------------------------------------------
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
+namespace cnLibrary{
+//---------------------------------------------------------------------------
+namespace cnMemory{
+//---------------------------------------------------------------------------
+
 
 template<tSize BlockSize>
 struct TPlainDataOrderOpeator
@@ -1147,7 +1197,7 @@ struct TPlainDataOrderOpeator
 				return false;
 			}
 		}
-		return TPlainDataOrderOpeator1<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Equal(a1,a2);
+		return cnLib_THelper::Memory_TH::TPlainDataOrderOpeatorSmallTail<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Equal(a1,a2);
 	}
 	static sfInt8 Compare(const void *p1,const void *p2)noexcept(true){
 		const uIntn IntLength=BlockSize/sizeof(uIntn);
@@ -1163,7 +1213,7 @@ struct TPlainDataOrderOpeator
 				return lt|1;
 			}
 		}
-		return TPlainDataOrderOpeator1<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Compare(a1,a2);
+		return cnLib_THelper::Memory_TH::TPlainDataOrderOpeatorSmallTail<BlockSize%sizeof(uIntn),cnVar::TIntegerValueMSB<tSize,BlockSize%sizeof(uIntn)>::Value>::Compare(a1,a2);
 	}
 };
 
@@ -1404,6 +1454,19 @@ template<class TValueSequence>
 struct TMakeAccumulateSequence<TValueSequence>
 	: TTypeDef<TValueSequence>{};
 
+
+template<class...TConstantArraies>
+struct TMergeConstantArrayDef;
+
+template<template<class T,T...> class TConstantClass,class T,T...Elements1,T...Elements2,class...TConstantArraies>
+struct TMergeConstantArrayDef<TConstantClass<T,Elements1...>,TConstantClass<T,Elements2...>,TConstantArraies...>
+	: TMergeConstantArrayDef<TConstantClass<T,Elements1...,Elements2...>,TConstantArraies...>
+{
+};
+
+template<template<class T,T...> class TConstantClass,class T,T...Elements>
+struct TMergeConstantArrayDef< TConstantClass<T,Elements...> >
+	: TTypeDef< TConstantClass<T,Elements...> >{};
 
 #endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 

@@ -116,7 +116,7 @@ public:
 class cnLib_INTERFACE iUITextGraph : public iUIGraph
 {
 public:
-	//virtual rPtr<iUITextLineLayout> QueryTextLayout(void)=0;
+	//virtual rPtr<iUITextLineLayout> cnLib_FUNC QueryTextLayout(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,ImageBlendingOperator)

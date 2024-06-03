@@ -18,14 +18,12 @@ cWPFHwndSourceAsWindow::cWPFHwndSourceAsWindow(cDNetUIThread *UIThread)noexcept
 	: fUIThread(UIThread)
 	//, fWindowDPI(96)
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Register(this);
+	cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
 cWPFHwndSourceAsWindow::~cWPFHwndSourceAsWindow()noexcept
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Unregister(this);
+	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
 void cWPFHwndSourceAsWindow::VirtualStarted(void)noexcept

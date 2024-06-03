@@ -63,9 +63,11 @@ class cGCHandle
 #if _MANAGED
 public:
 	cGCHandle()noexcept(true):GCHandleStorage{0}{}
+	~cGCHandle()noexcept(true){
 #ifdef cnLib_DEBUG
-	~cGCHandle()noexcept(true){	cnLib_ASSERT(RefHandle().IsAllocated==false);	}
+		cnLib_ASSERT(RefHandle().IsAllocated==false);
 #endif // cnLib_DEBUG
+	}
 
 	__clrcall operator System::Object^(void)const noexcept(true){
 		auto &Handle=RefHandle();

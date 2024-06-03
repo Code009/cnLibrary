@@ -35,9 +35,9 @@ iPtr<iInterface> QuerySystemMouseCursor(LPCWSTR ID)noexcept(true);
 //---------------------------------------------------------------------------
 rPtr<iGDIFontHandle> QueryGDIFont(const cUITextStyle &TextStyle)noexcept(true);
 //---------------------------------------------------------------------------
-class WindowMessageHandler : protected iWindowMessageHandler
+class WindowMessageHandler : public iWindowMessageHandler
 {
-protected:
+public:
 	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
 	virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
 	virtual bool cnLib_FUNC WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgParam)noexcept(true)override;

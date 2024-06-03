@@ -166,8 +166,7 @@ private:
 	bool WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)noexcept(true);
 };
 //---------------------------------------------------------------------------
-class cWPFWindowClient
-	: public cWPFUIWindow
+class cWPFWindowClient : public cWPFUIWindow
 {
 public:
 	cWPFWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
@@ -199,6 +198,23 @@ protected:
 
 	SIZE GetClientSize(void)noexcept(true);
 	
+};
+//---------------------------------------------------------------------------
+class cWPFPopupWindowControl : public iPopupWindowControl, public cWPFWindowClient
+{
+public:
+	cWPFPopupWindowControl(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
+	~cWPFPopupWindowControl()noexcept(true);
+
+	virtual void cnLib_FUNC SetCallback(iPopupWindowControlCallback *Callback)noexcept(true)override;
+	virtual iUIWindow* cnLib_FUNC GetUIWindow(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetupOwner(iUIView *View)noexcept(true)override;
+	virtual void cnLib_FUNC ShowPopup(void)noexcept(true)override;
+	virtual void cnLib_FUNC HidePopup(void)noexcept(true)override;
+protected:
+	iPopupWindowControlCallback *fCallback=nullptr;
+
+	void ClearOwner(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

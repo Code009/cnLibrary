@@ -27,11 +27,6 @@ using namespace cnWin;
 //	cnSystem
 //---------------------------------------------------------------------------
 
-iDependentRegistration* cnSystem::GetSystemDependentRegistration(void)noexcept
-{
-	return &gSystemDependentRegistration;
-}
-
 void cnSystem::AssertionMessage(const char *Message)noexcept
 {
 	if(::MessageBoxA(nullptr,Message,"assert",MB_ICONERROR|MB_YESNO)==IDYES){

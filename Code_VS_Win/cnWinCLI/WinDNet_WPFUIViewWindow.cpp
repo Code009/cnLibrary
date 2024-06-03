@@ -34,6 +34,11 @@ iPtr<iWindowClient> cnWin::DNetCreateWindowClient(mcDNetUIThreadDispatcher *Disp
 	return iCreate<cWPFWindowClient>(static_cast<cDNetUIThread*>(Dispatcher),Parameter);
 }
 //---------------------------------------------------------------------------
+rPtr<iPopupWindowControl> cnWin::DNetCreatePopupWindowControl(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
+{
+	return iCreate<cWPFPopupWindowControl>(static_cast<cDNetUIThread*>(Dispatcher),Parameter);
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void mcWPFViewRoot::nDispatcherFinishNotify(bool Shutdown)noexcept
 {
@@ -114,12 +119,12 @@ bool cWPFUIWindow::RemoveStateHandler(iUIStateHandler *Handler)noexcept
 //---------------------------------------------------------------------------
 bool cWPFUIWindow::GetVisible(void)noexcept
 {
-	return false;
+	return GetWindowVisible();
 }
 //---------------------------------------------------------------------------
 bool cWPFUIWindow::SetVisible(bool Visible)noexcept
 {
-	return false;
+	return SetWindowVisible(Visible);
 }
 //---------------------------------------------------------------------------
 bool cWPFUIWindow::IsEnabled(void)noexcept
@@ -340,14 +345,12 @@ cWPFWindow::cWPFWindow(cDNetUIThread *UIThread)noexcept
 	: fUIThread(UIThread)
 	//, fWindowDPI(96)
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Register(this);
+	cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
 cWPFWindow::~cWPFWindow()noexcept
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Unregister(this);
+	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
 void cWPFWindow::VirtualStarted(void)noexcept
@@ -628,5 +631,60 @@ Float32 cWPFWindowClient::WPFParentGetLayoutScale(void)noexcept
 	if(fWindowHost==nullptr)
 		return 1.f;
 	return fWindowHost->GetLayoutScale();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWPFPopupWindowControl::cWPFPopupWindowControl(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept
+	: cWPFWindowClient(UIThread,Parameter)
+{
+}
+//---------------------------------------------------------------------------
+cWPFPopupWindowControl::~cWPFPopupWindowControl()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cWPFPopupWindowControl::SetCallback(iPopupWindowControlCallback *Callback)noexcept
+{
+	fCallback=Callback;
+}
+//---------------------------------------------------------------------------
+iUIWindow* cWPFPopupWindowControl::GetUIWindow(void)noexcept
+{
+	return this;
+}
+//---------------------------------------------------------------------------
+bool cWPFPopupWindowControl::SetupOwner(iUIView *View)noexcept
+{
+	if(View==nullptr){
+		ClearOwner();
+		return true;
+	}
+	auto Window=View->GetWindow();
+	if(Window==nullptr){
+		ClearOwner();
+		return true;
+	}
+	auto CLIWindow=iCast<iCLIObject>(Window);
+	if(CLIWindow==nullptr){
+		return false;
+	}
+
+	auto &WPFRootHandle=CLIWindow->GetObjecHandle();
+	return SetWindowOwner(WPFRootHandle);
+}
+//---------------------------------------------------------------------------
+void cWPFPopupWindowControl::ClearOwner(void)noexcept
+{
+	return ClearWindowOwner();
+}
+//---------------------------------------------------------------------------
+void cWPFPopupWindowControl::ShowPopup(void)noexcept
+{
+	SetWindowVisible(true);
+}
+//---------------------------------------------------------------------------
+void cWPFPopupWindowControl::HidePopup(void)noexcept
+{
+	SetWindowVisible(false);
 }
 //---------------------------------------------------------------------------

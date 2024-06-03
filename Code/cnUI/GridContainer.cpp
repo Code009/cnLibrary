@@ -1156,9 +1156,17 @@ bool cControlList::ViewListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)
 		return false;
 	}
 
+	Float32 ItemTotalSize=ItemSize+ItemBorder;
+	if(ItemTotalSize==0){
+		DisplayIndex=0;
+		return false;
+	}
+
+	ufInt32 ItemTotalSizeInt=static_cast<ufInt32>(ItemTotalSize);
+
 	ufInt32 Pos=static_cast<ufInt32>(Position-ItemBorder);
-	DisplayIndex=static_cast<uIntn>(Pos/(ItemSize+ItemBorder));
-	return Pos%static_cast<ufInt32>(ItemSize+ItemBorder)!=0;
+	DisplayIndex=static_cast<uIntn>(Pos/ItemTotalSizeInt);
+	return Pos%ItemTotalSizeInt!=0;
 }
 //---------------------------------------------------------------------------
 void cControlList::ViewListDisplaySetupItems(ufInt32 ItemIndex,ufInt32 ItemEndIndex)noexcept

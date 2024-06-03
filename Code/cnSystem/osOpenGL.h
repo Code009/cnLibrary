@@ -33,8 +33,7 @@ class cnLib_INTERFACE iOpenGLViewContent : public iUIViewContent
 public:
 	virtual cUIPoint cnLib_FUNC GetPaintSize(void)noexcept(true)=0;
 	virtual void cnLib_FUNC NotifyPresent(void)noexcept(true)=0;
-	virtual iOpenGLContext* cnLib_FUNC GetOpenGLContext(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC GLBindRenderBuffer(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC GLBindRenderBuffer(iOpenGLContext *Context)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary

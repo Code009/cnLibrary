@@ -51,7 +51,6 @@ public:
 	virtual uIntn ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept(true)override;
 	virtual uIntn FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept(true)override;
 };
-extern cUTF32Transcoding_UTF16 UTF32Transcoding_UTF16;
 //---------------------------------------------------------------------------
 class cUTF32Transcoding_UTF8 : public iUTF32Transcoding
 {
@@ -59,9 +58,9 @@ public:
 	virtual uIntn ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept(true)override;
 	virtual uIntn FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept(true)override;
 };
-extern cUTF32Transcoding_UTF8 UTF32Transcoding_UTF8;
 //---------------------------------------------------------------------------
-
+const iUTF32Transcoding* UTF32Transcoding16(void)noexcept(true);
+const iUTF32Transcoding* UTF32Transcoding8(void)noexcept(true);
 iTextEncodingConverter* UnicodeTranscoder(ufInt8 ToEncodingSize,ufInt8 FromEncodingSize)noexcept(true);
 
 template<uIntn To,uIntn From>
@@ -82,35 +81,35 @@ protected:
 class cTextTranscoding_FromUTF32 : public iTextEncodingConverter
 {
 public:
-	cTextTranscoding_FromUTF32(iUTF32Transcoding *To)noexcept(true);
+	cTextTranscoding_FromUTF32(const iUTF32Transcoding *To)noexcept(true);
 	virtual uIntn cnLib_FUNC Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)override;
 private:
-	iUTF32Transcoding *fTo;
+	const iUTF32Transcoding *fTo;
 };
 //---------------------------------------------------------------------------
 class cTextTranscoding_ToUTF32 : public iTextEncodingConverter
 {
 public:
-	cTextTranscoding_ToUTF32(iUTF32Transcoding *From)noexcept(true);
+	cTextTranscoding_ToUTF32(const iUTF32Transcoding *From)noexcept(true);
 	virtual uIntn cnLib_FUNC Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)override;
 private:
-	iUTF32Transcoding *fFrom;
+	const iUTF32Transcoding *fFrom;
 };
 //---------------------------------------------------------------------------
 class cTextTranscoding_ThroughUTF32 : public iTextEncodingConverter
 {
 public:
 
-	cTextTranscoding_ThroughUTF32(iUTF32Transcoding *From,iUTF32Transcoding *To)noexcept(true);
+	cTextTranscoding_ThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept(true);
 	virtual uIntn cnLib_FUNC Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)override;
 private:
-	iUTF32Transcoding *fFrom;
-	iUTF32Transcoding *fTo;
+	const iUTF32Transcoding *fFrom;
+	const iUTF32Transcoding *fTo;
 };
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> CreateTranscoderFromUTF32(iUTF32Transcoding *To)noexcept(true);
-rPtr<iTextEncodingConverter> CreateTranscoderToUTF32(iUTF32Transcoding *From)noexcept(true);
-rPtr<iTextEncodingConverter> CreateTranscoderThroughUTF32(iUTF32Transcoding *From,iUTF32Transcoding *To)noexcept(true);
+rPtr<iTextEncodingConverter> CreateTranscoderFromUTF32(const iUTF32Transcoding *To)noexcept(true);
+rPtr<iTextEncodingConverter> CreateTranscoderToUTF32(const iUTF32Transcoding *From)noexcept(true);
+rPtr<iTextEncodingConverter> CreateTranscoderThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------

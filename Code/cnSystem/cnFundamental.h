@@ -16,9 +16,12 @@ typedef iFunction<void (void)noexcept(true)> iProcedure;
 class cnLib_INTERFACE iDependentInfo
 {
 private:
-	uIntn _Internal_[4];	// use by system
+	uIntn SystemReserved[4];	// used by iDependentRegistration
 public:
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)=0;
+	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true){
+		UnusedParameter(SystemReserved);	// compiler may complain SystemReserved will never be used
+		return nullptr;
+	}
 	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -31,7 +34,7 @@ public:
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
-iDependentRegistration* cnLib_FUNC GetSystemDependentRegistration(void)noexcept(true);
+extern iDependentRegistration*const SystemDependentRegistration;
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------

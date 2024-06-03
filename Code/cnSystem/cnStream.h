@@ -138,6 +138,13 @@ public:
 	//	IdleNotify		notify even when pending buffer is empty
 	virtual void cnLib_FUNC NotifyRead(uIntn SizeToNotify)noexcept(true)=0;
 
+	// CloseRead
+	//	terminate read
+	virtual void cnLib_FUNC CloseRead(bool Terminate)noexcept(true)=0;
+
+	// IsReadClosed
+	//	test if read queue is closed
+	// GracefulClose	wehter the read stream is correctly received from source
 	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)noexcept(true)=0;
 	
 	virtual uIntn cnLib_FUNC GetMaxReadBufferSize(void)noexcept(true)=0;
@@ -181,13 +188,19 @@ public:
 	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)noexcept(true)=0;
 	// StopWrite
 	//	stop writing
-	// Terminate		wether to discard pending buffer
-	virtual void cnLib_FUNC StopWrite(bool Terminate)noexcept(true)=0;
+	virtual void cnLib_FUNC StopWrite(void)noexcept(true)=0;
 	// NotifyWrite
 	//	notify callback at least once after the call, if there are more space available in write buffer since last notification
 	//	IdleNotify		notify even when write buffer is full
 	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)noexcept(true)=0;
 
+	// CloseWrite
+	// Terminate		wether to discard pending buffer
+	virtual void cnLib_FUNC CloseWrite(bool Terminate)noexcept(true)=0;
+
+	// IsWriteClosed
+	//	test if write queue is closed
+	// GracefulClose	wehter the write stream is correctly sent to the destination
 	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)noexcept(true)=0;
 	
 	virtual uIntn cnLib_FUNC GetMaxWriteBufferSize(void)noexcept(true)=0;
@@ -204,15 +217,6 @@ public:
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Length)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-// EndpointWriteEndMode
-//	default mode is NextSession
-cnLib_ENUM_BEGIN(ufInt8,EndpointWriteEndMode)
-{
-	Never,			// never mark stream end automaticly, stream will be ended when the WriteQueue released without any termination
-	Idle,			// mark stream end when no session active
-	NextSession,	// mark stream end after next session stopped, this is the default mode
-}cnLib_ENUM_END(EndpointWriteEndMode);
-//---------------------------------------------------------------------------
 class cnLib_INTERFACE iEndpoint : public iInterface
 {
 public:
@@ -222,10 +226,6 @@ public:
 	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
 	virtual iReadQueue* cnLib_FUNC GetReadQueue(void)noexcept(true)=0;
 	virtual iWriteQueue* cnLib_FUNC GetWriteQueue(void)noexcept(true)=0;
-	// SetWriteEndMode
-	//	mark the write stream as ended when conditions are met
-	// EndMode			mode that when to ends the write stream
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)=0;
 };
 //- Stream Error Code -----------------------------------------------------
 cnLib_ENUM_BEGIN(uInt8,StreamError)

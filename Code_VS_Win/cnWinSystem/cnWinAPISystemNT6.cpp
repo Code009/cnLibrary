@@ -98,6 +98,8 @@ cnLib_GlobalVar cnRTL::cReferenceStaticImplementT<cnWinRTL::cWin32DebugTextOutpu
 
 //- cnSystem - Pointer ------------------------------------------------------
 
+cnLib_GlobalVar iDependentRegistration*const cnSystem::SystemDependentRegistration=&gSystemDependentRegistration;
+
 cnLib_GlobalVar iMemoryHeap*const		cnSystem::DefaultMemoryHeap		=&gDefaultMemoryHeap;
 
 cnLib_GlobalVar	const sInt64			cnSystem::SystemTimeEpochSecondsSinceUnixEpoch=0;

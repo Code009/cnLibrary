@@ -23,6 +23,18 @@ iPtr<iWindowClient> cnWin::DNetCreateWindowClient(void)noexcept
 	return DNetCreateWindowClient(DispatchFrame,Parameter);
 }
 //---------------------------------------------------------------------------
+rPtr<iPopupWindowControl> cnWin::DNetCreatePopupWindowControl(void)noexcept
+{
+	auto DispatchFrame=mcDNetUIThreadDispatcher::mCurrentUIDispatcher();
+	if(DispatchFrame==nullptr)
+		return nullptr;
+
+	mcWPFViewRoot::mcConstructParameter Parameter={
+		gcnew WPFViewRoot()
+	};
+	return DNetCreatePopupWindowControl(DispatchFrame,Parameter);
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 mcWPFViewRoot::mcWPFViewRoot(mcConstructParameter &Parameter)noexcept
 	: fWPFRoot(cnVar::MoveCast(Parameter.WPFRoot))
@@ -113,6 +125,32 @@ void mcWPFViewRoot::WPFUIWindowRemoveSubview(IWPFView ^Subview)noexcept
 		return;
 
 	mResetClient();
+}
+//---------------------------------------------------------------------------
+bool mcWPFViewRoot::GetWindowVisible(void)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
+bool mcWPFViewRoot::SetWindowVisible(bool Visible)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
+bool mcWPFViewRoot::SetWindowOwner(cGCRef &WPFRootRef)noexcept
+{
+	auto OwnerRoot=WPFRootRef.Cast<IWPFViewRoot>();
+	if(OwnerRoot==nullptr)
+		return false;
+
+	auto WPFRoot=fWPFRoot.Get();
+	return WPFRoot->SetOwner(OwnerRoot);
+}
+//---------------------------------------------------------------------------
+void mcWPFViewRoot::ClearWindowOwner(void)noexcept
+{
+	auto WPFRoot=fWPFRoot.Get();
+	WPFRoot->SetOwner(nullptr);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -245,6 +283,38 @@ void WPFViewRoot::DispatcherFinishCleanup(void)
 {
 }
 //---------------------------------------------------------------------------
+bool WPFViewRoot::SetOwner(IWPFViewRoot ^Root)
+{
+	if(CPPWPFWindow==nullptr)
+		return false;
+
+	auto WPFWindow=static_cast<mcWPFWindow*>(CPPWPFWindow);
+	auto WndHandle=WPFWindow->mGetHandle();
+
+	if(Root==nullptr){
+		auto Style=::GetWindowLongW(WndHandle,GWL_STYLE);
+		Style&=WS_POPUP;
+		::SetWindowLongW(WndHandle,GWL_STYLE,Style);
+		::SetParent(WndHandle,nullptr);
+		return true;
+	}
+
+	auto OwnerRoot=dynamic_cast<WPFViewRoot^>(Root);
+	if(OwnerRoot==nullptr)
+		return false;
+	if(OwnerRoot->CPPWPFWindow==nullptr)
+		return false;
+	auto OwnerWPFWindow=static_cast<mcWPFWindow*>(OwnerRoot->CPPWPFWindow);
+
+	auto OwnerWndHandle=OwnerWPFWindow->mGetHandle();
+	auto Style=::GetWindowLongW(WndHandle,GWL_STYLE);
+	Style|=WS_POPUP;
+	::SetWindowLongW(WndHandle,GWL_STYLE,Style);
+
+	::SetParent(WndHandle,OwnerWndHandle);
+	return true;
+}
+//---------------------------------------------------------------------------
 void cnWin::mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)noexcept
 {
 	auto WPFRoot=ViewRoot.Cast<WPFViewRoot>();
@@ -332,6 +402,7 @@ bool mcWPFWindow::ClientAttach(WPFViewRoot ^ViewRoot,iWPFWindowClient *WindowCli
 		return false;
 	}
 
+	ViewRoot->CPPWPFWindow=this;
 	fWPFViewRoot.Set(ViewRoot);
 	fWindowClient=WindowClient;
 	auto Size=GetClientSize();
@@ -346,6 +417,9 @@ void mcWPFWindow::ClearClient(void)noexcept
 {
 	auto WPFWnd=fWPFWindow.Get();
 	auto Source=WPFWnd->Source;
+	
+	auto ViewRoot=fWPFViewRoot.Get();
+	ViewRoot->CPPWPFWindow=nullptr;
 
 	fWPFViewRoot.Set(nullptr);
 

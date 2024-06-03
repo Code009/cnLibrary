@@ -41,8 +41,8 @@ inline uIntn ViewCopy(TDestPtr Dest,uIntn DestLength,TSrcPtr Src)noexcept(true)
 		if(*Src==0){
 			break;
 		}
-		++Src;
 		*Dest=*Src;
+		++Src;
 		++Dest;
 	}
 	*Dest=0;
@@ -459,8 +459,8 @@ inline typename cnVar::TTypeConditional<uIntn,
 // return	copied length
 template<class TCharacter,uIntn DestCapacity,class TSrcPtr>
 inline typename cnVar::TTypeConditional<uIntn,
-	cnVar::TIsPointerOf<TCharacter,typename cnVar::TRemoveReference<TSrcPtr>::Type>::Value
->::Type Copy(TCharacter (&Dest)[DestCapacity],TSrcPtr&& Src)
+	cnVar::TIsPointerOf<TCharacter,TSrcPtr>::Value
+>::Type Copy(TCharacter (&Dest)[DestCapacity],const TSrcPtr& Src)
 {
 	return TKRuntime::TString<sizeof(TCharacter)>::Copy(Dest,DestCapacity-1,Src);
 }

@@ -26,6 +26,7 @@ public:
 	virtual bool cnLib_FUNC StartRead(iReference *Reference,iReadQueueCallback *Callback)noexcept(true)override;
 	virtual void cnLib_FUNC StopRead(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyRead(uIntn SizeToNotify)noexcept(true)override;
+	virtual void cnLib_FUNC CloseRead(bool Terminate)noexcept(true)override;
 	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)noexcept(true)override;
 protected:
 	iReadQueueCallback *fReadCallback;
@@ -43,6 +44,7 @@ protected:
 private:
 	bool fReadQueueBufferAvailable;
 	bool fReadQueueEnded;
+	bool fReadQueueCloseWhenIdle;
 	bool fReadQueueTerminated;
 };
 //---------------------------------------------------------------------------
@@ -53,8 +55,9 @@ public:
 	~bcWriteQueue()noexcept(true);
 
 	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)noexcept(true)override;
-	virtual void cnLib_FUNC StopWrite(bool Terminate)noexcept(true)override;
+	virtual void cnLib_FUNC StopWrite(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)noexcept(true)override;
+	virtual void cnLib_FUNC CloseWrite(bool Terminate)noexcept(true)override;
 	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)noexcept(true)override;
 protected:
 	iWriteQueueCallback *fWriteCallback;
@@ -66,14 +69,12 @@ protected:
 	virtual void AsyncQueueNotify(void)noexcept(true)override;
 
 	void WriteQueueReportBufferAvailable(bool AsyncNotify)noexcept(true);
-	void WriteQueueReportEnded(void)noexcept(true);
 	void WriteQueueReportTerminated(void)noexcept(true);
-	void WriteQueueSetEndMode(eEndpointWriteEndMode EndMode)noexcept(true);
 
 private:
 
 	bool fWriteQueueTerminated;
-	eEndpointWriteEndMode fWriteQueueEndMode;
+	bool fWriteQueueCloseWhenIdle;
 };
 //---------------------------------------------------------------------------
 class bcRWQueue : public iReadQueue, public iWriteQueue
@@ -99,12 +100,14 @@ public:
 	virtual bool cnLib_FUNC StartRead(iReference *Reference,iReadQueueCallback *Callback)noexcept(true)override;
 	virtual void cnLib_FUNC StopRead(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyRead(uIntn SizeToNotify)noexcept(true)override;
+	virtual void cnLib_FUNC CloseRead(bool Terminate)noexcept(true)override;
 	virtual bool cnLib_FUNC IsReadClosed(bool &GracefulClose)noexcept(true)override;
 
 
 	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)noexcept(true)override;
-	virtual void cnLib_FUNC StopWrite(bool Terminate)noexcept(true)override;
+	virtual void cnLib_FUNC StopWrite(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)noexcept(true)override;
+	virtual void cnLib_FUNC CloseWrite(bool Terminate)noexcept(true)override;
 	virtual bool cnLib_FUNC IsWriteClosed(bool &GracefulClose)noexcept(true)override;
 	
 protected:
@@ -138,17 +141,16 @@ protected:
 	void ReadQueueReportTerminated(void)noexcept(true);
 
 	void WriteQueueReportBufferAvailable(bool AsyncNotify)noexcept(true);
-	void WriteQueueReportEnded(void)noexcept(true);
 	void WriteQueueReportTerminated(void)noexcept(true);
-	void WriteQueueSetEndMode(eEndpointWriteEndMode EndMode)noexcept(true);
 
 private:
 	bool fReadQueueBufferAvailable;
 	bool fReadQueueEnded;
+	bool fReadQueueCloseWhenIdle;
 	bool fReadQueueTerminated;
 
 	bool fWriteQueueTerminated;
-	eEndpointWriteEndMode fWriteQueueEndMode;
+	bool fWriteQueueCloseWhenIdle;
 
 	CycleState ReadQueueCheckState(void)noexcept(true);
 	CycleState WriteQueueCheckState(void)noexcept(true);
@@ -478,7 +480,6 @@ public:
 	iReadQueue* GetReadQueue(bool Side)noexcept(true);
 	iWriteQueue* GetWriteQueue(bool Side)noexcept(true);
 	void Close(bool Side)noexcept(true);
-	void SetWriteEndMode(bool Side,eEndpointWriteEndMode EndMode)noexcept(true);
 
 protected:
 
@@ -498,7 +499,6 @@ protected:
 	public:
 		using bcWriteToReadQueue::CreateReadQueueWork;
 		using bcWriteToReadQueue::CreateWriteQueueWork;
-		using bcWriteToReadQueue::WriteQueueSetEndMode;
 	}fQueueA;
 
 	class cQueueB : public bcWriteToReadQueue
@@ -512,7 +512,6 @@ protected:
 	public:
 		using bcWriteToReadQueue::CreateReadQueueWork;
 		using bcWriteToReadQueue::CreateWriteQueueWork;
-		using bcWriteToReadQueue::WriteQueueSetEndMode;
 	}fQueueB;
 };
 //---------------------------------------------------------------------------
@@ -535,7 +534,6 @@ protected:
 		virtual void cnLib_FUNC Close(void)noexcept(true)override;
 		virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 		virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-		virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 	}fEndpointF;
 
 	class cEndpointT : public iEndpoint
@@ -547,7 +545,6 @@ protected:
 		virtual void cnLib_FUNC Close(void)noexcept(true)override;
 		virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 		virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-		virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 	}fEndpointT;
 };
 //---------------------------------------------------------------------------
@@ -641,7 +638,6 @@ public:
 	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iReadQueue* cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 	virtual iWriteQueue* cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 	uIntn GetTotalBufferedReadData(void)const noexcept(true);
 	void PutReadData(const void *Data,uIntn Size)noexcept(true);

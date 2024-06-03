@@ -550,9 +550,7 @@ void cReferenceCountLogger::Process(void)noexcept
 				delete CurItem;
 			}
 
-			auto Registration=cnSystem::GetSystemDependentRegistration();
-			Registration->Unregister(&fContext);
-
+			cnSystem::SystemDependentRegistration->Unregister(&fContext);
 		
 		}
 	}
@@ -577,14 +575,13 @@ void cReferenceCountLogger::NotifyProcess(void)noexcept
 
 	if(fInitialized==false){
 
-		auto Registration=cnSystem::GetSystemDependentRegistration();
-		if(Registration==nullptr){
+		if(cnSystem::SystemDependentRegistration==nullptr){
 			// system not started? delay process
 			return;
 		}
 
 		fInitialized=true;
-		Registration->Register(&fContext);
+		cnSystem::SystemDependentRegistration->Register(&fContext);
 		fContext.Construct();
 	}
 

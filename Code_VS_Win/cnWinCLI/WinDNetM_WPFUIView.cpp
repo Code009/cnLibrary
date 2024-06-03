@@ -480,9 +480,14 @@ bool mcWPFView::mTranslateWPFPointFrom(System::Object ^Relative,System::Windows:
 		return false;
 	auto RelativeVisual=dynamic_cast<System::Windows::Media::Visual^>(Relative);
 	if(RelativeVisual!=nullptr){
-		auto Transform=RelativeVisual->TransformToVisual(WPFVisual);
-		Transform->TryTransform(Point,Point);
-		return true;
+		try{
+			auto Transform=RelativeVisual->TransformToVisual(WPFVisual);
+			Transform->TryTransform(Point,Point);
+			return true;
+		}
+		catch(System::Exception ^e){
+			return false;
+		}
 	}
 	return false;
 }
@@ -1011,7 +1016,7 @@ void mcWPFView::WPFViewOnTouchMove(System::Windows::Input::TouchEventArgs^ e)noe
 	mcWPFTouchEventArgs TouchEventArgs(e);
 	WPFUIViewOnTouchMoveFilter(TouchEventArgs);
 	auto View=fWPFView.Get();
-	if(e->OriginalSource!=View){
+	if(e->OriginalSource==View){
 		WPFUIViewOnTouchMove(TouchEventArgs);
 	}
 }

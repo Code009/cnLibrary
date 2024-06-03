@@ -435,9 +435,25 @@ struct cDualLinkItemOperator : cSingleLinkItemOperator<TDualLinkItem>
 template<class TBinaryTreeNodeOperator>
 inline bool BinaryTreeIsNodeInBranch(typename TBinaryTreeNodeOperator::tNode *Parent,typename TBinaryTreeNodeOperator::tNode *Node)noexcept(true)
 {
+	typename TBinaryTreeNodeOperator::tNode *LevelNode;
 	do{
 		if(Parent==Node)
 			return true;
+		LevelNode=TBinaryTreeNodeOperator::GetChild(Parent,false);
+		if(LevelNode==nullptr){
+			LevelNode=TBinaryTreeNodeOperator::GetChild(Parent,true);
+			if(LevelNode==nullptr){
+				// reached max level, continue 2 more level
+				Node=TBinaryTreeNodeOperator::GetParent(Node);
+				if(Node==Parent)
+					return true;
+				if(Node==nullptr)
+					return false;
+				Node=TBinaryTreeNodeOperator::GetParent(Node);
+				return Node==Parent;
+			}
+		}
+		
 	}while((Node=TBinaryTreeNodeOperator::GetParent(Node))!=nullptr);
 	return false;
 }

@@ -546,9 +546,10 @@ void cPOSIXThreadExecutionPool::Close(void)noexcept
 void cPOSIXThreadExecutionPool::MakeThread(void)noexcept
 {
 	InnerIncReference('wktd');
+
 	auto Thread=cPOSIXThread::StartThread(&fWorkThreadProcedure);
 	if(Thread!=nullptr){
-		++fWaitingThreads.Free;
+		++fWorkingThreads.Release;
 	}
 	else{
 		// failed to start thread
@@ -581,7 +582,21 @@ void cPOSIXThreadExecutionPool::cWorkThreadProcedure::Execute(void)noexcept
 //---------------------------------------------------------------------------
 void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
 {
+	ufInt32 WaitingThreadCount=fWaitingThreads.Acquire.Load();
 	for(;;){
+		auto ProcItem=fProcQueue.Dequeue();
+		if(ProcItem!=nullptr){
+			if(fClose==false && WaitingThreadCount==0){
+				// create extra thread to monitor queue
+				MakeThread();
+			}
+			do{
+				ProcItem->Procedure->Execute();
+				fProcItemRecycler.Push(ProcItem);
+			
+				ProcItem=fProcQueue.Dequeue();
+			}while(ProcItem!=nullptr);
+		}
 		
 		ufInt32 WaitingThreadCount=++fWaitingThreads.Acquire;
 
@@ -604,10 +619,6 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
 
         WaitingThreadCount=--fWaitingThreads.Barrier;
 
-		if(fClose==false && WaitingThreadCount==0){
-			// create extra thread to monitor queue
-			MakeThread();
-		}
 		if(WaitRet==ETIMEDOUT){
 			CompactRecycler(8);
 			// time out

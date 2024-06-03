@@ -34,7 +34,7 @@ private:
 	iWriteQueueCallback *fWriteCallback=nullptr;
 
 	virtual bool cnLib_FUNC StartWrite(iReference *Reference,iWriteQueueCallback *Callback)noexcept(true)override;
-	virtual void cnLib_FUNC StopWrite(bool Terminate)noexcept(true)override;
+	virtual void cnLib_FUNC StopWrite(void)noexcept(true)override;
 	virtual void cnLib_FUNC NotifyWrite(uIntn SizeToNotify)noexcept(true)override;
 	virtual cMemory cnLib_FUNC ReserveWriteBuffer(uIntn QuerySize)noexcept(true)override;
 	virtual void cnLib_FUNC CommitWriteBuffer(uIntn Size)noexcept(true)override;
@@ -50,7 +50,6 @@ private:
 	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 };
 //---------------------------------------------------------------------------

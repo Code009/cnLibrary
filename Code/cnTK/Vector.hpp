@@ -465,6 +465,7 @@ public:
 		alignas(tVector) tElement Elements[RowCount*ColCount];
 		Src.StoreA(Elements);
 		LoadTranspose(Elements);
+		return *this;
 	}
 
 	void Load(const tElement *Array)noexcept(true){
@@ -598,6 +599,7 @@ public:
 		alignas(tVector) tElement Elements[RowCount*ColCount];
 		Src.StoreA(Elements);
 		LoadTranspose(Elements);
+		return *this;
 	}
 
 

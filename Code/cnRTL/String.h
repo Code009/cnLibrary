@@ -42,13 +42,18 @@ inline uIntn Search(const TCharacter *Src,const typename cnVar::TTypeDef<TCharac
 	cnLib_ASSERT(Src!=nullptr);
 	cnLib_ASSERT(Dest!=nullptr);
 
-	uIntn DestLength=GetLength(Dest);
+	uIntn DestLength=FindLength(Dest);
 	uIntn i;
 	for(i=0;Src[i]!=0;i++){
-		auto Pos=DiffIndexRange(Src+i,Dest,DestLength);
-		if(Pos>=DestLength){
-			return i;
+		uIntn di;
+		for(di=0;di<DestLength;di++){
+			if(Src[i+di]!=Dest[di])
+				break;
+			if(Src[i+di]==0)
+				return IndexNotFound;
 		}
+		if(di>=DestLength)
+			return i;
 	}
 	return IndexNotFound;
 }
@@ -713,7 +718,7 @@ public:
 	template<class TStreamWriteBuffer,class TCharacterConversionMap>
 	bool Write(TStreamWriteBuffer &WriteBuffer,TCharacterConversionMap &ConversionMap)noexcept(true){
 	
-		typedef typename TStreamWriteBuffer::tElement TCharacter;
+		//typedef typename TStreamWriteBuffer::tElement TCharacter;
 		// sign
 		switch(fWriteSign){
 		case 0:
@@ -1288,7 +1293,7 @@ inline bool WriteFormatFloat(TStreamWriteBuffer&& WriteBuffer,T Value,ufInt8 Pre
 	FloatConversion.OmitDot=false;
 
 	FloatConversion.SetValue<Radix>(Value);
-	FloatConversion.SetFormat(1,Precision,Precision);
+	FloatConversion.SetFormat(FloatConversion.GetExponent(),1,Precision,Precision);
 
 	return WriteFormatItem(WriteBuffer,FloatConversion,ConversionMap,Width,false,false);
 }

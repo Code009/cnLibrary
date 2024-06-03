@@ -133,7 +133,7 @@ public:
 };
 template<class TFunc>
 inline cDispatchFunctor<TFunc> DispatchFunctor(iDispatch *Dispatch,TFunc&& Func)noexcept(true){
-	cDispatchFunctor<TFunc> Functor={rCreate< cFunctorRefInterface<TFunc,void(void)> >(static_cast<TFunc&&>(Func)),Dispatch};
+	cDispatchFunctor<TFunc> Functor={rCreate< cFunctorRefInterface<TFunc,void(void)noexcept(true)> >(static_cast<TFunc&&>(Func)),Dispatch};
 	return Functor;
 }
 

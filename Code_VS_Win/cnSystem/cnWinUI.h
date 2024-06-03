@@ -158,24 +158,22 @@ public:
 	virtual void cnLib_FUNC UpdateOwner(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iWindowsUIApplicationCallback
+class cnLib_INTERFACE iWindowsUISessionHandler
 {
 public:
-	virtual void cnLib_FUNC OnStart(void)noexcept(true)=0;
-	virtual void cnLib_FUNC OnExit(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class cnLib_INTERFACE iWindowsUISession : public iReference
-{
-public:
-	virtual void cnLib_FUNC Terminate(void)noexcept(true)=0;
+	virtual void cnLib_FUNC UISessionStart(void)noexcept(true)=0;
+	virtual void cnLib_FUNC UISessionExit(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iWindowsUIApplication : public iReference
 {
 public:
+
 	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)=0;
-	virtual void cnLib_FUNC UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)=0;
+	virtual void cnLib_FUNC UIMain(void)noexcept(true)=0;
+	virtual void cnLib_FUNC CloseUISession(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iMouseCursorSetter : public iInterface

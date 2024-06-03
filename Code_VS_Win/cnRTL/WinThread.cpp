@@ -368,14 +368,12 @@ VOID CALLBACK cnWinRTL::EmptyAPCFunction(ULONG_PTR)noexcept
 //---------------------------------------------------------------------------
 cThreadHandle::cThreadHandle()noexcept
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Register(this);
+	cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
 cThreadHandle::~cThreadHandle()noexcept
 {
-	auto Registration=cnSystem::GetSystemDependentRegistration();
-	Registration->Unregister(this);
+	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
 HANDLE cThreadHandle::GetThreadHandle(void)noexcept

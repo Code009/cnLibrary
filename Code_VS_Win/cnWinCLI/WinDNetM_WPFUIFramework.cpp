@@ -83,6 +83,26 @@ void WPFWindowAdapter::ParentRemoveViewChild(IWPFView ^Subview)
 	return CPP->WPFUIWindowRemoveSubview(Subview);
 }
 //---------------------------------------------------------------------------
+bool WPFWindowAdapter::SetOwner(IWPFViewRoot ^Root)
+{
+	if(Root==nullptr){
+		auto Target=static_cast<IWPFWindowTarget^>(fTarget.Target);
+		Target->Owner=nullptr;
+		return true;
+	}
+	else{
+		auto OwnerAdapter=dynamic_cast<WPFWindowAdapter^>(Root);
+		if(OwnerAdapter==nullptr)
+			return false;
+
+		auto Target=static_cast<IWPFWindowTarget^>(fTarget.Target);
+		auto OwnerTarget=static_cast<IWPFWindowTarget^>(OwnerAdapter->fTarget.Target);
+
+		Target->Owner=OwnerTarget;
+		return true;
+	}
+}
+//---------------------------------------------------------------------------
 void WPFWindowAdapter::DispatcherFinishCleanup(void)
 {
 	auto CurTarget=QueryTarget();
@@ -208,6 +228,20 @@ System::Windows::UIElement^ WPFWindow::WindowClient::get(void)
 void WPFWindow::WindowClient::set(System::Windows::UIElement ^value)
 {
 	Content=value;
+}
+//---------------------------------------------------------------------------
+IWPFWindowTarget^ WPFWindow::TargetOwner::get(void)
+{
+	return dynamic_cast<IWPFWindowTarget^>(Owner);
+}
+//---------------------------------------------------------------------------
+void WPFWindow::TargetOwner::set(IWPFWindowTarget ^Value)
+{
+	auto OwnerWnd=dynamic_cast<WPFWindow^>(Value);
+	if(OwnerWnd==nullptr)
+		return;
+
+	Owner=OwnerWnd;
 }
 //---------------------------------------------------------------------------
 iPtr<iUIWindow> cnWin::MakeUIWindowFromWindowTarget(IWPFWindowTarget ^Target)noexcept

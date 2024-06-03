@@ -335,6 +335,7 @@ void cGATTCharacteristic::SetValueNotification(eGATTCharacteristicNotification N
 //---------------------------------------------------------------------------
 void cGATTCharacteristic::SetupCharacteristic(void)noexcept
 {
+	cnLib_ASSERT(fCharacteristic3==nullptr);
 	fCharacteristic->QueryInterface(COMRetPtrT(fCharacteristic3));
 
 	fCharacteristic->add_ValueChanged(&fBLEValueChangedHandler,&fBLEValueChangedToken);
@@ -490,17 +491,16 @@ void cGATTCharacteristic::MainProcessStateChange(void)noexcept
 		}
 	}
 
-	ArrangeValueNotification();
-	while(fValueNotificationMap.GetCount()!=0){
-		auto Pair=fValueNotificationMap.GetPairAt(0);
-		auto NotificationItem=Pair->Value;
+	
+	auto ValueNotificationItems=fValueNotificationQueue.DequeueAll();
+	while(ValueNotificationItems!=nullptr){
+		auto NotificationItem=ValueNotificationItems;
+		ValueNotificationItems=ValueNotificationItems->Next;
+
 		for(auto Handler : fHandlers){
 			Handler->GATTCharacteristValueNotify(NotificationItem->Value->Pointer,NotificationItem->Value->Length);
 		}
 		fValueNotificationRecycler.Recycle(NotificationItem);
-		
-		fValueNotificationMap.RemovePair(Pair);
-		ArrangeValueNotification();
 	}
 }
 //---------------------------------------------------------------------------
@@ -611,24 +611,15 @@ void cGATTCharacteristic::MainProcess_RefreshDescriptorDone(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTCharacteristic::ArrangeValueNotification(void)noexcept
-{
-	auto ValueNotifications=fValueNotificationStack.Swap(nullptr);
-	while(ValueNotifications!=nullptr){
-		auto CurNotify=ValueNotifications;
-		ValueNotifications=ValueNotifications->Next;
-
-		fValueNotificationMap[CurNotify->Timestamp]=CurNotify;
-	}
-}
-//---------------------------------------------------------------------------
 void cGATTCharacteristic::NotifyValue(uInt64 Timestamp,const void *Data,uIntn Size)noexcept
 {
 	auto ValueNotificationItem=fValueNotificationRecycler.Query();
 	ValueNotificationItem->Timestamp=Timestamp;
 	ValueNotificationItem->Value.Copy(Data,Size);
 
-	fValueNotificationStack.Push(ValueNotificationItem);
+	cnLib_ASSERT(ValueNotificationItem->Value.GetSize()==Size);
+
+	fValueNotificationQueue.Enqueue(ValueNotificationItem);
 	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
@@ -881,7 +872,7 @@ void cGATTService::cOpenServiceProcedure::cOpenAsyncCompleteHandler::EventInvoke
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTService::cGATTService(cGATTPeripheral *Owner,const cUUID &ID)noexcept
+cGATTService::cGATTService(cBluetoothSlave *Owner,const cUUID &ID)noexcept
 	: ServiceUUID(ID)
 	, fOwner(Owner)
 	, fDispatch(Owner->GetDispatch())
@@ -944,7 +935,7 @@ eGATTFunctionState cGATTService::GetFunctionState(void)noexcept
 	return fFuncState;
 }
 //---------------------------------------------------------------------------
-iGATTPeripheral* cGATTService::GetPeripheral(void)noexcept
+iGATTClient* cGATTService::GetClient(void)noexcept
 {
 	return fOwner;
 }
@@ -984,6 +975,12 @@ void cGATTService::ServiceOpenFailed(void)noexcept
 	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
+void cGATTService::PeripheralNotifyClose(void)noexcept
+{
+	fCloseState=1;
+	RunMainProcess();
+}
+//---------------------------------------------------------------------------
 void cGATTService::PeripheralNotifyScanService(void)noexcept
 {
 	auto OpenProc=rCreate<cOpenServiceProcedure>();
@@ -996,26 +993,12 @@ void cGATTService::PeripheralNotifyScanService(void)noexcept
 void cGATTService::PeripheralNotifyConnectionStatus(void)noexcept
 {
 	fNeedNotifyServiceState=true;
-	NotifyMainProcess();
-}
-//---------------------------------------------------------------------------
-void cGATTService::PeripheralInvalidateService(void)noexcept
-{
-	fNeedNotifyServiceState=true;
-	NotifyMainProcess();
-
-	for(auto CharPair : fCharacteristicMap){
-		CharPair.Value->ServiceInvalidateCharacteristic();
-	}
+	RunMainProcess();
 }
 //---------------------------------------------------------------------------
 eGATTFunctionState cGATTService::ServiceGetFunctionState(void)noexcept
 {
-	if(fService==nullptr){
-		return GATTFunctionState::Absent;
-	}
-
-	return fOwner->PeripheralGetFunctionState();
+	return fFuncState;
 }
 //---------------------------------------------------------------------------
 void cGATTService::CharacteristicAttach(cGATTCharacteristic *Characteristic)noexcept
@@ -1050,12 +1033,25 @@ void cGATTService::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
+void cGATTService::RunMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	if(fDispatch->IsCurrentThread()){
+		MainProcessThread();
+	}
+	else{
+		fMainProcessWork->Start();
+	}
+}
+//---------------------------------------------------------------------------
 void cGATTService::NotifyMainProcess(void)noexcept
 {
 	if(!fMainProcessExclusiveFlag.Acquire())
 		return;
 
-	fMainProcessWork->Start();		
+	fMainProcessWork->Start();
 }
 //---------------------------------------------------------------------------
 bool cGATTService::MainProcess(void)noexcept
@@ -1079,6 +1075,17 @@ bool cGATTService::MainProcess(void)noexcept
 //---------------------------------------------------------------------------
 void cGATTService::MainProcessStateChange(void)noexcept
 {
+	if(fCloseState){
+		if(fCloseState==1){
+			for(auto Pair : fCharacteristicMap){
+				Pair.Value->ServiceInvalidateCharacteristic();
+			}
+			fService=nullptr;
+			fNeedNotifyServiceState=true;
+			fCloseState=2;
+		}
+	}
+
 	if(fNeedNotifyServiceState){
 		fNeedNotifyServiceState=false;
 		
@@ -1092,19 +1099,14 @@ void cGATTService::MainProcessStateChange(void)noexcept
 			}
 		}
 		else{
-			NewState=fOwner->PeripheralGetFunctionState();
+			NewState=fOwner->ClientGetFunctionState();
 		}
 
 		if(fFuncState!=NewState){
 			fFuncState=NewState;
 
-			cSeqList< rInnerPtr<cGATTCharacteristic> > CharListCache;
 			for(auto Pair : fCharacteristicMap){
-				CharListCache.AppendMake(Pair.Value);
-			}
-
-			for(auto Service : CharListCache){
-				Service->ServiceNotifyFunctionStatus();
+				Pair.Value->ServiceNotifyFunctionStatus();
 			}
 
 			for(auto Handler : fHandlers){
@@ -1117,7 +1119,6 @@ void cGATTService::MainProcessStateChange(void)noexcept
 void cGATTService::MainProcess_Idle(void)noexcept
 {
 	HRESULT hr;
-
 
 	if(fCharacteristicNeedRefresh){
 		fCharacteristicNeedRefresh=false;
@@ -1253,44 +1254,43 @@ void cGATTService::cGetCharacteristicsCompleteHandler::EventInvoke(IBLEGetCharac
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTPeripheral::cGATTPeripheral(cGATTPeripheralCentral *Central,iPtr<cBluetoothAddress> Address)noexcept
+cBluetoothSlave::cBluetoothSlave(cBluetoothCentral *Central,iPtr<cBluetoothAddress> Address)noexcept
 	: fCentral(Central)
 	, fDispatch(Central->GetDispatch())
 	, fAddress(cnVar::MoveCast(Address))
 	, fMainProcessWork(Central->GetDispatch()->CreateWork(&fInnerReference,&fMainProcessProcedure))
-	, fDeviceOpened(false)
 	, fFuncState(GATTFunctionState::Scanning)
 {
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral::~cGATTPeripheral()noexcept
+cBluetoothSlave::~cBluetoothSlave()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::VirtualStarted(void)noexcept
+void cBluetoothSlave::VirtualStarted(void)noexcept
 {
-	InnerActivate('self');
+	cDualReference::VirtualStarted();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::VirtualStopped(void)noexcept
+void cBluetoothSlave::VirtualStopped(void)noexcept
 {
 	if(fDevice!=nullptr){
 		ClearDevice();
 	}
-	InnerDecReference('self');
+	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
-iDispatch* cGATTPeripheral::GetDispatch(void)const noexcept
+iDispatch* cBluetoothSlave::GetDispatch(void)const noexcept
 {
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-iDispatch* cGATTPeripheral::GetHandlerDispatch(void)noexcept
+iDispatch* cBluetoothSlave::GetHandlerDispatch(void)noexcept
 {
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheral::InsertHandler(iGATTPeripheralHandler *Handler)noexcept
+bool cBluetoothSlave::InsertHandler(iBluetoothSlaveHandler *Handler)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return false;
@@ -1298,7 +1298,7 @@ bool cGATTPeripheral::InsertHandler(iGATTPeripheralHandler *Handler)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheral::RemoveHandler(iGATTPeripheralHandler *Handler)noexcept
+bool cBluetoothSlave::RemoveHandler(iBluetoothSlaveHandler *Handler)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return false;
@@ -1306,34 +1306,33 @@ bool cGATTPeripheral::RemoveHandler(iGATTPeripheralHandler *Handler)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::Close(void)noexcept
+void cBluetoothSlave::Close(void)noexcept
 {
+	fCloseState=1;
+	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-iAddress* cGATTPeripheral::GetPeripheralAddress(void)noexcept
+iAddress* cBluetoothSlave::GetPeripheralAddress(void)noexcept
 {
 	return fAddress;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTPeripheral::GetFunctionState(void)noexcept
+eGATTFunctionState cBluetoothSlave::GetFunctionState(void)noexcept
 {
-	return PeripheralGetFunctionState();
-}
-//---------------------------------------------------------------------------
-eGATTFunctionState cGATTPeripheral::PeripheralGetFunctionState(void)noexcept
-{
-	if(fDevice==nullptr){
-		return GATTFunctionState::Absent;
-	}
 	return fFuncState;
 }
 //---------------------------------------------------------------------------
-iGATTPeripheralCentral* cGATTPeripheral::GetPeripheralCentral(void)noexcept
+eGATTFunctionState cBluetoothSlave::ClientGetFunctionState(void)const noexcept
+{
+	return fFuncState;
+}
+//---------------------------------------------------------------------------
+iBluetoothCentral* cBluetoothSlave::GetCentral(void)noexcept
 {
 	return fCentral;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cGATTPeripheral::GetName(void)noexcept
+rPtr< iArrayReference<const uChar16> > cBluetoothSlave::GetName(void)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return nullptr;
@@ -1344,7 +1343,7 @@ rPtr< iArrayReference<const uChar16> > cGATTPeripheral::GetName(void)noexcept
 	return fDeviceName.Token();
 }
 //---------------------------------------------------------------------------
-rPtr<iGATTService> cGATTPeripheral::AccessService(const cUUID &ID)noexcept
+rPtr<iGATTService> cBluetoothSlave::AccessService(const cUUID &ID)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return nullptr;
@@ -1358,14 +1357,14 @@ rPtr<iGATTService> cGATTPeripheral::AccessService(const cUUID &ID)noexcept
 	return Service;
 }
 //---------------------------------------------------------------------------
-iPtr<iGATTServiceObserver> cGATTPeripheral::CreateServiceObserver(void)noexcept
+iPtr<iGATTServiceObserver> cBluetoothSlave::CreateServiceObserver(void)noexcept
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::DeviceOpened(COMPtr<IBLEDevice> Device)noexcept
+void cBluetoothSlave::DeviceOpened(COMPtr<IBLEDevice> Device)noexcept
 {
-	fDeviceOpened=true;
+	fConnectOpRunning=false;
 	fDevice=cnVar::MoveCast(Device);
 	fDevice->QueryInterface(COMRetPtrT(fDevice3));
 	SetupDevice();
@@ -1378,101 +1377,103 @@ void cGATTPeripheral::DeviceOpened(COMPtr<IBLEDevice> Device)noexcept
 	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::DeviceOpenFailed(HRESULT hr)noexcept
+void cBluetoothSlave::DeviceOpenFailed(HRESULT hr)noexcept
 {
-	fDeviceOpened=true;
+	fConnectOpRunning=false;
+	fNeedNotifyConnectionStateChange=true;
+	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::SetupDevice(void)noexcept
+void cBluetoothSlave::SetupDevice(void)noexcept
 {
 	fDevice->add_NameChanged(&fBLEDeviceNameChangedHandler,&fBLEDeviceNameChangedToken);
 	fDevice->add_ConnectionStatusChanged(&fBLEDeviceConnectionStatusHandler,&fBLEDeviceConnectionStatusToken);
 	fDevice->add_GattServicesChanged(&fBLEDeviceServicesChangedHandler,&fBLEDeviceServicesChangedToken);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::ClearDevice(void)noexcept
+void cBluetoothSlave::ClearDevice(void)noexcept
 {
 	fDevice->remove_NameChanged(fBLEDeviceNameChangedToken);
 	fDevice->remove_ConnectionStatusChanged(fBLEDeviceConnectionStatusToken);
 	fDevice->remove_GattServicesChanged(fBLEDeviceServicesChangedToken);
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral* cGATTPeripheral::cBLEDeviceNameChangedHandler::GetHost(void)noexcept
+cBluetoothSlave* cBluetoothSlave::cBLEDeviceNameChangedHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fBLEDeviceNameChangedHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fBLEDeviceNameChangedHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceNameChangedHandler::EventIncReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceNameChangedHandler::EventIncReference(void)noexcept
 {
 	GetHost()->InnerIncReference('evet');
 }
-void cGATTPeripheral::cBLEDeviceNameChangedHandler::EventDecReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceNameChangedHandler::EventDecReference(void)noexcept
 {
 	GetHost()->InnerDecReference('evet');
 }
-void cGATTPeripheral::cBLEDeviceNameChangedHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
+void cBluetoothSlave::cBLEDeviceNameChangedHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
 {
 	auto Host=GetHost();
 	Host->fNeedNotifyNameChange=true;
 	Host->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral* cGATTPeripheral::cBLEDeviceConnectionStatusHandler::GetHost(void)noexcept
+cBluetoothSlave* cBluetoothSlave::cBLEDeviceConnectionStatusHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fBLEDeviceConnectionStatusHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fBLEDeviceConnectionStatusHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceConnectionStatusHandler::EventIncReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceConnectionStatusHandler::EventIncReference(void)noexcept
 {
 	GetHost()->InnerIncReference('evet');
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceConnectionStatusHandler::EventDecReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceConnectionStatusHandler::EventDecReference(void)noexcept
 {
 	GetHost()->InnerDecReference('evet');
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceConnectionStatusHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
+void cBluetoothSlave::cBLEDeviceConnectionStatusHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
 {
 	auto Host=GetHost();
 	Host->fNeedNotifyConnectionStateChange=true;
 	Host->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral* cGATTPeripheral::cBLEDeviceServicesChangedHandler::GetHost(void)noexcept
+cBluetoothSlave* cBluetoothSlave::cBLEDeviceServicesChangedHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fBLEDeviceServicesChangedHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fBLEDeviceServicesChangedHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceServicesChangedHandler::EventIncReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceServicesChangedHandler::EventIncReference(void)noexcept
 {
 	GetHost()->InnerIncReference('evet');
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceServicesChangedHandler::EventDecReference(void)noexcept
+void cBluetoothSlave::cBLEDeviceServicesChangedHandler::EventDecReference(void)noexcept
 {
 	GetHost()->InnerDecReference('evet');
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cBLEDeviceServicesChangedHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
+void cBluetoothSlave::cBLEDeviceServicesChangedHandler::EventInvoke(IBLEDevice*, IInspectable*)noexcept
 {
 	GetHost()->RefreshService();
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral* cGATTPeripheral::cAddressConnectCompleteHandler::GetHost(void)noexcept
+cBluetoothSlave* cBluetoothSlave::cAddressConnectCompleteHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fAddressConnectCompleteHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fAddressConnectCompleteHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cAddressConnectCompleteHandler::EventIncReference(void)noexcept
+void cBluetoothSlave::cAddressConnectCompleteHandler::EventIncReference(void)noexcept
 {
 	GetHost()->InnerIncReference('from');
 }
-void cGATTPeripheral::cAddressConnectCompleteHandler::EventDecReference(void)noexcept
+void cBluetoothSlave::cAddressConnectCompleteHandler::EventDecReference(void)noexcept
 {
 	GetHost()->InnerDecReference('from');
 }
-void cGATTPeripheral::cAddressConnectCompleteHandler::EventInvoke(IBLEDeviceAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
+void cBluetoothSlave::cAddressConnectCompleteHandler::EventInvoke(IBLEDeviceAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
 {
 	HRESULT hr;
 	COMPtr<IBLEDevice> ResultDevice;
@@ -1485,31 +1486,32 @@ void cGATTPeripheral::cAddressConnectCompleteHandler::EventInvoke(IBLEDeviceAsyn
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::CentralConnectionOperation(COMPtr<IBLEConnectAsyncOp> ConnectOp)noexcept
+void cBluetoothSlave::CentralConnectionOperation(COMPtr<IBLEConnectAsyncOp> ConnectOp)noexcept
 {
+	fConnectOpRunning=true;
 	fNeedNotifyConnectionStateChange=true;
 	NotifyMainProcess();
 	ConnectOp->put_Completed(&fAddressConnectCompleteHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::ServiceAttach(cGATTService *Service)noexcept
+void cBluetoothSlave::ServiceAttach(cGATTService *Service)noexcept
 {
 	fServiceMap[Service->ServiceUUID]=Service;
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::ServiceDetach(cGATTService *Service)noexcept
+void cBluetoothSlave::ServiceDetach(cGATTService *Service)noexcept
 {
 	fServiceMap.Remove(Service->ServiceUUID);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::ServiceScan(cGATTService::cOpenServiceProcedure *OpenProc)noexcept
+void cBluetoothSlave::ServiceScan(cGATTService::cOpenServiceProcedure *OpenProc)noexcept
 {
 	fOpenServiceStack.Push(OpenProc);
 
 	RefreshService();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::RefreshService(void)noexcept
+void cBluetoothSlave::RefreshService(void)noexcept
 {
 	if(!fQueryServiceExclusiveFlag.Acquire())
 		return;
@@ -1517,7 +1519,7 @@ void cGATTPeripheral::RefreshService(void)noexcept
 	RefreshServiceProc();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::RefreshServiceProc(void)noexcept
+void cBluetoothSlave::RefreshServiceProc(void)noexcept
 {
 	do{
 		fQueryServiceExclusiveFlag.Continue();
@@ -1548,7 +1550,7 @@ void cGATTPeripheral::RefreshServiceProc(void)noexcept
 	}while(!fQueryServiceExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::OnServiceResult(IBLEGetServiceAsyncOp *AsyncOp)noexcept
+void cBluetoothSlave::OnServiceResult(IBLEGetServiceAsyncOp *AsyncOp)noexcept
 {
 	if(OnServiceResultProcess(AsyncOp)){
 		// wait process in main process
@@ -1562,7 +1564,7 @@ void cGATTPeripheral::OnServiceResult(IBLEGetServiceAsyncOp *AsyncOp)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheral::OnServiceResultProcess(IBLEGetServiceAsyncOp *AsyncOp)noexcept
+bool cBluetoothSlave::OnServiceResultProcess(IBLEGetServiceAsyncOp *AsyncOp)noexcept
 {
 	HRESULT hr;
 	COMPtr<IGattDeviceServiceResult> ResultServices;
@@ -1626,13 +1628,13 @@ bool cGATTPeripheral::OnServiceResultProcess(IBLEGetServiceAsyncOp *AsyncOp)noex
 	return true;
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cMainProcessProcedure::Execute(void)noexcept
+void cBluetoothSlave::cMainProcessProcedure::Execute(void)noexcept
 {
-	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fMainProcessProcedure);
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fMainProcessProcedure);
 	return Host->MainProcessThread();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::MainProcessThread(void)noexcept
+void cBluetoothSlave::MainProcessThread(void)noexcept
 {
 	do{
 		fMainProcessExclusiveFlag.Continue();
@@ -1642,7 +1644,7 @@ void cGATTPeripheral::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::NotifyMainProcess(void)noexcept
+void cBluetoothSlave::NotifyMainProcess(void)noexcept
 {
 	if(!fMainProcessExclusiveFlag.Acquire())
 		return;
@@ -1650,20 +1652,50 @@ void cGATTPeripheral::NotifyMainProcess(void)noexcept
 	fMainProcessWork->Start();
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::MainProcess(void)noexcept
+void cBluetoothSlave::MainProcess(void)noexcept
 {
-
 	HRESULT hr;
+
+	if(fCloseState){
+		switch(fCloseState){
+		case 1:
+			for(auto Pair : fServiceMap){
+				Pair.Value->PeripheralNotifyClose();
+			}
+
+			ClearDevice();
+			{
+				COMPtr<ABI::Windows::Foundation::IClosable> DeviceClosable;
+				hr=fDevice->QueryInterface(COMRetPtrT(DeviceClosable));
+
+				hr=DeviceClosable->Close();
+			}
+
+			fDevice=nullptr;
+			fDevice3=nullptr;
+
+			fNeedNotifyConnectionStateChange=true;
+
+			for(auto Handler : fHandlers){
+				Handler->PeripheralClosed();
+			}				
+			fCloseState=2;
+			[[fallthrough]];
+		case 2:
+			return;
+		}
+	}
+
 	if(fNeedNotifyConnectionStateChange){
 		fNeedNotifyConnectionStateChange=false;
 
 		eGATTFunctionState NewFuncState;
 		if(fDevice==nullptr){
-			if(fDeviceOpened){
-				NewFuncState=GATTFunctionState::Absent;
+			if(fConnectOpRunning){
+				NewFuncState=GATTFunctionState::Scanning;
 			}
 			else{
-				NewFuncState=GATTFunctionState::Scanning;
+				NewFuncState=GATTFunctionState::Absent;
 			}
 		}
 		else{
@@ -1690,16 +1722,12 @@ void cGATTPeripheral::MainProcess(void)noexcept
 		if(fFuncState!=NewFuncState){
 			fFuncState=NewFuncState;
 
-			cSeqList< rInnerPtr<cGATTService> > ServiceListCache;
 			for(auto Pair : fServiceMap){
-				ServiceListCache.AppendMake(Pair.Value);
+				Pair.Value->PeripheralNotifyConnectionStatus();
 			}
 
-			for(auto Service : ServiceListCache){
-				Service->PeripheralNotifyConnectionStatus();
-			}
 			for(auto Handler : fHandlers){
-				Handler->GATTPeripheralStateChanged();
+				Handler->PeripheralStateChanged();
 			}
 		}
 	}
@@ -1717,7 +1745,7 @@ void cGATTPeripheral::MainProcess(void)noexcept
 				fDeviceName.SetString(wtou(NameArray.Pointer),NameArray.Length);
 			}
 			for(auto Handler : fHandlers){
-				Handler->GATTPeripheralNameChanged();
+				Handler->PeripheralNameChanged();
 			}
 		}
 	}
@@ -1732,271 +1760,55 @@ void cGATTPeripheral::MainProcess(void)noexcept
 		}
 
 	}
+
 }
 //---------------------------------------------------------------------------
-cGATTPeripheral* cGATTPeripheral::cGetServicesCompleteHandler::GetHost(void)noexcept
+cBluetoothSlave* cBluetoothSlave::cGetServicesCompleteHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheral::fGetServicesCompleteHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothSlave::fGetServicesCompleteHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTPeripheral::cGetServicesCompleteHandler::EventIncReference(void)noexcept
+void cBluetoothSlave::cGetServicesCompleteHandler::EventIncReference(void)noexcept
 {
 	GetHost()->InnerIncReference('gets');
 }
-void cGATTPeripheral::cGetServicesCompleteHandler::EventDecReference(void)noexcept
+void cBluetoothSlave::cGetServicesCompleteHandler::EventDecReference(void)noexcept
 {
 	GetHost()->InnerDecReference('gets');
 }
-void cGATTPeripheral::cGetServicesCompleteHandler::EventInvoke(IBLEGetServiceAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
+void cBluetoothSlave::cGetServicesCompleteHandler::EventInvoke(IBLEGetServiceAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
 {
 	GetHost()->OnServiceResult(AsyncOp);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-#if 0
-
-//---------------------------------------------------------------------------
-void cGATTPeripheralObserver::BLEReceived(aClsRef<cBLEAdvData> AdvData)
-{
-	cStringBuffer<char> MsgText;
-	{
-		auto MsgTextStream=MsgText.StreamWriteBuffer();
-		StringStream::WriteFormatString(MsgTextStream,"---BLE Advertisement ---\nAddress %llx\n",AdvData->Address);
-		StringStream::WriteFormatString(MsgTextStream,"SignalStrength %d\n",AdvData->SignalStrength);
-		StringStream::WriteFormatString(MsgTextStream,"Timestamp %lld\n",AdvData->Timestamp);
-		if(AdvData->Flags==ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_None){
-			StringStream::WriteFormatString(MsgTextStream,"NoFlags\n",0);
-		}
-		else{
-			if(AdvData->Flags&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_LimitedDiscoverableMode){
-				StringStream::WriteFormatString(MsgTextStream,"Flags:BluetoothLEAdvertisementFlags_LimitedDiscoverableMode\n",0);
-			}
-			if(AdvData->Flags&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_GeneralDiscoverableMode){
-				StringStream::WriteFormatString(MsgTextStream,"Flags:BluetoothLEAdvertisementFlags_GeneralDiscoverableMode\n",0);
-			}
-			if(AdvData->Flags&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_ClassicNotSupported){
-				StringStream::WriteFormatString(MsgTextStream,"Flags:ClassicNotSupported\n",0);
-			}
-			if(AdvData->Flags&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_DualModeControllerCapable){
-				StringStream::WriteFormatString(MsgTextStream,"Flags:BluetoothLEAdvertisementFlags_DualModeControllerCapable\n",0);
-			}
-			if(AdvData->Flags&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_DualModeHostCapable){
-				StringStream::WriteFormatString(MsgTextStream,"Flags:BluetoothLEAdvertisementFlags_DualModeHostCapable\n",0);
-			}
-		}
-		StringStream::WriteFormatString(MsgTextStream,"LocalName : ",0);
-		StringStream::WriteConvertEncoding(MsgTextStream,cnWindows::CodePageFromUTF16(CP_ACP),utow(AdvData->LocalName),AdvData->LocalName->Length);
-
-		StringStream::WriteFormatString(MsgTextStream,"\n-Services-%d-\n",AdvData->ServiceIDs.GetCount());
-		for(auto &Item : AdvData->ServiceIDs){
-			StringStream::WriteFormatString(MsgTextStream,"{",0);
-			StringStream::WriteGUID(MsgTextStream,&Item);
-			StringStream::WriteFormatString(MsgTextStream,"}\n",0);
-		}
-		StringStream::WriteFormatString(MsgTextStream,"-ManufactureData-\n",0);
-		for(auto &Item : AdvData->ManufactureData){
-			StringStream::WriteFormatString(MsgTextStream,"CompanyID = %x ; DataSize=%d\n",Item.CompanyID,Item.Data.Length);
-		}
-		StringStream::WriteFormatString(MsgTextStream,"-SectionData-\n",0);
-		for(auto &Item : AdvData->SectionData){
-			StringStream::WriteFormatString(MsgTextStream,"DataType = %d ; DataSize=%d\n",Item.DataType,Item.Data.Length);
-		}
-	}
-	//puts(MsgText->Pointer);
-
-	AsyncQueueSetAvailable(true);
-}
-//---------------------------------------------------------------------------
-cGATTPeripheralObserver* cGATTPeripheralObserver::cBLEReceivedHandler::GetHost(void)
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTPeripheralObserver::fBLEReceivedHandler);
-}
-//---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cGATTPeripheralObserver::cBLEReceivedHandler::QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)
-{
-	if(riid==__uuidof(IUnknown)){
-		GetHost()->InnerIncReference('evet');
-		*ppvObject=static_cast<IUnknown*>(this);
-		return S_OK;
-	}
-	if(riid==__uuidof(IBLEWatcherHandler)){
-		GetHost()->InnerIncReference('evet');
-		*ppvObject=static_cast<IBLEWatcherHandler*>(this);
-		return S_OK;
-	}
-	*ppvObject=nullptr;
-	return E_NOINTERFACE;
-}
-//---------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE cGATTPeripheralObserver::cBLEReceivedHandler::AddRef(void)
-{
-	GetHost()->InnerIncReference('evet');
-	return 0;
-}
-//---------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE cGATTPeripheralObserver::cBLEReceivedHandler::Release(void)
-{
-	GetHost()->InnerDecReference('evet');
-	return 0;
-}
-//---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cGATTPeripheralObserver::cBLEReceivedHandler::Invoke(IBLEWatcher *sender, _In_ ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementReceivedEventArgs *args)
-{
-	auto AdvData=aClsCreate<cBLEAdvData>();
-
-	HRESULT hr;
-
-	hr=args->get_BluetoothAddress(&AdvData->Address);
-	if(FAILED(hr)){
-		return S_OK;
-	}
-
-	
-	hr=args->get_RawSignalStrengthInDBm(&AdvData->SignalStrength);
-	if(FAILED(hr)){
-		AdvData->SignalStrength=127;
-	}
-
-	{
-		ABI::Windows::Foundation::DateTime Timestamp;
-		hr=args->get_Timestamp(&Timestamp);
-		if(FAILED(hr)){
-			AdvData->Timestamp=0;
-		}
-		else{
-			AdvData->Timestamp=Timestamp.UniversalTime;
-		}
-	}
-	hr=args->get_AdvertisementType(&AdvData->Type);
-	if(FAILED(hr))
-		AdvData->Type=ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_ConnectableUndirected;
-
-	COMPtr<ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisement> Adv;
-	hr=args->get_Advertisement(COMRetPtrT(Adv));
-	if(SUCCEEDED(hr) && Adv!=nullptr){
-		HSTRING LocalName;
-		hr=Adv->get_LocalName(&LocalName);
-		if(SUCCEEDED(hr) && LocalName!=nullptr){
-			AdvData->LocalName=CreateStringFromHandle(LocalName);
-			::WindowsDeleteString(LocalName);
-		}
-
-		COMPtr<ABI::Windows::Foundation::Collections::IVector<GUID> > ServiceUuids;
-		hr=Adv->get_ServiceUuids(COMRetPtrT(ServiceUuids));
-		if(SUCCEEDED(hr) && ServiceUuids!=nullptr){
-			unsigned int ServiceCount;
-			hr=ServiceUuids->get_Size(&ServiceCount);
-			if(SUCCEEDED(hr) && ServiceCount!=0){
-				AdvData->ServiceIDs.SetCount(ServiceCount);
-				hr=ServiceUuids->GetMany(0,ServiceCount,AdvData->ServiceIDs.GetItems(),&ServiceCount);
-				if(FAILED(hr)){
-					ServiceCount=0;
-				}
-				AdvData->ServiceIDs.SetCount(ServiceCount);
-			}
-		}
-		COMPtr<ABI::Windows::Foundation::IReference<enum ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags> > Flags;
-		hr=Adv->get_Flags(COMRetPtrT(Flags));
-		if(SUCCEEDED(hr) && Flags!=nullptr){
-			hr=Flags->get_Value(&AdvData->Flags);
-			if(FAILED(hr)){
-				AdvData->Flags=ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_None;
-			}
-		}
-
-		COMPtr<ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEManufacturerData*> > ManufacturerData;
-		hr=Adv->get_ManufacturerData(COMRetPtrT(ManufacturerData));
-		if(SUCCEEDED(hr) && ManufacturerData!=nullptr){
-			unsigned int ManufacturerDataCount;
-			hr=ManufacturerData->get_Size(&ManufacturerDataCount);
-			if(FAILED(hr))
-				ManufacturerDataCount=0;
-
-			for(unsigned int i=0;i<ManufacturerDataCount;i++){
-				COMPtr<ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEManufacturerData> DataItem;
-				hr=ManufacturerData->GetAt(i,COMRetPtrT(DataItem));
-				if(SUCCEEDED(hr) && DataItem!=nullptr){
-					COMPtr<ABI::Windows::Storage::Streams::IBuffer> Buffer;
-					UINT16 CompanyID;
-					hr=DataItem->get_CompanyId(&CompanyID);
-					if(FAILED(hr))
-						continue;
-					hr=DataItem->get_Data(COMRetPtrT(Buffer));
-					if(FAILED(hr))
-						continue;
-					auto DataArray=GetBufferData(Buffer);
-					auto NewItem=AdvData->ManufactureData.Append();
-					NewItem->CompanyID=CompanyID;
-					NewItem->Data.Copy(DataArray.Pointer,DataArray.Length);
-				}
-			}
-
-		}
-		COMPtr<ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementDataSection*> > DataSection;
-		hr=Adv->get_DataSections(COMRetPtrT(DataSection));
-		if(SUCCEEDED(hr) && DataSection!=nullptr){
-			unsigned int DataSectionCount;
-			hr=DataSection->get_Size(&DataSectionCount);
-			if(FAILED(hr))
-				DataSectionCount=0;
-
-			for(unsigned int i=0;i<DataSectionCount;i++){
-				COMPtr<ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementDataSection> DataItem;
-				hr=DataSection->GetAt(i,COMRetPtrT(DataItem));
-				if(SUCCEEDED(hr) && DataItem!=nullptr){
-					COMPtr<ABI::Windows::Storage::Streams::IBuffer> Buffer;
-					BYTE DataType;
-					hr=DataItem->get_DataType(&DataType);
-					if(FAILED(hr))
-						DataType=255;
-					hr=DataItem->get_Data(COMRetPtrT(Buffer));
-					if(FAILED(hr))
-						continue;
-					auto DataArray=GetBufferData(Buffer);
-					auto NewItem=AdvData->SectionData.Append();
-					NewItem->DataType=DataType;
-					NewItem->Data.Copy(DataArray.Pointer,DataArray.Length);
-				}
-			}
-
-		}
-	}
-
-	GetHost()->BLEReceived(cnVar::MoveCast(AdvData));
-	return S_OK;
-}
-#endif // 0
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cGATTAdvertisementObserver::cGATTAdvertisementObserver(cGATTPeripheralCentral *Central,COMPtr<IBLEWatcher> Watcher)noexcept
+cBluetoothLEAdvertisementObserver::cBluetoothLEAdvertisementObserver(cBluetoothCentral *Central,COMPtr<IBLEWatcher> Watcher)noexcept
 	: fCentral(Central)
 	, fWatcher(Watcher)
 	, fCallback(nullptr)
 {
-	//fWatcher->add_Stopped;
 	CreateQueueWork(fCentral->GetDispatch(),true);
 }
 //---------------------------------------------------------------------------
-cGATTAdvertisementObserver::~cGATTAdvertisementObserver()noexcept
+cBluetoothLEAdvertisementObserver::~cBluetoothLEAdvertisementObserver()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::VirtualStarted(void)noexcept
+void cBluetoothLEAdvertisementObserver::VirtualStarted(void)noexcept
 {
-	InnerActivate('self');
-
+	cDualReference::VirtualStarted();
 
 	fWatcher->add_Received(&fBLEReceivedHandler,&fBLEReceivedToken);
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::VirtualStopped(void)noexcept
+void cBluetoothLEAdvertisementObserver::VirtualStopped(void)noexcept
 {
 	fWatcher->remove_Received(fBLEReceivedToken);
 
-	InnerDecReference('self');
+	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
-bool cGATTAdvertisementObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
+bool cBluetoothLEAdvertisementObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
 {
 	if(PrepareStartNotify()==false){
 		return false;
@@ -2017,58 +1829,83 @@ bool cGATTAdvertisementObserver::StartNotify(iReference *Reference,iAsyncNotific
 	return true;
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::StopNotify(void)noexcept
+void cBluetoothLEAdvertisementObserver::StopNotify(void)noexcept
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::NotifyCallback(bool IdleNotify)noexcept
+void cBluetoothLEAdvertisementObserver::NotifyCallback(bool IdleNotify)noexcept
 {
 	return bcAsyncQueue::NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool cGATTAdvertisementObserver::IsClosed(void)noexcept
+bool cBluetoothLEAdvertisementObserver::IsClosed(void)noexcept
 {
-	return false;
+	return bcAsyncQueue::IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-iDispatch* cGATTAdvertisementObserver::GetHandlerDispatch(void)noexcept
+iDispatch* cBluetoothLEAdvertisementObserver::GetHandlerDispatch(void)noexcept
 {
-	return nullptr;
+	return fCentral->GetDispatch();
 }
 //---------------------------------------------------------------------------
-iGATTPeripheralCentral* cGATTAdvertisementObserver::GetPeripheralCentral(void)noexcept
+iBluetoothCentral* cBluetoothLEAdvertisementObserver::GetCentral(void)noexcept
 {
 	return fCentral;
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::DiscardQueue(void)noexcept
+void cBluetoothLEAdvertisementObserver::DiscardQueue(void)noexcept
 {
+	cAdvertisementData *DataQueue=fAdvertisementQueue.DequeueAll();
+	while(DataQueue!=nullptr){
+		auto pData=DataQueue;
+		DataQueue=DataQueue->Next;
+
+		rDecReference(pData,'queu');
+	}
 }
 //---------------------------------------------------------------------------
-rPtr<iReference> cGATTAdvertisementObserver::Fetch(cGATTAdvertisementInfo &Info)noexcept
+rPtr<iReference> cBluetoothLEAdvertisementObserver::Fetch(cBluetoothLEAdvertisementInfo &Info)noexcept
 {
 	auto pData=fAdvertisementQueue.Dequeue();
 	if(pData==nullptr)
 		return nullptr;
 
-	Info=pData->Info;
+	eBluetoothLEAdvertisementType Type;
+	eBluetoothLEAdvertisementFlags Flags;
+	sfInt16 SignalStrength;
+	cArray<const cUUID> ServiceUUIDs;
+	cArray<const cBluetoothLEAdvertisementManufacturerData> ManufacturerData;
+	cArray<const cBluetoothLEAdvertisementSectionData> SectionData;
+
+	Info.Address=pData->Address;
+	Info.LocalName=pData->LocalName.GetArray();
+	Info.Timestamp=pData->Timestamp;
+	Info.PeripheralAddress=pData->Address->Address;
+	Info.Type=pData->Type;
+	Info.Flags=pData->Flags;
+	Info.SignalStrength=pData->SignalStrength/256;
+	Info.IsConnectable=pData->IsConnectable;
+	Info.IsDiscoverable=pData->IsScannable;
+	Info.ServiceUUIDs=pData->ServiceUUIDs.Storage();
+	Info.ManufacturerData=pData->ManufacturerDataList.Storage();
+	Info.SectionData=pData->SectionDataList.Storage();
 	return rTake(pData,'queu');
 }
 //---------------------------------------------------------------------------
-iReference* cGATTAdvertisementObserver::NotificationInnerReference(void)noexcept
+iReference* cBluetoothLEAdvertisementObserver::NotificationInnerReference(void)noexcept
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::NotificationStarted(void)noexcept
+void cBluetoothLEAdvertisementObserver::NotificationStarted(void)noexcept
 {
 	fCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::NotificationStopped(void)noexcept
+void cBluetoothLEAdvertisementObserver::NotificationStopped(void)noexcept
 {
 	fCallback->AsyncStopped();
 
@@ -2076,12 +1913,12 @@ void cGATTAdvertisementObserver::NotificationStopped(void)noexcept
 	fCallbackReference=nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::AsyncQueueNotify(void)noexcept
+void cBluetoothLEAdvertisementObserver::AsyncQueueNotify(void)noexcept
 {
 	fCallback->AsyncNotify();
 }
 //---------------------------------------------------------------------------
-void cGATTAdvertisementObserver::BLEReceived(rPtr<cAdvertisementData> AdvData)noexcept
+void cBluetoothLEAdvertisementObserver::BLEReceived(rPtr<cAdvertisementData> AdvData)noexcept
 {
 	auto pData=rExtract(AdvData,'queu');
 	fAdvertisementQueue.Enqueue(pData);
@@ -2089,12 +1926,12 @@ void cGATTAdvertisementObserver::BLEReceived(rPtr<cAdvertisementData> AdvData)no
 	AsyncQueueSetAvailable(true);
 }
 //---------------------------------------------------------------------------
-cGATTAdvertisementObserver* cGATTAdvertisementObserver::cBLEReceivedHandler::GetHost(void)noexcept
+cBluetoothLEAdvertisementObserver* cBluetoothLEAdvertisementObserver::cBLEReceivedHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cGATTAdvertisementObserver::fBLEReceivedHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothLEAdvertisementObserver::fBLEReceivedHandler);
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
+HRESULT STDMETHODCALLTYPE cBluetoothLEAdvertisementObserver::cBLEReceivedHandler::QueryInterface(REFIID riid,_COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject)noexcept
 {
 	if(riid==__uuidof(IUnknown)){
 		GetHost()->InnerIncReference('evet');
@@ -2110,19 +1947,19 @@ HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Query
 	return E_NOINTERFACE;
 }
 //---------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::AddRef(void)noexcept
+ULONG STDMETHODCALLTYPE cBluetoothLEAdvertisementObserver::cBLEReceivedHandler::AddRef(void)noexcept
 {
 	GetHost()->InnerIncReference('evet');
 	return 0;
 }
 //---------------------------------------------------------------------------
-ULONG STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Release(void)noexcept
+ULONG STDMETHODCALLTYPE cBluetoothLEAdvertisementObserver::cBLEReceivedHandler::Release(void)noexcept
 {
 	GetHost()->InnerDecReference('evet');
 	return 0;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Invoke(IBLEWatcher*, _In_ ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementReceivedEventArgs *args)noexcept
+HRESULT STDMETHODCALLTYPE cBluetoothLEAdvertisementObserver::cBLEReceivedHandler::Invoke(IBLEWatcher*, _In_ ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementReceivedEventArgs *args)noexcept
 {
 
 	HRESULT hr;
@@ -2135,72 +1972,65 @@ HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Invok
 	COMPtr<ABI::Windows::Devices::Bluetooth::Advertisement::IBluetoothLEAdvertisementReceivedEventArgs2> args2;
 	hr=args->QueryInterface(COMRetPtrT(args2));
 
-	ABI::Windows::Devices::Bluetooth::BluetoothAddressType AddressType=ABI::Windows::Devices::Bluetooth::BluetoothAddressType::BluetoothAddressType_Unspecified;
-	hr=args2->get_BluetoothAddressType(&AddressType);
-	
-	boolean IsScanable;
-	hr=args2->get_IsScannable(&IsScanable);
-
-	boolean IsScanResponse;
-	args2->get_IsScanResponse(&IsScanResponse);
-
-	boolean IsConnectable;
-	args2->get_IsConnectable(&IsConnectable);
-
 	auto AdvData=GetHost()->fAdvDataRecycler.Query();
 	AdvData->ServiceUUIDs.Clear();
-	AdvData->ManufacturerData.Clear();
-	AdvData->SectionData.Clear();
+	AdvData->ManufacturerDataList.Clear();
+	AdvData->SectionDataList.Clear();
 	AdvData->LocalName.Clear();
+	AdvData->ManufacturerDataBuffer.Clear();
+	AdvData->SectionDataBuffer.Clear();
+
+
+	hr=args2->get_IsScannable(&AdvData->IsScannable);
+	hr=args2->get_IsConnectable(&AdvData->IsConnectable);
+
+	//boolean IsScanResponse;
+	//args2->get_IsScanResponse(&IsScanResponse);
+
 
 	auto DeviceAddress=iCreate<cBluetoothAddress>();
 	DeviceAddress->Address=BLEAddress;
 	AdvData->Address=DeviceAddress;
 	
-	INT16 SignalStrength;
-	hr=args->get_RawSignalStrengthInDBm(&SignalStrength);
+	hr=args->get_RawSignalStrengthInDBm(&AdvData->SignalStrength);
 	if(FAILED(hr)){
-		AdvData->Info.SignalStrength=32768;
-	}
-	else{
-		AdvData->Info.SignalStrength=SignalStrength;
+		AdvData->SignalStrength=32768;
 	}
 
 	{
 		ABI::Windows::Foundation::DateTime Timestamp;
 		hr=args->get_Timestamp(&Timestamp);
 		if(FAILED(hr)){
-			AdvData->Info.Timestamp=0;
+			AdvData->Timestamp=0;
 		}
 		else{
 			AdvData->Timestamp=Timestamp.UniversalTime;
-			AdvData->Info.Timestamp=AdvData->Timestamp;
 		}
 	}
 	ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType AdvType;
 	hr=args->get_AdvertisementType(&AdvType);
 	if(FAILED(hr)){
-		AdvData->Info.Type=GATTAdvertisementType::ConnectableUndirected;
+		AdvData->Type=BluetoothLEAdvertisementType::ConnectableUndirected;
 	}
 	else{
 		switch(AdvType){
 		case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_ConnectableUndirected:
-			AdvData->Info.Type=GATTAdvertisementType::ConnectableUndirected;
+			AdvData->Type=BluetoothLEAdvertisementType::ConnectableUndirected;
 			break;
 		case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_ConnectableDirected:
-			AdvData->Info.Type=GATTAdvertisementType::ConnectableDirected;
+			AdvData->Type=BluetoothLEAdvertisementType::ConnectableDirected;
 			break;
 		case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_ScannableUndirected:
-			AdvData->Info.Type=GATTAdvertisementType::ScannableUndirected;
+			AdvData->Type=BluetoothLEAdvertisementType::ScannableUndirected;
 			break;
 		case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_NonConnectableUndirected:
-			AdvData->Info.Type=GATTAdvertisementType::NonConnectableUndirected;
+			AdvData->Type=BluetoothLEAdvertisementType::NonConnectableUndirected;
 			break;
 		case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_ScanResponse:
-			AdvData->Info.Type=GATTAdvertisementType::ScanResponse;
+			AdvData->Type=BluetoothLEAdvertisementType::ScanResponse;
 			break;
 		//case ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementType::BluetoothLEAdvertisementType_Extended:
-		//	AdvData->Info.Type=GATTAdvertisementType::Extended;
+		//	AdvData->Info.Type=BluetoothLEAdvertisementType::Extended;
 		//	break;
 		}
 	}
@@ -2235,24 +2065,24 @@ HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Invok
 			enum ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags FlagValue;
 			hr=AdvFlags->get_Value(&FlagValue);
 			if(FAILED(hr)){
-				AdvData->Info.Flags=GATTAdvertisementFlags::None;
+				AdvData->Flags=BluetoothLEAdvertisementFlags::None;
 			}
 			else{
-				AdvData->Info.Flags=0;
+				AdvData->Flags=0;
 				if(FlagValue&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_LimitedDiscoverableMode){
-					AdvData->Info.Flags|=GATTAdvertisementFlags::LimitedDiscoverableMode;
+					AdvData->Flags|=BluetoothLEAdvertisementFlags::LimitedDiscoverableMode;
 				}
 				if(FlagValue&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_GeneralDiscoverableMode){
-					AdvData->Info.Flags|=GATTAdvertisementFlags::GeneralDiscoverableMode;
+					AdvData->Flags|=BluetoothLEAdvertisementFlags::GeneralDiscoverableMode;
 				}
 				if(FlagValue&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_ClassicNotSupported){
-					AdvData->Info.Flags|=GATTAdvertisementFlags::ClassicNotSupported;
+					AdvData->Flags|=BluetoothLEAdvertisementFlags::ClassicNotSupported;
 				}
 				if(FlagValue&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_DualModeControllerCapable){
-					AdvData->Info.Flags|=GATTAdvertisementFlags::DualModeControllerCapable;
+					AdvData->Flags|=BluetoothLEAdvertisementFlags::DualModeControllerCapable;
 				}
 				if(FlagValue&ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementFlags::BluetoothLEAdvertisementFlags_DualModeHostCapable){
-					AdvData->Info.Flags|=GATTAdvertisementFlags::DualModeHostCapable;
+					AdvData->Flags|=BluetoothLEAdvertisementFlags::DualModeHostCapable;
 				}
 			}
 		}
@@ -2278,12 +2108,20 @@ HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Invok
 					if(FAILED(hr))
 						continue;
 					auto DataArray=GetBufferData(Buffer);
-					auto NewItem=AdvData->ManufacturerData.Append();
+
+					auto NewItem=AdvData->ManufacturerDataList.Append();
 					NewItem->CompanyID=CompanyID;
-					NewItem->Data.Copy(DataArray.Pointer,DataArray.Length);
+					NewItem->Pointer=reinterpret_cast<void*>(AdvData->ManufacturerDataBuffer.GetSize());
+					NewItem->Length=DataArray.Length;
+					AdvData->ManufacturerDataBuffer.Append(DataArray.Pointer,DataArray.Length);
 				}
 			}
 
+			auto ManufacturerDataBuffer=AdvData->ManufacturerDataBuffer->Pointer;
+			for(unsigned int i=0;i<ManufacturerDataCount;i++){
+				auto &Item=AdvData->ManufacturerDataList[i];
+				Item.Pointer=cnMemory::PointerAddByteOffset(ManufacturerDataBuffer,reinterpret_cast<uIntn>(Item.Pointer));
+			}
 		}
 		COMPtr<ABI::Windows::Foundation::Collections::IVector<ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEAdvertisementDataSection*> > DataSection;
 		hr=Adv->get_DataSections(COMRetPtrT(DataSection));
@@ -2306,87 +2144,70 @@ HRESULT STDMETHODCALLTYPE cGATTAdvertisementObserver::cBLEReceivedHandler::Invok
 					if(FAILED(hr))
 						continue;
 					auto DataArray=GetBufferData(Buffer);
-					auto NewItem=AdvData->SectionData.Append();
-					NewItem->DataType=DataType;
-					NewItem->Data.Copy(DataArray.Pointer,DataArray.Length);
+					auto NewItem=AdvData->SectionDataList.Append();
+					NewItem->SectionType=DataType;
+					NewItem->Pointer=reinterpret_cast<void*>(AdvData->SectionDataBuffer.GetSize());
+					NewItem->Length=DataArray.Length;
+					AdvData->SectionDataBuffer.Append(DataArray.Pointer,DataArray.Length);
 				}
 			}
 
+			auto SectionDataBuffer=AdvData->SectionDataBuffer->Pointer;
+			for(unsigned int i=0;i<DataSectionCount;i++){
+				auto &Item=AdvData->SectionDataList[i];
+				Item.Pointer=cnMemory::PointerAddByteOffset(SectionDataBuffer,reinterpret_cast<uIntn>(Item.Pointer));
+			}
 		}
 	}
 
-	AdvData->Info.AddressType=(uInt8)AddressType;
-	AdvData->Info.AdvertiserAddress=BLEAddress;
-	AdvData->Info.LocalName=AdvData->LocalName.GetArray();
-	AdvData->Info.Timestamp=AdvData->Timestamp;
-	AdvData->Info.PeripheralAddress=AdvData->Address;
-	AdvData->Info.ServiceUUIDs=AdvData->ServiceUUIDs.Storage();
 
-	if(AdvData->Info.Type!=GATTAdvertisementType::ScanResponse){
-		if(IsScanable==false || IsConnectable==false){
-			return S_OK;
-		}
-	}
-	
 	GetHost()->BLEReceived(cnVar::MoveCast(AdvData));
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTPeripheralCentral::cGATTPeripheralCentral(iDispatch *Dispatch,COMPtr<IBLEDeviceStatics> BLEStatic)noexcept
+cBluetoothCentral::cBluetoothCentral(iDispatch *Dispatch,COMPtr<IBLEDeviceStatics> BLEStatic)noexcept
 	: fBLEStatic(cnVar::MoveCast(BLEStatic))
 	, fDispatch(Dispatch)
 {
 }
 //---------------------------------------------------------------------------
-cGATTPeripheralCentral::IBLEDeviceStatics* cGATTPeripheralCentral::GetBLEStatic(void)const noexcept
+cBluetoothCentral::IBLEDeviceStatics* cBluetoothCentral::GetBLEStatic(void)const noexcept
 {
 	return fBLEStatic;
 }
 //---------------------------------------------------------------------------
-iDispatch* cGATTPeripheralCentral::GetHandlerDispatch(void)noexcept
+iDispatch* cBluetoothCentral::GetHandlerDispatch(void)noexcept
 {
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-iDispatch* cGATTPeripheralCentral::GetDispatch(void)const noexcept
+iDispatch* cBluetoothCentral::GetDispatch(void)const noexcept
 {
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheralCentral::InsertHandler(iGATTPeripheralCentralHandler *Handler)noexcept
+bool cBluetoothCentral::InsertHandler(iBluetoothCentralHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheralCentral::RemoveHandler(iGATTPeripheralCentralHandler *Handler)noexcept
+bool cBluetoothCentral::RemoveHandler(iBluetoothCentralHandler *Handler)noexcept
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-rPtr<iGATTPeripheral> cGATTPeripheralCentral::OpenPeripheral(iAddress *Address)noexcept
+bool cBluetoothCentral::IsEnabled(void)noexcept
 {
-	if(fDispatch->IsCurrentThread()==false)
-		return nullptr;
-
-	auto BLEAddress=iCast<cBluetoothAddress>(Address);
-	if(BLEAddress!=nullptr){
-		HRESULT hr;
-		COMPtr<IBLEConnectAsyncOp> ConnectOp;
-		hr=fBLEStatic->FromBluetoothAddressAsync(BLEAddress->Address,COMRetPtrT(ConnectOp));
-		if(FAILED(hr)){
-			return nullptr;
-		}
-
-		auto Peripheral=rCreate<cGATTPeripheral>(this,BLEAddress);
-
-		Peripheral->CentralConnectionOperation(cnVar::MoveCast(ConnectOp));
-		return Peripheral;
-	}
-	return nullptr;
+	return true;
 }
 //---------------------------------------------------------------------------
-rPtr<iGATTAdvertisementObserver> cGATTPeripheralCentral::CreateAdvertisementObserver(void)noexcept
+bool cBluetoothCentral::IsPowerOn(void)noexcept
+{
+	return true;
+}
+//---------------------------------------------------------------------------
+rPtr<iBluetoothLEAdvertisementObserver> cBluetoothCentral::CreateLEAdvertisementObserver(void)noexcept
 {
 	cHString RCName_BluetoothLEAdvertisementWatcher;
 	RCName_BluetoothLEAdvertisementWatcher=RuntimeClass_Windows_Devices_Bluetooth_Advertisement_BluetoothLEAdvertisementWatcher;
@@ -2401,28 +2222,29 @@ rPtr<iGATTAdvertisementObserver> cGATTPeripheralCentral::CreateAdvertisementObse
 	hr=BLEWatcher->put_ScanningMode(ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEScanningMode_Active);
 	//BLEWatcher->put_AdvertisementFilter
 
-	return rCreate<cGATTAdvertisementObserver>(this,cnVar::MoveCast(BLEWatcher));
+	return rCreate<cBluetoothLEAdvertisementObserver>(this,cnVar::MoveCast(BLEWatcher));
 }
 //---------------------------------------------------------------------------
-bool cGATTPeripheralCentral::IsEnabled(void)noexcept
+rPtr<iBluetoothSlave> cBluetoothCentral::OpenPeripheral(iAddress *Address)noexcept
 {
-	return true;
-}
-//---------------------------------------------------------------------------
-bool cGATTPeripheralCentral::IsPowerOn(void)noexcept
-{
-	return true;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-rPtr<iGATTPeripheralCentral> UWP::OpenGATTCentral(iDispatch *Dispatch)noexcept
-{
-	COMPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics> BLEStatic;
-	cHString RCName_BLEDevice=RuntimeClass_Windows_Devices_Bluetooth_BluetoothLEDevice;
-	if(FAILED(Windows::Foundation::GetActivationFactory(RCName_BLEDevice,COMRetPtrT(BLEStatic)))){
+	if(fDispatch->IsCurrentThread()==false)
 		return nullptr;
+
+	auto BLEAddress=iCast<cBluetoothAddress>(Address);
+	if(BLEAddress!=nullptr){
+		HRESULT hr;
+		COMPtr<IBLEConnectAsyncOp> ConnectOp;
+		hr=fBLEStatic->FromBluetoothAddressAsync(BLEAddress->Address,COMRetPtrT(ConnectOp));
+		if(FAILED(hr)){
+			return nullptr;
+		}
+
+		auto Slave=rCreate<cBluetoothSlave>(this,BLEAddress);
+
+		Slave->CentralConnectionOperation(cnVar::MoveCast(ConnectOp));
+		return Slave;
 	}
-	return rCreate<cGATTPeripheralCentral>(Dispatch,cnVar::MoveCast(BLEStatic));
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2443,10 +2265,7 @@ void cGATTServerDescriptor::VirtualStarted(void)noexcept
 //---------------------------------------------------------------------------
 void cGATTServerDescriptor::VirtualStopped(void)noexcept
 {
-	if(fShutdown==false){
-		fShutdown=true;
-		NotifyMainProcess();
-	}
+	ShutdownDescriptor();
 
 	cDualReference::VirtualStopped();
 }
@@ -2461,9 +2280,9 @@ iDispatch* cGATTServerDescriptor::GetDispatch(void)const noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerDescriptor::ServiceGetFunctionState(void)noexcept
+iGATTServerCharacteristic* cGATTServerDescriptor::GetOwner(void)noexcept
 {
-	return fFuncState;
+	return fOwner;
 }
 //---------------------------------------------------------------------------
 iDispatch* cGATTServerDescriptor::GetHandlerDispatch(void)noexcept
@@ -2471,14 +2290,17 @@ iDispatch* cGATTServerDescriptor::GetHandlerDispatch(void)noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerDescriptor::GetFunctionState(void)noexcept
-{
-	return fFuncState;
-}
-//---------------------------------------------------------------------------
 void cGATTServerDescriptor::Shutdown(void)noexcept
 {
-	DescriptorShutdown();
+	return ShutdownDescriptor();
+}
+//---------------------------------------------------------------------------
+void cGATTServerDescriptor::ShutdownDescriptor(void)noexcept
+{
+	if(fShutdown==false){
+		fShutdown=true;
+		NotifyMainProcess();
+	}
 }
 //---------------------------------------------------------------------------
 void cGATTServerDescriptor::SetupDescriptor(void)noexcept
@@ -2491,6 +2313,27 @@ void cGATTServerDescriptor::ClearDescriptor(void)noexcept
 {
 	//fDescriptor->remove_ReadRequested;
 	//fDescriptor->remove_WriteRequested;
+}
+//---------------------------------------------------------------------------
+void cGATTServerDescriptor::RunMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	if(fDispatch->IsCurrentThread()){
+		MainProcessThread();
+	}
+	else{
+		fMainProcessWork->Start();
+	}
+}
+//---------------------------------------------------------------------------
+void cGATTServerDescriptor::NotifyMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	fMainProcessWork->Start();
 }
 //---------------------------------------------------------------------------
 void cGATTServerDescriptor::cMainProcessProcedure::Execute(void)noexcept
@@ -2510,116 +2353,81 @@ void cGATTServerDescriptor::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTServerDescriptor::NotifyMainProcess(void)noexcept
-{
-	if(!fMainProcessExclusiveFlag.Acquire())
-		return;
-
-	fMainProcessWork->Start();
-}
-//---------------------------------------------------------------------------
 bool cGATTServerDescriptor::MainProcess(void)noexcept
 {
 	HRESULT hr;
-	if(fNeedNotifyFunctionStateChange){
-		fNeedNotifyFunctionStateChange=false;
+	if(fNeedNotifyActiveStateChange){
+		fNeedNotifyActiveStateChange=false;
 
-		eGATTFunctionState NewFuncState;
+		bool NewActiveState;
 		if(fDescriptor==nullptr){
-			if(fCreateProviderState==0){
-				NewFuncState=GATTFunctionState::Absent;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Scanning;
-			}
+			NewActiveState=false;
 		}
 		else{
-			auto OwnerFuncState=fOwner->ServiceGetFunctionState();
-			if(OwnerFuncState==GATTFunctionState::Active){
-				NewFuncState=GATTFunctionState::Active;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Inactive;
-			}
+			NewActiveState=fCharacteristicActive;
 		}
 
-		bool NotifyStateChange=fFuncState!=NewFuncState;
-		fFuncState=NewFuncState;
+		//bool NotifyStateChange=fFuncState!=NewFuncState;
+		//fFuncState=NewFuncState;
 
-		if(fController!=nullptr){
-			if(NotifyStateChange){
-				fController->DescriptorStateChanged();
-			}
-			if(fShutdown && fDescriptor==nullptr){
-				fController->DescriptorClosed();
-				fController=nullptr;
-			}
-		}
 	}
 
-	
-	if(fCreateProviderState==2){
-		fCreateProviderState=0;
+	switch(fUWPGattState){
+	case gsNone:
+		if(fShutdown){
+			fOwner->DescriptorNotifyShutdown(this);
 
+			fController->DescriptorClosed();
+			fController=nullptr;
+			fControllerReference=nullptr;
+
+			fUWPGattState=gsShutdown;
+			return false;
+		}
+		if(fCharacteristicActive==false){
+			// owner characteristic not active
+			break;
+		}
+		// create Interface
+		return MainProcess_CreateDescriptor();
+	case gsCreating:
+		break;
+	case gsCreateResult:
 		if(FAILED(fCreateLocalDescCompleteHandler.hrResult)){
+			fUWPGattState=gsNone;
 			return false;
 		}
 
 		HRESULT hr;
 		hr=fCreateLocalDescCompleteHandler.Result->get_Descriptor(COMRetPtrT(fDescriptor));
 		if(FAILED(hr)){
+			fUWPGattState=gsNone;
 			return false;
 		}
 
 		SetupDescriptor();
 
-
-		fOwner->DescriptorNotifyTreeChanged();
-
-		fNeedNotifyFunctionStateChange=true;
+		fUWPGattState=gsCreated;
+		fNeedNotifyActiveStateChange=true;
 		return true;
-	}
-
-	if(fCreateProviderState==0 && fShutdown){
-		if(fDescriptor!=nullptr){
-			ClearDescriptor();
-			fDescriptor=nullptr;
-
-			fOwner->DescriptorNotifyClosed(this);
-			fNeedNotifyFunctionStateChange=true;
-			return true;
+	case gsCreated:
+		if(fShutdown){
+			fOwner->DescriptorNotifyShutdown(this);
+			fUWPGattState=gsShutdown;
 		}
+		break;
+	case gsShutdown:
+		break;
 	}
+
 	return false;
 }
 //---------------------------------------------------------------------------
-void cGATTServerDescriptor::DescriptorShutdown(void)noexcept
+bool cGATTServerDescriptor::MainProcess_CreateDescriptor(void)noexcept
 {
-	if(fShutdown==false){
-		fShutdown=true;
-		NotifyMainProcess();
-	}
-}
-//---------------------------------------------------------------------------
-void cGATTServerDescriptor::CharacteristicNotifyStateChange(void)noexcept
-{
-	if(fCreateProviderState!=0)
-		return;
-
-	if(fDescriptor!=nullptr){
-		fNeedNotifyFunctionStateChange=true;
-		return NotifyMainProcess();
-	}
-
-	if(fShutdown){
-		// do not create descriptor after shutdown
-		// function state will not change
-		return;
-	}
-
 	auto OwnerCharacteristic=fOwner->GetLocalCharacteristic();
 	if(OwnerCharacteristic==nullptr){
-		return;
+		return false;
 	}
 	HRESULT hr;
 	
@@ -2627,7 +2435,7 @@ void cGATTServerDescriptor::CharacteristicNotifyStateChange(void)noexcept
 	COMPtr< ABI::Windows::Foundation::Collections::IVectorView<GattLocalDescriptor*> > Descriptors;
 	hr=OwnerCharacteristic->get_Descriptors(COMRetPtrT(Descriptors));
 	if(FAILED(hr))
-		return;
+		return false;
 
 	unsigned int DescriptorCount;
 	hr=Descriptors->get_Size(&DescriptorCount);
@@ -2643,9 +2451,8 @@ void cGATTServerDescriptor::CharacteristicNotifyStateChange(void)noexcept
 		
 			SetupDescriptor();
 
-			fNeedNotifyFunctionStateChange=true;
-			NotifyMainProcess();
-			return;
+			fNeedNotifyActiveStateChange=true;
+			return true;
 		}
 	}
 
@@ -2657,7 +2464,7 @@ void cGATTServerDescriptor::CharacteristicNotifyStateChange(void)noexcept
 	cHString RCName_Parameters=RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattLocalDescriptorParameters;
 	hr=Windows::Foundation::ActivateInstance(RCName_Parameters,COMRetPtrT(Parameters));
 	if(FAILED(hr)){
-		return;
+		return false;
 	}
 
 	//Parameters->put_UserDescription(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
@@ -2666,11 +2473,27 @@ void cGATTServerDescriptor::CharacteristicNotifyStateChange(void)noexcept
 
 	hr=OwnerCharacteristic->CreateDescriptorAsync(reinterpret_cast<const GUID&>(fDescriptorID),Parameters,COMRetPtrT(AsyncOp));
 	if(FAILED(hr)){
-		return;
+		return false;
 	}
 
-	fCreateProviderState=1;
+	fUWPGattState=gsCreating;
 	AsyncOp->put_Completed(&fCreateLocalDescCompleteHandler);
+	return false;
+}
+//---------------------------------------------------------------------------
+void cGATTServerDescriptor::CharacteristicNotifyState(bool Active)noexcept
+{
+	fCharacteristicActive=Active;
+	fNeedNotifyActiveStateChange=true;
+	RunMainProcess();
+}
+//---------------------------------------------------------------------------
+void cGATTServerDescriptor::CharacteristicNotifyShutdown(void)noexcept
+{
+	if(fShutdown==false){
+		fShutdown=true;
+		RunMainProcess();
+	}
 }
 //---------------------------------------------------------------------------
 cGATTServerDescriptor* cGATTServerDescriptor::cCreateLocalDescCompleteHandler::GetHost(void)noexcept
@@ -2691,47 +2514,45 @@ void cGATTServerDescriptor::cCreateLocalDescCompleteHandler::EventDecReference(v
 void cGATTServerDescriptor::cCreateLocalDescCompleteHandler::EventInvoke(ICreateLocalDescAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus Status)noexcept
 {
 	auto Host=GetHost();
+	Host->fUWPGattState=gsCreateResult;
 	if(Status!=AsyncStatus::Completed){
 		hrResult=E_FAIL;
-		Host->fCreateProviderState=2;
-		Host->NotifyMainProcess();
-		return;
 	}
-
-	hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
-	Host->fCreateProviderState=2;
+	else{
+		hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
+	}
 	Host->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTServerCharacteristic::cClientSubscription* cGATTServerCharacteristic::cClientSubscription::cClientNotifyValueCompleteHandler::GetHost(void)noexcept
+cGATTServerCharacteristic::cSubscription* cGATTServerCharacteristic::cSubscription::cClientNotifyValueCompleteHandler::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cClientSubscription::ClientNotifyValueCompleteHandler);
+	return cnMemory::GetObjectFromMemberPointer(this,&cSubscription::ClientNotifyValueCompleteHandler);
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::cClientSubscription::cClientNotifyValueCompleteHandler::EventIncReference(void)noexcept
+void cGATTServerCharacteristic::cSubscription::cClientNotifyValueCompleteHandler::EventIncReference(void)noexcept
 {
 	rIncReference(GetHost(),'snot');
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::cClientSubscription::cClientNotifyValueCompleteHandler::EventDecReference(void)noexcept
+void cGATTServerCharacteristic::cSubscription::cClientNotifyValueCompleteHandler::EventDecReference(void)noexcept
 {
 	rDecReference(GetHost(),'snot');
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::cClientSubscription::cClientNotifyValueCompleteHandler::EventInvoke(IClientNotifyValueAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
+void cGATTServerCharacteristic::cSubscription::cClientNotifyValueCompleteHandler::EventInvoke(IClientNotifyValueAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus)noexcept
 {
 	COMPtr<IGattClientNotificationResult> Result;
 	HRESULT hr;
 	auto Host=GetHost();
-	auto Owner=Host->Owner;
+	auto HostOwner=Host->Owner;
 	
 	hr=AsyncOp->GetResults(COMRetPtrT(Result));
 	if(FAILED(hr)){
 		// notify error
 		auto Host=GetHost();
 		Host->UpdateValueState=vnIdle;
-		Owner->NotifyMainProcess();
+		HostOwner->NotifyMainProcess();
 		return;
 	}
 
@@ -2741,13 +2562,13 @@ void cGATTServerCharacteristic::cClientSubscription::cClientNotifyValueCompleteH
 		// notify error
 		auto Host=GetHost();
 		Host->UpdateValueState=vnIdle;
-		Owner->NotifyMainProcess();
+		HostOwner->NotifyMainProcess();
 		return;
 	}
 
 	Host->UpdateValueState=vnCommand;
-	Owner->fValueNotifyUpdate=true;
-	Owner->NotifyMainProcess();
+	HostOwner->fValueNotifyUpdate=true;
+	HostOwner->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2769,13 +2590,14 @@ ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattLocalCharacteris
 //---------------------------------------------------------------------------
 void cGATTServerCharacteristic::VirtualStarted(void)noexcept
 {
-	InnerActivate('self');
+	cDualReference::VirtualStarted();
 }
 //---------------------------------------------------------------------------
 void cGATTServerCharacteristic::VirtualStopped(void)noexcept
 {
-	CharacteristicShutdown();
-	InnerDecReference('self');
+	ShutdownCharacteristic();
+
+	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
 const cUUID &cGATTServerCharacteristic::GetID(void)const noexcept
@@ -2788,19 +2610,22 @@ iDispatch* cGATTServerCharacteristic::GetDispatch(void)const noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerCharacteristic::ServiceGetFunctionState(void)noexcept
+void cGATTServerCharacteristic::ShutdownCharacteristic(void)noexcept
 {
-	return fFuncState;
+	if(fShutdown==false){
+		fShutdown=true;
+		NotifyMainProcess();
+	}
+}
+//---------------------------------------------------------------------------
+iGATTServerService* cGATTServerCharacteristic::GetOwner(void)noexcept
+{
+	return fOwner;
 }
 //---------------------------------------------------------------------------
 iDispatch* cGATTServerCharacteristic::GetHandlerDispatch(void)noexcept
 {
 	return fDispatch;
-}
-//---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerCharacteristic::GetFunctionState(void)noexcept
-{
-	return fFuncState;
 }
 //---------------------------------------------------------------------------
 rPtr<iGATTServerDescriptor> cGATTServerCharacteristic::CreateGATTDescriptor(const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept
@@ -2817,21 +2642,21 @@ rPtr<iGATTServerDescriptor> cGATTServerCharacteristic::CreateGATTDescriptor(cons
 	auto NewDesc=rCreate<cGATTServerDescriptor>(this,ID,Reference,Controller);
 	DescPair->Value=NewDesc;
 	
-	NewDesc->CharacteristicNotifyStateChange();
+	NewDesc->CharacteristicNotifyState(fCharacteristicActive);
 	return NewDesc;
 }
 //---------------------------------------------------------------------------
 void cGATTServerCharacteristic::Shutdown(void)noexcept
 {
-	CharacteristicShutdown();
+	ShutdownCharacteristic();
 }
 //---------------------------------------------------------------------------
-iGATTClientSubscription* cGATTServerCharacteristic::QuerySubscription(iGATTClientConnection *Connection)noexcept
+iGATTServerSubscription* cGATTServerCharacteristic::QuerySubscription(iGATTServerConnection *Connection)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return nullptr;
 
-	auto ClientConn=static_cast<cClientConnection*>(Connection);
+	auto ClientConn=static_cast<cConnection*>(Connection);
 	COMPtr<IBluetoothDeviceId> DeviceID;
 	HRESULT hr;
 	hr=ClientConn->Session->get_DeviceId(COMRetPtrT(DeviceID));
@@ -2847,13 +2672,13 @@ iGATTClientSubscription* cGATTServerCharacteristic::QuerySubscription(iGATTClien
 	return ClientPair->Value;
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::NotifyValue(iGATTClientSubscription *Subscription)noexcept
+void cGATTServerCharacteristic::NotifyValue(iGATTServerSubscription *Subscription)noexcept
 {
 	if(Subscription==nullptr){
 		fBroadcastValueNotify=true;
 	}
 	else{
-		auto ClientSubscription=static_cast<cClientSubscription*>(Subscription);
+		auto ClientSubscription=static_cast<cSubscription*>(Subscription);
 		ClientSubscription->NeedUpdateValue=true;
 	}
 	fValueNotifyUpdate=true;
@@ -2874,6 +2699,27 @@ void cGATTServerCharacteristic::ClearCharacteristic(void)noexcept
 	fCharacteristic->remove_SubscribedClientsChanged(fSubscribedClientsChangedEventToken);
 }
 //---------------------------------------------------------------------------
+void cGATTServerCharacteristic::RunMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	if(fDispatch->IsCurrentThread()){
+		MainProcessThread();
+	}
+	else{
+		fMainProcessWork->Start();
+	}
+}
+//---------------------------------------------------------------------------
+void cGATTServerCharacteristic::NotifyMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	fMainProcessWork->Start();
+}
+//---------------------------------------------------------------------------
 void cGATTServerCharacteristic::cMainProcessProcedure::Execute(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cGATTServerCharacteristic::fMainProcessProcedure);
@@ -2891,100 +2737,95 @@ void cGATTServerCharacteristic::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::NotifyMainProcess(void)noexcept
-{
-	if(!fMainProcessExclusiveFlag.Acquire())
-		return;
-
-	fMainProcessWork->Start();
-}
-//---------------------------------------------------------------------------
 bool cGATTServerCharacteristic::MainProcess(void)noexcept
 {
 
 	HRESULT hr;
-	if(fNeedNotifyFunctionStateChange){
-		fNeedNotifyFunctionStateChange=false;
+	if(fNeedNotifyActiveStateChange){
+		fNeedNotifyActiveStateChange=false;
 
-		eGATTFunctionState NewFuncState;
+		bool NewActiveState;
 		if(fCharacteristic==nullptr){
-			if(fCreateProviderState==0){
-				NewFuncState=GATTFunctionState::Absent;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Scanning;
-			}
+			NewActiveState=false;
 		}
 		else{
-			auto OwnerFuncState=fOwner->ServiceGetFunctionState();
-			if(OwnerFuncState==GATTFunctionState::Active){
-				NewFuncState=GATTFunctionState::Active;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Inactive;
-			}
+			NewActiveState=fServiceActive;
 		}
 
-		bool NotifyStateChang=fFuncState!=NewFuncState;
-		if(NotifyStateChang){
-			fFuncState=NewFuncState;
+		if(fCharacteristicActive!=NewActiveState){
+			fCharacteristicActive=NewActiveState;
 
 			for(auto Pair : fDescriptorMap){
-				Pair.Value->CharacteristicNotifyStateChange();
+				Pair.Value->CharacteristicNotifyState(fCharacteristicActive);
 			}
 
 		}
-		if(fController!=nullptr){
-			if(NotifyStateChang){
-				fController->CharacteristicStateChanged();
-			}
-			if(fShutdown && fCharacteristic==nullptr){
-				fController->CharacteristicClosed();
-				fController=nullptr;
-			}
-		}
-		
 	}
 
-	
-	if(fCreateProviderState==2){
-		fCreateProviderState=0;
-
+	switch(fUWPGattState){
+	case gsNone:
+		if(fShutdown){
+			for(auto DescPair : fDescriptorMap){
+				DescPair.Value->CharacteristicNotifyShutdown();
+			}
+			fUWPGattState=gsShutdownTree;
+			return true;
+		}
+		if(fServiceActive==false){
+			// server not active
+			break;
+		}
+		// create Interface
+		fReleaseGatt=false;
+		return MainProcess_CreateCharacteristic();
+	case gsCreating:
+		break;
+	case gsCreateResult:
+		
 		if(FAILED(fCreateLocalCharCompleteHandler.hrResult)){
+			fUWPGattState=gsNone;
 			return false;
 		}
 
 		hr=fCreateLocalCharCompleteHandler.Result->get_Characteristic(COMRetPtrT(fCharacteristic));
 		if(FAILED(hr)){
+			fUWPGattState=gsNone;
 			return false;
 		}
 
 		SetupCharacteristic();
 
-		fNeedNotifyFunctionStateChange=true;
+		fUWPGattState=gsCreated;
+		fNeedNotifyActiveStateChange=true;
 		return true;
-	}
-
-	if(fCreateProviderState==0 && fShutdown){
-		if(fDescriptorMap.GetCount()==0){
-			if(fCharacteristic!=nullptr){
-				ClearCharacteristic();
-				fCharacteristic=nullptr;
-
-				fOwner->CharacteristicNotifyClosed(this);
-				fNeedNotifyFunctionStateChange=true;
-				return true;
-			}
-		}
-		else{
+	case gsCreated:
+		if(fShutdown){
 			for(auto DescPair : fDescriptorMap){
-				DescPair.Value->DescriptorShutdown();
+				DescPair.Value->CharacteristicNotifyShutdown();
 			}
+			fUWPGattState=gsShutdownTree;
+			return true;
 		}
+		break;
+	case gsShutdownTree:
+		if(fDescriptorMap.GetCount()==0){
+			// all descriptor shutdown
 
-		return false;
+			ClearCharacteristic();
+			fCharacteristic=nullptr;
+
+			fController->CharacteristicClosed();
+			fController=nullptr;
+			fControllerReference=nullptr;
+
+			fOwner->CharacteristicNotifyShutdown(this);
+			fUWPGattState=gsShutdown;
+			return false;
+		}
+	case gsShutdown:
+		break;
 	}
-
+	
 	if(fSubscribedClientChanged){
 		fSubscribedClientChanged=false;
 
@@ -3003,6 +2844,12 @@ bool cGATTServerCharacteristic::MainProcess(void)noexcept
 			COMPtr<IGattSession> Session;
 			hr=Client->get_Session(COMRetPtrT(Session));
 
+			ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSessionStatus SessionStatus;
+			hr=Session->get_SessionStatus(&SessionStatus);
+			if(SessionStatus!=ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSessionStatus_Active){
+				continue;
+			}
+
 			COMPtr<IBluetoothDeviceId> ClientDeviceID;
 			hr=Session->get_DeviceId(COMRetPtrT(ClientDeviceID));
 
@@ -3016,10 +2863,10 @@ bool cGATTServerCharacteristic::MainProcess(void)noexcept
 				fSubscribedClientMap.InsertPair(DeviceIDString,Exists,PrevPair->Value);
 			}
 			else{
-				auto NewClient=rCreate<cClientSubscription>();
+				auto NewClient=rCreate<cSubscription>();
 				NewClient->Owner=this;
 				NewClient->Client=cnVar::MoveCast(Client);
-				cClientSubscription *pNewClient=NewClient;
+				cSubscription *pNewClient=NewClient;
 				fSubscribedClientMap.InsertPair(DeviceIDString,Exists,cnVar::MoveCast(NewClient));
 				if(fController!=nullptr){
 					fController->ClientSubscribe(pNewClient);
@@ -3054,12 +2901,78 @@ bool cGATTServerCharacteristic::MainProcess(void)noexcept
 		}
 
 		for(auto p : fSubscribedClientMap){
-			cClientSubscription *sc=p.Value;
+			cSubscription *sc=p.Value;
 			MainProcess_ValueNotify(sc,DataWriter);
 		}
 
 	}
 
+	return false;
+}
+//---------------------------------------------------------------------------
+bool cGATTServerCharacteristic::MainProcess_CreateCharacteristic(void)noexcept
+{
+	if(fServiceActive==false)
+		return false;
+
+	auto OwnerService=fOwner->GetLocalService();
+	if(OwnerService==nullptr){
+		return false;
+	}
+
+	HRESULT hr;
+	
+	// look for existing descriptor
+	COMPtr< ABI::Windows::Foundation::Collections::IVectorView<GattLocalCharacteristic*> > Characteristics;
+	hr=OwnerService->get_Characteristics(COMRetPtrT(Characteristics));
+	if(FAILED(hr))
+		return false;
+
+	unsigned int CharacteristicCount;
+	hr=Characteristics->get_Size(&CharacteristicCount);
+
+	for(unsigned int i=0;i<CharacteristicCount;i++){
+		COMPtr<IGattLocalCharacteristic> Char;
+		hr=Characteristics->GetAt(i,COMRetPtrT(Char));
+
+		GUID CharID;
+		hr=Char->get_Uuid(&CharID);
+		if(CharID==reinterpret_cast<GUID&>(fCharacteristicID)){
+			fCharacteristic=cnVar::MoveCast(Char);
+			fUWPGattState=gsCreated;
+		
+			SetupCharacteristic();
+
+			fNeedNotifyActiveStateChange=true;
+			return true;
+		}
+	}
+
+	COMPtr< ABI::Windows::Foundation::IAsyncOperation<GattLocalCharacteristicResult*> > AsyncOp;
+
+	COMPtr<IGattLocalCharacteristicParameters> Parameters;
+	cHString RCName_Parameters=RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattLocalCharacteristicParameters;
+	hr=Windows::Foundation::ActivateInstance(RCName_Parameters,COMRetPtrT(Parameters));
+	if(FAILED(hr)){
+		return false;
+	}
+
+	auto Parameter=fController->GetCharacteristicParameter();
+	
+	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristicProperties GattCharacteristicProperties;
+	Parameters->put_CharacteristicProperties(static_cast<GattCharacteristicProperties>(Parameter.Properties));
+
+	//Parameters->put_UserDescription(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
+	Parameters->put_ReadProtectionLevel(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
+	Parameters->put_WriteProtectionLevel(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
+
+	hr=OwnerService->CreateCharacteristicAsync(reinterpret_cast<const GUID&>(fCharacteristicID),Parameters,COMRetPtrT(AsyncOp));
+	if(FAILED(hr)){
+		return false;
+	}
+
+	fUWPGattState=gsCreating;
+	AsyncOp->put_Completed(&fCreateLocalCharCompleteHandler);
 	return false;
 }
 //---------------------------------------------------------------------------
@@ -3096,7 +3009,7 @@ void cGATTServerCharacteristic::MainProcess_ValueBroadcastNotify(ABI::Windows::S
 	hr=AsyncOp->put_Completed(&Subscription->ClientNotifyValueCompleteHandler);*/
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::MainProcess_ValueNotify(cClientSubscription *Subscription,ABI::Windows::Storage::Streams::IDataWriter *DataWriter)noexcept
+void cGATTServerCharacteristic::MainProcess_ValueNotify(cSubscription *Subscription,ABI::Windows::Storage::Streams::IDataWriter *DataWriter)noexcept
 {
 	switch(Subscription->UpdateValueState){
 	default:
@@ -3115,12 +3028,11 @@ void cGATTServerCharacteristic::MainProcess_ValueNotify(cClientSubscription *Sub
 
 	HRESULT hr;
 	cUWPMemoryBufferWriteStreamBuffer Buffer(DataWriter);
+	COMPtr<ABI::Windows::Storage::Streams::IBuffer> DataBuffer;
 	if(fController==nullptr || fController->ValueNotify(Subscription,&Buffer)==false){
-		COMPtr<ABI::Windows::Storage::Streams::IBuffer> DataBuffer;
 		hr=DataWriter->DetachBuffer(COMRetPtrT(DataBuffer));
 		return;
 	}
-	COMPtr<ABI::Windows::Storage::Streams::IBuffer> DataBuffer;
 	hr=DataWriter->DetachBuffer(COMRetPtrT(DataBuffer));
 
 	COMPtr<IClientNotifyValueAsyncOp> AsyncOp;
@@ -3131,108 +3043,37 @@ void cGATTServerCharacteristic::MainProcess_ValueNotify(cClientSubscription *Sub
 
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::DescriptorNotifyClosed(cGATTServerDescriptor *Descriptor)noexcept
+void cGATTServerCharacteristic::DescriptorNotifyShutdown(cGATTServerDescriptor *Descriptor)noexcept
 {
 	if(fDescriptorMap.Remove(Descriptor->GetID())){
-		if(fShutdown){
-			if(fDescriptorMap.GetCount()==0){
-				if(fCharacteristic!=nullptr){
-					ClearCharacteristic();
-					fCharacteristic=nullptr;
-
-					fOwner->CharacteristicNotifyClosed(this);
-					fNeedNotifyFunctionStateChange=true;
-					NotifyMainProcess();
-				}
-			}
+		if(fDescriptorMap.GetCount()==0){
+			RunMainProcess();
 		}
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::DescriptorNotifyTreeChanged(void)noexcept
+void cGATTServerCharacteristic::ServiceNotifyState(bool Active)noexcept
 {
-	fOwner->CharacteristicNotifyTreeChanged();
+	fServiceActive=Active;
+	fNeedNotifyActiveStateChange=true;
+	RunMainProcess();
 }
 //---------------------------------------------------------------------------
-void cGATTServerCharacteristic::CharacteristicShutdown(void)noexcept
+void cGATTServerCharacteristic::ServiceNotifyPublish(void)noexcept
+{
+	fCharacteristicPublished=true;
+
+	if(fController!=nullptr){
+		fController->CharacteristicPublished();
+	}
+}
+//---------------------------------------------------------------------------
+void cGATTServerCharacteristic::ServiceNotifyShutdown(void)noexcept
 {
 	if(fShutdown==false){
 		fShutdown=true;
-		NotifyMainProcess();
+		RunMainProcess();
 	}
-}
-//---------------------------------------------------------------------------
-void cGATTServerCharacteristic::ServiceNotifyStateChange(void)noexcept
-{
-	if(fCreateProviderState!=0 || fController==nullptr)
-		return;
-
-	if(fCharacteristic!=nullptr){
-		fNeedNotifyFunctionStateChange=true;
-		return NotifyMainProcess();
-	}
-
-	if(fOwner->ServiceGetFunctionState()<GATTFunctionState::Inactive)
-		return;
-
-	auto OwnerService=fOwner->GetLocalService();
-	if(OwnerService==nullptr){
-		return;
-	}
-
-	HRESULT hr;
-	
-	// look for existing descriptor
-	COMPtr< ABI::Windows::Foundation::Collections::IVectorView<GattLocalCharacteristic*> > Characteristics;
-	hr=OwnerService->get_Characteristics(COMRetPtrT(Characteristics));
-	if(FAILED(hr))
-		return;
-
-	unsigned int CharacteristicCount;
-	hr=Characteristics->get_Size(&CharacteristicCount);
-
-	for(unsigned int i=0;i<CharacteristicCount;i++){
-		COMPtr<IGattLocalCharacteristic> Char;
-		hr=Characteristics->GetAt(i,COMRetPtrT(Char));
-
-		GUID CharID;
-		hr=Char->get_Uuid(&CharID);
-		if(CharID==reinterpret_cast<GUID&>(fCharacteristicID)){
-			fCharacteristic=cnVar::MoveCast(Char);
-		
-			SetupCharacteristic();
-
-			fNeedNotifyFunctionStateChange=true;
-			NotifyMainProcess();
-			return;
-		}
-	}
-
-	COMPtr< ABI::Windows::Foundation::IAsyncOperation<GattLocalCharacteristicResult*> > AsyncOp;
-
-	COMPtr<IGattLocalCharacteristicParameters> Parameters;
-	cHString RCName_Parameters=RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattLocalCharacteristicParameters;
-	hr=Windows::Foundation::ActivateInstance(RCName_Parameters,COMRetPtrT(Parameters));
-	if(FAILED(hr)){
-		return;
-	}
-
-	auto Parameter=fController->GetCharacteristicParameter();
-	
-	typedef ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristicProperties GattCharacteristicProperties;
-	Parameters->put_CharacteristicProperties(static_cast<GattCharacteristicProperties>(Parameter.Properties));
-
-	//Parameters->put_UserDescription(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
-	Parameters->put_ReadProtectionLevel(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
-	Parameters->put_WriteProtectionLevel(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattProtectionLevel_Plain);
-
-	hr=OwnerService->CreateCharacteristicAsync(reinterpret_cast<const GUID&>(fCharacteristicID),Parameters,COMRetPtrT(AsyncOp));
-	if(FAILED(hr)){
-		return;
-	}
-
-	fCreateProviderState=1;
-	AsyncOp->put_Completed(&fCreateLocalCharCompleteHandler);
 }
 //---------------------------------------------------------------------------
 cGATTServerCharacteristic* cGATTServerCharacteristic::cCreateLocalCharCompleteHandler::GetHost(void)noexcept
@@ -3253,19 +3094,17 @@ void cGATTServerCharacteristic::cCreateLocalCharCompleteHandler::EventDecReferen
 void cGATTServerCharacteristic::cCreateLocalCharCompleteHandler::EventInvoke(ICreateLocalCharAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus Status)noexcept
 {
 	auto Host=GetHost();
+	Host->fUWPGattState=gsCreateResult;
 	if(Status!=AsyncStatus::Completed){
 		hrResult=E_FAIL;
-		Host->fCreateProviderState=2;
-		Host->NotifyMainProcess();
-		return;
 	}
-
-	hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
-	Host->fCreateProviderState=2;
+	else{
+		hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
+	}
 	Host->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-rPtr<cGATTServerCharacteristic::cClientConnection> cGATTServerCharacteristic::QueryClient(IGattSession *Session)noexcept
+rPtr<cGATTServerCharacteristic::cConnection> cGATTServerCharacteristic::QueryClient(IGattSession *Session)noexcept
 {
 	cnLib_ASSERT(fDispatch->IsCurrentThread());
 	/*
@@ -3283,7 +3122,7 @@ rPtr<cGATTServerCharacteristic::cClientConnection> cGATTServerCharacteristic::Qu
 	}
 	*/
 
-	auto Connection=rCreate<cClientConnection>();
+	auto Connection=rCreate<cConnection>();
 	Connection->Session=Session;
 	return Connection;
 }
@@ -3535,7 +3374,7 @@ void cGATTServerService::VirtualStarted(void)noexcept
 //---------------------------------------------------------------------------
 void cGATTServerService::VirtualStopped(void)noexcept
 {
-	ServiceShutdown();
+	ShutdownService();
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
@@ -3559,9 +3398,13 @@ iDispatch* cGATTServerService::GetDispatch(void)const noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerService::ServiceGetFunctionState(void)noexcept
+void cGATTServerService::ShutdownService(void)noexcept
 {
-	return fFuncState;
+	if(fShutdown==false){
+		fShutdown=true;
+
+		NotifyMainProcess();
+	}
 }
 //---------------------------------------------------------------------------
 iDispatch* cGATTServerService::GetHandlerDispatch(void)noexcept
@@ -3569,14 +3412,9 @@ iDispatch* cGATTServerService::GetHandlerDispatch(void)noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServerService::GetFunctionState(void)noexcept
-{
-	return fFuncState;
-}
-//---------------------------------------------------------------------------
 rPtr<iGATTServerCharacteristic> cGATTServerService::CreateGATTCharacteristic(const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept
 {
-	if(fShutdown || fDispatch->IsCurrentThread()==false)
+	if(fServicePublished || fShutdown || fDispatch->IsCurrentThread()==false)
 		return nullptr;
 
 	bool Exists;
@@ -3588,35 +3426,34 @@ rPtr<iGATTServerCharacteristic> cGATTServerService::CreateGATTCharacteristic(con
 	auto NewChar=rCreate<cGATTServerCharacteristic>(this,ID,Reference,Controller);
 	CharPair->Value=NewChar;
 	
-	NewChar->ServiceNotifyStateChange();
+	NewChar->ServiceNotifyState(fServiceActive);
 	return NewChar;
 }
 //---------------------------------------------------------------------------
 void cGATTServerService::Shutdown(void)noexcept
 {
-	if(fShutdown==false){
-		fShutdown=true;
+	ShutdownService();
+}
+//---------------------------------------------------------------------------
+void cGATTServerService::NotifyMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
 
-		NotifyMainProcess();
+	fMainProcessWork->Start();
+}
+//---------------------------------------------------------------------------
+void cGATTServerService::RunMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	if(fDispatch->IsCurrentThread()){
+		MainProcessThread();
 	}
-}
-//---------------------------------------------------------------------------
-bool cGATTServerService::IsAdvertising(void)noexcept
-{
-	return fAdvertisementActivated;
-}
-//---------------------------------------------------------------------------
-bool cGATTServerService::GetAdvertisementIncluded(void)noexcept
-{
-	return fAdvertisementIncluded;
-}
-//---------------------------------------------------------------------------
-void cGATTServerService::SetAdvertisementIncluded(bool Included)noexcept
-{
-	fAdvertisementIncluded=Included;
-	fNeedUpdateAdvertisement=true;
-
-	NotifyMainProcess();
+	else{
+		fMainProcessWork->Start();
+	}
 }
 //---------------------------------------------------------------------------
 void cGATTServerService::cMainProcessProcedure::Execute(void)noexcept
@@ -3636,54 +3473,30 @@ void cGATTServerService::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTServerService::NotifyMainProcess(void)noexcept
-{
-	if(!fMainProcessExclusiveFlag.Acquire())
-		return;
-
-	fMainProcessWork->Start();
-}
-//---------------------------------------------------------------------------
 bool cGATTServerService::MainProcess(void)noexcept
 {
-
 	HRESULT hr;
-	if(fNeedNotifyFunctionStateChange){
-		fNeedNotifyFunctionStateChange=false;
+	if(fNeedNotifyActiveStateChange){
+		fNeedNotifyActiveStateChange=false;
 
-		eGATTFunctionState NewFuncState;
+		bool NewActiveState;
 		if(fService==nullptr){
-			if(fCreateProviderState==0){
-				NewFuncState=GATTFunctionState::Absent;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Scanning;
-			}
+			NewActiveState=false;
 		}
 		else{
-			auto OwnerFuncState=fOwner->ServerGetFunctionState();
-			if(OwnerFuncState==GATTFunctionState::Active){
-				NewFuncState=GATTFunctionState::Active;
-			}
-			else{
-				NewFuncState=GATTFunctionState::Inactive;
-			}
+			NewActiveState=fServerActive;
 		}
 
-		bool NotifyStateChanged=fFuncState!=NewFuncState;
-		if(NotifyStateChanged){
-			fFuncState=NewFuncState;
+		if(fServiceActive!=NewActiveState){
+			fServiceActive=NewActiveState;
 
 			for(auto Pair : fCharacteristicMap){
-				Pair.Value->ServiceNotifyStateChange();
+				Pair.Value->ServiceNotifyState(fServiceActive);
 			}
 		}
 
 
 		if(fController!=nullptr){
-			if(NotifyStateChanged){
-				fController->ServiceStateChanged();
-			}
 			if(fShutdown && fService==nullptr){
 				fController->ServiceClosed();
 				fController=nullptr;
@@ -3691,70 +3504,134 @@ bool cGATTServerService::MainProcess(void)noexcept
 		}
 	}
 
-	
-	if(fCreateProviderState==2){
-		fCreateProviderState=0;
-
-		if(FAILED(fCreateServiceProviderCompleteHandler.hrResult)){
-			return false;
+	switch(fUWPGattState){
+	case gsNone:
+		if(fShutdown){
+			MainProcess_ShutdownTree();
+			return true;
 		}
 
-		HRESULT hr;
-		hr=fCreateServiceProviderCompleteHandler.Result->get_ServiceProvider(COMRetPtrT(fServiceProvider));
-		if(FAILED(hr)){
-			return false;
+		if(fServerActive==false){
+			// server not active
+			break;
+		}
+		// create Interface
+		{
+			auto Statics=fOwner->GetProviderStatic();
+			COMPtr< ABI::Windows::Foundation::IAsyncOperation<GattServiceProviderResult*> > AsyncOp;
+			hr=Statics->CreateAsync(reinterpret_cast<const GUID&>(fServiceID),COMRetPtrT(AsyncOp));
+			if(FAILED(hr)){
+				break;
+			}
+
+			fUWPGattState=gsCreating;
+			hr=AsyncOp->put_Completed(&fCreateServiceProviderCompleteHandler);
+		}
+
+		break;
+	case gsCreating:
+		break;
+	case gsCreateResult:
+		
+		if(FAILED(fCreateServiceProviderCompleteHandler.hrResult)){
+			fUWPGattState=gsNone;
+			break;
+		}
+		{
+			auto Result=cnVar::MoveCast(fCreateServiceProviderCompleteHandler.Result);
+			hr=Result->get_ServiceProvider(COMRetPtrT(fServiceProvider));
+			if(FAILED(hr)){
+				fUWPGattState=gsNone;
+				break;
+			}
 		}
 		hr=fServiceProvider->get_Service(COMRetPtrT(fService));
-
-		fAdvertisementActivated=false;
+		if(FAILED(hr)){
+			fServiceProvider=nullptr;
+			fUWPGattState=gsNone;
+			break;
+		}
+		fUWPGattState=gsCreated;
+		fGattAdvStarted=false;
 		hr=fServiceProvider->add_AdvertisementStatusChanged(&fAdvertisementStatusChangedHandler,&fAdvertisementStatusChangedToken);
-
-		fOwner->ServiceNotifyCreated(this);
-
-		fNeedNotifyFunctionStateChange=true;
+		fNeedNotifyActiveStateChange=true;
 		return true;
-	}
+	case gsCreated:
+		if(fShutdown){
+			MainProcess_ShutdownTree();
+			return true;
+		}
 
-	if(fCreateProviderState==0 && fShutdown){
+		if(fServicePublished && fServerIsAdvertising){
+			// start advertisement for the first time
+			COMPtr<IGattServiceProviderAdvertisingParameters> Parameters;
+			cHString RCName_Parameters=RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattServiceProviderAdvertisingParameters;
+			hr=Windows::Foundation::ActivateInstance(RCName_Parameters,COMRetPtrT(Parameters));
+			if(SUCCEEDED(hr)){
+				Parameters->put_IsConnectable(true);
+				Parameters->put_IsDiscoverable(true);
+				hr=fServiceProvider->StartAdvertisingWithParameters(Parameters);
+				if(SUCCEEDED(hr)){
+					fUWPGattState=gsLocked;
+					return true;
+				}
+			}
+
+		}
+		break;
+	case gsLocked:
+		if(!fShutdown && !fGattAdvStarted){
+			break;
+		}
+		fServiceProvider->remove_AdvertisementStatusChanged(fAdvertisementStatusChangedToken);
+		fUWPGattState=gsAdvertised;
+		fAdvertisementActivated=true;
+		cnLib_SWITCH_FALLTHROUGH;
+	case gsAdvertised:
+		ProcessAdvertisement();
+		if(fShutdown && fAdvertisementActivated==false){
+			MainProcess_ShutdownTree();
+			return true;
+		}
+		break;
+	case gsShutdownTree:
 		if(fCharacteristicMap.GetCount()==0){
-			if(fServiceProvider!=nullptr){
-				fService=nullptr;
+			// all characteristic is shut
 
-				fServiceProvider->remove_AdvertisementStatusChanged(fAdvertisementStatusChangedToken);
-				fServiceProvider=nullptr;
+			fServiceProvider=nullptr;
+			fService=nullptr;
 
-				fOwner->ServiceNotifyClosed(this);
-				fNeedNotifyFunctionStateChange=true;
-				return true;
-			}
+			fController->ServiceClosed();
+			fController=nullptr;
+			fControllerReference=nullptr;
+
+			fOwner->ServiceNotifyShutdown(this);
+			fUWPGattState=gsShutdown;
+			return false;
 		}
-		else{
-			for(auto CharPair : fCharacteristicMap){
-				CharPair.Value->CharacteristicShutdown();
-			}
-		}
+		break;
+	case gsShutdown:
+		break;
 	}
-
-	if(fNeedUpdateAdvertisement){
-		if(fServiceProvider!=nullptr){
-			fNeedUpdateAdvertisement=false;
-			ProcessAdvertisement();
-		}
-	}
-
+	
 	return false;
+}
+//---------------------------------------------------------------------------
+void cGATTServerService::MainProcess_ShutdownTree(void)noexcept
+{
+	for(auto CharPair : fCharacteristicMap){
+		CharPair.Value->ServiceNotifyShutdown();
+	}
+	fUWPGattState=gsShutdownTree;
 }
 //---------------------------------------------------------------------------
 void cGATTServerService::ProcessAdvertisement(void)noexcept
 {
 	HRESULT hr;
 
-	bool ServerAdvertisementActive=fOwner->ServerAdvertisementIsActive();
-
-	bool NeedAdvertisement=fAdvertisementIncluded && ServerAdvertisementActive;
-
+	bool NeedAdvertisement=fServicePublished && fServerIsAdvertising;
 	if(fAdvertisementActivated){
-		if(fAdvertisementRequireRestart || NeedAdvertisement==false){
+		if(NeedAdvertisement==false){
 			// stop advertisement
 			hr=fServiceProvider->StopAdvertising();
 			if(SUCCEEDED(hr)){
@@ -3764,7 +3641,6 @@ void cGATTServerService::ProcessAdvertisement(void)noexcept
 		}
 	}
 	else{
-		fAdvertisementRequireRestart=false;
 		if(NeedAdvertisement){
 			// start advertisement
 			COMPtr<IGattServiceProviderAdvertisingParameters> Parameters;
@@ -3781,102 +3657,48 @@ void cGATTServerService::ProcessAdvertisement(void)noexcept
 		}
 	}
 
-	if(fNotifiedIsAdvertising!=fAdvertisementActivated){
-		fNotifiedIsAdvertising=fAdvertisementActivated;
-
-		if(fController!=nullptr){
-			fController->ServiceAdvertisementChanged();
-		}
-	}
-
-
 }
 //---------------------------------------------------------------------------
-void cGATTServerService::CharacteristicNotifyClosed(cGATTServerCharacteristic *Characteristic)noexcept
+void cGATTServerService::CharacteristicNotifyShutdown(cGATTServerCharacteristic *Characteristic)noexcept
 {
 	if(fCharacteristicMap.Remove(Characteristic->GetID())){
 		if(fShutdown){
-			if(fCharacteristicMap.GetCount()==0){
-				if(fServiceProvider!=nullptr){
-					fService=nullptr;
-					fServiceProvider=nullptr;
-
-					fOwner->ServiceNotifyClosed(this);
-					fNeedNotifyFunctionStateChange=true;
-					NotifyMainProcess();
-				}
-			}
+			RunMainProcess();
 		}
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTServerService::CharacteristicNotifyTreeChanged(void)noexcept
+void cGATTServerService::ServerNotifyState(bool Active)noexcept
 {
-	fAdvertisementRequireRestart=true;
-
-	ProcessAdvertisement();
+	fServerActive=Active;
+	fNeedNotifyActiveStateChange=true;
+	RunMainProcess();
 }
 //---------------------------------------------------------------------------
-void cGATTServerService::ServiceShutdown(void)noexcept
+void cGATTServerService::ServerNotifyPublish(void)noexcept
+{
+	fServicePublished=true;
+
+	for(auto CharPair : fCharacteristicMap){
+		CharPair.Value->ServiceNotifyPublish();
+	}
+	if(fController!=nullptr){
+		fController->ServicePublished();
+	}
+}
+//---------------------------------------------------------------------------
+void cGATTServerService::ServerNotifyShutdown(void)noexcept
 {
 	if(fShutdown==false){
 		fShutdown=true;
-
-		NotifyMainProcess();
+		RunMainProcess();
 	}
 }
 //---------------------------------------------------------------------------
-void cGATTServerService::ServerNotifyStateChange(void)noexcept
+void cGATTServerService::ServerNotifyAdvertisementState(bool Advertising)noexcept
 {
-	if(fCreateProviderState!=0)
-		return;
-
-	if(fServiceProvider!=nullptr){
-		fNeedNotifyFunctionStateChange=true;
-		return NotifyMainProcess();
-	}
-
-	if(fOwner->ServerGetFunctionState()>=GATTFunctionState::Inactive){
-		CreateServiceProvider();
-	}
-}
-//---------------------------------------------------------------------------
-void cGATTServerService::CreateServiceProvider(void)noexcept
-{
-	HRESULT hr;
-	auto Statics=fOwner->GetProviderStatic();
-	COMPtr< ABI::Windows::Foundation::IAsyncOperation<GattServiceProviderResult*> > AsyncOp;
-	hr=Statics->CreateAsync(reinterpret_cast<const GUID&>(fServiceID),COMRetPtrT(AsyncOp));
-	if(FAILED(hr)){
-		return;
-	}
-
-	fCreateProviderState=1;
-	AsyncOp->put_Completed(&fCreateServiceProviderCompleteHandler);
-}
-//---------------------------------------------------------------------------
-void cGATTServerService::ServerNotifyAdvertisementState(void)noexcept
-{
-	ProcessAdvertisement();
-}
-//---------------------------------------------------------------------------
-void cGATTServerService::ServerActivate(IGattServiceProvider *Provider)noexcept
-{
-	if(fShutdown || fCreateProviderState!=0)
-		return;
-	HRESULT hr;
-
-	if(Provider!=nullptr){
-		fServiceProvider=Provider;
-	
-		hr=fServiceProvider->get_Service(COMRetPtrT(fService));
-
-		fNeedNotifyFunctionStateChange=true;
-		NotifyMainProcess();
-		return;
-	}
-
-	CreateServiceProvider();
+	fServerIsAdvertising=Advertising;
+	RunMainProcess();
 }
 //---------------------------------------------------------------------------
 cGATTServerService* cGATTServerService::cCreateServiceProviderCompleteHandler::GetHost(void)noexcept
@@ -3897,15 +3719,13 @@ void cGATTServerService::cCreateServiceProviderCompleteHandler::EventDecReferenc
 void cGATTServerService::cCreateServiceProviderCompleteHandler::EventInvoke(ICreateServiceProviderAsyncOp *AsyncOp,ABI::Windows::Foundation::AsyncStatus Status)noexcept
 {
 	auto Host=GetHost();
+	Host->fUWPGattState=gsCreateResult;
 	if(Status!=AsyncStatus::Completed){
 		hrResult=E_FAIL;
-		Host->fCreateProviderState=2;
-		Host->NotifyMainProcess();
-		return;
 	}
-
-	hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
-	Host->fCreateProviderState=2;
+	else{
+		hrResult=AsyncOp->GetResults(COMRetPtrT(Result));
+	}
 	Host->NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
@@ -3925,16 +3745,40 @@ void cGATTServerService::cAdvertisementStatusChangedHandler::EventDecReference(v
 void cGATTServerService::cAdvertisementStatusChangedHandler::EventInvoke(IGattServiceProvider *sender,IGattServiceProviderAdvertisementStatusChangedEventArgs *args)noexcept
 {
 	auto Host=GetHost();
-	Host->fNeedUpdateAdvertisement=true;
-	Host->NotifyMainProcess();
+	if(Host->fGattAdvStarted)
+		return;
+
+	HRESULT hr;
+	GattServiceProviderAdvertisementStatus Status;
+	hr=args->get_Status(&Status);
+	if(FAILED(hr)){
+		ABI::Windows::Devices::Bluetooth::BluetoothError Error;
+		hr=args->get_Error(&Error);
+		if(FAILED(hr))
+			return;
+		return;
+	}
+	switch(Status){
+	case GattServiceProviderAdvertisementStatus::GattServiceProviderAdvertisementStatus_Started:
+	case GattServiceProviderAdvertisementStatus::GattServiceProviderAdvertisementStatus_StartedWithoutAllAdvertisementData:
+		Host->fGattAdvStarted=true;
+		Host->NotifyMainProcess();
+		break;
+	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGATTServer::cGATTServer(iDispatch *Dispatch,COMPtr<IGattServiceProviderStatics> ProviderStatic)noexcept
-	: fProviderStatic(ProviderStatic)
+cGATTServer::cGATTServer(iServerOwner *Owner,iDispatch *Dispatch,COMPtr<IGattServiceProviderStatics> ProviderStatic,iReference *ControllerReference,iGATTServerController *Controller)noexcept
+	: fOwner(Owner)
+	, fProviderStatic(ProviderStatic)
 	, fDispatch(Dispatch)
-	, fFunctionState(GATTFunctionState::Active)
+	, fControllerReference(ControllerReference)
+	, fController(Controller)
 	, fMainProcessWork(fDispatch->CreateWork(&fInnerReference,&fMainProcessProcedure))
+{
+}
+//---------------------------------------------------------------------------
+cGATTServer::~cGATTServer()
 {
 }
 //---------------------------------------------------------------------------
@@ -3945,7 +3789,7 @@ void cGATTServer::VirtualStarted(void)noexcept
 //---------------------------------------------------------------------------
 void cGATTServer::VirtualStopped(void)noexcept
 {
-	ServerShutdown();
+	ShutdownServer();
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
@@ -3964,35 +3808,23 @@ iDispatch* cGATTServer::GetHandlerDispatch(void)noexcept
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServer::ServerGetFunctionState(void)noexcept
+void cGATTServer::Shutdown(void)noexcept
 {
-	return fFunctionState;
+	ShutdownServer();
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTServer::GetFunctionState(void)noexcept
+void cGATTServer::Publish(void)noexcept
 {
-	return fFunctionState;
-}
-//---------------------------------------------------------------------------
-bool cGATTServer::InsertHandler(iGATTServerHandler *Handler)noexcept
-{
-	if(fDispatch->IsCurrentThread()==false)
-		return false;
-	fHandlers.Insert(Handler);
-	return true;
-}
-//---------------------------------------------------------------------------
-bool cGATTServer::RemoveHandler(iGATTServerHandler *Handler)noexcept
-{
-	if(fDispatch->IsCurrentThread()==false)
-		return false;
-	fHandlers.Remove(Handler);
-	return true;
+	if(fNeedPublish==0){
+		fNeedPublish=true;
+
+		NotifyMainProcess();
+	}
 }
 //---------------------------------------------------------------------------
 rPtr<iGATTServerService> cGATTServer::CreateGATTService(const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept
 {
-	if(fShutdown || fDispatch->IsCurrentThread()==false)
+	if(fServerPublished || fShutdown || fDispatch->IsCurrentThread()==false)
 		return nullptr;
 
 	bool Exists;
@@ -4004,32 +3836,29 @@ rPtr<iGATTServerService> cGATTServer::CreateGATTService(const cUUID &ID,iReferen
 	auto NewService=rCreate<cGATTServerService>(this,ID,Reference,Controller);
 	ServicePair->Value=NewService;
 
-	auto ProviderPair=fProviderMap.GetPair(ID);
-	if(ProviderPair!=nullptr){
-		NewService->ServerActivate(ProviderPair->Value);
-	}
-	else{
-		NewService->ServerActivate(nullptr);
-	}
-
+	NewService->ServerNotifyState(fServerActive);
 	return NewService;
 }
 //---------------------------------------------------------------------------
-void cGATTServer::Shutdown(void)noexcept
+void cGATTServer::RunMainProcess(void)noexcept
 {
-	ServerShutdown();
-}
-//---------------------------------------------------------------------------
-bool cGATTServer::GetAdvertisementActive(void)noexcept
-{
-	return fAdvertisementActive;
-}
-//---------------------------------------------------------------------------
-void cGATTServer::SetAdvertisementActive(bool Active)noexcept
-{
-	fAdvertisementActive=Active;
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
 
-	NotifyMainProcess();
+	if(fDispatch->IsCurrentThread()){
+		MainProcessThread();
+	}
+	else{
+		fMainProcessWork->Start();
+	}
+}
+//---------------------------------------------------------------------------
+void cGATTServer::NotifyMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	fMainProcessWork->Start();
 }
 //---------------------------------------------------------------------------
 void cGATTServer::cMainProcessProcedure::Execute(void)noexcept
@@ -4049,75 +3878,74 @@ void cGATTServer::MainProcessThread(void)noexcept
 	}while(!fMainProcessExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void cGATTServer::NotifyMainProcess(void)noexcept
-{
-	if(!fMainProcessExclusiveFlag.Acquire())
-		return;
-
-	fMainProcessWork->Start();
-}
-//---------------------------------------------------------------------------
 bool cGATTServer::MainProcess(void)noexcept
 {
-	HRESULT hr;
-	if(fNeedNotifyFunctionStateChange){
-		fNeedNotifyFunctionStateChange=false;
+	if(fNeedPublish){
+		fNeedPublish=false;
+		if(fServerPublished==false){
+			fServerPublished=true;
+			for(auto ServicePair : fServiceMap){
+				ServicePair.Value->ServerNotifyPublish();
+			}
+			fController->ServerPublished();
+		}
+	}
 
-		eGATTFunctionState NewFuncState;
-		if(fProviderStatic==nullptr){
-			NewFuncState=GATTFunctionState::Absent;
+	HRESULT hr;
+	if(fNeedNotifyServerStateChange){
+		fNeedNotifyServerStateChange=false;
+
+		bool NewActiveState;
+		if(fOwner==nullptr){
+			NewActiveState=false;
 		}
 		else{
-			NewFuncState=GATTFunctionState::Active;
+			NewActiveState=fOwner->OwnerIsActive();
 		}
 
-
-		if(fFunctionState!=NewFuncState){
-			fFunctionState=NewFuncState;
+		if(fServerActive!=NewActiveState){
+			fServerActive=NewActiveState;
 
 			for(auto Pair : fServiceMap){
 				if(Pair.Value!=nullptr){
-					Pair.Value->ServerNotifyStateChange();
+					Pair.Value->ServerNotifyState(fServerActive);
 				}
 			}
-
-			for(auto Handler : fHandlers){
-				Handler->ServerStateChanged();
-			}
 		}
-	}
-	if(fEffectiveAdvertisementActive!=fAdvertisementActive){
-		fEffectiveAdvertisementActive=fAdvertisementActive;
-
-		for(auto CharPair : fServiceMap){
-			CharPair.Value->ServerNotifyAdvertisementState();
-		}
-
 	}
 	
 	if(fShutdown){
-		if(fServiceMap.GetCount()==0){
-			if(fProviderStatic!=nullptr){
+		switch(fShutdownState){
+		case 0:
+			for(auto ServicePair : fServiceMap){
+				ServicePair.Value->ServerNotifyShutdown();
+			}
+			fServerPublished=true;
+			fShutdownState=1;
+			cnLib_SWITCH_FALLTHROUGH;
+		case 1:
+			if(fServiceMap.GetCount()==0){
+				fOwner->ServerClosed(this);
+				fOwner=nullptr;
 				fProviderStatic=nullptr;
 
-				for(auto Handler : fHandlers){
-					Handler->ServerClosed();
-				}
-				fNeedNotifyFunctionStateChange=true;
-				return true;
+				fController->ServerClosed();
+				fController=nullptr;
+				fControllerReference=nullptr;
+
+				fShutdownState=2;
 			}
-		}
-		else{
-			for(auto CharPair : fServiceMap){
-				CharPair.Value->ServiceShutdown();
-			}
+			break;
+		default:
+		case 2:
+			break;
 		}
 	}
 
 	return false;
 }
 //---------------------------------------------------------------------------
-void cGATTServer::ServerShutdown(void)noexcept
+void cGATTServer::ShutdownServer(void)noexcept
 {
 	if(fShutdown==false){
 		fShutdown=true;
@@ -4126,588 +3954,192 @@ void cGATTServer::ServerShutdown(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cGATTServer::ServerAdvertisementIsActive(void)const noexcept
+void cGATTServer::OwnerNotifyStateChange(void)noexcept
 {
-	return fEffectiveAdvertisementActive;
+	fNeedNotifyServerStateChange=true;
+	RunMainProcess();
 }
 //---------------------------------------------------------------------------
-void cGATTServer::ServiceNotifyCreated(cGATTServerService *Service)noexcept
+void cGATTServer::OwnerNotifyAdvertisementState(void)noexcept
 {
-	fProviderMap.Insert(Service->GetID(),Service->GetServiceProvider());
+	bool IsAdvertising=fOwner->OwnerIsAdvertising();
+	for(auto ServicePair : fServiceMap){
+		ServicePair.Value->ServerNotifyAdvertisementState(IsAdvertising);
+	}
 }
 //---------------------------------------------------------------------------
-void cGATTServer::ServiceNotifyClosed(cGATTServerService *Service)noexcept
+void cGATTServer::ServiceNotifyShutdown(cGATTServerService *Service)noexcept
 {
 	if(fServiceMap.Remove(Service->GetID())){
 		if(fShutdown){
-			if(fServiceMap.GetCount()==0){
-				if(fProviderStatic!=nullptr){
-					fProviderStatic=nullptr;
-
-					for(auto Handler : fHandlers){
-						Handler->ServerClosed();
-					}
-					fNeedNotifyFunctionStateChange=true;
-					NotifyMainProcess();
-				}
-			}
+			RunMainProcess();
 		}
 	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<iGATTServer> UWP::CreateGATTServer(iDispatch *Dispatch)noexcept
+cBluetoothPeripheral::cBluetoothPeripheral(iDispatch *Dispatch,COMPtr<IGattServiceProviderStatics> ProviderStatic)noexcept
+	: fProviderStatic(ProviderStatic)
+	, fDispatch(Dispatch)
+	, fMainProcessWork(fDispatch->CreateWork(static_cast<iBluetoothPeripheral*>(this),&fMainProcessProcedure))
+{
+}
+//---------------------------------------------------------------------------
+ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderStatics* cBluetoothPeripheral::GetProviderStatic(void)const noexcept
+{
+	return fProviderStatic;
+}
+//---------------------------------------------------------------------------
+iDispatch* cBluetoothPeripheral::GetDispatch(void)const noexcept
+{
+	return fDispatch;
+}
+//---------------------------------------------------------------------------
+iDispatch* cBluetoothPeripheral::GetHandlerDispatch(void)noexcept
+{
+	return fDispatch;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::InsertHandler(iBluetoothPeripheralHandler *Handler)noexcept
+{
+	if(fDispatch->IsCurrentThread()==false)
+		return false;
+	fHandlers.Insert(Handler);
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::RemoveHandler(iBluetoothPeripheralHandler *Handler)noexcept
+{
+	if(fDispatch->IsCurrentThread()==false)
+		return false;
+	fHandlers.Remove(Handler);
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::IsEnabled(void)noexcept
+{
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::IsPowerOn(void)noexcept
+{
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::IsAdvertising(void)noexcept
+{
+	return fEffectiveAdvertisementActive;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::GetAdvertisementActive(void)noexcept
+{
+	return fAdvertisementActive;
+}
+//---------------------------------------------------------------------------
+void cBluetoothPeripheral::SetAdvertisementActive(bool Active)noexcept
+{
+	fAdvertisementActive=Active;
+
+	NotifyMainProcess();
+}
+//---------------------------------------------------------------------------
+rPtr<iGATTServer> cBluetoothPeripheral::CreateServer(iReference *ControllerReference,iGATTServerController *Controller)noexcept
+{
+	auto Server=rCreate<cGATTServer>(static_cast<cGATTServer::iServerOwner*>(this),fDispatch,fProviderStatic,ControllerReference,Controller);
+
+	rIncReference(this,'serv');
+	fServerSet.Insert(Server);
+
+	Server->OwnerNotifyStateChange();
+	return Server;
+}
+//---------------------------------------------------------------------------
+void cBluetoothPeripheral::cMainProcessProcedure::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cBluetoothPeripheral::fMainProcessProcedure);
+	return Host->MainProcessThread();
+}
+//---------------------------------------------------------------------------
+void cBluetoothPeripheral::MainProcessThread(void)noexcept
+{
+	do{
+		do{
+			fMainProcessExclusiveFlag.Continue();
+
+		}while(MainProcess());
+
+	}while(!fMainProcessExclusiveFlag.Release());
+}
+//---------------------------------------------------------------------------
+void cBluetoothPeripheral::NotifyMainProcess(void)noexcept
+{
+	if(!fMainProcessExclusiveFlag.Acquire())
+		return;
+
+	fMainProcessWork->Start();
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::MainProcess(void)noexcept
+{
+	HRESULT hr;
+	if(fNeedNotifyStateChange){
+		fNeedNotifyStateChange=false;
+
+		for(auto Handler : fHandlers){
+			Handler->PeripheralStateChanged();
+		}
+	}
+	if(fEffectiveAdvertisementActive!=fAdvertisementActive){
+		fEffectiveAdvertisementActive=fAdvertisementActive;
+
+		for(auto Server : fServerSet){
+			Server->OwnerNotifyAdvertisementState();
+		}
+
+		for(auto Handler : fHandlers){
+			Handler->PeripheralAdvertisementStateChanged();
+		}
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+void cBluetoothPeripheral::ServerClosed(cGATTServer *Server)noexcept
+{
+	if(fServerSet.Remove(Server)){
+		rDecReference(this,'serv');
+	}
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::OwnerIsActive(void)noexcept
+{
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothPeripheral::OwnerIsAdvertising(void)noexcept
+{
+	return fEffectiveAdvertisementActive;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rPtr<iBluetoothCentral> UWP::OpenBluetoothCentral(iDispatch *Dispatch)noexcept
+{
+	COMPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics> BLEStatic;
+	cHString RCName_BLEDevice=RuntimeClass_Windows_Devices_Bluetooth_BluetoothLEDevice;
+	if(FAILED(Windows::Foundation::GetActivationFactory(RCName_BLEDevice,COMRetPtrT(BLEStatic)))){
+		return nullptr;
+	}
+	return rCreate<cBluetoothCentral>(Dispatch,cnVar::MoveCast(BLEStatic));
+}
+//---------------------------------------------------------------------------
+rPtr<iBluetoothPeripheral> UWP::OpenBluetoothPeripheral(iDispatch *Dispatch)noexcept
 {
 	COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattServiceProviderStatics> ProviderStatics;
 	cHString RCName_Provider=RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattServiceProvider;
 	if(FAILED(Windows::Foundation::GetActivationFactory(RCName_Provider,COMRetPtrT(ProviderStatics)))){
 		return nullptr;
 	}
-
-	return rCreate<cGATTServer>(Dispatch,cnVar::MoveCast(ProviderStatics));
+	return rCreate<cBluetoothPeripheral>(Dispatch,cnVar::MoveCast(ProviderStatics));
 }
 //---------------------------------------------------------------------------
 
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_WIN10
-
-#if 0
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-
-cnLib_INTERFACE_DEFINE_LOCALID(cWindowsBluetoothLEConectionDeviceInfo);
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cWindowsBluetoothLEConectionDeviceInfo::cWindowsBluetoothLEConectionDeviceInfo(ABI::Windows::Devices::Enumeration::IDeviceInformation *DeviceInfo)
-	: fDeviceInfo(DeviceInfo)
-{
-}
-//---------------------------------------------------------------------------
-cWindowsBluetoothLEConectionDeviceInfo::~cWindowsBluetoothLEConectionDeviceInfo()
-{
-}
-//---------------------------------------------------------------------------
-eOrdering cWindowsBluetoothLEConectionDeviceInfo::Compare(const iComparable *Dest)const
-{
-	auto DestUnknown=iCastCOM(Dest);
-	if(DestUnknown==nullptr)
-		return Ordering::Different;
-
-	if(fDeviceInfo<DestUnknown)
-		return Ordering::Less;
-	if(fDeviceInfo==DestUnknown)
-		return Ordering::Equal;
-	return Ordering::Greater;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice::cBluetoothLETunnelStreamEndpointDevice(
-	COMPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice> Device,
-	COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> ReadChar,
-	COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> WriteChar
-)
-	: fDevice(cnVar::MoveCast(Device))
-	, fReadCharacteristic(cnVar::MoveCast(ReadChar))
-	, fWriteCharacteristic(cnVar::MoveCast(WriteChar))
-{
-	cWindowsStringReference DataReaderClassName;
-	DataReaderClassName.Create(RuntimeClass_Windows_Storage_Streams_DataReader);
-	Windows::Foundation::GetActivationFactory(DataReaderClassName,COMRetPtrT(fDataReaderStatic));
-}
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice::~cBluetoothLETunnelStreamEndpointDevice()
-{
-	//fDevice->get_GattServices(0);
-	//COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDeviceService> BLEService;
-	//BLEService->GetCharacteristics(UUID,0);
-	//COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> BLEChar;
-	//BLEChar->WriteValueWithOptionAsync
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::VirtualStarted(void)
-{
-	fDevice->add_ConnectionStatusChanged(&fConnectionStatusHandler,&fConnectionStatusEventToken);
-	fDevice->add_GattServicesChanged(&fGattServicesChangedHandler,&fGattServicesChangedEventToken);
-	fDevice->add_NameChanged(&fNameChangedHandler,&fNameChangedEventToken);
-
-	fReadCharacteristic->add_ValueChanged(&fValueChangedHandler,&fValueChangedEventToken);
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::VirtualStopped(void)
-{
-	fDevice->remove_ConnectionStatusChanged(fConnectionStatusEventToken);
-	fDevice->remove_GattServicesChanged(fGattServicesChangedEventToken);
-	fDevice->remove_NameChanged(fNameChangedEventToken);
-
-	fReadCharacteristic->remove_ValueChanged(fValueChangedEventToken);
-
-	InnerDecReference('self');
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::ConnectionStatusEvent(void)
-{
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::GattServicesChangedEvent(void)
-{
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::NameChangedEvent(void)
-{
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamEndpointDevice::ValueChangedEvent(ABI::Windows::Storage::Streams::IBuffer *Buffer)
-{
-	UINT32 BufferLength;
-	if(FAILED(Buffer->get_Length(&BufferLength))){
-		return;
-	}
-	if(BufferLength==0)
-		return;
-	
-	COMPtr<ABI::Windows::Storage::Streams::IDataReader> DataReader;
-	if(FAILED(fDataReaderStatic->FromBuffer(Buffer,COMRetPtrT(DataReader)))){
-		return;
-	}
-
-	while(BufferLength!=0){
-		auto EndpointReadBuffer=QueryReadDataBuffer(BufferLength);
-
-		if(FAILED(DataReader->ReadBytes(EndpointReadBuffer.Length,static_cast<BYTE*>(EndpointReadBuffer.Pointer)))){
-			return;
-		}
-		uIntn ReadLength=EndpointReadBuffer.Length;
-
-		AdvanceReadDataBuffer(ReadLength);
-		BufferLength-=ReadLength;
-	}
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice *cBluetoothLETunnelStreamEndpointDevice::cConnectionStatusHandler::GetHost(void)
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothLETunnelStreamEndpointDevice::fConnectionStatusHandler);
-}
-//---------------------------------------------------------------------------
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cConnectionStatusHandler::QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)
-{
-	if(impCOMQueryInterface<IUnknown,ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,IInspectable*> >(this,riid,ppvObject)){
-		GetHost()->IncreaseReference();
-		return S_OK;
-	}
-	return E_NOINTERFACE;
-}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cConnectionStatusHandler::AddRef(void){	GetHost()->IncreaseReference();	return 0;	}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cConnectionStatusHandler::Release(void){	GetHost()->DecreaseReference();	return 0;	}
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cConnectionStatusHandler::Invoke(ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice*,IInspectable*)
-{
-	GetHost()->ConnectionStatusEvent();
-	return S_OK;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice *cBluetoothLETunnelStreamEndpointDevice::cGattServicesChangedHandler::GetHost(void)
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothLETunnelStreamEndpointDevice::fGattServicesChangedHandler);
-}
-//---------------------------------------------------------------------------
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cGattServicesChangedHandler::QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)
-{
-	if(impCOMQueryInterface<IUnknown,ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,IInspectable*> >(this,riid,ppvObject)){
-		GetHost()->IncreaseReference();
-		return S_OK;
-	}
-	return E_NOINTERFACE;
-}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cGattServicesChangedHandler::AddRef(void){	GetHost()->IncreaseReference();	return 0;	}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cGattServicesChangedHandler::Release(void){	GetHost()->DecreaseReference();	return 0;	}
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cGattServicesChangedHandler::Invoke(ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice*,IInspectable*)
-{
-	GetHost()->GattServicesChangedEvent();
-	return S_OK;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice *cBluetoothLETunnelStreamEndpointDevice::cNameChangedHandler::GetHost(void)
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothLETunnelStreamEndpointDevice::fNameChangedHandler);
-}
-//---------------------------------------------------------------------------
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cNameChangedHandler::QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)
-{
-	if(impCOMQueryInterface<IUnknown,ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,IInspectable*> >(this,riid,ppvObject)){
-		GetHost()->IncreaseReference();
-		return S_OK;
-	}
-	return E_NOINTERFACE;
-}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cNameChangedHandler::AddRef(void){	GetHost()->IncreaseReference();	return 0;	}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cNameChangedHandler::Release(void){	GetHost()->DecreaseReference();	return 0;	}
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cNameChangedHandler::Invoke(ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice*,IInspectable*)
-{
-	 GetHost()->NameChangedEvent();
-	 return S_OK;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamEndpointDevice *cBluetoothLETunnelStreamEndpointDevice::cValueChangedHandler::GetHost(void)
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cBluetoothLETunnelStreamEndpointDevice::fValueChangedHandler);
-}
-//---------------------------------------------------------------------------
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cValueChangedHandler::QueryInterface( REFIID riid,_COM_Outptr_ void **ppvObject)
-{
-	if(impCOMQueryInterface<IUnknown,ABI::Windows::Foundation::ITypedEventHandler<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristic*,ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattValueChangedEventArgs*> >(this,riid,ppvObject)){
-		GetHost()->IncreaseReference();
-		return S_OK;
-	}
-	return E_NOINTERFACE;
-}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cValueChangedHandler::AddRef(void){	GetHost()->IncreaseReference();	return 0;	}
-ULONG cBluetoothLETunnelStreamEndpointDevice::cValueChangedHandler::Release(void){	GetHost()->DecreaseReference();	return 0;	}
-HRESULT cBluetoothLETunnelStreamEndpointDevice::cValueChangedHandler::Invoke(ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic*,ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattValueChangedEventArgs *Args)
-{
-	COMPtr<ABI::Windows::Storage::Streams::IBuffer> Buffer;
-	Args->get_CharacteristicValue(COMRetPtrT(Buffer));
-
-	GetHost()->ValueChangedEvent(Buffer);
-	return S_OK;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::cConnectAndCheckTask()
-{
-}
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::~cConnectAndCheckTask()
-{
-}
-//---------------------------------------------------------------------------
-cCoroutine<void> cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::RunAsync(iPtr<cWindowsBluetoothLEConectionDeviceInfo> Info,COMPtr< ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*> > AsyncOp)
-{
-	auto Device=co_await WindowsAsyncOperationAwaiter(AsyncOp);
-	if(Device!=nullptr){
-		COMPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3> Device3;
-		Device->QueryInterface(COMRetPtrT(Device3));
-		COMPtr< ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattDeviceServicesResult*> > ServiceOp;
-		if(SUCCEEDED(Device3->GetGattServicesAsync(COMRetPtrT(ServiceOp)))){
-			auto ServiceResult=co_await WindowsAsyncOperationAwaiter(ServiceOp);
-
-			COMPtr< ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattDeviceService*> > Services;
-			ServiceResult->get_Services(COMRetPtrT(Services));
-
-			if(Services!=nullptr){
-				unsigned int ServiceCount;
-				Services->get_Size(&ServiceCount);
-
-				for(unsigned int i=0;i<ServiceCount;i++){
-					COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDeviceService> Service;
-					Services->GetAt(i,COMRetPtrT(Service));
-
-					if(Service!=nullptr){
-						GUID ServiceGUID;
-						Service->get_Uuid(&ServiceGUID);
-
-						for(uIntn DestServiceIndex=0;DestServiceIndex<Info->DeviceUUIDList.GetCount();DestServiceIndex++){
-							auto &ServiceIDs=Info->DeviceUUIDList[DestServiceIndex];
-							if(ServiceIDs.Service==ServiceGUID){
-								// try get characterist
-								COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDeviceService3> Service3;
-								Service->QueryInterface(COMRetPtrT(Service3));
-
-								if(ServiceIDs.ReadCharacteristics==ServiceIDs.WriteCharacteristics){
-								}
-								else{
-									COMPtr< ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristicsResult*> > GetCharOp;
-
-									if(SUCCEEDED(Service3->GetCharacteristicsAsync(COMRetPtrT(GetCharOp)))){
-										auto GetCharResult=co_await WindowsAsyncOperationAwaiter(GetCharOp);
-
-										COMPtr< ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristic*> > Characterists;
-										if(SUCCEEDED(GetCharResult->get_Characteristics(COMRetPtrT(Characterists)))){
-
-											// get match characterist
-
-											unsigned int CharCount;
-											Characterists->get_Size(&CharCount);
-
-											COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> ReadChar;
-											COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> WriteChar;
-
-											for(uIntn DestCharIndex=0;DestCharIndex<CharCount;DestCharIndex++){
-												COMPtr<ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattCharacteristic> Char;
-												Characterists->GetAt(DestCharIndex,	COMRetPtrT(Char));
-
-												GUID CharUUID;
-												Char->get_Uuid(&CharUUID);
-												if(CharUUID==ServiceIDs.ReadCharacteristics){
-													ReadChar=cnVar::MoveCast(Char);
-												}
-												else if(CharUUID==ServiceIDs.WriteCharacteristics){
-													WriteChar=cnVar::MoveCast(Char);
-												}
-											}
-											if(ReadChar!=nullptr && WriteChar!=nullptr){
-												// connect ok
-												//WriteChar->get_CharacteristicProperties(
-												// if(Can Notify){
-												auto Endpoint=iCreate<cBluetoothLETunnelStreamEndpointDevice>(Device,ReadChar,WriteChar);
-
-												COMPtr< ABI::Windows::Foundation::IAsyncOperation<enum ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCommunicationStatus> > SetReadNotifyAsyncOp;
-												if(SUCCEEDED(ReadChar->WriteClientCharacteristicConfigurationDescriptorAsync(
-													ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattClientCharacteristicConfigurationDescriptorValue_Notify,
-													COMRetPtrT(SetReadNotifyAsyncOp)
-												))){
-													auto SetCharNotifyResult=co_await WindowsAsyncOperationAwaiter(SetReadNotifyAsyncOp);
-													if(SetCharNotifyResult==ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCommunicationStatus_Success){
-														// success
-														fConnection=CreateConnectionFromEndpoint(ConnectionTypeID,Endpoint,nullptr,nullptr,false);
-													}
-												}
-
-												//}
-												fTaskState.SetDone();
-												co_return;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					
-				}
-			}
-
-
-			//Service->GetCharacteristics
-			
-		}
-	}
-	fTaskState.SetDone();
-}
-//---------------------------------------------------------------------------
-bool cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::IsDone(void)
-{
-	return fTaskState.IsDone();
-}
-//---------------------------------------------------------------------------
-bool cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::SetNotify(iProcedure *NotifyProcedure)
-{
-	return fTaskState.SetNotify(NotifyProcedure);
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::Cancel(void)
-{
-	fAsyncInfo->Cancel();
-}
-//---------------------------------------------------------------------------
-iConnection* cBluetoothLETunnelStreamProtocol::cConnectAndCheckTask::GetConnection(void)
-{
-	return fConnection;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamProtocol::cBluetoothLETunnelStreamProtocol()
-{
-}
-//---------------------------------------------------------------------------
-cBluetoothLETunnelStreamProtocol::~cBluetoothLETunnelStreamProtocol()
-{
-}
-//---------------------------------------------------------------------------
-iPtr<iConnection> cBluetoothLETunnelStreamProtocol::Connect(iTypeID ConnectionIID,iAddress *RemoteAddress,iAddress *LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionTask> cBluetoothLETunnelStreamProtocol::ConnectAsync(iTypeID ConnectionIID,iAddress *RemoteAddress,iAddress *LocalAddress)
-{
-	if(LocalAddress!=nullptr)
-		return nullptr;
-
-	auto DeviceInfo=iCast<cWindowsBluetoothLEConectionDeviceInfo>(RemoteAddress);
-	if(DeviceInfo==nullptr)
-		return nullptr;
-
-	COMPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics> BLEStatic;
-	cWindowsStringReference RCName_BLEDevice;
-	RCName_BLEDevice.Create(RuntimeClass_Windows_Devices_Bluetooth_BluetoothLEDevice);
-	if(FAILED(Windows::Foundation::GetActivationFactory(RCName_BLEDevice,COMRetPtrT(BLEStatic)))){
-		return nullptr;
-	}
-
-	COMPtr< ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*> > DeviceConnectAsyncOp;
-	if(FAILED(BLEStatic->FromIdAsync(DeviceInfo->DeviceID,COMRetPtrT(DeviceConnectAsyncOp)))){
-		return nullptr;
-	}
-
-	auto Task=iCreate<cConnectAndCheckTask>();
-	Task->ConnectionTypeID=ConnectionIID;
-	Task->RunAsync(DeviceInfo,cnVar::MoveCast(DeviceConnectAsyncOp));
-	return Task;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionListener> cBluetoothLETunnelStreamProtocol::Listen(iTypeID ConnectionIID,iAddress *LocalAddress)
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iPtr<iConnectionQueue> cBluetoothLETunnelStreamProtocol::ListenQueue(iTypeID ConnectionIID,iAddress *LocalAddress)
-{
-	return nullptr;
-}
-/*
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamProtocol::BLEOnDiscovered(CBPeripheral *peripheral,NSDictionary *advertisementData,NSNumber *RSSI)
-{
-	auto &DeviceItem=fDeviceMap[peripheral];
-	if(DeviceItem==nullptr){
-//		NSLog(@"%p RSSI %@",peripheral,RSSI);
-		//DeviceItem=CreateDevice
-	}
-	//DeviceItem->SetAdvertisementData(advertisementData);
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamProtocol::BLEOnConnected(CBPeripheral *Peripheral)
-{
-	auto ConnectPair=fConnectionTaskMap.GetPair(Peripheral);
-	if(ConnectPair==nullptr)
-		return;
-
-	auto Task=cnVar::MoveCast(ConnectPair->Value);
-	fConnectionTaskMap.RemovePair(ConnectPair);
-
-	auto Endpoint=[Task->Device createEndpoint];
-	if(Endpoint!=nullptr){
-		//Task->Connection=cnRTL::CreateConnectionFromEndpoint(Task->ConnectionTypeID,Endpoint,
-		//	nullptr,[Task->Device cnLib_AddressInterface],false);
-	}
-	Task->TaskState.SetDone();
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamProtocol::BLEOnConnectFailed(CBPeripheral *Peripheral,NSError *Error)
-{
-	auto ConnectPair=fConnectionTaskMap.GetPair(Peripheral);
-	if(ConnectPair==nullptr)
-		return;
-
-	auto Task=cnVar::MoveCast(ConnectPair->Value);
-	fConnectionTaskMap.RemovePair(ConnectPair);
-
-	Task->Connection=nullptr;
-	Task->TaskState.SetDone();
-}
-//---------------------------------------------------------------------------
-void cBluetoothLETunnelStreamProtocol::BLEOnDisconnected(CBPeripheral *Peripheral,NSError *Error)
-{
-	auto ConnectPair=fConnectionTaskMap.GetPair(Peripheral);
-	if(ConnectPair==nullptr)
-		return;
-
-	//auto Task=cnVar::MoveCast(ConnectPair->Value);
-	//fConnectionTaskMap.RemovePair(ConnectPair);
-
-	//Task->Connection=nullptr;
-	//Task->TaskState.SetDone();
-}
-*/
-//---------------------------------------------------------------------------
-
-
-iConnectionProtocol *ScopeController::BLEConnectionProtocol;
-iAddress *ScopeController::BLELocalMeade1DeviceAddress;
-
-
-cApp::cApp()
-{
-	auto DispatchHigh=cnSystem::CurrentUIThread::GetDispatch(true);
-	fTelescopeController=rCreate<cTelescopeController>();
-
-	MainForm.ScopeControllerForm.SetTelescopeController(fTelescopeController);
-}
-cApp::~cApp()
-{
-}
-
-void cApp::UIStarted(void)
-{
-	gAppModule.MainUIWindow->SetClient(MainForm);
-
-	//fBLEConnectionQueue=BLEConnectionProtocol->ListenQueue(iTypeOf<iEndpointConnection>(),BLELocalMeade1DeviceAddress);
-	//fBLEConnectionQueue->StartNotify(this);
-	MainForm.TelescopeListForm.DeviceListSource.OnSelectDevice=[this](iAddress *Address){
-		ConnectDevice(Address);
-	};
-}
-//	virtual void cnLib_FUNC UIShow(void)override;
-//	virtual void cnLib_FUNC UIResume(void)override;
-//	virtual void cnLib_FUNC UIPaused(void)override;
-//	virtual void cnLib_FUNC UIHide(void)override;
-
-void cApp::UIStopped(void)
-{
-	gAppModule.MainUIWindow->SetClient(nullptr);
-}
-
-cCoroutine<void> cApp::ConnectDevice(iAddress *Address)
-{
-	auto ConnectTask=BLEConnectionProtocol->ConnectAsync(iTypeOf<iEndpointConnection>(),Address,nullptr);
-	co_await TaskAwaiter(ConnectTask);
-
-	auto Connection=ConnectTask->GetConnection();
-	if(Connection!=nullptr){
-		auto epConnection=iCast<iEndpointConnection>(Connection);
-
-		auto Endpoint=epConnection->GetEndpoint();
-
-		auto ProtocolProvider=rCreate<cProtocolProviderFromEndpoint>();
-		ProtocolProvider->SetEndpoint(Endpoint);
-
-		auto ClientProtocolProcessor=rCreate<cMeadeTelescope1ClientProtocolProcessor>();
-		ClientProtocolProcessor->Connect(ProtocolProvider);
-
-
-		fTelescopeController->SetMotor(ClientProtocolProcessor);
-	}
-}
-
-cAppModule::cAppModule()
-	: WindowsApplication(cnWindows::CreateWindowsUIApplication())
-	, MainWindowProvider(cnWindows::CreateWindowProvider())
-	, MainWindowClient(cnWindows::CreateWindowClient())
-	, BLETunnelStreamProtocol(iCreate<cBluetoothLETunnelStreamProtocol>())
-{
-	BLEConnectionProtocol=BLETunnelStreamProtocol;
-
-	MainWindowClient=cnWindows::CreateWindowClient();
-
-	MainWindowProvider->Create(nullptr,L"Test");
-
-	MainUIWindow=iCast<iUIWindow>(MainWindowClient);
-
-	WindowsApplication->SetAppHandler(&App);
-}
-
-cAppModule::~cAppModule()
-{
-	UIReference.Wait();
-}
-
-void cAppModule::UIMain(void)
-{
-	auto Window=iCast<iWindow>(MainWindowProvider);
-
-	MainWindowClient->SetWindow(Window);
-
-	WindowsApplication->UIMain(Window,SW_SHOWDEFAULT);
-
-
-	MainWindowClient->SetWindow(nullptr);
-}
-
-
-
-#endif // 0

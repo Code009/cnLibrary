@@ -44,24 +44,29 @@ void bcLog::Submit(aClsConstRef<cLogMessage> Message)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLogStream::cLogStream(bcLog *Log,uInt8 Level,cString<uChar16> Path)noexcept
+cLogBuffer::cLogBuffer(bcLog *Log,uInt8 Level,cString<uChar16> Path)noexcept
 	: fLog(Log)
 	, fLevel(Level)
 	, fPath(cnVar::MoveCast(Path))
 {
 }
 //---------------------------------------------------------------------------
-cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> cLogStream::StreamWriteBuffer(void)noexcept
+cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> cLogBuffer::Stream(void)noexcept
 {
 	return fTextBuffer.StreamWriteBuffer();
 }
 //---------------------------------------------------------------------------
-void cLogStream::CommitWriteBuffer(void)noexcept
+void cLogBuffer::Reset(void)noexcept
+{
+	fTextBuffer.Clear();
+}
+//---------------------------------------------------------------------------
+void cLogBuffer::Commit(void)noexcept
 {
 	return Submit(cnVar::MoveCast(fTextBuffer));
 }
 //---------------------------------------------------------------------------
-void cLogStream::Submit(cString<uChar16> Text)noexcept
+void cLogBuffer::Submit(cString<uChar16> Text)noexcept
 {
 	auto LogMessage=aClsCreate<cLogMessage>();
 	LogMessage->Level=fLevel;
@@ -84,8 +89,10 @@ void cTextStreamOutputLogRecorder::Write(aClsConstRef<cLogMessage> Message)noexc
 		cDateTime Date;
 		cnSystem::UTCGregorianDateFromSystemTime(Date,Message->Time);		
 		auto WriteBuffer=Text.StreamWriteBuffer();
-		ArrayStream::WriteArray(WriteBuffer,Message->Path->Pointer,Message->Path->Length);
 		StringStream::WriteFormatString(WriteBuffer,u" %.2d:%.2d:%.2d.%.3d - (%d) ",Date.Hour,Date.Minute,Date.Second,(Date.NanoSecond/Time_1ms),Message->Level);
+		ArrayStream::WriteArray(WriteBuffer,Message->Path->Pointer,Message->Path->Length);
+		ArrayStream::WriteElement(WriteBuffer,':');
+		ArrayStream::WriteElement(WriteBuffer,' ');
 		ArrayStream::WriteArray(WriteBuffer,Message->Text->Pointer,Message->Text->Length);
 		ArrayStream::WriteElement(WriteBuffer,'\n');
 	}

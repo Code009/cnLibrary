@@ -55,7 +55,6 @@ public:
 	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
 	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;
@@ -117,7 +116,6 @@ public:
 	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 
 	virtual iAddress*	cnLib_FUNC GetLocalAddress(void)noexcept(true)override;
 	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)override;

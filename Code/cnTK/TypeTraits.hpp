@@ -74,11 +74,12 @@ template<class T>
 struct TTypeComponent<T[]>
 {
 	typedef T tElement;
+	static cnLib_CONSTVAR uIntn Length=0;
 };
 
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
 // function
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 template<class TRet,class...TArgs>
 struct TTypeComponent<TRet (TArgs...)>
@@ -88,7 +89,6 @@ struct TTypeComponent<TRet (TArgs...)>
 	static cnLib_CONSTVAR uIntn ArgumentCount=sizeof...(TArgs);
 	static cnLib_CONSTVAR bool NoException=false;
 };
-
 
 template<class TRet,class...TArgs>
 struct TTypeComponent<TRet (*)(TArgs...)>
@@ -114,7 +114,45 @@ struct TTypeComponent<TRet (*)(TArgs...)noexcept>
 
 #endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
 
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+
+template<class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	typedef TRet tReturn;
+	TTypePack<TArgs...> tArguments;
+	static cnLib_CONSTVAR uIntn ArgumentCount=sizeof...(TArgs);
+	static cnLib_CONSTVAR bool NoException=false;
+};
+
+template<class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+	: TTypeComponent<TRet (cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+};
+
+#if cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+template<class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+	: TTypeComponent<TRet (cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	static cnLib_CONSTVAR bool NoException=true;
+};
+
+
+template<class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+	: TTypeComponent<TRet (cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+{
+};
+
+#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
 // Member Pointer
 
@@ -125,9 +163,9 @@ struct TTypeComponent<TMember TClass::*>
 	typedef TMember tMember;
 };
 
-#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
-
 // Member Function Pointer
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 template<class TClass,class TRet,class...TArgs>
 struct TTypeComponent<TRet (TClass::*)(TArgs...)>
@@ -198,7 +236,81 @@ struct TTypeComponent<TRet (TClass::*)(TArgs...)const volatile noexcept>
 
 #endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
 
-#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	typedef TClass tClass;
+	typedef TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)const>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	typedef TClass tClass;
+	typedef const TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)volatile>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	typedef TClass tClass;
+	typedef volatile TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)const volatile>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)>
+{
+	typedef TClass tClass;
+	typedef const volatile TClass tClassArgument;
+};
+
+#if cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+{
+	typedef TClass tClass;
+	typedef TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)const noexcept>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+{
+	typedef TClass tClass;
+	typedef const TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)volatile noexcept>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+{
+	typedef TClass tClass;
+	typedef volatile TClass tClassArgument;
+};
+
+template<class TClass,class TRet,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypeComponent<TRet (TClass::*)(cnLib_VARIADIC_TEMPLATE_EXPAND)const volatile noexcept>
+	: TTypeComponent<TRet (*)(cnLib_VARIADIC_TEMPLATE_EXPAND)noexcept>
+{
+	typedef TClass tClass;
+	typedef const volatile TClass tClassArgument;
+};
+
+#endif // cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE >= 201510L
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------

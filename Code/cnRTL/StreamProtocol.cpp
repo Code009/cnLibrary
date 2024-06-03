@@ -558,7 +558,7 @@ void cProtocolProviderFromRWQueue::VirtualStarted(void)noexcept
 		fReadActive=false;
 		fReadStopped=true;
 		fWriteStopped=true;
-		fWriteQueue->StopWrite(false);
+		fWriteQueue->StopWrite();
 		return;
 	}
 	fRWQueueConnected=true;
@@ -911,7 +911,7 @@ bool cProtocolProviderFromRWQueue::QueryWriteBuffer(cMemory &Buffer)noexcept
 		if(fWriteQueue->IsWriteClosed(GracefulClose)){
 			fWriteEnded=GracefulClose;
 			fWriteStopped=true;
-			fWriteQueue->StopWrite(false);
+			fWriteQueue->StopWrite();
 			return false;
 		}
 
@@ -935,7 +935,8 @@ void cProtocolProviderFromRWQueue::WriteQueueProcess(void)noexcept
 		return;
 	if(fRWQueueTerminate){
 		// terminate read queue
-		fWriteQueue->StopWrite(true);
+		fWriteQueue->StopWrite();
+		fWriteQueue->CloseWrite(true);
 		fWriteStopped=true;
 		return;
 	}
@@ -952,7 +953,7 @@ void cProtocolProviderFromRWQueue::WriteQueueProcess(void)noexcept
 				if(fSetWriteEnd){
 					// no more pulling
 					fProtocolProcessor->ProtocolOutputEnd();
-					fWriteQueue->StopWrite(false);
+					fWriteQueue->StopWrite();
 					fWriteStopped=true;
 					fWriteEnded=true;
 					return;

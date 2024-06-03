@@ -459,7 +459,7 @@ bool cAsyncLoopbackStreamBuffer::IsReadAvailable(void)const noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn)noexcept
+cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn QuerySize)noexcept
 {
 	if(fReadingItem==nullptr){
 		// try to acquire read item
@@ -476,8 +476,26 @@ cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn)noexcept
 	cConstMemory ReadBuffer;
 
 	auto &DataBuffer=fReadingItem->Buffer;
-	ReadBuffer.Pointer=DataBuffer[fReadBufferOffset];
 	ReadBuffer.Length=DataBuffer.GetSize()-fReadBufferOffset;
+	if(ReadBuffer.Length>=QuerySize){
+		ReadBuffer.Pointer=DataBuffer[fReadBufferOffset];
+	}
+	else{
+		// merge next buffer
+		auto MergeReadItem=fReadyBufferItem.Acquire.Xchg(nullptr);
+		if(MergeReadItem!=nullptr){
+			if(fReadBufferOffset!=0){
+				DataBuffer.Remove(0,fReadBufferOffset);
+			}
+			DataBuffer.Append(MergeReadItem->Buffer->Pointer,MergeReadItem->Buffer->Length);
+			MergeReadItem->Buffer.Clear();
+			fEmptyBufferItem.Push(MergeReadItem);
+
+			fReadBufferOffset=0;
+			ReadBuffer.Length=DataBuffer.GetSize();
+		}
+		ReadBuffer.Pointer=DataBuffer->Pointer;
+	}
 	return ReadBuffer;
 }
 //---------------------------------------------------------------------------
@@ -502,13 +520,17 @@ void cAsyncLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
 cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {
 	if(fWritingItem==nullptr){
-		// try to acquire free buffer
-		fWritingItem=fEmptyBufferItem.Pop();
+		// try to acquire ready buffer
+		fWritingItem=fReadyBufferItem.Acquire.Xchg(nullptr);
 		if(fWritingItem==nullptr){
-			cMemory EmptyBuffer;
-			EmptyBuffer.Pointer=nullptr;
-			EmptyBuffer.Length=0;
-			return EmptyBuffer;
+			// try to acquire free buffer
+			fWritingItem=fEmptyBufferItem.Pop();
+			if(fWritingItem==nullptr){
+				cMemory EmptyBuffer;
+				EmptyBuffer.Pointer=nullptr;
+				EmptyBuffer.Length=0;
+				return EmptyBuffer;
+			}
 		}
 	}
 
@@ -516,7 +538,7 @@ cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	auto &DataBuffer=fWritingItem->Buffer;
 	uIntn WriteOffset=DataBuffer.GetSize();
 	if(WriteOffset>BufferSizeLimit){
-		// publish buffer
+		// no more buffer available
 		if(fReadyBufferItem.Release.CmpStore(nullptr,fWritingItem)){
 			fWritingItem=nullptr;
 		}
@@ -524,6 +546,7 @@ cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	}
 	if(QuerySize<128)
 		QuerySize=128;
+	// grow capacity
 	WriteBuffer.Length=DataBuffer.GetCapacity()-WriteOffset;
 	if(WriteBuffer.Length<QuerySize){
 		DataBuffer.SetCapacity(WriteOffset+QuerySize);
@@ -535,7 +558,7 @@ cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 //---------------------------------------------------------------------------
 void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
 {
-	if(fWritingItem==nullptr || Size==0)
+	if(fWritingItem==nullptr)
 		return;
 
 	auto &DataBuffer=fWritingItem->Buffer;
@@ -548,35 +571,10 @@ void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
 	else{
 		DataBuffer.SetSize(Size+WriteOffset);
 	}
-	if(WriteOffset!=0){
-		// publish buffer
-		if(fReadyBufferItem.Release.CmpStore(nullptr,fWritingItem)){
-			fWritingItem=nullptr;
-		}
 
-	}
-	else{
-		cBufferItem *MergeItem=nullptr;
-		if(fReadyBufferItem.Release.CmpXchg(MergeItem,fWritingItem)){
-			fWritingItem=nullptr;
-		}
-		else{
-			// merge to ready buffer
-			auto &MergeBuffer=MergeItem->Buffer;
-			// merge data
-			uIntn MergeOffset=MergeBuffer.GetSize();
-			uIntn MergeSize=MergeOffset+Size;
-			if(MergeSize<BufferSizeLimit){
-				MergeBuffer.SetSize(MergeSize);
-				cnMemory::Copy(MergeBuffer[MergeOffset],DataBuffer->Pointer,Size);
-
-				DataBuffer.SetSize(0);
-			}
-
-			// return buffer
-			fReadyBufferItem.Release.Store(MergeItem);
-		}
-
+	// publish buffer
+	if(fReadyBufferItem.Release.CmpStore(nullptr,fWritingItem)){
+		fWritingItem=nullptr;
 	}
 }
 //---------------------------------------------------------------------------

@@ -22,6 +22,7 @@ class iWindowClient;
 namespace cnWin{
 //---------------------------------------------------------------------------
 iPtr<iWindowClient> DNetCreateWindowClient(void)noexcept(true);
+rPtr<iPopupWindowControl> DNetCreatePopupWindowControl(void)noexcept(true);
 //---------------------------------------------------------------------------
 class iWPFWindowClient
 {
@@ -53,6 +54,7 @@ private interface class IWPFViewRoot : IWPFViewParent
 
 	void DispatcherFinishCleanup(void);
 
+	bool SetOwner(IWPFViewRoot ^Root);
 };
 //---------------------------------------------------------------------------
 }	// namespace DNet
@@ -99,6 +101,10 @@ protected:
 	iWPFViewChild *fClient=nullptr;
 	iUIView *fClientView;
 
+	bool GetWindowVisible(void)noexcept(true);
+	bool SetWindowVisible(bool Visible)noexcept(true);
+	bool SetWindowOwner(cGCRef &WPFRootRef)noexcept(true);
+	void ClearWindowOwner(void)noexcept(true);
 private:
 	
 	mcDNetUIThreadDispatcher::cDispatcherFinishNotify fDispatcherFinishNotify;
@@ -152,6 +158,7 @@ public:
 
 internal:
 
+	void *CPPWPFWindow;
 	// IWPFViewParent
 
 	virtual property cnWin::iWPFViewParent* ParentInterface{
@@ -180,6 +187,7 @@ internal:
 
 	virtual void DispatcherFinishCleanup(void)=IWPFViewRoot::DispatcherFinishCleanup;
 
+	virtual bool SetOwner(IWPFViewRoot ^Root)=IWPFViewRoot::SetOwner;
 protected:
 	cnWin::mcWPFViewRoot *fCPP;
 
@@ -294,11 +302,8 @@ private:
 	void nDispatcherFinishNotify(bool Shutdown)noexcept(true);
 };
 //---------------------------------------------------------------------------
- 
-
-//---------------------------------------------------------------------------
 iPtr<iWindowClient> DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
-
+rPtr<iPopupWindowControl> DNetCreatePopupWindowControl(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------

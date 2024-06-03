@@ -208,7 +208,6 @@ public:
 	virtual void cnLib_FUNC Close(void)noexcept(true)override;
 	virtual iReadQueue *cnLib_FUNC GetReadQueue(void)noexcept(true)override;
 	virtual iWriteQueue *cnLib_FUNC GetWriteQueue(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept(true)override;
 protected:
 	void VirtualStarted(void)noexcept(true);
 	void VirtualStopped(void)noexcept(true);
@@ -244,8 +243,6 @@ protected:
 		
 		using bcWriteQueueFromStream::WriteQueueReportBufferAvailable;
 		using bcWriteQueueFromStream::WriteQueueReportTerminated;
-		using bcWriteQueueFromStream::WriteQueueReportEnded;
-		using bcWriteQueueFromStream::WriteQueueSetEndMode;
 		
 	protected:
 		virtual iReference* NotificationInnerReference(void)noexcept(true)override;

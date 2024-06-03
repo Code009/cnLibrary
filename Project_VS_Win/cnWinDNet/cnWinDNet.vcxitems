@@ -27,25 +27,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_Common.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFComponent.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUICore.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIFramework.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIView.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewWindow.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinDNetM_WPFUIViewContent.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedUsingFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedUsingFiles)</ForcedUsingFiles>
     </ClCompile>
   </ItemGroup>
 </Project>

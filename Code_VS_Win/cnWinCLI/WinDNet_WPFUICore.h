@@ -163,23 +163,16 @@ public:
 	cDNetUIApplication(iPtr<cDNetUIThread> Thread)noexcept(true);
 	~cDNetUIApplication()noexcept(true);
 
-
 	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)override;
-	virtual void cnLib_FUNC UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept(true)override;
+	virtual bool cnLib_FUNC InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)override;
+	virtual bool cnLib_FUNC RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)override;
+	virtual void cnLib_FUNC UIMain(void)noexcept(true)override;
+	virtual void cnLib_FUNC CloseUISession(void)noexcept(true)override;
 
 private:
 	iPtr<cDNetUIThread> fUIThread;
-
-	class cWindowsUISession : public iWindowsUISession
-	{
-	public:
-		cDNetUIApplication *Owner;
-		cWindowsUISession()noexcept(true);
-		~cWindowsUISession()noexcept(true);
-
-		virtual void cnLib_FUNC Terminate(void)noexcept(true)override;
-	};
-
+	cnRTL::cSeqSet<iWindowsUISessionHandler*> fHandlers;
+	bool fUISession=false;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

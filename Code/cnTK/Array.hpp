@@ -1214,7 +1214,6 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 				GrowCapacityTo(SrcLength);
 			}
 			TAMFunc::CopyConstruct(this->Pointer,0,Src,0,SrcLength);
-			this->Length=SrcLength;
 		}
 		else if(SrcLength<=this->Length){
 			TAMFunc::Copy(this->Pointer,0,Src,0,SrcLength);
@@ -1236,9 +1235,9 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 				TAMFunc::CopyHeadConstructTail(NewArray,0,Src,0,this->Length,SrcLength);
 			}
 			this->Pointer=NewArray;
-			this->Length=SrcLength;
 			this->Capacity=NewCapacity;
 		}
+		this->Length=SrcLength;
 	}
 
 	void MoveRange(uIntn Index,uIntn CopyLength,tPointer Src,uIntn SrcIndex)noexcept(noexcept(ReplaceWithUninitialized(0,0,0))){
@@ -1394,6 +1393,10 @@ public:
 			fArray.Clear();
 		else
 			fArray.SetLength(fArray.Length-Size);
+	}
+
+	void Remove(uIntn Index,uIntn Size)noexcept(noexcept(fArray.Remove(0,0))){
+		return fArray.Remove(Index,Size);
 	}
 
 	// Compact

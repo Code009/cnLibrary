@@ -58,6 +58,8 @@ internal:
 
 	virtual void DispatcherFinishCleanup(void)=IWPFViewRoot::DispatcherFinishCleanup;
 
+	virtual bool SetOwner(IWPFViewRoot ^Root)=IWPFViewRoot::SetOwner;
+
 private:
 	System::WeakReference fTarget;
 	cnWin::mcWPFViewRoot *CPP;
@@ -86,6 +88,11 @@ public interface class IWPFWindowTarget
 		System::Windows::UIElement^ get();
 		void set(System::Windows::UIElement ^Element);
 	};
+
+	property IWPFWindowTarget^ Owner{
+		IWPFWindowTarget^ get();
+		void set(IWPFWindowTarget ^Owner);
+	}
 };
 //---------------------------------------------------------------------------
 public ref class WPFWindow : System::Windows::Window, IWPFWindowTarget
@@ -100,6 +107,12 @@ protected:
 		virtual System::Windows::UIElement^ get(void)=IWPFWindowTarget::WindowClient::get;
 		virtual void set(System::Windows::UIElement^)=IWPFWindowTarget::WindowClient::set;
 	}
+
+	property IWPFWindowTarget^ TargetOwner{
+		virtual IWPFWindowTarget^ get()=IWPFWindowTarget::Owner::get;
+		virtual void set(IWPFWindowTarget ^Owner)=IWPFWindowTarget::Owner::set;
+	}
+
 	WPFWindowAdapter ^fWindowAdapter;
 
 };

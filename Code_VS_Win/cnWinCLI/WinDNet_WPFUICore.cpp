@@ -462,29 +462,53 @@ iUIThread* cDNetUIApplication::GetMainUIThread(void)noexcept
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cDNetUIApplication::cWindowsUISession::cWindowsUISession()noexcept
+bool cDNetUIApplication::InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept
 {
-}
-//---------------------------------------------------------------------------
-cDNetUIApplication::cWindowsUISession::~cWindowsUISession()noexcept
-{
-	Owner->mNotifyStopRun();
-}
-//---------------------------------------------------------------------------
-void cDNetUIApplication::cWindowsUISession::Terminate(void)noexcept
-{
-	Owner->mNotifyStopRun();
-}
-//---------------------------------------------------------------------------
-void cDNetUIApplication::UIMain(iFunction<void (iWindowsUISession*)noexcept(true)> *SessionHandler)noexcept
-{
-	auto Session=rCreate<cWindowsUISession>();
-	Session->Owner=this;
+	if(fUIThread->IsCurrent()==false)
+		return false;
 
-	SessionHandler->Execute(Session);
+	fHandlers.Insert(SessionHandler);
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cDNetUIApplication::RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept
+{
+	if(fUIThread->IsCurrent()==false)
+		return false;
 
+	fHandlers.Remove(SessionHandler);
+	return true;
+}
+//---------------------------------------------------------------------------
+void cDNetUIApplication::UIMain(void)noexcept
+{
+	if(fUIThread->IsCurrent()==false)
+		return;
+	
+	if(fUISession)
+		return;
+
+	fUISession=true;
+
+	cSeqList<iWindowsUISessionHandler*> Handlers;
+	Handlers=fHandlers.Storage();
+	for(auto Handler : Handlers){
+		Handler->UISessionStart();
+	}
 	// message loop
 	mWPFUIMain();
+
+	fUISession=false;
+
+	Handlers=fHandlers.Storage();
+	for(auto Handler : Handlers){
+		Handler->UISessionExit();
+	}
+}
+//---------------------------------------------------------------------------
+void cDNetUIApplication::CloseUISession(void)noexcept
+{
+	if(fUISession)
+		mNotifyStopRun();
 }
 //---------------------------------------------------------------------------

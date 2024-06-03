@@ -139,7 +139,8 @@ void cUITouchActionTap::TouchLost(iUITouchEvent *TouchEvent)noexcept
 //---------------------------------------------------------------------------
 cUITouchActionLongPress::cUITouchActionLongPress()noexcept
 {
-	//fPressTimer=cnSystem::UIThread->CreateTimer(nullptr,&fTimerProcedure);
+	auto UIDispatch=cnSystem::CurrentUIThread::GetDispatch(false);
+	fPressTimer=UIDispatch->CreateTimer(nullptr,&fTimerProcedure);
 	DurationNS=Time_1s;
 }
 //---------------------------------------------------------------------------
@@ -158,7 +159,6 @@ void cUITouchActionLongPress::TimerHit(void)noexcept
 	if(fTouchID==nullptr)
 		return;
 
-//	fViewTouch->TouchFilterExclusive(this);
 	if(OnPress!=nullptr)
 		OnPress();
 }
@@ -221,11 +221,12 @@ void cUITouchActionPan::Start(iUITouchEvent *TouchEvent,const cUIPoint &Pos)noex
 	fPointMoveDetect.Clear();
 	// begin
 	fPanTouchID=TouchEvent->GetTouchID();
-	//fViewTouch->TouchFilterExclusive(this);
+	fViewTouch->TouchAcquireExclusive(this);
 }
 //---------------------------------------------------------------------------
 void cUITouchActionPan::Stop(iUITouchEvent *TouchEvent)noexcept
 {
+	fViewTouch->TouchReleaseExclusive(this);
 	fPointMoveDetect.End(TouchEvent);
 	if(fPanTouchID==TouchEvent->GetTouchID()){
 		if(OnExit!=nullptr)

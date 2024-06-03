@@ -131,7 +131,7 @@ void cStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 	bool WriteQueueGracefulClose;
 	if(fWriteQueue->IsWriteClosed(WriteQueueGracefulClose)){
 		// closed before stream end
-		fWriteQueue->StopWrite(false);
+		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 
 		SetWriteEnd(WriteQueueGracefulClose);
@@ -166,14 +166,15 @@ void cStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 void cStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept
 {
 	if(fWriteActive){
-		fWriteQueue->StopWrite(false);
+		fWriteQueue->StopWrite();
 	}
 }
 //---------------------------------------------------------------------------
 void cStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept
 {
 	if(fWriteQueue!=nullptr){
-		fWriteQueue->StopWrite(true);
+		fWriteQueue->StopWrite();
+		fWriteQueue->CloseWrite(true);
 		fWriteQueue=nullptr;
 	}
 }
@@ -316,7 +317,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 	bool WriteQueueGracefulClose;
 	if(fWriteQueue->IsWriteClosed(WriteQueueGracefulClose)){
 		// closed before stream end
-		fWriteQueue->StopWrite(false);
+		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 
 		SetWriteEnd(WriteQueueGracefulClose); 
@@ -347,7 +348,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)noexcept
 void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept
 {
 	if(fWriteActive){
-		fWriteQueue->StopWrite(false);
+		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 	} 
 }
@@ -355,7 +356,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept
 void cPacketStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept
 {
 	if(fWriteActive){
-		fWriteQueue->StopWrite(true);
+		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 	}
 }
@@ -861,11 +862,6 @@ iReadQueue* cEndpointFromStream::GetReadQueue(void)noexcept
 iWriteQueue* cEndpointFromStream::GetWriteQueue(void)noexcept
 {
 	return &fWriteQueue;
-}
-//---------------------------------------------------------------------------
-void cEndpointFromStream::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	fWriteQueue.WriteQueueSetEndMode(EndMode);
 }
 //---------------------------------------------------------------------------
 void cEndpointFromStream::WriteQueueTerminated(void)noexcept

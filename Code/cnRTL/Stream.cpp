@@ -10,6 +10,7 @@ bcReadQueue::bcReadQueue()noexcept
 	, fReadQueueEnded(false)
 	, fReadQueueTerminated(false)
 	, fReadQueueBufferAvailable(false)
+	, fReadQueueCloseWhenIdle(false)
 {
 }
 //---------------------------------------------------------------------------
@@ -45,7 +46,7 @@ bcReadQueue::CycleState bcReadQueue::NotificationCheckState(void)noexcept
 	if(fReadQueueBufferAvailable){
 		return CycleState::Normal;
 	}
-	if(fReadQueueEnded){
+	if(fReadQueueEnded || (fReadCallback==nullptr && fReadQueueCloseWhenIdle)){
 		return CycleState::Ended;
 	}
 	return CycleState::Normal;
@@ -88,6 +89,16 @@ void bcReadQueue::NotifyRead(uIntn SizeToNotify)noexcept
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
+void bcReadQueue::CloseRead(bool Terminate)noexcept
+{
+	if(Terminate)
+		fReadQueueTerminated=true;
+	else
+		fReadQueueCloseWhenIdle=true;
+
+	UpdateQueueState(true);
+}
+//---------------------------------------------------------------------------
 bool bcReadQueue::IsReadClosed(bool &GracefulClose)noexcept
 {
 	GracefulClose=IsNotificationEnded();
@@ -127,8 +138,8 @@ void bcReadQueue::ReadQueueReportTerminated(void)noexcept
 //---------------------------------------------------------------------------
 bcWriteQueue::bcWriteQueue()noexcept
 	: fWriteCallback(nullptr)
+	, fWriteQueueCloseWhenIdle(false)
 	, fWriteQueueTerminated(false)
-	, fWriteQueueEndMode(EndpointWriteEndMode::NextSession)
 {
 }
 //---------------------------------------------------------------------------
@@ -141,9 +152,6 @@ void bcWriteQueue::NotificationStarted(void)noexcept
 	bcAsyncQueue::NotificationStarted();
 
 	rIncReference(this,'wrqu');
-	if(fWriteQueueEndMode==EndpointWriteEndMode::NextSession){
-		fWriteQueueEndMode=EndpointWriteEndMode::Idle;
-	}
 	fWriteCallback->WriteStarted();
 }
 //---------------------------------------------------------------------------
@@ -164,7 +172,7 @@ bcWriteQueue::CycleState bcWriteQueue::NotificationCheckState(void)noexcept
 	if(fWriteQueueTerminated){
 		return CycleState::Terminated;
 	}
-	if(fWriteCallback==nullptr && fWriteQueueEndMode==EndpointWriteEndMode::Idle){
+	if(fWriteCallback==nullptr && fWriteQueueCloseWhenIdle){
 		return CycleState::Ended;
 	}
 	return CycleState::Normal;
@@ -191,11 +199,8 @@ bool bcWriteQueue::StartWrite(iReference *Reference,iWriteQueueCallback *Callbac
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcWriteQueue::StopWrite(bool Terminate)noexcept
+void bcWriteQueue::StopWrite(void)noexcept
 {
-	if(Terminate)
-		fWriteQueueTerminated=true;
-
 	if(StopNotify()){
 		UpdateQueueState(false);
 	}
@@ -205,6 +210,15 @@ void bcWriteQueue::NotifyWrite(uIntn SizeToNotify)noexcept
 {
 	bool IdleNotify=SizeToNotify==0;
 	return NotifyQueue(IdleNotify);
+}
+//---------------------------------------------------------------------------
+void bcWriteQueue::CloseWrite(bool Terminate)noexcept
+{
+	if(Terminate)
+		fWriteQueueTerminated=true;
+	else
+		fWriteQueueCloseWhenIdle=true;
+	UpdateQueueState(true);
 }
 //---------------------------------------------------------------------------
 bool bcWriteQueue::IsWriteClosed(bool &GracefulClose)noexcept
@@ -218,29 +232,12 @@ void bcWriteQueue::WriteQueueReportBufferAvailable(bool AsyncNotify)noexcept
 	AsyncQueueSetAvailable(AsyncNotify);
 }
 //---------------------------------------------------------------------------
-void bcWriteQueue::WriteQueueReportEnded(void)noexcept
-{
-	return WriteQueueSetEndMode(EndpointWriteEndMode::Idle);
-}
-//---------------------------------------------------------------------------
 void bcWriteQueue::WriteQueueReportTerminated(void)noexcept
 {
 	if(fWriteQueueTerminated==false){
 		fWriteQueueTerminated=true;
 		UpdateQueueState(false);
 	}
-}
-//---------------------------------------------------------------------------
-void bcWriteQueue::WriteQueueSetEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	if(fWriteCallback!=nullptr && EndMode==EndpointWriteEndMode::NextSession){
-		EndMode=EndpointWriteEndMode::Idle;
-	}
-	if(fWriteQueueEndMode==EndMode)
-		return;
-
-	fWriteQueueEndMode=EndMode;
-	UpdateQueueState(false);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -251,7 +248,6 @@ bcRWQueue::bcRWQueue()noexcept
 	, fReadQueueEnded(false)
 	, fReadQueueTerminated(false)
 	, fWriteQueueTerminated(false)
-	, fWriteQueueEndMode(EndpointWriteEndMode::NextSession)
 {
 }
 //---------------------------------------------------------------------------
@@ -382,7 +378,7 @@ bcRWQueue::CycleState bcRWQueue::ReadQueueCheckState(void)noexcept
 	if(fReadQueueBufferAvailable){
 		return CycleState::Normal;
 	}
-	if(fReadQueueEnded){
+	if(fReadQueueEnded || (fReadCallback==nullptr && fReadQueueCloseWhenIdle)){
 		return CycleState::Ended;
 	}
 	return CycleState::Normal;
@@ -417,6 +413,16 @@ void bcRWQueue::NotifyRead(uIntn SizeToNotify)noexcept
 	if(fReadQueueEnded)
 		IdleNotify=true;
 	return fReadAsyncQueue.NotifyQueue(IdleNotify);
+}
+//---------------------------------------------------------------------------
+void bcRWQueue::CloseRead(bool Terminate)noexcept
+{
+	if(Terminate)
+		fReadQueueTerminated=true;
+	else
+		fReadQueueCloseWhenIdle=true;
+
+	fReadAsyncQueue.UpdateQueueState(true);
 }
 //---------------------------------------------------------------------------
 bool bcRWQueue::IsReadClosed(bool &GracefulClose)noexcept
@@ -488,9 +494,6 @@ void bcRWQueue::cWriteQueue::NotificationStarted(void)noexcept
 
 	auto Host=GetHost();
 	rIncReference(static_cast<iWriteQueue*>(Host),'wrqu');
-	if(Host->fWriteQueueEndMode==EndpointWriteEndMode::NextSession){
-		Host->fWriteQueueEndMode=EndpointWriteEndMode::Idle;
-	}
 	Host->fWriteCallback->WriteStarted();
 	Host->WriteQueueStarted();
 }
@@ -552,7 +555,7 @@ bcRWQueue::CycleState bcRWQueue::WriteQueueCheckState(void)noexcept
 	if(fWriteQueueTerminated){
 		return CycleState::Terminated;
 	}
-	if(fWriteCallback==nullptr && fWriteQueueEndMode==EndpointWriteEndMode::Idle){
+	if(fWriteCallback==nullptr && fWriteQueueCloseWhenIdle){
 		return CycleState::Ended;
 	}
 	return CycleState::Normal;
@@ -574,11 +577,8 @@ bool bcRWQueue::StartWrite(iReference *Reference,iWriteQueueCallback *Callback)n
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcRWQueue::StopWrite(bool Terminate)noexcept
+void bcRWQueue::StopWrite(void)noexcept
 {
-	if(Terminate)
-		fWriteQueueTerminated=true;
-
 	if(fWriteAsyncQueue.StopNotify()){
 		fWriteAsyncQueue.UpdateQueueState(false);
 	}
@@ -592,6 +592,15 @@ void bcRWQueue::NotifyWrite(uIntn SizeToNotify)noexcept
 	return fWriteAsyncQueue.NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
+void bcRWQueue::CloseWrite(bool Terminate)noexcept
+{
+	if(Terminate)
+		fWriteQueueTerminated=true;
+	else
+		fWriteQueueCloseWhenIdle=true;
+	fWriteAsyncQueue.UpdateQueueState(true);
+}
+//---------------------------------------------------------------------------
 bool bcRWQueue::IsWriteClosed(bool &GracefulClose)noexcept
 {
 	GracefulClose=fWriteAsyncQueue.IsNotificationEnded();
@@ -603,29 +612,12 @@ void bcRWQueue::WriteQueueReportBufferAvailable(bool AsyncNotify)noexcept
 	fWriteAsyncQueue.AsyncQueueSetAvailable(AsyncNotify);
 }
 //---------------------------------------------------------------------------
-void bcRWQueue::WriteQueueReportEnded(void)noexcept
-{
-	return WriteQueueSetEndMode(EndpointWriteEndMode::Idle);
-}
-//---------------------------------------------------------------------------
 void bcRWQueue::WriteQueueReportTerminated(void)noexcept
 {
 	if(fWriteQueueTerminated==false){
 		fWriteQueueTerminated=true;
 		fWriteAsyncQueue.UpdateQueueState(false);
 	}
-}
-//---------------------------------------------------------------------------
-void bcRWQueue::WriteQueueSetEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	if(fWriteCallback!=nullptr && EndMode==EndpointWriteEndMode::NextSession){
-		EndMode=EndpointWriteEndMode::Idle;
-	}
-	if(fWriteQueueEndMode==EndMode)
-		return;
-
-	fWriteQueueEndMode=EndMode;
-	fWriteAsyncQueue.UpdateQueueState(false);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1537,18 +1529,6 @@ void cChannelQueuePair::Close(bool Side)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cChannelQueuePair::SetWriteEndMode(bool Side,eEndpointWriteEndMode EndMode)noexcept
-{
-	if(Side){
-		// T side
-		fQueueB.WriteQueueSetEndMode(EndMode);
-	}
-	else{
-		// F side
-		fQueueA.WriteQueueSetEndMode(EndMode);
-	}
-}
-//---------------------------------------------------------------------------
 cChannelQueuePair* cChannelQueuePair::cQueueA::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cChannelQueuePair::fQueueA);
@@ -1640,12 +1620,6 @@ iWriteQueue* cChannelEndpointPair::cEndpointF::GetWriteQueue(void)noexcept
 	return Host->GetWriteQueue(false);
 }
 //---------------------------------------------------------------------------
-void cChannelEndpointPair::cEndpointF::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	auto Host=GetHost();
-	Host->SetWriteEndMode(false,EndMode);
-}
-//---------------------------------------------------------------------------
 cChannelEndpointPair* cChannelEndpointPair::cEndpointT::GetHost(void)noexcept
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cChannelEndpointPair::fEndpointT);
@@ -1676,12 +1650,6 @@ iWriteQueue* cChannelEndpointPair::cEndpointT::GetWriteQueue(void)noexcept
 {
 	auto Host=GetHost();
 	return Host->GetWriteQueue(true);
-}
-//---------------------------------------------------------------------------
-void cChannelEndpointPair::cEndpointT::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	auto Host=GetHost();
-	Host->SetWriteEndMode(true,EndMode);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -2012,11 +1980,6 @@ iReadQueue* cBufferedExtEndpoint::GetReadQueue(void)noexcept
 iWriteQueue* cBufferedExtEndpoint::GetWriteQueue(void)noexcept
 {
 	return this;
-}
-//---------------------------------------------------------------------------
-void cBufferedExtEndpoint::SetWriteEndMode(eEndpointWriteEndMode EndMode)noexcept
-{
-	//SetWriteQueueEnd();
 }
 //---------------------------------------------------------------------------
 uIntn cBufferedExtEndpoint::GetTotalBufferedReadData(void)const noexcept

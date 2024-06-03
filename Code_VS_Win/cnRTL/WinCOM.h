@@ -161,7 +161,7 @@ struct TCOMFunctionInfo;
 
 template<class TClass,class TRet,class...TArgs>
 struct TCOMFunctionInfo<TRet (STDMETHODCALLTYPE TClass::*)(TArgs...)>
-	: cnLib_THelper::Var_TH::MemberFunctionInfo<TClass,TRet,TArgs...>
+	: cnVar::TTypeComponent<TRet (TClass::*)(TArgs...)>
 {
 	typedef TClass ClassArgumentType;
 };

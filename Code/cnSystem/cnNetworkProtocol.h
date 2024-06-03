@@ -42,15 +42,6 @@ extern iDatagramProtocol*const UDP;
 // GATT
 //---------------------------------------------------------------------------
 
-typedef cUUID cGATTUUID;
-cnLib_ENUM_BEGIN(ufInt8,GATTFunctionState)
-{
-	Absent,
-	Scanning,
-	Inactive,
-	Active,
-}cnLib_ENUM_END(GATTFunctionState);
-
 cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties)
 {
 	None					=0x00,
@@ -73,8 +64,16 @@ cnLib_ENUM_BEGIN(ufInt8,GATTCharacteristicNotification)
 	Indicate,
 }cnLib_ENUM_END(GATTCharacteristicNotification);
 
-class iGATTPeripheralCentral;
-class iGATTPeripheral;
+cnLib_ENUM_BEGIN(ufInt8,GATTFunctionState)
+{
+	Absent,
+	Scanning,
+	Inactive,
+	Active,
+}cnLib_ENUM_END(GATTFunctionState);
+
+//---------------------------------------------------------------------------
+class iGATTClient;
 class iGATTService;
 class iGATTCharacteristic;
 class iGATTDescriptor;
@@ -167,7 +166,7 @@ public:
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *Handler)noexcept(true)=0;
 
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual iGATTPeripheral* cnLib_FUNC GetPeripheral(void)noexcept(true)=0;
+	virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)=0;
 	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTCharacteristicObserver> cnLib_FUNC CreateCharacteristicObserver(void)noexcept(true)=0;
 };
@@ -177,167 +176,68 @@ class cnLib_INTERFACE iGATTServiceObserver: public iAsyncNotification
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
 
-	virtual iGATTPeripheral* cnLib_FUNC GetPeripheral(void)noexcept(true)=0;
+	virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)=0;
 
 	virtual iArrayReference< rPtr<iGATTService> > cnLib_FUNC QueryServices(void)noexcept(true)=0;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
 	virtual rPtr<iGATTService> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)=0;
-	virtual iPtr<iAsyncTask> cnLib_FUNC ScanServices(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTClient : public iReference
 {
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-
-	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)=0;
-	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
-	
-};
-//---------------------------------------------------------------------------
-class cnLib_INTERFACE iGATTPeripheralHandler
-{
-public:
-	virtual void cnLib_FUNC GATTPeripheralClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC GATTPeripheralStateChanged(void)noexcept(true)=0;
-	virtual void cnLib_FUNC GATTPeripheralNameChanged(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class cnLib_INTERFACE iGATTPeripheral : public iReference
-{
-public:
-	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
-	virtual iAddress* cnLib_FUNC GetPeripheralAddress(void)noexcept(true)=0;
-	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralHandler *Handler)noexcept(true)=0;
-	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralHandler *Handler)noexcept(true)=0;
-
 	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)=0;
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)=0;
 
 	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
-	
+
 };
 //---------------------------------------------------------------------------
-cnLib_ENUM_BEGIN(ufInt8,GATTAdvertisementType)
-{
-	ConnectableUndirected		=0,
-	ConnectableDirected			=1,
-	ScannableUndirected			=2,
-	NonConnectableUndirected	=3,
-	ScanResponse				=4,
-    Extended					=5,
-}cnLib_ENUM_END(GATTAdvertisementType);
+class iGATTServerCharacteristic;
+class iGATTServerService;
+class iGATTServer;
 //---------------------------------------------------------------------------
-cnLib_INTENUM_BEGIN(ufInt8,GATTAdvertisementFlags)
-{
-	None						=0,		// no flag.
-	LimitedDiscoverableMode		=1,		// Bluetooth LE Limited Discoverable Mode.
-	GeneralDiscoverableMode		=2,		// Bluetooth LE General Discoverable Mode.
-	ClassicNotSupported			=4,		// Bluetooth BR/EDR not supported.
-	DualModeControllerCapable	=8,		// simultaneous Bluetooth LE and BR/EDR to same device capable (controller).
-	DualModeHostCapable			=16,	// simultaneous Bluetooth LE and BR/EDR to same device capable (host)
-}cnLib_INTENUM_END(GATTAdvertisementFlags);
-//---------------------------------------------------------------------------
-struct cGATTAdvertisementManufacturerData : cConstMemory
-{
-	ufInt16 CompandID;
-};
-struct cGATTAdvertisementSectionData : cConstMemory
-{
-	ufInt8 SectionID;
-};
-struct cGATTAdvertisementInfo
-{
-	iAddress *PeripheralAddress;
-	cArray<const uChar16> LocalName;
-	uInt64 AdvertiserAddress;
-	uInt64 Timestamp;
-	sfInt16 SignalStrength;
-	uInt8 AddressType;
-	eGATTAdvertisementType Type;
-	eGATTAdvertisementFlags Flags;
-	cArray<const cUUID> ServiceUUIDs;
-	cArray<const cGATTAdvertisementManufacturerData> ManufacturerData;
-	cArray<const cGATTAdvertisementSectionData> SectionData;
-};
-//---------------------------------------------------------------------------
-class iGATTAdvertisementObserver : public iAsyncNotification
+class iGATTServerConnection : public iReference
 {
 public:
-	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-
-	virtual iGATTPeripheralCentral* cnLib_FUNC GetPeripheralCentral(void)noexcept(true)=0;
-
-	virtual void cnLib_FUNC DiscardQueue(void)noexcept(true)=0;
-	virtual rPtr<iReference> cnLib_FUNC Fetch(cGATTAdvertisementInfo &Info)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class iGATTPeripheralCentralHandler
-{
-public:
-	virtual void cnLib_FUNC GATTCentralStateChanged(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class iGATTPeripheralCentral : public iReference
-{
-public:
-	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC InsertHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)=0;
-	virtual bool cnLib_FUNC RemoveHandler(iGATTPeripheralCentralHandler *Handler)noexcept(true)=0;
-
-	virtual rPtr<iGATTPeripheral> cnLib_FUNC OpenPeripheral(iAddress *Address)noexcept(true)=0;
-
-	virtual rPtr<iGATTAdvertisementObserver> cnLib_FUNC CreateAdvertisementObserver(void)noexcept(true)=0;
-
-	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC IsPowerOn(void)noexcept(true)=0;
-};
-
-
-//---------------------------------------------------------------------------
-class iGATTClientConnection : public iReference
-{
-public:
-	virtual eiOrdering cnLib_FUNC Compare(iGATTClientConnection *Dest)noexcept(true)=0;
+	virtual eiOrdering cnLib_FUNC Compare(iGATTServerConnection *Dest)noexcept(true)=0;
 	virtual uIntn cnLib_FUNC GetMaxValueLength(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class iGATTClientSubscription
+class iGATTServerSubscription
 {
 public:
-	virtual rPtr<iGATTClientConnection> cnLib_FUNC GetConnection(void)noexcept(true)=0;
+	virtual rPtr<iGATTServerConnection> cnLib_FUNC GetConnection(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServerDescriptor : public iReference
 {
 public:
+	virtual iGATTServerCharacteristic* cnLib_FUNC GetOwner(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTDescriptorController
 {
 public:
+	virtual void cnLib_FUNC DescriptorPublished(void)noexcept(true)=0;
 	virtual void cnLib_FUNC DescriptorClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC DescriptorStateChanged(void)noexcept(true)=0;
-	virtual void cnLib_FUNC DescriptorRead(iGATTClientConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
-	virtual void cnLib_FUNC DescriptorWrite(iGATTClientConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorRead(iGATTServerConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorWrite(iGATTServerConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServerCharacteristic : public iReference
 {
 public:
+	virtual iGATTServerService* cnLib_FUNC GetOwner(void)noexcept(true)=0;
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)=0;
-
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
-	virtual iGATTClientSubscription* cnLib_FUNC QuerySubscription(iGATTClientConnection *Connection)noexcept(true)=0;
-	virtual void cnLib_FUNC NotifyValue(iGATTClientSubscription *Subscription)noexcept(true)=0;
+
+	virtual rPtr<iGATTServerDescriptor> cnLib_FUNC CreateGATTDescriptor(const cUUID &ID,iReference *Reference,iGATTDescriptorController *Controller)noexcept(true)=0;	
+	virtual iGATTServerSubscription* cnLib_FUNC QuerySubscription(iGATTServerConnection *Connection)noexcept(true)=0;
+	virtual void cnLib_FUNC NotifyValue(iGATTServerSubscription *Subscription)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 struct cGATTCharacteristicParameter
@@ -349,55 +249,185 @@ struct cGATTCharacteristicParameter
 class iGATTCharacteristicController
 {
 public:
+	virtual void cnLib_FUNC CharacteristicPublished(void)noexcept(true)=0;
 	virtual void cnLib_FUNC CharacteristicClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC CharacteristicStateChanged(void)noexcept(true)=0;
 	virtual cGATTCharacteristicParameter cnLib_FUNC GetCharacteristicParameter(void)noexcept(true)=0;
-	virtual void cnLib_FUNC ValueRead(iGATTClientConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
-	virtual void cnLib_FUNC ValueWrite(iGATTClientConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
-	virtual void cnLib_FUNC ClientSubscribe(iGATTClientSubscription *Subscription)noexcept(true)=0;
-	virtual void cnLib_FUNC ClientUnsubscribe(iGATTClientSubscription *Subscription)noexcept(true)=0;
-	virtual bool cnLib_FUNC ValueNotify(iGATTClientSubscription *Subscription,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC ValueRead(iGATTServerConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC ValueWrite(iGATTServerConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
+	virtual void cnLib_FUNC ClientSubscribe(iGATTServerSubscription *Subscription)noexcept(true)=0;
+	virtual void cnLib_FUNC ClientUnsubscribe(iGATTServerSubscription *Subscription)noexcept(true)=0;
+	virtual bool cnLib_FUNC ValueNotify(iGATTServerSubscription *Subscription,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServerService : public iReference
 {
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)=0;
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC GetAdvertisementIncluded(void)noexcept(true)=0;
-	virtual void cnLib_FUNC SetAdvertisementIncluded(bool Included)noexcept(true)=0;
+	virtual rPtr<iGATTServerCharacteristic> cnLib_FUNC CreateGATTCharacteristic(const cUUID &ID,iReference *Reference,iGATTCharacteristicController *Controller)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServiceController
 {
 public:
+	virtual void cnLib_FUNC ServicePublished(void)noexcept(true)=0;
 	virtual void cnLib_FUNC ServiceClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC ServiceAdvertisementChanged(void)noexcept(true)=0;
-	virtual void cnLib_FUNC ServiceStateChanged(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class iGATTServerHandler
-{
-public:
-	virtual void cnLib_FUNC ServerClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC ServerStateChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServer : public iReference
 {
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC InsertHandler(iGATTServerHandler *Handler)noexcept(true)=0;
-	virtual bool cnLib_FUNC RemoveHandler(iGATTServerHandler *Handler)noexcept(true)=0;
-	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)=0;
-
 	virtual void cnLib_FUNC Shutdown(void)noexcept(true)=0;
+	virtual void cnLib_FUNC Publish(void)noexcept(true)=0;
+	virtual rPtr<iGATTServerService> cnLib_FUNC CreateGATTService(const cUUID &ID,iReference *Reference,iGATTServiceController *Controller)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTServerController
+{
+public:
+	virtual void cnLib_FUNC ServerPublished(void)noexcept(true)=0;
+	virtual void cnLib_FUNC ServerClosed(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothPeripheral;
+class iBluetoothCentral;
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iBluetoothMasterHandler
+{
+public:
+	virtual void cnLib_FUNC CentralClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC CentralStateChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothMaster : public iGATTClient
+{
+public:
+	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
+	virtual iAddress* cnLib_FUNC GetCentralAddress(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iBluetoothMasterHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iBluetoothMasterHandler *Handler)noexcept(true)=0;
+
+	virtual iBluetoothPeripheral* cnLib_FUNC GetPeripheral(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothPeripheralHandler
+{
+public:
+	virtual void cnLib_FUNC PeripheralStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC PeripheralAdvertisementStateChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothPeripheral : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iBluetoothPeripheralHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iBluetoothPeripheralHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsPowerOn(void)noexcept(true)=0;
+
+	virtual bool cnLib_FUNC IsAdvertising(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC GetAdvertisementActive(void)noexcept(true)=0;
 	virtual void cnLib_FUNC SetAdvertisementActive(bool Active)noexcept(true)=0;
+
+	virtual rPtr<iGATTServer> cnLib_FUNC CreateServer(iReference *ControllerReference,iGATTServerController *Controller)noexcept(true)=0;
+	//virtual rPtr<iBluetoothMaster> cnLib_FUNC OpenCentral(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iBluetoothSlaveHandler
+{
+public:
+	virtual void cnLib_FUNC PeripheralClosed(void)noexcept(true)=0;
+	virtual void cnLib_FUNC PeripheralStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC PeripheralNameChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iBluetoothSlave : public iGATTClient
+{
+public:
+	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
+	virtual iAddress* cnLib_FUNC GetPeripheralAddress(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iBluetoothSlaveHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iBluetoothSlaveHandler *Handler)noexcept(true)=0;
+
+	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)=0;
+	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+cnLib_ENUM_BEGIN(ufInt8,BluetoothLEAdvertisementType)
+{
+	ConnectableUndirected		=0,
+	ConnectableDirected			=1,
+	ScannableUndirected			=2,
+	NonConnectableUndirected	=3,
+	ScanResponse				=4,
+    Extended					=5,
+}cnLib_ENUM_END(BluetoothLEAdvertisementType);
+//---------------------------------------------------------------------------
+cnLib_INTENUM_BEGIN(ufInt8,BluetoothLEAdvertisementFlags)
+{
+	None						=0,		// no flag.
+	LimitedDiscoverableMode		=1,		// Bluetooth LE Limited Discoverable Mode.
+	GeneralDiscoverableMode		=2,		// Bluetooth LE General Discoverable Mode.
+	ClassicNotSupported			=4,		// Bluetooth BR/EDR not supported.
+	DualModeControllerCapable	=8,		// simultaneous Bluetooth LE and BR/EDR to same device capable (controller).
+	DualModeHostCapable			=16,	// simultaneous Bluetooth LE and BR/EDR to same device capable (host)
+}cnLib_INTENUM_END(BluetoothLEAdvertisementFlags);
+//---------------------------------------------------------------------------
+struct cBluetoothLEAdvertisementManufacturerData : cConstMemory
+{
+	ufInt16 CompanyID;
+};
+struct cBluetoothLEAdvertisementSectionData : cConstMemory
+{
+	ufInt8 SectionType;
+};
+struct cBluetoothLEAdvertisementInfo
+{
+	iAddress *Address;
+	cArray<const uChar16> LocalName;
+	uInt64 Timestamp;
+	uInt64 PeripheralAddress;
+	eBluetoothLEAdvertisementType Type;
+	eBluetoothLEAdvertisementFlags Flags;
+	sfInt8 SignalStrength;
+	bool IsConnectable	:1;
+	bool IsDiscoverable	:1;
+	cArray<const cUUID> ServiceUUIDs;
+	cArray<const cBluetoothLEAdvertisementManufacturerData> ManufacturerData;
+	cArray<const cBluetoothLEAdvertisementSectionData> SectionData;
+};
+//---------------------------------------------------------------------------
+class iBluetoothLEAdvertisementObserver : public iAsyncNotification
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)=0;
+
+	virtual void cnLib_FUNC DiscardQueue(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC Fetch(cBluetoothLEAdvertisementInfo &Info)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothCentralHandler
+{
+public:
+	virtual void cnLib_FUNC CentralStateChanged(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iBluetoothCentral : public iReference
+{
+public:
+	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC InsertHandler(iBluetoothCentralHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC RemoveHandler(iBluetoothCentralHandler *Handler)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsPowerOn(void)noexcept(true)=0;
+
+	virtual rPtr<iBluetoothLEAdvertisementObserver> cnLib_FUNC CreateLEAdvertisementObserver(void)noexcept(true)=0;
+
+	//virtual rPtr<iGATTServer> cnLib_FUNC CreateServer(iReference *ControllerReference,iGATTServerController *Controller)noexcept(true)=0;
+	virtual rPtr<iBluetoothSlave> cnLib_FUNC OpenPeripheral(iAddress *Address)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{

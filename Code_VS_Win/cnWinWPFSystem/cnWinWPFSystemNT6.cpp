@@ -63,6 +63,8 @@ cnLib_GlobalVar cnRTL::cInterfaceStaticImplementT<vSocketStreamProtocol> cnWin::
 cnLib_GlobalVar cnRTL::cInterfaceStaticImplementT<vSocketDatagramProtocol> cnWin::UDP(SOCK_DGRAM,IPPROTO_UDP);
 //- ui ----------------------------------------------------------------------
 
+cnLib_GlobalVar cMessageThreadWindowClass cMessageThreadWindowClass::gMessageThreadWindowClass(L"cnLibraryMessageThreadWindow");
+
 //cnLib_GlobalVar cWindowClass_cnWindow cnWin::gWindowClass_cnWindow;
 
 //cnLib_GlobalVar cTLSPtr cUIThread::gUIThreadTLS;
@@ -93,6 +95,7 @@ cnLib_GlobalVar cnRTL::cReferenceStaticImplementT<cnWinRTL::cWin32DebugTextOutpu
 
 //- cnSystem - Pointer ------------------------------------------------------
 
+cnLib_GlobalVar iDependentRegistration*const cnSystem::SystemDependentRegistration=&gSystemDependentRegistration;
 
 cnLib_GlobalVar iMemoryHeap*const		cnSystem::DefaultMemoryHeap		=&gDefaultMemoryHeap;
 

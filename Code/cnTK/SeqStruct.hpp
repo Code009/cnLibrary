@@ -369,33 +369,6 @@ protected:
 
 public:
 
-	template<class TIndex>
-	cnLib_DEPRECATED typename cnVar::TTypeConditional<tPointer,
-		cnVar::TIsConvertible<TIndex,uIntn>::Value
-	>::Type Replace(TIndex Index,uIntn ReplaceLength,tConstPointer ReplacementData,uIntn ReplacementLength){
-		return ReplaceAt(static_cast<uIntn>(Index),ReplaceLength,ReplacementLength);
-	}
-
-
-	template<class TIndex,class...VT>
-	cnLib_DEPRECATED typename cnVar::TTypeConditional<tPointer,
-		cnVar::TIsConvertible<TIndex,uIntn>::Value
-	>::Type Insert(TIndex Index,VT cnLib_UREF...Args){
-		return InsertAt(static_cast<uIntn>(Index),cnLib_UREFCAST(VT)(Args)...);
-	}
-
-	// Remove
-	//	Remove items at specifed position
-	// Index			index of item to remove
-	// RemoveCount		number of item to remove
-	template<class TIndex>
-	cnLib_DEPRECATED typename cnVar::TTypeConditional<void,
-		cnVar::TIsConvertible<TIndex,uIntn>::Value
-	>::Type Remove(TIndex Index,uIntn RemoveCount=1){
-		return RemoveAt(static_cast<uIntn>(Index),RemoveCount);
-	}
-
-
 	// Search
 	//	search for data
 	// [in]Dest			data to search for
@@ -408,20 +381,6 @@ public:
 				return i;
 		}
 		return IndexNotFound;
-	}
-
-
-	cnLib_DEPRECATED void RemoveTailItems(uIntn RemoveCount){
-		return fArray.Truncate(RemoveCount);
-	}
-
-	// Remove
-	//	Remove items at specifed position
-	// [in]Index	index of item to remove
-	// [in]Count	number of item to remove
-	// return item count removed
-	cnLib_DEPRECATED void RemoveItems(uIntn Index,uIntn RemoveCount){
-		return fArray.Remove(Index,RemoveCount);
 	}
 
 
