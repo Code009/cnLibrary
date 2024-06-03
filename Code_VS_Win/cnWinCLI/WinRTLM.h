@@ -6,6 +6,7 @@
 #include <cnWinCLI\cnWinCLI.h>
 #include <cnRTL\cnRTLCore.h>
 #include <cnRTL\RuntimeFunction.h>
+#include <cnRTL\WinRTL.h>
 
 #if 0
 

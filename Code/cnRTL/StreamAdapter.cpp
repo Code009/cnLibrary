@@ -653,7 +653,7 @@ cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	Item.SourceBufferSize=0;
 
 	if(QuerySize>Item.SourceBuffer.Length){
-		QuerySize=BufferSizeRoundup(QuerySize);
+		QuerySize=cAllocationOperator::RoundUpCapacity(QuerySize);
 		if(QuerySize>WriteBufferSizeLimit){
 			QuerySize=WriteBufferSizeLimit;
 		}

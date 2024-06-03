@@ -8,7 +8,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Code_VS_Win;$(ProjectDir)..\..\Code_CRT;$(ProjectDir)..\..\Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Code_VS_Win_cnRTLCore_CRT;$(ProjectDir)..\..\Code_VS_Win;$(ProjectDir)..\..\Code_CLib;$(ProjectDir)..\..\Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>

@@ -5,7 +5,6 @@
 #ifndef __cnLibrary_cnRTL_CRTCoreRuntime_H__
 #define __cnLibrary_cnRTL_CRTCoreRuntime_H__
 
-#include <cnRTL/CRTCoreCommon.h>
 #include <cnSystem/cnDebug.h>
 
 #ifdef __cplusplus
@@ -376,8 +375,6 @@ struct TKRuntime::TAtomicLink
 	}
 };
 
-#ifndef cnLibrary_CRTEXCLUDE_MUTEX
-
 struct TKRuntime::ThreadNotification
 {
 	std::mutex SignalMutex;
@@ -404,8 +401,6 @@ struct TKRuntime::ThreadNotification
 
 	bool Notified;
 };
-
-#endif // !cnLibrary_CRTEXCLUDE_MUTEX
 
 template<class TElement>
 struct TKRuntime::tVectorOperatorEnumeration

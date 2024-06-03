@@ -37,12 +37,6 @@
     <Filter Include="Code - Windows\cnUI">
       <UniqueIdentifier>{c4d3913c-ee74-4fa7-bd7f-1274abb5b7a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Code\cnRTLCore - CRT">
-      <UniqueIdentifier>{602af6ba-7eb0-4110-800f-73cb44f03d42}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows\cnRTLCore - CRT">
-      <UniqueIdentifier>{2fafd2cd-dd86-417a-9386-b29a277a8d0c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Code\cnTK">
       <UniqueIdentifier>{38b5800d-9243-4974-b6ea-a8c85c83d7cf}</UniqueIdentifier>
     </Filter>
@@ -54,6 +48,18 @@
     </Filter>
     <Filter Include="Code - Windows\cnSystem">
       <UniqueIdentifier>{5a514ce4-0b7b-4eb9-8906-bc0c43f6de13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - CLib">
+      <UniqueIdentifier>{1a67b387-308e-4baa-9c28-955d95577315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - CLib\CRT">
+      <UniqueIdentifier>{470f8ee2-e8ed-47f4-892e-18cc59676da6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - Windows - cnRTLCore - CRT">
+      <UniqueIdentifier>{ff533e5f-a2f6-4f8f-8179-2bf29d164b88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Code - Windows - cnRTLCore - CRT\cnRTL">
+      <UniqueIdentifier>{95078dc1-b577-4041-a6f8-c0b7392587a3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -288,18 +294,6 @@
     <ClInclude Include="dependency.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTFeatureCheck.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\cnRTLCore.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreCommon.h">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h">
-      <Filter>Code - Windows\cnRTLCore - CRT</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
@@ -420,12 +414,6 @@
     <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h">
       <Filter>Code - Windows\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreTemplateKit.hpp">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreRuntime.hpp">
-      <Filter>Code\cnRTLCore - CRT</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinNetwork.h">
       <Filter>Code - Windows\cnSystem</Filter>
     </ClInclude>
@@ -449,6 +437,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinFileSystem.h">
       <Filter>Code - Windows\cnSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp">
+      <Filter>Code - CLib\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp">
+      <Filter>Code - CLib\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTFeatureCheck.h">
+      <Filter>Code - CLib\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\cnRTLCore.h">
+      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\CRTHeader.h">
+      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -17,22 +17,8 @@
 #include <iterator>
 #include <algorithm>
 #include <atomic>
-
-#if _MANAGED
-
-#define	cnLibrary_CRTEXCLUDE_MUTEX
-
-// _MANAGED
-#else
-//	!_MANAGED
-
 #include <mutex>
 #include <condition_variable>
-
-
-#endif // !_MANAGED
-
-
 
 //	_MSC_FULL_VER : 190023506			Visual C++ 2015 (14.0)	Toolset v140 update 1
 //	_MSC_FULL_VER : 190023918			Visual C++ 2015 (14.0)	Toolset v140 update 2
@@ -65,7 +51,7 @@
 
 //	use C++20 Feature-test macros from Visual C++ 2019 (16.0)
 
-#include <cnRTL/CRTFeatureCheck.h>
+#include <CRT/CRTFeatureCheck.h>
 
 #if cnLibrary_CRTFEATURE_COROUTINE>=201902L
 

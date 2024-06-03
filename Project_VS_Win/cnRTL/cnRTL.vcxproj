@@ -168,7 +168,9 @@
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\ThreadSync.hpp" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreRuntime.hpp" />
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp" />
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp" />
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTFeatureCheck.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnConsole.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnData.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDatabase.h" />
@@ -282,12 +284,9 @@
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\cnRTLCore.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreCommon.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTFeatureCheck.h" />
-    <ClInclude Include="..\..\Code_CRT\cnRTL\CRTCoreTemplateKit.hpp" />
-    <ClInclude Include="..\..\Code_VS_Win\cnRTL\CRTHeader.h" />
     <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h" />
+    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\cnRTLCore.h" />
+    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\CRTHeader.h" />
     <ClInclude Include="dependency.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

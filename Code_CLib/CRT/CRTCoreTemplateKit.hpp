@@ -5,9 +5,6 @@
 #ifndef __cnLibrary_cnRTL_CRTTemplateKit_H__
 #define __cnLibrary_cnRTL_CRTTemplateKit_H__
 
-#include <cnRTL/CRTCoreCommon.h>
-#include <cnRTL/CRTCoreRuntime.hpp>
-
 #ifdef __cplusplus
 
 //---------------------------------------------------------------------------
