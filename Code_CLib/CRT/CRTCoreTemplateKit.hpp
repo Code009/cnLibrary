@@ -1,9 +1,9 @@
-/*- cnLibCRT - CRT Template Kit -------------------------------------------*/
+/*- CLib - CRT Template Kit -----------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2021-09-04                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnRTL_CRTTemplateKit_H__
-#define __cnLibrary_cnRTL_CRTTemplateKit_H__
+#ifndef __cnLibrary_CLib_CRT_CRTTemplateKit_H__
+#define __cnLibrary_CLib_CRT_CRTTemplateKit_H__
 
 #ifdef __cplusplus
 

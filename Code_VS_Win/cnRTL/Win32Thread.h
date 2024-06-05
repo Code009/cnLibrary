@@ -1,12 +1,12 @@
-﻿/*- cnRTL - Windows - Thread ----------------------------------------------*/
+﻿/*- cnRTL - Windows - Win32 Thread ----------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2021-07-29                                          */
 /*-------------------------------------------------------------------------*/
 #pragma once
-/*-------------------------------------------------------------------------*/
-#include <cnRTL\WinCommon.h>
-#include <cnRTL\WinThread.h>
 
+#include <cnRTL\WinSDKHeader.h>
+
+/*-------------------------------------------------------------------------*/
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
@@ -14,6 +14,22 @@ namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
+//---------------------------------------------------------------------------
+class cCriticalSection 
+{
+public:
+	cCriticalSection()noexcept(true);
+	~cCriticalSection()noexcept(true);
+
+	cCriticalSection(const cCriticalSection&)=delete;
+
+	void Acquire(void)noexcept(true);
+	bool TryAcquire(void)noexcept(true);
+	void Release(void)noexcept(true);
+
+protected:
+	CRITICAL_SECTION fCriticalSection;
+};
 //---------------------------------------------------------------------------
 class cSRWLockByCriticalSection : public cCriticalSection
 {

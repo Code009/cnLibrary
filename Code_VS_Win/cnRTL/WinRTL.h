@@ -2,6 +2,8 @@
 
 #include <cnRTL\WinCommon.h>
 
+#include <cnRTL\Win32Interlocked.h>
+
 #include <cnRTL\WinMemory.h>
 #include <cnRTL\WinDateTime.h>
 #include <cnRTL\WinThread.h>

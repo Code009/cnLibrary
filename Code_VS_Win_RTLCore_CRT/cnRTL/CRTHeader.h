@@ -16,9 +16,6 @@
 #include <functional>
 #include <iterator>
 #include <algorithm>
-#include <atomic>
-#include <mutex>
-#include <condition_variable>
 
 //	_MSC_FULL_VER : 190023506			Visual C++ 2015 (14.0)	Toolset v140 update 1
 //	_MSC_FULL_VER : 190023918			Visual C++ 2015 (14.0)	Toolset v140 update 2
@@ -46,7 +43,7 @@
 
 #endif	// _MSC_VER < 1920
 
-//	_MSC_VER : 1920			Visual Studio 2019 RTW (16.0)	1920
+//	_MSC_VER : 1920			Visual Studio 2019 RTW (16.0)
 #if _MSC_VER >= 1920
 
 //	use C++20 Feature-test macros from Visual C++ 2019 (16.0)
@@ -61,6 +58,39 @@
 
 
 #endif // _MSC_VER >= 1920
+
+//	_MSC_VER : 1930			Visual Studio 2022 RTW 17.0
+#if _MSC_VER >= 1930
+
+#ifndef cnLib_WINCRT_WIN32SYNC
+
+// the following headers are not supported before VS2022
+#include <mutex>
+#include <condition_variable>
+
+#endif	//!cnLib_WINCRT_WIN32SYNC
+
+#ifndef cnLib_WINCRT_WIN32ATOMIC
+
+// atomic needs alignment to work, which is not supported before VS2022
+#include <atomic>
+
+#endif // !cnLib_WINCRT_WIN32ATOMIC
+
+
+
+#else
+
+#ifndef cnLib_WINCRT_WIN32ATOMIC
+#define	cnLib_WINCRT_WIN32ATOMIC	// use win32 atomic before VS2022
+#endif
+
+#ifndef cnLib_WINCRT_WIN32SYNC
+#define cnLib_WINCRT_WIN32SYNC		// use win32 synchronization before VS2022
+#endif
+
+#endif // _MSC_VER >= 1930
+
 
 #define	cnCRT_BYTEORDER_LITTLEENDIAN	1
 #define	cnCRT_BYTEORDER_BIGENDIAN		0

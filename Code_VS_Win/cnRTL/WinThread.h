@@ -5,6 +5,7 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 #include <cnRTL\WinCommon.h>
+#include <cnRTL\Win32Thread.h>
 #include <cnRTL\WinDateTime.h>
 
 #ifdef __cplusplus
@@ -14,80 +15,6 @@ namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
-//---------------------------------------------------------------------------
-namespace Interlocked{
-//---------------------------------------------------------------------------
-template<uIntn Size>
-struct _Func;
-//---------------------------------------------------------------------------
-template<>
-struct _Func<1>
-{
-	typedef CHAR Type;
-	static CHAR Inc(volatile CHAR &Dest)noexcept(true);
-	static CHAR Dec(volatile CHAR &Dest)noexcept(true);
-	static CHAR Xchg(volatile CHAR &Dest,CHAR Src)noexcept(true);
-	static CHAR CmpXchg(volatile CHAR &Dest,CHAR Src,CHAR Compare)noexcept(true);
-};
-//---------------------------------------------------------------------------
-template<>
-struct _Func<2>
-{
-	typedef SHORT Type;
-	static SHORT Inc(volatile SHORT &Dest)noexcept(true);
-	static SHORT Dec(volatile SHORT &Dest)noexcept(true);
-	static SHORT Xchg(volatile SHORT &Dest,SHORT Src)noexcept(true);
-	static SHORT CmpXchg(volatile SHORT &Dest,SHORT Src,SHORT Compare)noexcept(true);
-};
-//---------------------------------------------------------------------------
-template<>
-struct _Func<4>
-{
-	typedef LONG Type;
-	static LONG Inc(volatile LONG &Dest)noexcept(true);
-	static LONG Dec(volatile LONG &Dest)noexcept(true);
-	static LONG Xchg(volatile LONG &Dest,LONG Src)noexcept(true);
-	static LONG CmpXchg(volatile LONG &Dest,LONG Src,LONG Compare)noexcept(true);
-};
-//---------------------------------------------------------------------------
-template<>
-struct _Func<8>
-{
-	typedef LONG64 Type;
-	static LONG64 Inc(volatile LONG64 &Dest)noexcept(true);
-	static LONG64 Dec(volatile LONG64 &Dest)noexcept(true);
-	static LONG64 Xchg(volatile LONG64 &Dest,LONG64 Src)noexcept(true);
-	static LONG64 CmpXchg(volatile LONG64 &Dest,LONG64 Src,LONG64 Compare)noexcept(true);
-};
-//---------------------------------------------------------------------------
-// Inc
-template<class TInt>
-inline TInt Inc(volatile TInt &Dest)noexcept(true){
-	typedef _Func<sizeof(TInt)> FuncType;
-	return static_cast<TInt>( FuncType::Inc(reinterpret_cast<typename FuncType::Type volatile&>(Dest)) );
-}
-// Dec
-template<class TInt>
-inline TInt Dec(volatile TInt &Dest)noexcept(true){
-	typedef _Func<sizeof(TInt)> FuncType;
-	return static_cast<TInt>( FuncType::Dec(reinterpret_cast<typename FuncType::Type volatile&>(Dest)) );
-}
-
-// Xchg
-template<class TInt>
-inline TInt Xchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src)noexcept(true){
-	typedef _Func<sizeof(TInt)> FuncType;
-	return static_cast<TInt>( FuncType::Xchg(reinterpret_cast<typename FuncType::Type volatile&>(Dest),reinterpret_cast<typename FuncType::Type const&>(Src)) );
-}
-
-// CmpXchg
-template<class TInt>
-inline TInt CmpXchg(volatile TInt &Dest,cnVar::TypeDef<TInt> Src,cnVar::TypeDef<TInt> Compare)noexcept(true){
-	typedef _Func<sizeof(TInt)> FuncType;
-	return static_cast<TInt>( FuncType::CmpXchg(reinterpret_cast<typename FuncType::Type volatile&>(Dest),reinterpret_cast<typename FuncType::Type const&>(Src),reinterpret_cast<typename FuncType::Type const&>(Compare)) );
-}
-//---------------------------------------------------------------------------
-}	// namespace Interlocked
 //---------------------------------------------------------------------------
 class cWinExclusiveFlag
 {
@@ -155,22 +82,6 @@ public:
 	~cWinWaitReference()noexcept(true);
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
-};
-//---------------------------------------------------------------------------
-class cCriticalSection 
-{
-public:
-	cCriticalSection()noexcept(true);
-	~cCriticalSection()noexcept(true);
-
-	cCriticalSection(const cCriticalSection&)=delete;
-
-	void Acquire(void)noexcept(true);
-	bool TryAcquire(void)noexcept(true);
-	void Release(void)noexcept(true);
-
-protected:
-	CRITICAL_SECTION fCriticalSection;
 };
 //---------------------------------------------------------------------------
 class cDependentRegistration : public iDependentRegistration

@@ -1,9 +1,9 @@
-/*- cnCRT - crt feature testing -------------------------------------------*/
+/*- CLib - CRT feature testing --------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2022-01-14                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnRTL_CRTFeatureCheck_H__
-#define	__cnLibrary_cnRTL_CRTFeatureCheck_H__
+#ifndef __cnLibrary_CLib_CRT_CRTFeatureCheck_H__
+#define	__cnLibrary_CLib_CRT_CRTFeatureCheck_H__
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus
 
