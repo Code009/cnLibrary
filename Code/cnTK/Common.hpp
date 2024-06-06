@@ -1249,7 +1249,7 @@ inline void TrivialCopy(TDest *Dest,const TSrc *Src)noexcept(true)
 template<tSize Size,class TDest>
 inline void TrivialZeroFill(TDest *Dest)noexcept(true)
 {
-	new(reinterpret_cast<cnVar::cNoInitialization*>(Dest)) cPlainData<Size>();
+	*reinterpret_cast<cPlainData<Size>*>(Dest)=cPlainData<Size>();
 }
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
