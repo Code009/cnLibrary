@@ -154,6 +154,21 @@ template<uIntn Index,class T>
 struct cVarPackVariable
 {
 	T Value;
+
+#if cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
+
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVarPackVariable()=default;
+#else
+	cnLib_CONSTEXPR_FUNC cVarPackVariable(){}
+#endif
+
+	// need constructor for initialization before c++17
+	template<class TArg>
+	cnLib_CONSTEXPR_FUNC cVarPackVariable(TArg&& Arg)
+		: Value(static_cast<TArg&&>(Arg)){}
+
+#endif // cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
 };
 
 template<class TIndexSequence,class...T>
@@ -164,6 +179,21 @@ template<uIntn...Indics,class...T>
 struct cVarPackStruct<TValueSequence<uIntn,Indics...>,T...>
 	: cVarPackVariable<Indics,T>...
 {
+#if cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
+	// need constructor for initialization before c++17
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVarPackStruct()=default;
+#else
+	cnLib_CONSTEXPR_FUNC cVarPackStruct(){}
+#endif
+
+	template<class...TArgs>
+	cnLib_CONSTEXPR_FUNC cVarPackStruct(TArgs&&...Args)
+		: cVarPackVariable<Indics,T>{static_cast<TArgs&&>(Args)}...{}
+
+#endif // cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
+
+
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 	template<class...TDest,class TPack=typename TTypeConditional<cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...>&,TBooleanValuesAnd<TIsReinterpretable<T,TDest>::Value...>::Value>::Type>
 	operator cVarPackStruct<TValueSequence<uIntn,Indics...>,TDest...> &(void)noexcept(true){
@@ -407,7 +437,20 @@ template<class...T>
 struct cVarPack
 	: cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...>
 {
-	typedef cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
+#if cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
+	// need constructor for initialization before c++17
+#ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
+	cVarPack()=default;
+#else
+	cnLib_CONSTEXPR_FUNC cVarPack(){}
+#endif
+	template<class...TArgs>
+	cnLib_CONSTEXPR_FUNC cVarPack(TArgs&&...Args)
+		: cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...>(static_cast<TArgs&&>(Args)...){}
+
+#endif // cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
+
+		typedef cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
 	typedef cVarPackAccessor<0,0,sizeof...(T)-1,tPackStruct> tAllAccessor;
 	typedef cVarPackAccessor<0,0,sizeof...(T)-1,const tPackStruct> tAllConstAccessor;
 

@@ -109,7 +109,6 @@
 
 //- C++17 -------------------------------------------------------------------
 
-// (C++17)201603L __cpp_aggregate_bases				Aggregate classes with base classes
 // (C++17)201603L __cpp_capture_star_this			Lambda capture of *this by value as [=,*this]
 // (C++17)201411L __cpp_enumerator_attributes		Attributes for enumerators
 // (C++17)201603L __cpp_fold_expressions			Fold expressions
@@ -127,6 +126,9 @@
 // (C++17)201603L __has_cpp_attribute(nodiscard)			[[nodiscard]]
 
 // (C++17)201703L __cpp_deduction_guides			Template argument deduction for class templates
+
+// (C++17)201603L __cpp_aggregate_bases				Aggregate classes with base classes
+#define	cnLibrary_CPPFEATURE_AGGREGATE_BASE			__cpp_aggregate_bases
 
 // (C++17)201606L __cpp_aligned_new					Dynamic memory allocation for over-aligned data
 #define	cnLibrary_CPPFEATURE_ALIGNED_NEW		__cpp_aligned_new

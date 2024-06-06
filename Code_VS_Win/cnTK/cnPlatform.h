@@ -55,13 +55,13 @@
 #if _MSC_VER >= 1600
 
 // c++11 rvalue reference
-#define	cnLibrary_CPPFEATURE_RVALUE_REFERENCES	200610L
+#define	cnLibrary_CPPFEATURE_RVALUE_REFERENCES	200610L		// __cpp_rvalue_references
 
 // c++11 static_assert
-#define	cnLibrary_CPPFEATURE_STATIC_ASSERT		200410L
+#define	cnLibrary_CPPFEATURE_STATIC_ASSERT		200410L		// __cpp_static_assert
 
 // c++11 auto, decltype, tailing return type
-#define	cnLibrary_CPPFEATURE_DECLTYPE			200707L
+#define	cnLibrary_CPPFEATURE_DECLTYPE			200707L		// __cpp_decltype
 // _MSC_VER >= 1600
 #else
 // _MSC_VER < 1600
@@ -78,7 +78,7 @@
 // c++11 lambda ( add support for stateless lambda )
 #if _MSC_VER >= 1700
 
-#define	cnLibrary_CPPFEATURE_LAMBDAS	200907L
+#define	cnLibrary_CPPFEATURE_LAMBDAS	200907L		// __cpp_lambdas
 
 // _MSC_VER >= 1700
 #else
@@ -101,16 +101,16 @@
 #if _MSC_VER >= 1800
 
 // c++11 Variadic templates
-#define	cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES		200704L
+#define	cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES		200704L		// __cpp_variadic_templates
 
 // c++11 alias template
-#define	cnLibrary_CPPFEATURE_ALIAS_TEMPLATES		200704L
+#define	cnLibrary_CPPFEATURE_ALIAS_TEMPLATES		200704L		// __cpp_alias_templates
 
 // c++11 Delegating constructor
-#define	cnLibrary_CPPFEATURE_DELEGATE_CONSTRUCTORS	200604L
+#define	cnLibrary_CPPFEATURE_DELEGATE_CONSTRUCTORS	200604L		// __cpp_delegating_constructors
 
 // c++11 non-static class member initializers
-#define	cnLibrary_CPPFEATURE_NSDMI					200809L
+#define	cnLibrary_CPPFEATURE_NSDMI					200809L		// __cpp_nsdmi
 
 // _MSC_VER >= 1800
 #else
@@ -149,31 +149,31 @@
 #if _MSC_VER >= 1900
 
 // c++14 sized delete
-#define	cnLibrary_CPPFEATURE_SIZED_DEALLOCATION		201309L
+#define	cnLibrary_CPPFEATURE_SIZED_DEALLOCATION		201309L		// __cpp_sized_deallocation
 
 // c++11 User-defined literals
-#define	cnLibrary_CPPFEATURE_USER_DEFINED_LITERALS	200809L
+#define	cnLibrary_CPPFEATURE_USER_DEFINED_LITERALS	200809L		// __cpp_user_defined_literals
 
 // c++11 constexpr
-#define	cnLibrary_CPPFEATURE_CONSTEXPR				200704L
+#define	cnLibrary_CPPFEATURE_CONSTEXPR				200704L		// __cpp_constexpr
 
 // c++11 Uniform Initialization on template base class will cause compiler error
-#define	cnLibrary_CPPFEATURE_INITIALIZER_LIST		200806L
+#define	cnLibrary_CPPFEATURE_INITIALIZER_LIST		200806L		// __cpp_initializer_lists
 
 // c++11 ref-qualifiers
-#define	cnLibrary_CPPFEATURE_REF_QUALIFIERS			200710L
+#define	cnLibrary_CPPFEATURE_REF_QUALIFIERS			200710L		// __cpp_ref_qualifiers
 
 // c++11 Inheriting constructors
-#define	cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS	200802L
+#define	cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS	200802L		// __cpp_inheriting_constructors
 #if _MSC_VER < 1910
 #pragma warning(disable:4520)	// multiple default constructors specified
 #endif
 
 // c++11 New character types (char16_t and char32_t)
-#define	cnLibrary_CPPFEATURE_UCHARS					200704L
+#define	cnLibrary_CPPFEATURE_UCHARS					200704L		// __cpp_unicode_characters
 
 // c++11 attributes
-#define	cnLibrary_CPPFEATURE_ATTRIBUTES		200809L
+#define	cnLibrary_CPPFEATURE_ATTRIBUTES				200809L		// __cpp_attributes
 
 // _MSC_VER >= 1900
 #else
@@ -199,7 +199,7 @@
 #if _MSC_FULL_VER >= 190023918
 
 // c++14 template variable
-#define	cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES		201304L
+#define	cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES		201304L		// __cpp_variable_templates
 
 #endif // _MSC_FULL_VER >= 190023918
 
@@ -242,7 +242,7 @@
 #if _MSC_VER >= 1911
 
 // c++17 if constexpr
-#define	cnLibrary_CPPFEATURE_IF_CONSTEXPR		201606L
+#define	cnLibrary_CPPFEATURE_IF_CONSTEXPR		201606L		// __cpp_if_constexpr
 
 // _MSC_VER >= 1911
 #else
@@ -261,12 +261,12 @@
 #if _MSC_VER >= 1912
 
 // c++17 Dynamic memory allocation for over-aligned data
-#define	cnLibrary_CPPFEATURE_ALIGNED_NEW		201606L
+#define	cnLibrary_CPPFEATURE_ALIGNED_NEW		201606L		// __cpp_aligned_new
 
 // c++17 Inline variables
-#define	cnLibrary_CPPFEATURE_INLINE_VARIABLES	201606L
+#define	cnLibrary_CPPFEATURE_INLINE_VARIABLES	201606L		// __cpp_inline_variables
 
-#define	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE	201510L
+#define	cnLibrary_CPPFEATURE_NOEXCEPT_FUNC_TYPE	201510L		// __cpp_noexcept_function_type
 
 #endif	// _MSC_VER >= 1912
 
@@ -277,15 +277,17 @@
 #endif	// _MSC_VER >= 1913
 
 //	_MSC_VER : 1914			Visual C++ 2017 (15.7)	Toolset v141
-// c++11 exp SFINAE
-// c++17 Aggregate initialization of classes with base classes 
+// c++11 fully support exp SFINAE
 // c++17 Class template argument deduction
 // c++17 Replacement of class objects containing reference members
 // c++17 Pack expansions in using-declarations
 #if _MSC_VER >= 1914
 
+// c++17 Aggregate initialization of classes with base classes 
+#define	cnLibrary_CPPFEATURE_AGGREGATE_BASE			201603L		// __cpp_aggregate_bases
+
 // c++17 Non-type template parameters with auto type 
-#define	cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO	201606L
+#define	cnLibrary_CPPFEATURE_TEMPLATE_NONTYPE_AUTO	201606L		// __cpp_nontype_template_parameter_auto
 
 #endif	// _MSC_VER >= 1914
 
@@ -374,7 +376,7 @@
 #if _RESUMABLE_FUNCTIONS_SUPPORTED
 
 // c++20 coroutine ( experimental )
-#define	cnLibrary_CPPFEATURE_COROUTINE		201902L
+#define	cnLibrary_CPPFEATURE_COROUTINE		201902L		// __cpp_impl_coroutine
 
 #endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 
