@@ -466,6 +466,23 @@ struct cVarPack
 
 };
 
+template<>
+struct cVarPack<>
+{
+	typedef cVarPackStruct<TValueSequence<uIntn> > tPackStruct;
+	typedef cVarPackNoAccess tAllAccessor;
+	typedef cVarPackNoAccess tAllConstAccessor;
+
+	tAllAccessor All(void){
+		return tAllAccessor();
+	}
+
+	tAllConstAccessor All(void)const{
+		return tAllConstAccessor();
+	}
+
+};
+
 
 template<uIntn Index,class...T>
 struct TVarPackOffsetOf
