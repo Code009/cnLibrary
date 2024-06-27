@@ -224,7 +224,7 @@ class iGATTDescriptorController
 public:
 	virtual void cnLib_FUNC DescriptorPublished(void)noexcept(true)=0;
 	virtual void cnLib_FUNC DescriptorClosed(void)noexcept(true)=0;
-	virtual void cnLib_FUNC DescriptorRead(iGATTServerConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC DescriptorRead(iGATTServerConnection *Connection,iWriteBuffer<void> *WriteBuffer)noexcept(true)=0;
 	virtual void cnLib_FUNC DescriptorWrite(iGATTServerConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -252,11 +252,11 @@ public:
 	virtual void cnLib_FUNC CharacteristicPublished(void)noexcept(true)=0;
 	virtual void cnLib_FUNC CharacteristicClosed(void)noexcept(true)=0;
 	virtual cGATTCharacteristicParameter cnLib_FUNC GetCharacteristicParameter(void)noexcept(true)=0;
-	virtual void cnLib_FUNC ValueRead(iGATTServerConnection *Connection,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual void cnLib_FUNC ValueRead(iGATTServerConnection *Connection,iWriteBuffer<void> *WriteBuffer)noexcept(true)=0;
 	virtual void cnLib_FUNC ValueWrite(iGATTServerConnection *Connection,const void *Data,uIntn Length)noexcept(true)=0;
 	virtual void cnLib_FUNC ClientSubscribe(iGATTServerSubscription *Subscription)noexcept(true)=0;
 	virtual void cnLib_FUNC ClientUnsubscribe(iGATTServerSubscription *Subscription)noexcept(true)=0;
-	virtual bool cnLib_FUNC ValueNotify(iGATTServerSubscription *Subscription,iWriteStreamBuffer *WriteBuffer)noexcept(true)=0;
+	virtual bool cnLib_FUNC ValueNotify(iGATTServerSubscription *Subscription,iWriteBuffer<void> *WriteBuffer)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class iGATTServerService : public iReference

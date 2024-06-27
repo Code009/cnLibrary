@@ -126,7 +126,7 @@ public:
 cStringBuffer<uChar16> CreateStringFromHandle(HSTRING String)noexcept(true);
 cStringBuffer<wchar_t> CreateWStringFromHandle(HSTRING String)noexcept(true);
 //---------------------------------------------------------------------------
-class cUWPMemoryBufferWriteStreamBuffer : public iWriteStreamBuffer
+class cUWPMemoryBufferWriteStreamBuffer : public iWriteBuffer<void>
 {
 public:
 	cUWPMemoryBufferWriteStreamBuffer(COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter)noexcept(true);
@@ -167,7 +167,7 @@ public:
 class cUWPMemoryBuffer
 	: public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess
 	, public IWeakReferenceSource, public IAgileObject
-	, public iWriteStreamBuffer
+	, public iWriteBuffer<void>
 {
 public:
 	using ABI::Windows::Storage::Streams::IBuffer::AddRef;
