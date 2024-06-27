@@ -435,146 +435,160 @@ void cStreamBufferIOQueue::CommitWrite(uIntn Size)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer()noexcept
-	: fReadyBufferItem(nullptr)
-	, fReadingItem(nullptr)
-	, fWritingItem(nullptr)
+cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noexcept
+	: fBufferSize(cAllocationOperator::RoundUpCapacity(BufferSizeLimit))
+	, fReadingItem(fBufferItem)
+	, fWritingItem(fBufferItem)
+	, fReadBufferOffset(0)
+	, fReadBufferMergedSize(0)
 {
-	fBufferItem[0].Next=fBufferItem+1;
+	fBufferItem[0].Next=nullptr;
+	fBufferItem[0].WriteIndex=0;
+	fBufferItem[0].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
+
+	fBufferItem[1].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[2].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[3].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
 	fBufferItem[1].Next=fBufferItem+2;
-	fBufferItem[2].Next=nullptr;
-	fEmptyBufferItem.PushChain(fBufferItem,fBufferItem+2);
+	fBufferItem[2].Next=fBufferItem+3;
+	fBufferItem[3].Next=nullptr;
+	fEmptyBufferStack.PushChain(fBufferItem+1,fBufferItem+3);
 }
 //---------------------------------------------------------------------------
 cAsyncLoopbackStreamBuffer::~cAsyncLoopbackStreamBuffer()noexcept
 {
+	cAllocationOperator::Deallocate(fBufferItem[3].Buffer,fBufferSize,0);
+	cAllocationOperator::Deallocate(fBufferItem[2].Buffer,fBufferSize,0);
+	cAllocationOperator::Deallocate(fBufferItem[1].Buffer,fBufferSize,0);
+	cAllocationOperator::Deallocate(fBufferItem[0].Buffer,fBufferSize,0);
 }
 //---------------------------------------------------------------------------
-bool cAsyncLoopbackStreamBuffer::IsReadAvailable(void)const noexcept
+uIntn cAsyncLoopbackStreamBuffer::GetBufferSizeLimit(void)const noexcept
 {
-	if(fReadingItem!=nullptr)
-		return true;
-	if(fReadyBufferItem!=nullptr)
-		return true;
-	return false;
+	return fBufferSize;
 }
+//---------------------------------------------------------------------------
+//bool cAsyncLoopbackStreamBuffer::IsReadAvailable(void)const noexcept
+//{
+//	return fTotalBufferSize.Free.Load()!=0;
+//	if(fReadingItem!=nullptr)
+//		return true;
+//	if(fReadyBufferItem!=nullptr)
+//		return true;
+//	return false;
+//}
 //---------------------------------------------------------------------------
 cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn QuerySize)noexcept
 {
-	if(fReadingItem==nullptr){
-		// try to acquire read item
-		fReadingItem=fReadyBufferItem.Acquire.Xchg(nullptr);
-		if(fReadingItem==nullptr){
-			cConstMemory EmptyBuffer;
-			EmptyBuffer.Pointer=nullptr;
-			EmptyBuffer.Length=0;
-			return EmptyBuffer;
-		}
-		fReadBufferOffset=0;
-	}
-
 	cConstMemory ReadBuffer;
 
-	auto &DataBuffer=fReadingItem->Buffer;
-	ReadBuffer.Length=DataBuffer.GetSize()-fReadBufferOffset;
-	if(ReadBuffer.Length>=QuerySize){
-		ReadBuffer.Pointer=DataBuffer[fReadBufferOffset];
+	uIntn SizeRemain=fReadingItem->WriteIndex-fReadBufferOffset;
+	auto NextItem=fReadingItem->Next;
+	if(QuerySize<=SizeRemain || NextItem==nullptr){
+		ReadBuffer.Pointer=cnMemory::PointerAddByteOffset(fReadingItem->Buffer,fReadBufferOffset);
+		ReadBuffer.Length=SizeRemain;
+		fReadBufferMergedSize=0;
+		return ReadBuffer;
 	}
-	else{
-		// merge next buffer
-		auto MergeReadItem=fReadyBufferItem.Acquire.Xchg(nullptr);
-		if(MergeReadItem!=nullptr){
-			if(fReadBufferOffset!=0){
-				DataBuffer.Remove(0,fReadBufferOffset);
-			}
-			DataBuffer.Append(MergeReadItem->Buffer->Pointer,MergeReadItem->Buffer->Length);
-			MergeReadItem->Buffer.Clear();
-			fEmptyBufferItem.Push(MergeReadItem);
+	// merge next buffer
+	if(QuerySize>fBufferSize)
+		QuerySize=fBufferSize;
 
-			fReadBufferOffset=0;
-			ReadBuffer.Length=DataBuffer.GetSize();
-		}
-		ReadBuffer.Pointer=DataBuffer->Pointer;
+	if(fReadBufferOffset!=0){
+		cnMemory::Copy(fReadingItem->Buffer,cnMemory::PointerAddByteOffset(fReadingItem->Buffer,fReadBufferOffset),SizeRemain);
+		fReadBufferOffset=0;
+		fReadingItem->WriteIndex=SizeRemain;
 	}
+	uIntn SizeNeeded=QuerySize-fReadingItem->WriteIndex;
+	while(NextItem->WriteIndex<SizeNeeded){
+		uIntn NextSize=NextItem->WriteIndex;
+		cnMemory::Copy(cnMemory::PointerAddByteOffset(fReadingItem->Buffer,fReadingItem->WriteIndex),NextItem->Buffer,NextSize);
+		auto NextNext=NextItem->Next;
+		if(NextNext==nullptr){
+			ReadBuffer.Length=fReadingItem->WriteIndex+NextSize;
+			ReadBuffer.Pointer=fReadingItem->Buffer;
+			fReadBufferMergedSize=NextSize;
+			return ReadBuffer;
+		}
+		fReadingItem->WriteIndex+=NextSize;
+		fReadingItem->Next=NextNext;
+		SizeNeeded-=NextSize;
+
+		// recycle next item
+		fEmptyBufferStack.Push(NextItem);
+		NextItem=NextNext;
+	}
+	cnMemory::Copy(cnMemory::PointerAddByteOffset(fReadingItem->Buffer,fReadingItem->WriteIndex),NextItem->Buffer,SizeNeeded);
+	ReadBuffer.Length=QuerySize;
+	ReadBuffer.Pointer=fReadingItem->Buffer;
+	fReadBufferMergedSize=SizeNeeded;
 	return ReadBuffer;
 }
 //---------------------------------------------------------------------------
 void cAsyncLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
 {
-	if(fReadingItem==nullptr)
-		return;
-
-	auto &DataBuffer=fReadingItem->Buffer;
-	uIntn RemianSize=DataBuffer.GetSize()-fReadBufferOffset;
-	if(Size<RemianSize){
-		fReadBufferOffset+=Size;
+	uIntn NewOffset=fReadBufferOffset+Size;
+	if(NewOffset<fReadingItem->WriteIndex){
+		fReadBufferOffset=NewOffset;
 		return;
 	}
+	if(fReadingItem->Next==nullptr){
+		fReadBufferOffset=fReadingItem->WriteIndex;
+		return;
+	}
+	// recycle current read item
+	auto RecycleItem=fReadingItem;
+	fReadBufferOffset=NewOffset-fReadingItem->WriteIndex;
+	if(fReadBufferOffset>fReadBufferMergedSize)
+		fReadBufferOffset=fReadBufferMergedSize;
 
-	// recycle empty buffer
-	fReadingItem->Buffer.Clear();
-	fEmptyBufferItem.Push(fReadingItem);
-	fReadingItem=nullptr;
+	fReadingItem=fReadingItem->Next;
+	fEmptyBufferStack.Push(RecycleItem);
 }
 //---------------------------------------------------------------------------
 cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 {
-	if(fWritingItem==nullptr){
-		// try to acquire ready buffer
-		fWritingItem=fReadyBufferItem.Acquire.Xchg(nullptr);
-		if(fWritingItem==nullptr){
-			// try to acquire free buffer
-			fWritingItem=fEmptyBufferItem.Pop();
-			if(fWritingItem==nullptr){
-				cMemory EmptyBuffer;
-				EmptyBuffer.Pointer=nullptr;
-				EmptyBuffer.Length=0;
-				return EmptyBuffer;
-			}
+	if(QuerySize<=fBufferSize){
+		if(fWritingItem->WriteIndex+QuerySize<fBufferSize){
+			cMemory WriteBuffer;
+			WriteBuffer.Pointer=cnMemory::PointerAddByteOffset(fWritingItem->Buffer,fWritingItem->WriteIndex);
+			WriteBuffer.Length=fBufferSize-fWritingItem->WriteIndex;
+			return WriteBuffer;
 		}
-	}
+		// not enough buffer remaining
 
-	cMemory WriteBuffer;
-	auto &DataBuffer=fWritingItem->Buffer;
-	uIntn WriteOffset=DataBuffer.GetSize();
-	if(WriteOffset>BufferSizeLimit){
-		// no more buffer available
-		if(fReadyBufferItem.Release.CmpStore(nullptr,fWritingItem)){
-			fWritingItem=nullptr;
+		auto NextWritingItem=fEmptyBufferStack.Pop();
+		if(NextWritingItem!=nullptr){
+			// link writing item to next item
+			NextWritingItem->WriteIndex=0;
+			NextWritingItem->Next=nullptr;
+			fWritingItem->Next=NextWritingItem;
+			// switch to next item
+			fWritingItem=NextWritingItem;
+			// return all buffer
+			cMemory WriteBuffer;
+			WriteBuffer.Pointer=fWritingItem->Buffer;
+			WriteBuffer.Length=fBufferSize;
+			return WriteBuffer;
 		}
-		return NullArray;
+		// no more buffer available
 	}
-	if(QuerySize<128)
-		QuerySize=128;
-	// grow capacity
-	WriteBuffer.Length=DataBuffer.GetCapacity()-WriteOffset;
-	if(WriteBuffer.Length<QuerySize){
-		DataBuffer.SetCapacity(WriteOffset+QuerySize);
-		WriteBuffer.Length=DataBuffer.GetCapacity()-WriteOffset;
-	}
-	WriteBuffer.Pointer=DataBuffer[WriteOffset];
-	return WriteBuffer;
+	cMemory EmptyBuffer;
+	EmptyBuffer.Pointer=nullptr;
+	EmptyBuffer.Length=0;
+	return EmptyBuffer;
 }
 //---------------------------------------------------------------------------
 void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
 {
-	if(fWritingItem==nullptr)
-		return;
-
-	auto &DataBuffer=fWritingItem->Buffer;
-	uIntn WriteOffset=DataBuffer.GetSize();
-	uIntn WriteCapacity=DataBuffer.GetCapacity();
-	if(Size+WriteOffset>WriteCapacity){
-		Size=WriteCapacity-WriteOffset;
-		DataBuffer.SetSize(WriteCapacity);
-	}
-	else{
-		DataBuffer.SetSize(Size+WriteOffset);
-	}
-
-	// publish buffer
-	if(fReadyBufferItem.Release.CmpStore(nullptr,fWritingItem)){
-		fWritingItem=nullptr;
+	if(Size!=0){
+		uIntn NextWriteIndex=Size+fWritingItem->WriteIndex;
+		if(NextWriteIndex>fBufferSize){
+			fWritingItem->WriteIndex=fBufferSize;
+		}
+		else{
+			fWritingItem->WriteIndex=NextWriteIndex;
+		}
 	}
 }
 //---------------------------------------------------------------------------
@@ -585,7 +599,8 @@ uIntn cAsyncLoopbackStreamBuffer::ReadTo(void *Buffer,uIntn Size)noexcept
 //---------------------------------------------------------------------------
 uIntn cAsyncLoopbackStreamBuffer::WriteFrom(const void *Buffer,uIntn Size)noexcept
 {
-	return WriteToStream(Buffer,Size,this);
+	uIntn Ret=WriteToStream(Buffer,Size,this);
+	return Ret;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

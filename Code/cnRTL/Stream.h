@@ -439,13 +439,11 @@ private:
 class bcWriteToReadQueue : public bcRWQueue
 {
 public:
-	bcWriteToReadQueue()noexcept(true);
+	bcWriteToReadQueue(uIntn BufferSize=65536)noexcept(true);
 	~bcWriteToReadQueue()noexcept(true);
 
 	cnLib_DEPRECATED void Close(void)noexcept(true);
 	uIntn InitialBuffer(const cConstMemory *Buffers,uIntn BufferCount)noexcept(true);
-
-	void SetBufferSizeLimit(uIntn Value)noexcept(true);
 
 	// Write Queue
 

@@ -1358,18 +1358,13 @@ bool bcFileStream::ProcessWriteTaskQueueProc(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcWriteToReadQueue::bcWriteToReadQueue()noexcept
+bcWriteToReadQueue::bcWriteToReadQueue(uIntn BufferSize)noexcept
+	: fBufferQueue(BufferSize)
 {
-	fBufferQueue.BufferSizeLimit=65536;
 }
 //---------------------------------------------------------------------------
 bcWriteToReadQueue::~bcWriteToReadQueue()noexcept
 {
-}
-//---------------------------------------------------------------------------
-void bcWriteToReadQueue::SetBufferSizeLimit(uIntn Value)noexcept
-{
-	fBufferQueue.BufferSizeLimit=Value;
 }
 //---------------------------------------------------------------------------
 void bcWriteToReadQueue::Close(void)noexcept
@@ -1431,7 +1426,7 @@ void bcWriteToReadQueue::ReadQueueClosed(void)noexcept
 //---------------------------------------------------------------------------
 uIntn bcWriteToReadQueue::GetMaxWriteBufferSize(void)noexcept
 {
-	return fBufferQueue.BufferSizeLimit;
+	return fBufferQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cMemory bcWriteToReadQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept
@@ -1456,7 +1451,7 @@ void bcWriteToReadQueue::CommitWriteBuffer(uIntn Size)noexcept
 //---------------------------------------------------------------------------
 uIntn bcWriteToReadQueue::GetMaxReadBufferSize(void)noexcept
 {
-	return fBufferQueue.BufferSizeLimit;
+	return fBufferQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cConstMemory bcWriteToReadQueue::GatherReadBuffer(uIntn QuerySize)noexcept
@@ -2025,7 +2020,7 @@ bool cBufferedExtEndpoint::IsWriteDataEnded(void)noexcept
 //---------------------------------------------------------------------------
 uIntn cBufferedExtEndpoint::GetMaxReadBufferSize(void)noexcept
 {
-	return fReadDataQueue.BufferSizeLimit;
+	return fReadDataQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cConstMemory cBufferedExtEndpoint::GatherReadBuffer(uIntn QuerySize)noexcept
@@ -2040,7 +2035,7 @@ void cBufferedExtEndpoint::DismissReadBuffer(uIntn Size)noexcept
 //---------------------------------------------------------------------------
 uIntn cBufferedExtEndpoint::GetMaxWriteBufferSize(void)noexcept
 {
-	return fWriteDataQueue.BufferSizeLimit;
+	return fWriteDataQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cMemory cBufferedExtEndpoint::ReserveWriteBuffer(uIntn QuerySize)noexcept

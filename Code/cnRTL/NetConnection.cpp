@@ -95,6 +95,8 @@ bcBufferedRWQueue::~bcBufferedRWQueue()noexcept
 //---------------------------------------------------------------------------
 void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)noexcept
 {
+	if(Size==0)
+		return;
 	auto WriteMemory=fReadDataQueue.ReserveWriteBuffer(Size);
 	cnMemory::Copy(WriteMemory.Pointer,Data,Size);
 	fReadDataQueue.CommitWriteBuffer(Size);
@@ -109,12 +111,18 @@ cMemory bcBufferedRWQueue::QueryReadDataBuffer(uIntn QuerySize)noexcept
 //---------------------------------------------------------------------------
 void bcBufferedRWQueue::AdvanceReadDataBuffer(uIntn Size)noexcept
 {
-	return fReadDataQueue.CommitWriteBuffer(Size);
+	fReadDataQueue.CommitWriteBuffer(Size);
+	if(Size!=0){
+		ReadQueueReportBufferAvailable(false);
+	}
 }
 //---------------------------------------------------------------------------
 uIntn bcBufferedRWQueue::GetWriteData(void *Data,uIntn Size)noexcept
 {
 	auto ReadMemory=fWriteDataQueue.GatherReadBuffer(Size);
+	if(ReadMemory.Length==0){
+		return 0;
+	}
 	if(ReadMemory.Length>Size){
 		ReadMemory.Length=Size;
 	}
@@ -133,7 +141,10 @@ cConstMemory bcBufferedRWQueue::QueryWriteData(void)noexcept
 //---------------------------------------------------------------------------
 void bcBufferedRWQueue::AdvanceWriteData(uIntn Size)noexcept
 {
-	return fWriteDataQueue.DismissReadBuffer(Size);
+	fWriteDataQueue.DismissReadBuffer(Size);
+	if(Size!=0){
+		WriteQueueReportBufferAvailable(false);
+	}
 }
 //---------------------------------------------------------------------------
 bool bcBufferedRWQueue::IsWriteDataEnded(void)noexcept
@@ -143,7 +154,7 @@ bool bcBufferedRWQueue::IsWriteDataEnded(void)noexcept
 //---------------------------------------------------------------------------
 uIntn bcBufferedRWQueue::GetMaxReadBufferSize(void)noexcept
 {
-	return fReadDataQueue.BufferSizeLimit;
+	return fReadDataQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cConstMemory bcBufferedRWQueue::GatherReadBuffer(uIntn QuerySize)noexcept
@@ -161,7 +172,7 @@ void bcBufferedRWQueue::DismissReadBuffer(uIntn Size)noexcept
 //---------------------------------------------------------------------------
 uIntn bcBufferedRWQueue::GetMaxWriteBufferSize(void)noexcept
 {
-	return fWriteDataQueue.BufferSizeLimit;
+	return fWriteDataQueue.GetBufferSizeLimit();
 }
 //---------------------------------------------------------------------------
 cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept
@@ -175,7 +186,7 @@ cMemory bcBufferedRWQueue::ReserveWriteBuffer(uIntn QuerySize)noexcept
 void bcBufferedRWQueue::CommitWriteBuffer(uIntn Size)noexcept
 {
 	fWriteDataQueue.CommitWriteBuffer(Size);
-	if(Size!=0){
+	if(Size==0){
 		WriteDataNotify();
 	}
 }

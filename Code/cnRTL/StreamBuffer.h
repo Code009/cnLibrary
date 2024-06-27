@@ -277,12 +277,11 @@ class cAsyncLoopbackStreamBuffer
 public:
 	typedef void tElement;
 
-	cAsyncLoopbackStreamBuffer()noexcept(true);
+	cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit=4096)noexcept(true);
 	~cAsyncLoopbackStreamBuffer()noexcept(true);
 
-	uIntn BufferSizeLimit=cnVar::TIntegerValue<uIntn>::Max;
-
-	bool IsReadAvailable(void)const noexcept(true);
+	uIntn GetBufferSizeLimit(void)const noexcept(true);
+	//bool IsReadAvailable(void)const noexcept(true);
 
 	cConstMemory GatherReadBuffer(uIntn Size)noexcept(true);
 	void DismissReadBuffer(uIntn Size)noexcept(true);
@@ -294,16 +293,18 @@ public:
 	uIntn WriteFrom(const void *Buffer,uIntn Size)noexcept(true);
 
 protected:
+	uIntn fBufferSize;
 	struct cBufferItem
 	{
 		cBufferItem *Next;
-		cMemoryBuffer Buffer;
-	}fBufferItem[3];
-	cAtomicStack<cBufferItem> fEmptyBufferItem;
-	cAtomicVar<cBufferItem*> fReadyBufferItem;
+		void *Buffer;
+		uIntn WriteIndex;
+	}fBufferItem[4];
+	cAtomicStack<cBufferItem> fEmptyBufferStack;
+	cBufferItem *fWritingItem;
 	cBufferItem *fReadingItem;
 	uIntn fReadBufferOffset;
-	cBufferItem *fWritingItem;
+	uIntn fReadBufferMergedSize;
 };
 //---------------------------------------------------------------------------
 class cStreamReadPackingBuffer
