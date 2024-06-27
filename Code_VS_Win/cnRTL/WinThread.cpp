@@ -258,9 +258,8 @@ void cDependentRegistration::Shutdown(void)noexcept
 			for(auto NotifyToken : fDependentSet){
 				auto Dependent=reinterpret_cast<iDependentInfo*>(NotifyToken);
 				auto Description=Dependent->DependentCreateDescription();
-				uIntn DescLength;
-				auto DescArray=Description->GetArray(DescLength);
-				StringStream::WriteFormatString(ReportText.StreamWriteBuffer(),u"%.*s\n",DescLength,DescArray);
+				auto DescArray=Description->Get();
+				StringStream::WriteFormatString(ReportText.StreamWriteBuffer(),u"%.*s\n",DescArray.Length,DescArray.Pointer);
 			}
 			ReportText.Append(u"End of Dependent Object List\n");
 			OutputDebugStringW(utow(ReportText.GetString()));
@@ -435,7 +434,7 @@ bool cThreadHandle::GetPriority(sfInt8 &Priority)noexcept
 	return GetPriority(fThreadHandle,Priority);
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cThreadHandle::DependentCreateDescription(void)noexcept
+rPtr<iStringReference> cThreadHandle::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Temp=cnRTL::CreateStringFormat(u"cThreadHandle - ThreadID = %d(0x%x), Handle=%x",fThreadID,fThreadID,(uIntn)fThreadHandle);
 	return cnVar::MoveCast(Temp.Token());

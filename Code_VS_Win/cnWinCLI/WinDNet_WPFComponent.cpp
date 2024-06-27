@@ -41,7 +41,7 @@ void cWPFHwndSourceAsWindow::VirtualStopped(void)noexcept
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cWPFHwndSourceAsWindow::DependentCreateDescription(void)noexcept
+rPtr<iStringReference> cWPFHwndSourceAsWindow::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Desc=cnRTL::CreateStringFormat(u"cWPFWindow %p",this);
 	return Desc.Token();

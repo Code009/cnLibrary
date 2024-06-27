@@ -103,7 +103,7 @@ public:
 
 	virtual iGATTCharacteristic* cnLib_FUNC GetCharacterist(void)noexcept(true)=0;
 
-	virtual iArrayReference< rPtr<iGATTDescriptor> > cnLib_FUNC QueryDescriptors(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC QueryDescriptors(cArray< rPtr<iGATTDescriptor> > &Descriptor)noexcept(true)=0;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)=0;
 };
@@ -130,7 +130,7 @@ public:
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)=0;
 
-	virtual iPtr< iAsyncFunction<iConstMemoryReference> > cnLib_FUNC Read(void)noexcept(true)=0;
+	virtual iPtr< iAsyncFunction<cConstMemory> > cnLib_FUNC Read(void)noexcept(true)=0;
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)=0;
 
@@ -146,7 +146,7 @@ public:
 
 	virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)=0;
 
-	virtual iArrayReference< rPtr<iGATTCharacteristic> > cnLib_FUNC QueryCharacteristics(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC QueryCharacteristics(cArray< rPtr<iGATTCharacteristic> > &Characteristics)noexcept(true)=0;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
 	virtual rPtr<iGATTCharacteristic> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)=0;
 };
@@ -178,7 +178,7 @@ public:
 
 	virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)=0;
 
-	virtual iArrayReference< rPtr<iGATTService> > cnLib_FUNC QueryServices(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC QueryServices(cArray< rPtr<iGATTService> > &Services)noexcept(true)=0;
 	virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)=0;
 	virtual rPtr<iGATTService> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)=0;
 };
@@ -352,7 +352,7 @@ public:
 	virtual bool cnLib_FUNC RemoveHandler(iBluetoothSlaveHandler *Handler)noexcept(true)=0;
 
 	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)=0;
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)=0;
+	virtual rPtr<iReference> cnLib_FUNC QueryName(cArray<const uChar16> &Name)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,BluetoothLEAdvertisementType)

@@ -163,9 +163,9 @@ cWPFTypeface::~cWPFTypeface()noexcept
 {
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cWPFTypeface::GetName(void)noexcept
+cArray<const uChar16> cWPFTypeface::GetName(void)noexcept
 {
-	return nullptr;
+	return u""_cArray;
 }
 //---------------------------------------------------------------------------
 eUIFontStyle cWPFTypeface::GetStyle(void)noexcept

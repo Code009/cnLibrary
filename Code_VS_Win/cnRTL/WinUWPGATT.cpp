@@ -279,7 +279,7 @@ rPtr<iGATTDescriptorObserver> cGATTCharacteristic::CreateDescriptorObserver(void
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr< iAsyncFunction<iConstMemoryReference> > cGATTCharacteristic::Read(void)noexcept
+iPtr< iAsyncFunction<cConstMemory> > cGATTCharacteristic::Read(void)noexcept
 {
 	HRESULT hr;
 	ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristicProperties prop;
@@ -1332,7 +1332,7 @@ iBluetoothCentral* cBluetoothSlave::GetCentral(void)noexcept
 	return fCentral;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cBluetoothSlave::GetName(void)noexcept
+rPtr<iReference> cBluetoothSlave::QueryName(cArray<const uChar16> &Name)noexcept
 {
 	if(fDispatch->IsCurrentThread()==false)
 		return nullptr;
@@ -1340,6 +1340,7 @@ rPtr< iArrayReference<const uChar16> > cBluetoothSlave::GetName(void)noexcept
 		return nullptr;
 	}
 
+	Name=fDeviceName.GetArray();
 	return fDeviceName.Token();
 }
 //---------------------------------------------------------------------------

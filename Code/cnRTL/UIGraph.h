@@ -50,7 +50,7 @@ class cUIFontInfo : public iUIFont
 public:
 	void SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle=UIFontStyle::Normal,Float32 Weight=0)noexcept(true);
 
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)override;
+	virtual cArray<const uChar16> cnLib_FUNC GetName(void)noexcept(true)override;
 	virtual eUIFontStyle cnLib_FUNC GetStyle(void)noexcept(true)override;
 
 	virtual Float32 cnLib_FUNC GetWeight(void)noexcept(true)override;

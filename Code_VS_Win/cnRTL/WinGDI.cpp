@@ -690,10 +690,8 @@ rPtr<iGDIFontHandle> cDCPaintDevice::QueryFont(const cUITextStyle &TextStyle)noe
 	cFontIndex Index;
 	Index.InfoValue=0;
 	if(TextStyle.Font!=nullptr){
-		auto TextFontNameArray=TextStyle.Font->GetName();
-		uIntn TextFontNameLength;
-		auto TextFontName=TextFontNameArray->GetArray(TextFontNameLength);
-		Index.FontName.SetString(utow(TextFontName),TextFontNameLength);
+		cArray<const uChar16> TextFontNameArray=TextStyle.Font->GetName();
+		Index.FontName.SetString(utow(TextFontNameArray.Pointer),TextFontNameArray.Length);
 
 		Float32 FontWeight=TextStyle.Font->GetWeight();
 		LONG GDIFontWeight=static_cast<LONG>(FW_NORMAL+FontWeight*500);

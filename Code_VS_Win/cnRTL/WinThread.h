@@ -100,7 +100,7 @@ protected:
 	class cnLib_INTERFACE bcNotifyToken
 	{
 	public:
-		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)=0;
+		virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)=0;
 		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)=0;
 
 		bcNotifyToken *Parent;
@@ -174,7 +174,7 @@ protected:
 
 	static VOID CALLBACK WakeAPCFunction(ULONG_PTR dwParam)noexcept(true);
 
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
+	virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
 	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------

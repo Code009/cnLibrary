@@ -71,7 +71,7 @@ cnLib_ENUM_BEGIN(ufInt8,UIFontStyle)
 class cnLib_INTERFACE iUIFont : public iInterface
 {
 public:
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)=0;
+	virtual cArray<const uChar16> cnLib_FUNC GetName(void)noexcept(true)=0;
 	virtual eUIFontStyle cnLib_FUNC GetStyle(void)noexcept(true)=0;
 
 	// 0 is normal weight, range from -1.0 to 1.0

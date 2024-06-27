@@ -2278,7 +2278,7 @@ protected:
 //---------------------------------------------------------------------------
 
 template<class TCharacter>
-class cRefStringArray : public iArrayReference<const TCharacter>, public cArray<const TCharacter>
+class cRefStringArray : public iDataReference< cArray<const TCharacter> >, public cArray<const TCharacter>
 {
 public:
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DEFAULT
@@ -2296,7 +2296,7 @@ public:
 	}
 #endif	// cnLibrary_CPPFEATURE_INITIALIZER_LIST
 	
-	virtual const TCharacter* cnLib_FUNC GetArray(uIntn &RetLength)noexcept(true) override{	RetLength=this->Length;	return this->Pointer;	}
+	virtual cArray<const TCharacter> cnLib_FUNC Get(void)noexcept(true) override{	return *this;	}
 	virtual uIntn ExtractStorage(tTypeID){		return 0;	}
 
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override{}

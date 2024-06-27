@@ -857,13 +857,13 @@ public:
 
 //---------------------------------------------------------------------------
 template<class T>
-class cnLib_INTERFACE iArrayReference : public iReference
+class cnLib_INTERFACE iDataReference : public iReference
 {
 public:
-	virtual T* cnLib_FUNC GetArray(uIntn &Length)noexcept(true)=0;
+	virtual T cnLib_FUNC Get(void)noexcept(true)=0;
 };
-typedef iArrayReference<void> iMemoryReference;
-typedef iArrayReference<const void> iConstMemoryReference;
+//---------------------------------------------------------------------------
+typedef iDataReference< cArray<const uChar16> > iStringReference;
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------

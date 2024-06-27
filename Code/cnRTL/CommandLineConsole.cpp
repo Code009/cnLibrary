@@ -96,7 +96,7 @@ cConsoleOutputWithPrompt::cPromptSaveState::cPromptSaveState(cConsoleOutputWithP
 		Cleared=false;
 		return;
 	}
-	LineText.Pointer=Owner->fLineText->GetArray(LineText.Length);
+	LineText=Owner->fLineText->Get();
 	if(LineText.Pointer==nullptr){
 		Cleared=false;
 		return;
@@ -198,17 +198,16 @@ void cConsoleOutputWithPrompt::EraseLinePart(bool AfterCursor)noexcept
 	return fConsoleOutput->EraseLinePart(AfterCursor);
 }
 //---------------------------------------------------------------------------
-void cConsoleOutputWithPrompt::StartPrompt(iArrayReference<uChar16> *Reference)noexcept
+void cConsoleOutputWithPrompt::StartPrompt(iStringReference *Reference)noexcept
 {
 	fLineText=Reference;
 	// record echo pos
 	fPromptPos=fConsoleOutput->GetCursorPos();
 	// print new text
-	uIntn TextLength;
-	auto Text=fLineText->GetArray(TextLength);
-	fConsoleOutput->Print(Text,TextLength);
-	fPromptCursorPos=TextLength;
-	fPromptLength=TextLength;
+	auto TextArray=fLineText->Get();
+	fConsoleOutput->Print(TextArray.Pointer,TextArray.Length);
+	fPromptCursorPos=TextArray.Length;
+	fPromptLength=TextArray.Length;
 }
 //---------------------------------------------------------------------------
 void cConsoleOutputWithPrompt::FinishPrompt(void)noexcept
@@ -216,9 +215,8 @@ void cConsoleOutputWithPrompt::FinishPrompt(void)noexcept
 	if(fLineText==nullptr)
 		return;
 
-	uIntn TextLength;
-	auto Text=fLineText->GetArray(TextLength);
-	auto LinePos=LinePosToConsolePos(TextLength);
+	auto TextArray=fLineText->Get();
+	auto LinePos=LinePosToConsolePos(TextArray.Length);
 	fConsoleOutput->SetCursorPos(LinePos);
 
 	uChar16 LineFeed='\n';
@@ -236,11 +234,10 @@ void cConsoleOutputWithPrompt::UpdatePrompt(uIntn ChangedOffset)noexcept
 	//if(ChangedOffset>=fPromptLength)
 	//	return;
 
-	uIntn LineLength;
-	auto LineText=fLineText->GetArray(LineLength);
+	auto TextArray=fLineText->Get();
 	fConsoleOutput->SetCursorPos(PrintPos);
-	fConsoleOutput->Print(LineText+ChangedOffset,LineLength-ChangedOffset);
-	fPromptLength=LineLength;
+	fConsoleOutput->Print(TextArray.Pointer+ChangedOffset,TextArray.Length-ChangedOffset);
+	fPromptLength=TextArray.Length;
 	fConsoleOutput->EraseLinePart(true);
 }
 //---------------------------------------------------------------------------
@@ -257,9 +254,8 @@ bool cConsoleOutputWithPrompt::SetPromptCursorPos(uIntn Pos)noexcept
 	if(fLineText==nullptr)
 		return false;
 
-	uIntn LineLength;
-	auto LineText=fLineText->GetArray(LineLength);
-	if(Pos>LineLength){
+	auto TextArray=fLineText->Get();
+	if(Pos>TextArray.Length){
 		return false;
 	}
 	fPromptCursorPos=Pos;

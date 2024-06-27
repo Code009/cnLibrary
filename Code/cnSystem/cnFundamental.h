@@ -18,7 +18,7 @@ class cnLib_INTERFACE iDependentInfo
 private:
 	uIntn SystemReserved[4];	// used by iDependentRegistration
 public:
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true){
+	virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true){
 		UnusedParameter(SystemReserved);	// compiler may complain SystemReserved will never be used
 		return nullptr;
 	}

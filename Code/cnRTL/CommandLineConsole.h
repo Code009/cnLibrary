@@ -202,7 +202,7 @@ protected:
 class cnLib_INTERFACE iConsolePrompt : public iReference
 {
 public:
-	virtual void cnLib_FUNC StartPrompt(iArrayReference<uChar16> *Reference)noexcept(true)=0;
+	virtual void cnLib_FUNC StartPrompt(iStringReference *Reference)noexcept(true)=0;
 	virtual void cnLib_FUNC FinishPrompt(void)noexcept(true)=0;
 	
 	virtual void cnLib_FUNC UpdatePrompt(uIntn ChangedOffset)noexcept(true)=0;
@@ -237,7 +237,7 @@ public:
 
 	// iConsolePrompt
 
-	virtual void cnLib_FUNC StartPrompt(iArrayReference<uChar16> *Reference)noexcept(true)override;
+	virtual void cnLib_FUNC StartPrompt(iStringReference *Reference)noexcept(true)override;
 	virtual void cnLib_FUNC FinishPrompt(void)noexcept(true)override;
 
 	virtual void cnLib_FUNC UpdatePrompt(uIntn ChangedOffset)noexcept(true)override;
@@ -248,7 +248,7 @@ public:
 protected:
 	rPtr<iConsoleOutput> fConsoleOutput;
 
-	rPtr< iArrayReference<uChar16> > fLineText;
+	rPtr<iStringReference> fLineText;
 	cUIPoint fPromptPos;
 	uIntn fPromptCursorPos;
 	uIntn fPromptLength;
@@ -294,12 +294,14 @@ protected:
 	virtual void cnLib_FUNC LineInput(const uChar16 *Line,uIntn Length)noexcept(true)=0;
 
 private:
-	class cStringBufferRef : public cStringBuffer<uChar16>, public iArrayReference<uChar16>
+	class cStringBufferRef : public cStringBuffer<uChar16>, public iStringReference
 	{
 	public:
-		virtual uChar16* cnLib_FUNC GetArray(uIntn &Length)noexcept(true) override{
-			Length=this->GetLength();
-			return this->GetString();
+		virtual cArray<const uChar16> cnLib_FUNC Get()noexcept(true) override{
+			cArray<const uChar16> Ret;
+			Ret.Pointer=this->GetString();
+			Ret.Length=this->GetLength();
+			return Ret;
 		}
 	};
 	rPtr<cStringBufferRef> fLineBuffer;

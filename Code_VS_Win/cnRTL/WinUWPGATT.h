@@ -114,7 +114,7 @@ public:
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)override;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)override;
 
-	virtual iPtr< iAsyncFunction<iConstMemoryReference> > cnLib_FUNC Read(void)noexcept(true)override;
+	virtual iPtr< iAsyncFunction<cConstMemory> > cnLib_FUNC Read(void)noexcept(true)override;
 
 	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)override;
@@ -361,7 +361,7 @@ public:
 
 		virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)override;
 
-		virtual iArrayReference< rPtr<iGATTCharacteristic> > cnLib_FUNC QueryCharacteristics(void)noexcept(true)override;
+		virtual rPtr<iReference> cnLib_FUNC QueryCharacteristics(cArray< rPtr<iGATTCharacteristic> > &Characteristics)noexcept(true)override;
 		virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)override;
 		virtual rPtr<iGATTCharacteristic> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)override;
 	};
@@ -475,7 +475,7 @@ public:
 	virtual bool cnLib_FUNC RemoveHandler(iBluetoothSlaveHandler *Handler)noexcept(true)override;
 	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)override;
 
-	virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC GetName(void)noexcept(true)override;
+	virtual rPtr<iReference> cnLib_FUNC QueryName(cArray<const uChar16> &Name)noexcept(true)override;
 
 	void CentralConnectionOperation(COMPtr<IBLEConnectAsyncOp> ConnectOp)noexcept(true);
 	
@@ -507,7 +507,7 @@ protected:
 
 		virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)override;
 
-		virtual iArrayReference< rPtr<iGATTService> > cnLib_FUNC QueryServices(void)noexcept(true)override;
+		virtual rPtr<iReference> cnLib_FUNC QueryServices(cArray< rPtr<iGATTService> > &Services)noexcept(true)override;
 		virtual void cnLib_FUNC DiscardChanges(void)noexcept(true)override;
 		virtual rPtr<iGATTService> cnLib_FUNC FetchChanged(bool &IsInserted)noexcept(true)override;
 	};

@@ -692,7 +692,7 @@ private:
 
 		static const uChar16 DependentName[];
 
-		virtual rPtr< iArrayReference<const uChar16> > cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
+		virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
 		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 	};
 	cnVar::cStaticVariable<cContext> fContext;

@@ -368,7 +368,7 @@ void cWPFWindow::VirtualStopped(void)noexcept
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cWPFWindow::DependentCreateDescription(void)noexcept
+rPtr<iStringReference> cWPFWindow::DependentCreateDescription(void)noexcept
 {
 	cString<uChar16> Desc=cnRTL::CreateStringFormat(u"cWPFWindow %p",this);
 	return Desc.Token();

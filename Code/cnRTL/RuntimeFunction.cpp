@@ -494,7 +494,7 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 }
 //---------------------------------------------------------------------------
 const uChar16 cReferenceCountLogger::cContext::DependentName[]=u"cReferenceCountLogger";
-rPtr< iArrayReference<const uChar16> > cReferenceCountLogger::cContext::DependentCreateDescription(void)noexcept
+rPtr<iStringReference> cReferenceCountLogger::cContext::DependentCreateDescription(void)noexcept
 {
 	cArrayConstant<uChar16> Array;
 	Array.Pointer=DependentName;

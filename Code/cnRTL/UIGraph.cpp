@@ -14,9 +14,9 @@ void cUIFontInfo::SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle,Flo
 	fWeight=Weight;
 }
 //---------------------------------------------------------------------------
-rPtr< iArrayReference<const uChar16> > cUIFontInfo::GetName(void)noexcept
+cArray<const uChar16> cUIFontInfo::GetName(void)noexcept
 {
-	return fName.Token();
+	return fName.GetArray();
 }
 //---------------------------------------------------------------------------
 eUIFontStyle cUIFontInfo::GetStyle(void)noexcept
