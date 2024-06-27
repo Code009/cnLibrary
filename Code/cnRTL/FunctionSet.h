@@ -84,7 +84,7 @@ struct cFunctionInterfaceFunctor<TRet (TArgs...)noexcept(true)>
 	iFunction<TRet (TArgs...)noexcept(true)> *Function;
 
 	TRet operator () (TArgs...Args)noexcept(true){
-		return Function->Execute(static_cast<TArgs&&>(Args)...);
+ 		return Function->Execute(static_cast<TArgs&&>(Args)...);
 	}
 };
 template<class TRet,class...TArgs>
