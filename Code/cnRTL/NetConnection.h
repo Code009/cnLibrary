@@ -53,10 +53,11 @@ protected:
 class bcBufferedRWQueue : public bcRWQueue
 {
 public:
-	bcBufferedRWQueue()noexcept(true);
+	bcBufferedRWQueue(uIntn BufferSize=4096)noexcept(true);
 	~bcBufferedRWQueue()noexcept(true);
 
-	void PutReadData(const void *Data,uIntn Size)noexcept(true);
+	bool PutReadData(const void *Data,uIntn Size)noexcept(true);
+	uIntn PutReadDataPart(const void *Data,uIntn Size)noexcept(true);
 	cMemory QueryReadDataBuffer(uIntn QuerySize)noexcept(true);
 	void AdvanceReadDataBuffer(uIntn Size)noexcept(true);
 

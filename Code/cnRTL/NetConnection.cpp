@@ -85,7 +85,9 @@ void bcConnectionListener::AsyncQueueNotify(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcBufferedRWQueue::bcBufferedRWQueue()noexcept
+bcBufferedRWQueue::bcBufferedRWQueue(uIntn BufferSize)noexcept
+	: fReadDataQueue(BufferSize)
+	, fWriteDataQueue(BufferSize)
 {
 }
 //---------------------------------------------------------------------------
@@ -93,15 +95,35 @@ bcBufferedRWQueue::~bcBufferedRWQueue()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)noexcept
+bool bcBufferedRWQueue::PutReadData(const void *Data,uIntn Size)noexcept
 {
 	if(Size==0)
-		return;
+		return true;
 	auto WriteMemory=fReadDataQueue.ReserveWriteBuffer(Size);
+	if(Size>WriteMemory.Length){
+		fReadDataQueue.CommitWriteBuffer(0);
+		return false;
+	}
 	cnMemory::Copy(WriteMemory.Pointer,Data,Size);
 	fReadDataQueue.CommitWriteBuffer(Size);
 
 	ReadQueueReportBufferAvailable(false);
+	return true;
+}
+//---------------------------------------------------------------------------
+uIntn bcBufferedRWQueue::PutReadDataPart(const void *Data,uIntn Size)noexcept
+{
+	if(Size==0)
+		return 0;
+	auto WriteMemory=fReadDataQueue.ReserveWriteBuffer(Size);
+	if(Size>WriteMemory.Length){
+		Size=WriteMemory.Length;
+	}
+	cnMemory::Copy(WriteMemory.Pointer,Data,Size);
+	fReadDataQueue.CommitWriteBuffer(Size);
+
+	ReadQueueReportBufferAvailable(false);
+	return Size;
 }
 //---------------------------------------------------------------------------
 cMemory bcBufferedRWQueue::QueryReadDataBuffer(uIntn QuerySize)noexcept
