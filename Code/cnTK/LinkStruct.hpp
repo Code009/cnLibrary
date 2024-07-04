@@ -2464,7 +2464,7 @@ struct cLinkMapItem
 	tValue Value;
 
 	template<class TK,class...TV>
-	cLinkMapItem(TK cnLib_UREF KeyArg,TV cnLib_UREF...ValueArgs)noexcept(true)
+	explicit cLinkMapItem(TK cnLib_UREF KeyArg,TV cnLib_UREF...ValueArgs)noexcept(true)
 		: Key(cnLib_UREFCAST(TK)(KeyArg))
 		, Value(cnLib_UREFCAST(TV)(ValueArgs)...)
 	{}
