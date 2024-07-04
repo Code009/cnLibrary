@@ -1049,12 +1049,49 @@ inline cArrayStreamArray<T> ArrayStreamArray(const T *Array,uIntn Length)noexcep
 	};
 	return ArrayWrite;
 }
+template<class T>
+inline cArrayStreamArray<T> ArrayStreamArray(const cArray<T> Array)noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
+		Array.Pointer,
+		Array.Length
+	};
+	return ArrayWrite;
+}
 
 template<class T,uIntn Length>
 inline cArrayStreamArray<T> ArrayStreamArray(const T (&Array)[Length])noexcept(true){
 	cArrayStreamArray<T> ArrayWrite={
 		Array,
 		Length
+	};
+	return ArrayWrite;
+}
+
+//---------------------------------------------------------------------------
+
+template<class TCharacter>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter *String,uIntn Length)noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		Length,
+	};
+	return ArrayWrite;
+}
+
+template<class TCharacter,uIntn Length>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter (&String)[Length])noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		Length-1,
+	};
+	return ArrayWrite;
+}
+
+template<class TCharacter,uIntn Length>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(TCharacter (&String)[Length])noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		cnString::FindLength(String,Length),
 	};
 	return ArrayWrite;
 }
