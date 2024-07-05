@@ -1,11 +1,86 @@
 //---------------------------------------------------------------------------
 #include "Logger.h"
 #include "TextProcess.h"
+#include "StreamBuffer.h"
 
 using namespace cnLibrary;
 using namespace cnRTL;
 
 
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cErrorFrame::~cErrorFrame()noexcept
+{
+	fMaker.Submit();
+}
+//---------------------------------------------------------------------------
+void cErrorFrame::SetMsg(const uChar16 *Text,uIntn Length)noexcept
+{
+	fMaker.SetMessage(Text,Length);
+}
+//---------------------------------------------------------------------------
+cnSystem::ErrorReportMaker cErrorFrame::Make(const uChar16 *Function,uIntn Length)noexcept
+{
+	// clear error in tls
+	auto Report=cnSystem::ErrorReportManager::Fetch();	
+	if(Report!=nullptr){
+		// TODO : report ignored error report
+	}
+
+	return cnSystem::ErrorReportManager::MakeReport(Function,Length);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void cErrorReport::Retrieve(void)noexcept
+{
+	fReport=cnSystem::ErrorReportManager::Fetch();
+}
+//---------------------------------------------------------------------------
+bool cErrorReport::Query(tTypeID ErrorTypeID,const void* &Data)noexcept(true){
+	if(fReport==nullptr)
+		return false;
+
+	auto Errors=fReport->Errors();
+	for(uIntn i=0;i<Errors.Length;i++){
+		auto ErrorData=Errors.Pointer[i];
+			
+		if(ErrorData.ErrorTypeID==ErrorTypeID){
+			Data=ErrorData.Data;
+			return true;
+		}
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
+{
+	cStringBuffer<uChar16> Desc;
+	{
+		auto WriteBuffer=Desc.StreamWriteBuffer();
+		auto WriteBufferInterface=WriteBufferFromStreamBuffer(&WriteBuffer);
+		auto Function=fReport->FunctionName();
+		auto Message=fReport->ErrorMessage();
+		auto Errors=fReport->Errors();
+
+		WriteBuffer+=ArrayStreamArray(Function);
+		WriteBuffer+=ArrayStreamString(u" reports: ");
+		WriteBuffer+=ArrayStreamArray(Message);
+		if(Errors.Length!=0){
+			WriteBuffer+=ArrayStreamString(u"\n errors: ");
+
+			for(uIntn i=0;i<Errors.Length;i++){
+				auto Error=Errors.Pointer[i];
+
+				Error.WriteTypeDescription(&WriteBufferInterface);
+				WriteBuffer+=ArrayStreamString(u" - ");
+				Error.WriteDescription(&WriteBufferInterface,Error.Data);
+				WriteBuffer+=ArrayStreamString(u"; ");
+			}
+		}
+	}
+
+	return Desc;
+}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bcLog::bcLog()noexcept

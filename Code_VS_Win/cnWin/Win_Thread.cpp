@@ -115,85 +115,78 @@ void cThread::DependentShutdownNotification(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cErrorReportRecord::cErrorReportRecord(iErrorReport *NextReport,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
-	: iErrorReport(NextReport
-		, {fStringContent,Function.Length}
-		, {fStringContent+Function.Length+1,Action.Length}
-		, {fStringContent+Function.Length+Action.Length+2,Error.Length}
-	  )
-	, fRefCount(1)
+cErrorReportRecord::cErrorReportRecord()noexcept
 {
-	uChar16 *pStringContent=fStringContent;
-	cnMemory::Copy(pStringContent,Function.Pointer,Function.Length*2);
-	pStringContent+=Function.Length;
-	*pStringContent++=0;
-	cnMemory::Copy(pStringContent,Action.Pointer,Action.Length*2);
-	pStringContent+=Action.Length;
-	*pStringContent++=0;
-	cnMemory::Copy(pStringContent,Error.Pointer,Error.Length*2);
-	pStringContent+=Error.Length;
-	*pStringContent++=0;
 }
 //---------------------------------------------------------------------------
 cErrorReportRecord::~cErrorReportRecord()noexcept
 {
-	if(Next!=nullptr){
-		rDecReference(Next,'recd');
+}
+//---------------------------------------------------------------------------
+iErrorReport* cErrorReportRecord::ParentReport(void)noexcept
+{
+	return Parent;
+}
+//---------------------------------------------------------------------------
+cArray<const uChar16> cErrorReportRecord::FunctionName(void)noexcept
+{
+	return FuncName.GetArray();
+}
+//---------------------------------------------------------------------------
+cArray<const uChar16> cErrorReportRecord::ErrorMessage(void)noexcept
+{
+	return ErrorMsg.GetArray();
+}
+//---------------------------------------------------------------------------
+cArray<const cErrorInfo> cErrorReportRecord::Errors(void)noexcept
+{
+	return ErrorList.Storage();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void cnSystem::ErrorReportMaker::Submit(void)noexcept
+{
+	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
+
+	auto CurReport=cErrorReportRecord::gTLSRecord->Get();
+	if(CurReport!=nullptr){
+		Record->Parent=static_cast<cErrorReportRecord*>(CurReport);
+	}
+	cErrorReportRecord::gTLSRecord->Set(cnVar::MoveCast(fReport),Record);
+}
+//---------------------------------------------------------------------------
+void cnSystem::ErrorReportMaker::SetMessage(const uChar16 *Name,uIntn Length)noexcept
+{
+	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
+	
+	Record->ErrorMsg.SetString(Name,Length);
+}
+//---------------------------------------------------------------------------
+void cnSystem::ErrorReportMaker::Append(const cErrorInfo *ErrorInfo)noexcept
+{
+	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
+	
+	Record->ErrorList.AppendMake(*ErrorInfo);
+	if(ErrorInfo->DataLength!=0){
+		Record->ErrorData.Append(ErrorInfo->Data,ErrorInfo->DataLength);
 	}
 }
 //---------------------------------------------------------------------------
-void cErrorReportRecord::IncreaseReference(void)noexcept
-{
-	++fRefCount.Free;
-}
 //---------------------------------------------------------------------------
-void cErrorReportRecord::DecreaseReference(void)noexcept
+cnSystem::ErrorReportMaker cnSystem::ErrorReportManager::MakeReport(const uChar16 *Name,uIntn Length)noexcept
 {
-	if(--fRefCount.Free==0){
-		this->~cErrorReportRecord();
-		uIntn StringLength=Function.Length+Action.Length+Error.Length+3;
-		uIntn RecordSize=sizeof(cErrorReportRecord)+StringLength*2-4;
-		cAllocationOperator::Deallocate(this,RecordSize,cnMemory::TAlignmentOf<cErrorReportRecord>::Value);
-	}
-}
-//---------------------------------------------------------------------------
-rPtr<cErrorReportRecord> cErrorReportRecord::Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
-{
-	uIntn StringLength=Function.Length+Action.Length+Error.Length+3;
-	uIntn RecordSize=sizeof(cErrorReportRecord)+StringLength*2-4;
-	auto Record=static_cast<cErrorReportRecord*>(cAllocationOperator::Allocate(RecordSize,cnMemory::TAlignmentOf<cErrorReportRecord>::Value));
-	iErrorReport *NextRecord=Next!=nullptr?rExtract(Next,'recd'):nullptr;
-	cnVar::ManualConstruct(*Record,NextRecord,Function,Action,Error);
-	return rPtr<cErrorReportRecord>::TakeFromManual(Record);
-}
-//---------------------------------------------------------------------------
-void cnSystem::ErrorReportManager::Clear(void)noexcept
-{
-	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
-	if(TLSObject!=nullptr){
-		cErrorReportRecord::gTLSRecord->Clear();
-	}
-}
-//---------------------------------------------------------------------------
-void cnSystem::ErrorReportManager::Report(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
-{
-	auto Record=Make(Function,Action,Error);
-	cErrorReportRecord::gTLSRecord->Set(cnVar::MoveCast(Record),Record);
-}
-//---------------------------------------------------------------------------
-rPtr<iErrorReport> cnSystem::ErrorReportManager::Make(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept
-{
-	return cErrorReportRecord::Make(Fetch(),Function,Action,Error);
+	auto Record=rQuerySharedObject<cErrorReportRecord>();
+	Record->FuncName.SetString(Name,Length);
+	return cnSystem::ErrorReportMaker(Record);
 }
 //---------------------------------------------------------------------------
 rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept
 {
 	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
-	rPtr<iErrorReport> RetReport;
-	if(TLSObject!=nullptr){
-		RetReport=static_cast<iErrorReport*>(TLSObject);
-		cErrorReportRecord::gTLSRecord->Clear();
-	}
+	if(TLSObject==nullptr)
+		return nullptr;
+	rPtr<iErrorReport> RetReport=static_cast<iErrorReport*>(TLSObject);
+	cErrorReportRecord::gTLSRecord->Clear();
 	return RetReport;
 }
 //---------------------------------------------------------------------------

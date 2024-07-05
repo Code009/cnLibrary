@@ -54,34 +54,6 @@ public:
 	virtual void cnLib_FUNC Set(iReference *Reference,void *Value)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class iErrorReport : public iReference
-{
-public:
-	iErrorReport(iErrorReport *Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true)
-		: Next(Next)
-		, Function(Function)
-		, Action(Action)
-		, Error(Error)
-	{}
-
-	iErrorReport *const Next;
-	cArray<const uChar16> const Function;
-	cArray<const uChar16> const Action;
-	cArray<const uChar16> const Error;
-};
-//---------------------------------------------------------------------------
-namespace cnSystem{
-//---------------------------------------------------------------------------
-struct ErrorReportManager
-{
-	static void Clear(void)noexcept(true);
-	static void Report(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
-	static rPtr<iErrorReport> Make(cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
-	static rPtr<iErrorReport> Fetch(void)noexcept(true);
-};
-//---------------------------------------------------------------------------
-}	// namespace cnSystem
-//---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */

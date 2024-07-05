@@ -89,21 +89,23 @@ private:
 class cErrorReportRecord : public iErrorReport
 {
 public:
-	cErrorReportRecord(iErrorReport *Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
+	cErrorReportRecord()noexcept(true);
 	~cErrorReportRecord()noexcept(true);
 
-	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
-	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 
-	void* operator new(tSize Size)=delete;
-	void operator delete(void* p)=delete;
+	rPtr<cErrorReportRecord> Parent;
+	cnRTL::cStringBuffer<uChar16> FuncName;
+	cnRTL::cStringBuffer<uChar16> ErrorMsg;
+	cnRTL::cSeqList<cErrorInfo> ErrorList;
+	cnRTL::cMemoryBuffer ErrorData;
 
 	static iThreadLocalVariable *const gTLSRecord;
 
-	static rPtr<cErrorReportRecord> Make(rPtr<iErrorReport> Next,cArray<const uChar16> Function,cArray<const uChar16> Action,cArray<const uChar16> Error)noexcept(true);
-private:
-	cnRTL::cAtomicVar<uIntn> fRefCount;
-	uChar16 fStringContent[2];
+
+	virtual iErrorReport* cnLib_FUNC ParentReport(void)noexcept(true)override;
+	virtual cArray<const uChar16> cnLib_FUNC FunctionName(void)noexcept(true)override;
+	virtual cArray<const uChar16> cnLib_FUNC ErrorMessage(void)noexcept(true)override;
+	virtual cArray<const cErrorInfo> cnLib_FUNC Errors(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA

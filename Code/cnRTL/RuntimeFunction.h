@@ -71,21 +71,315 @@ inline sfInt8 Compare(const void *Mem1,const void *Mem2,uIntn Size)noexcept(true
 }	// namespace cnMemory
 //---------------------------------------------------------------------------
 namespace cnRTL{
+////---------------------------------------------------------------------------
+//template<uIntn CacheLength,class TStreamReadBuffer>
+//inline cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)noexcept(true)
+//{
+//	return cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength>(static_cast<TStreamReadBuffer&&>(ReadBuffer));
+//}
+////---------------------------------------------------------------------------
+//template<uIntn CacheLength,class TStreamWriteBuffer>
+//inline cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
+//{
+//	return cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));
+//}
 //---------------------------------------------------------------------------
-
-class cErrorFrame
+namespace ArrayStream{
+//---------------------------------------------------------------------------
+// Read
+//---------------------------------------------------------------------------
+template<class TStreamReadBuffer>
+inline bool ReadElement(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement &Element)noexcept(true)
 {
-public:
-	cErrorFrame()noexcept(true);
-	~cErrorFrame()noexcept(true);
-	rPtr<iErrorReport> MakeReport(void)noexcept(true);
+	typedef typename TStreamReadBuffer::tElement tElement;
+	cArray<const tElement> Memory=ReadBuffer.GatherReadBuffer(1);
+	if(Memory.Length==0)
+		return false;
+	Element=*Memory.Pointer;
+	ReadBuffer.DismissReadBuffer(1);
+	return true;
+}
+//---------------------------------------------------------------------------
+template<class TStreamReadBuffer>
+inline bool ReadElement(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement &Element)noexcept(true)
+{
+	return ReadElement(ReadBuffer,Element);
+}
+//---------------------------------------------------------------------------
+template<class TStreamReadBuffer>
+inline bool ReadArray(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement *Array,uIntn Length)noexcept(true)
+{
+	if(Length==0)
+		return true;
+	if(Length==1){
+		return ReadElement(ReadBuffer,*Array);
+	}
+	typedef typename TStreamReadBuffer::tElement tElement;
+	typedef cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
+	cArray<const tElement> CurBuffer;
+	while((CurBuffer=ReadBuffer.GatherReadBuffer(Length)).Length!=0){
+		if(CurBuffer.Length>=Length){
+			tArrayOperator::Copy(Array,CurBuffer.Pointer,Length);
+			ReadBuffer.DismissReadBuffer(Length);
+			return true;
+		}
+		// copy
+		tArrayOperator::Copy(Array,CurBuffer.Pointer,CurBuffer.Length);
+		// offset dest pointer
+		Length-=CurBuffer.Length;
+		Array=ArrayOffsetPointer(Array,CurBuffer.Length);
+		// next block
+		ReadBuffer.DismissReadBuffer(CurBuffer.Length);
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+template<class TStreamReadBuffer>
+inline bool ReadArray(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement *Array,uIntn Length)noexcept(true)
+{
+	return ReadArray(ReadBuffer,Array,Length);
+}
+//---------------------------------------------------------------------------
+// Write
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteElement(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element)noexcept(true)
+{
+	typedef typename TStreamWriteBuffer::tElement tElement;
+	cArray<tElement> Memory=WriteBuffer.ReserveWriteBuffer(1);
+	if(Memory.Length==0)
+		return false;
+	*Memory.Pointer=Element;
+	WriteBuffer.CommitWriteBuffer(1);
+	return true;
+}
+template<class TStreamWriteBuffer>
+inline bool WriteElement(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element)noexcept(true)
+{
+	return WriteElement(WriteBuffer,Element);
+}
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element,uIntn Count)noexcept(true)
+{
+	if(Count==0)
+		return true;
+	typedef typename TStreamWriteBuffer::tElement tElement;
+	cArray<tElement> CurBuffer;
+	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Count)).Length!=0){
+		if(CurBuffer.Length>=Count){
+			TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,Count,Element);
+			WriteBuffer.CommitWriteBuffer(Count);
+			return true;
+		}
+		// fill
+		TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,CurBuffer.Length,Element);
+		Count-=CurBuffer.Length;
+		// next block
+		WriteBuffer.CommitWriteBuffer(CurBuffer.Length);
+	}
+	return false;
+}
+template<class TStreamWriteBuffer>
+inline bool WriteFill(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element,uIntn Count)noexcept(true)
+{
+	return WriteFill(WriteBuffer,Element,Count);
+}
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length)noexcept(true)
+{
+	if(Length==0)
+		return true;
+	if(Length==1){
+		return WriteElement(WriteBuffer,Array[0]);
+	}
+	typedef typename TStreamWriteBuffer::tElement tElement;
+	typedef cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
+	cArray<tElement> CurBuffer;
+	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Length)).Length!=0){
+		if(CurBuffer.Length>=Length){
+			tArrayOperator::Copy(CurBuffer.Pointer,Array,Length);
+			WriteBuffer.CommitWriteBuffer(Length);
+			return true;
+		}
+		// copy
+		tArrayOperator::Copy(CurBuffer.Pointer,Array,CurBuffer.Length);
+		// offset dest pointer
+		Length-=CurBuffer.Length;
+		Array=ArrayOffsetPointer(Array,CurBuffer.Length);
+		// next block
+		WriteBuffer.CommitWriteBuffer(CurBuffer.Length);
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length)noexcept(true)
+{
+	return WriteArray(WriteBuffer,Array,Length);
+}
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteFillArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
+{
+	if(Length==0)
+		return true;
+	if(Length==1){
+		return WriteFill(WriteBuffer,Array[0],Count);
+	}
+	if(Count==0)
+		return true;
+	if(Count==1){
+		return WriteArray(WriteBuffer,Array,Length);
+	}
 
-	cStringBuffer<uChar16> Function;
-	cStringBuffer<uChar16> Action;
-	cStringBuffer<uChar16> Error;
+	for(uIntn i=0;i<Count;i++){
+		if(WriteArray(WriteBuffer,Array,Length)==false)
+			return false;
+	}
+	return true;
+}
+//---------------------------------------------------------------------------
+template<class TStreamWriteBuffer>
+inline bool WriteFillArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
+{
+	return WriteFillArray(WriteBuffer,Array,Length,Count);
+}
+//---------------------------------------------------------------------------
+}	// namespace ArrayStream
+//---------------------------------------------------------------------------
+template<class T>
+struct cArrayStreamElement
+{
+	T Element;
+	
+	template<class TStreamWriteBuffer>
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamElement &Src)noexcept(true){
+		return ArrayStream::WriteElement(WriteBuffer,Src.Element);
+	}
+};
+
+template<class T>
+inline cArrayStreamElement<T> ArrayStreamElement(T&& Element)noexcept(true){
+	cArrayStreamElement<T> ArrayWrite={
+		static_cast<T&&>(Element)
+	};
+	return ArrayWrite;
+}
+//---------------------------------------------------------------------------
+template<class T>
+struct cArrayStreamFill
+{
+	T Element;
+	uIntn Count;
+
+	template<class TStreamWriteBuffer>
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFill &Src)noexcept(true){
+		return ArrayStream::WriteFill(WriteBuffer,Src.Element,Src.Count);
+	}
+};
+
+template<class T>
+inline cArrayStreamFill<T> ArrayStreamFill(T&& Element,uIntn Count)noexcept(true){
+	cArrayStreamFill<T> ArrayWrite={
+		static_cast<T&&>(Element),
+		Count
+	};
+	return ArrayWrite;
+}
+//---------------------------------------------------------------------------
+template<class T>
+struct cArrayStreamArray
+{
+	const T *Array;
+	uIntn Length;
+
+	template<class TStreamWriteBuffer>
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamArray &Src)noexcept(true){
+		return ArrayStream::WriteArray(WriteBuffer,Src.Array,Src.Length);
+	}
 
 };
 
+template<class T>
+inline cArrayStreamArray<T> ArrayStreamArray(const T *Array,uIntn Length)noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
+		Array,
+		Length
+	};
+	return ArrayWrite;
+}
+template<class T>
+inline cArrayStreamArray<T> ArrayStreamArray(const cArray<T> Array)noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
+		Array.Pointer,
+		Array.Length
+	};
+	return ArrayWrite;
+}
+
+template<class T,uIntn Length>
+inline cArrayStreamArray<T> ArrayStreamArray(const T (&Array)[Length])noexcept(true){
+	cArrayStreamArray<T> ArrayWrite={
+		Array,
+		Length
+	};
+	return ArrayWrite;
+}
+
+//---------------------------------------------------------------------------
+
+template<class TCharacter>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter *String,uIntn Length)noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		Length,
+	};
+	return ArrayWrite;
+}
+
+template<class TCharacter,uIntn Length>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter (&String)[Length])noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		Length-1,
+	};
+	return ArrayWrite;
+}
+
+template<class TCharacter,uIntn Length>
+inline cArrayStreamArray<TCharacter> ArrayStreamString(TCharacter (&String)[Length])noexcept(true){
+	cArrayStreamArray<TCharacter> ArrayWrite={
+		String,
+		cnString::FindLength(String,Length),
+	};
+	return ArrayWrite;
+}
+
+//---------------------------------------------------------------------------
+template<class T>
+struct cArrayStreamFillArray
+{
+	const T *Array;
+	uIntn Length;
+	uIntn Count;
+
+	template<class TStreamWriteBuffer>
+	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFillArray &Src)noexcept(true){
+		return ArrayStream::WriteFillArray(WriteBuffer,Src.Array,Src.Length,Src.Count);
+	}
+};
+
+template<class T>
+inline cArrayStreamFillArray<T> ArrayStreamFillArray(const T *Array,uIntn Length,uIntn Count)noexcept(true){
+	cArrayStreamFillArray<T> ArrayWrite={
+		Array,
+		Length,
+		Count
+	};
+	return ArrayWrite;
+}
 //---------------------------------------------------------------------------
 
 // Meta Class
@@ -808,319 +1102,6 @@ inline T* rExtract(rPtr<T> &Src,uInt32 Tag)noexcept(true)
 	cnRTL_DEBUG_LOG_REFERENCE_INC(Src,Tag);
 	return Src.ExtractToManual();
 }
-//---------------------------------------------------------------------------
-namespace cnRTL{
-////---------------------------------------------------------------------------
-//template<uIntn CacheLength,class TStreamReadBuffer>
-//inline cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength> CachedStreamReadBuffer(TStreamReadBuffer&& ReadBuffer)noexcept(true)
-//{
-//	return cnStream::cCachedStreamReadBuffer<TStreamReadBuffer,CacheLength>(static_cast<TStreamReadBuffer&&>(ReadBuffer));
-//}
-////---------------------------------------------------------------------------
-//template<uIntn CacheLength,class TStreamWriteBuffer>
-//inline cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength> CachedStreamWriteBuffer(TStreamWriteBuffer&& WriteBuffer)noexcept(true)
-//{
-//	return cnStream::cCachedStreamWriteBuffer<TStreamWriteBuffer,CacheLength>(static_cast<TStreamWriteBuffer&&>(WriteBuffer));
-//}
-//---------------------------------------------------------------------------
-namespace ArrayStream{
-//---------------------------------------------------------------------------
-// Read
-//---------------------------------------------------------------------------
-template<class TStreamReadBuffer>
-inline bool ReadElement(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement &Element)noexcept(true)
-{
-	typedef typename TStreamReadBuffer::tElement tElement;
-	cArray<const tElement> Memory=ReadBuffer.GatherReadBuffer(1);
-	if(Memory.Length==0)
-		return false;
-	Element=*Memory.Pointer;
-	ReadBuffer.DismissReadBuffer(1);
-	return true;
-}
-//---------------------------------------------------------------------------
-template<class TStreamReadBuffer>
-inline bool ReadElement(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement &Element)noexcept(true)
-{
-	return ReadElement(ReadBuffer,Element);
-}
-//---------------------------------------------------------------------------
-template<class TStreamReadBuffer>
-inline bool ReadArray(TStreamReadBuffer &ReadBuffer,typename TStreamReadBuffer::tElement *Array,uIntn Length)noexcept(true)
-{
-	if(Length==0)
-		return true;
-	if(Length==1){
-		return ReadElement(ReadBuffer,*Array);
-	}
-	typedef typename TStreamReadBuffer::tElement tElement;
-	typedef cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
-	cArray<const tElement> CurBuffer;
-	while((CurBuffer=ReadBuffer.GatherReadBuffer(Length)).Length!=0){
-		if(CurBuffer.Length>=Length){
-			tArrayOperator::Copy(Array,CurBuffer.Pointer,Length);
-			ReadBuffer.DismissReadBuffer(Length);
-			return true;
-		}
-		// copy
-		tArrayOperator::Copy(Array,CurBuffer.Pointer,CurBuffer.Length);
-		// offset dest pointer
-		Length-=CurBuffer.Length;
-		Array=ArrayOffsetPointer(Array,CurBuffer.Length);
-		// next block
-		ReadBuffer.DismissReadBuffer(CurBuffer.Length);
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
-template<class TStreamReadBuffer>
-inline bool ReadArray(TStreamReadBuffer&& ReadBuffer,typename cnVar::TRemoveReference<TStreamReadBuffer>::Type::tElement *Array,uIntn Length)noexcept(true)
-{
-	return ReadArray(ReadBuffer,Array,Length);
-}
-//---------------------------------------------------------------------------
-// Write
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteElement(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element)noexcept(true)
-{
-	typedef typename TStreamWriteBuffer::tElement tElement;
-	cArray<tElement> Memory=WriteBuffer.ReserveWriteBuffer(1);
-	if(Memory.Length==0)
-		return false;
-	*Memory.Pointer=Element;
-	WriteBuffer.CommitWriteBuffer(1);
-	return true;
-}
-template<class TStreamWriteBuffer>
-inline bool WriteElement(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element)noexcept(true)
-{
-	return WriteElement(WriteBuffer,Element);
-}
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteFill(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement Element,uIntn Count)noexcept(true)
-{
-	if(Count==0)
-		return true;
-	typedef typename TStreamWriteBuffer::tElement tElement;
-	cArray<tElement> CurBuffer;
-	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Count)).Length!=0){
-		if(CurBuffer.Length>=Count){
-			TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,Count,Element);
-			WriteBuffer.CommitWriteBuffer(Count);
-			return true;
-		}
-		// fill
-		TKRuntime::TArray<sizeof(tElement)>::Fill(CurBuffer.Pointer,CurBuffer.Length,Element);
-		Count-=CurBuffer.Length;
-		// next block
-		WriteBuffer.CommitWriteBuffer(CurBuffer.Length);
-	}
-	return false;
-}
-template<class TStreamWriteBuffer>
-inline bool WriteFill(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement Element,uIntn Count)noexcept(true)
-{
-	return WriteFill(WriteBuffer,Element,Count);
-}
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length)noexcept(true)
-{
-	if(Length==0)
-		return true;
-	if(Length==1){
-		return WriteElement(WriteBuffer,Array[0]);
-	}
-	typedef typename TStreamWriteBuffer::tElement tElement;
-	typedef cnDataStruct::cArrayMemoryOperator<tElement> tArrayOperator;
-	cArray<tElement> CurBuffer;
-	while((CurBuffer=WriteBuffer.ReserveWriteBuffer(Length)).Length!=0){
-		if(CurBuffer.Length>=Length){
-			tArrayOperator::Copy(CurBuffer.Pointer,Array,Length);
-			WriteBuffer.CommitWriteBuffer(Length);
-			return true;
-		}
-		// copy
-		tArrayOperator::Copy(CurBuffer.Pointer,Array,CurBuffer.Length);
-		// offset dest pointer
-		Length-=CurBuffer.Length;
-		Array=ArrayOffsetPointer(Array,CurBuffer.Length);
-		// next block
-		WriteBuffer.CommitWriteBuffer(CurBuffer.Length);
-	}
-	return false;
-}
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length)noexcept(true)
-{
-	return WriteArray(WriteBuffer,Array,Length);
-}
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteFillArray(TStreamWriteBuffer &WriteBuffer,typename TStreamWriteBuffer::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
-{
-	if(Length==0)
-		return true;
-	if(Length==1){
-		return WriteFill(WriteBuffer,Array[0],Count);
-	}
-	if(Count==0)
-		return true;
-	if(Count==1){
-		return WriteArray(WriteBuffer,Array,Length);
-	}
-
-	for(uIntn i=0;i<Count;i++){
-		if(WriteArray(WriteBuffer,Array,Length)==false)
-			return false;
-	}
-	return true;
-}
-//---------------------------------------------------------------------------
-template<class TStreamWriteBuffer>
-inline bool WriteFillArray(TStreamWriteBuffer&& WriteBuffer,typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement const *Array,uIntn Length,uIntn Count)noexcept(true)
-{
-	return WriteFillArray(WriteBuffer,Array,Length,Count);
-}
-//---------------------------------------------------------------------------
-}	// namespace ArrayStream
-//---------------------------------------------------------------------------
-template<class T>
-struct cArrayStreamElement
-{
-	T Element;
-	
-	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamElement &Src)noexcept(true){
-		return ArrayStream::WriteElement(WriteBuffer,Src.Element);
-	}
-};
-
-template<class T>
-inline cArrayStreamElement<T> ArrayStreamElement(T&& Element)noexcept(true){
-	cArrayStreamElement<T> ArrayWrite={
-		static_cast<T&&>(Element)
-	};
-	return ArrayWrite;
-}
-//---------------------------------------------------------------------------
-template<class T>
-struct cArrayStreamFill
-{
-	T Element;
-	uIntn Count;
-
-	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFill &Src)noexcept(true){
-		return ArrayStream::WriteFill(WriteBuffer,Src.Element,Src.Count);
-	}
-};
-
-template<class T>
-inline cArrayStreamFill<T> ArrayStreamFill(T&& Element,uIntn Count)noexcept(true){
-	cArrayStreamFill<T> ArrayWrite={
-		static_cast<T&&>(Element),
-		Count
-	};
-	return ArrayWrite;
-}
-//---------------------------------------------------------------------------
-template<class T>
-struct cArrayStreamArray
-{
-	const T *Array;
-	uIntn Length;
-
-	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamArray &Src)noexcept(true){
-		return ArrayStream::WriteArray(WriteBuffer,Src.Array,Src.Length);
-	}
-
-};
-
-template<class T>
-inline cArrayStreamArray<T> ArrayStreamArray(const T *Array,uIntn Length)noexcept(true){
-	cArrayStreamArray<T> ArrayWrite={
-		Array,
-		Length
-	};
-	return ArrayWrite;
-}
-template<class T>
-inline cArrayStreamArray<T> ArrayStreamArray(const cArray<T> Array)noexcept(true){
-	cArrayStreamArray<T> ArrayWrite={
-		Array.Pointer,
-		Array.Length
-	};
-	return ArrayWrite;
-}
-
-template<class T,uIntn Length>
-inline cArrayStreamArray<T> ArrayStreamArray(const T (&Array)[Length])noexcept(true){
-	cArrayStreamArray<T> ArrayWrite={
-		Array,
-		Length
-	};
-	return ArrayWrite;
-}
-
-//---------------------------------------------------------------------------
-
-template<class TCharacter>
-inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter *String,uIntn Length)noexcept(true){
-	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		Length,
-	};
-	return ArrayWrite;
-}
-
-template<class TCharacter,uIntn Length>
-inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter (&String)[Length])noexcept(true){
-	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		Length-1,
-	};
-	return ArrayWrite;
-}
-
-template<class TCharacter,uIntn Length>
-inline cArrayStreamArray<TCharacter> ArrayStreamString(TCharacter (&String)[Length])noexcept(true){
-	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		cnString::FindLength(String,Length),
-	};
-	return ArrayWrite;
-}
-
-//---------------------------------------------------------------------------
-template<class T>
-struct cArrayStreamFillArray
-{
-	const T *Array;
-	uIntn Length;
-	uIntn Count;
-
-	template<class TStreamWriteBuffer>
-	friend bool operator +=(TStreamWriteBuffer&& WriteBuffer,const cArrayStreamFillArray &Src)noexcept(true){
-		return ArrayStream::WriteFillArray(WriteBuffer,Src.Array,Src.Length,Src.Count);
-	}
-};
-
-template<class T>
-inline cArrayStreamFillArray<T> ArrayStreamFillArray(const T *Array,uIntn Length,uIntn Count)noexcept(true){
-	cArrayStreamFillArray<T> ArrayWrite={
-		Array,
-		Length,
-		Count
-	};
-	return ArrayWrite;
-}
-//---------------------------------------------------------------------------
-}	// namespace cnRTL
 //---------------------------------------------------------------------------
 }   // namespace cnLibrary
 //---------------------------------------------------------------------------

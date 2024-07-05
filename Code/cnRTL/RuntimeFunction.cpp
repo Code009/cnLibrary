@@ -6,25 +6,6 @@ using namespace cnRTL;
 
 
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cErrorFrame::cErrorFrame()noexcept
-{
-	// clear error in tls
-	cnSystem::ErrorReportManager::Clear();
-}
-//---------------------------------------------------------------------------
-cErrorFrame::~cErrorFrame()noexcept
-{
-	if(Action->Length!=0 || Error->Length!=0){
-		cnSystem::ErrorReportManager::Report(Function.GetArray(),Action.GetArray(),Error.GetArray());
-	}
-}
-//---------------------------------------------------------------------------
-rPtr<iErrorReport> cErrorFrame::MakeReport(void)noexcept
-{
-	return cnSystem::ErrorReportManager::Make(Function.GetArray(),Action.GetArray(),Error.GetArray());
-}
-//---------------------------------------------------------------------------
 namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
