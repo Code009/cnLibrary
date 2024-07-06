@@ -331,19 +331,22 @@ inline cArrayStreamArray<T> ArrayStreamArray(const T (&Array)[Length])noexcept(t
 //---------------------------------------------------------------------------
 
 template<class TCharacter>
-inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter *String,uIntn Length)noexcept(true){
+inline cArrayStreamArray<TCharacter> ArrayStreamCString(const TCharacter *String)noexcept(true){
 	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		Length,
+		String,cnString::FindLength(String)
 	};
 	return ArrayWrite;
+}
+
+template<class TString>
+inline auto ArrayStreamString(TString&& String)noexcept(true) -> decltype(ArrayStreamCString(String)){
+	return ArrayStreamCString(String);
 }
 
 template<class TCharacter,uIntn Length>
 inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter (&String)[Length])noexcept(true){
 	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		Length-1,
+		String,Length-1
 	};
 	return ArrayWrite;
 }
@@ -351,8 +354,7 @@ inline cArrayStreamArray<TCharacter> ArrayStreamString(const TCharacter (&String
 template<class TCharacter,uIntn Length>
 inline cArrayStreamArray<TCharacter> ArrayStreamString(TCharacter (&String)[Length])noexcept(true){
 	cArrayStreamArray<TCharacter> ArrayWrite={
-		String,
-		cnString::FindLength(String,Length),
+		String,cnString::FindLength(String,Length)
 	};
 	return ArrayWrite;
 }
