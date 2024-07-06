@@ -28,16 +28,16 @@ struct TErrorTypeWriteDescription
 		auto TypeID=cnVar::TTypeID<TError>::Value;
 		if(StringStream::WriteFormatInt<16>(*WriteBuffer,reinterpret_cast<uIntn>(TypeID),sizeof(uIntn)*2,0)==false)
 			return false;
-		*WriteBuffer+=ArrayStreamString(u")");
+		return *WriteBuffer+=ArrayStreamString(u")");
 	}
 };
 //---------------------------------------------------------------------------
 template<class TError>
-struct TErrorTypeWriteDescription<decltype(&TError::Value),TError>
+struct TErrorTypeWriteDescription<decltype(TErrorClassName<TError>::Value+0),TError>
 {
 	static bool cnLib_FUNC Function(iWriteBuffer<uChar16> *WriteBuffer)noexcept(true)
 	{
-		return *WriteBuffer+=ArrayStreamString(TError::Value,cnMemory::ArrayLength(TError::Value)-1);
+		return *WriteBuffer+=ArrayStreamArray(TErrorClassName<TError>::Value,cnMemory::ArrayLength(TErrorClassName<TError>::Value)-1);
 	}
 };
 //---------------------------------------------------------------------------
@@ -126,6 +126,8 @@ public:
 	cStringBuffer<uChar16> Descripe(void)noexcept(true);
 protected:
 	rPtr<iErrorReport> fReport;
+
+	static void WriteError(iWriteBuffer<uChar16> *WriteBuffer,iErrorReport *Report)noexcept(true);
 };
 //---------------------------------------------------------------------------
 }	// namespace cnRTL

@@ -52,30 +52,44 @@ bool cErrorReport::Query(tTypeID ErrorTypeID,const void* &Data)noexcept(true){
 	return false;
 }
 //---------------------------------------------------------------------------
+void cErrorReport::WriteError(iWriteBuffer<uChar16> *WriteBuffer,iErrorReport *Report)noexcept
+{
+	auto Function=Report->FunctionName();
+	auto Message=Report->ErrorMessage();
+	auto Errors=Report->Errors();
+
+	*WriteBuffer+=ArrayStreamArray(Function);
+	*WriteBuffer+=ArrayStreamString(u" reports: ");
+	*WriteBuffer+=ArrayStreamArray(Message);
+	if(Errors.Length!=0){
+		*WriteBuffer+=ArrayStreamString(u"\n errors: ");
+
+		for(uIntn i=0;i<Errors.Length;i++){
+			auto Error=Errors.Pointer[i];
+
+			*WriteBuffer+=ArrayStreamElement(u'[');
+			Error.WriteTypeDescription(WriteBuffer);
+			*WriteBuffer+=ArrayStreamElement(u']');
+			Error.WriteDescription(WriteBuffer,Error.Data);
+			*WriteBuffer+=ArrayStreamString(u"; ");
+		}
+	}
+}
+//---------------------------------------------------------------------------
 cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
 {
 	cStringBuffer<uChar16> Desc;
-	{
+	if(fReport!=nullptr){
 		auto WriteBuffer=Desc.StreamWriteBuffer();
 		auto WriteBufferInterface=WriteBufferFromStreamBuffer(&WriteBuffer);
-		auto Function=fReport->FunctionName();
-		auto Message=fReport->ErrorMessage();
-		auto Errors=fReport->Errors();
-
-		WriteBuffer+=ArrayStreamArray(Function);
-		WriteBuffer+=ArrayStreamString(u" reports: ");
-		WriteBuffer+=ArrayStreamArray(Message);
-		if(Errors.Length!=0){
-			WriteBuffer+=ArrayStreamString(u"\n errors: ");
-
-			for(uIntn i=0;i<Errors.Length;i++){
-				auto Error=Errors.Pointer[i];
-
-				Error.WriteTypeDescription(&WriteBufferInterface);
-				WriteBuffer+=ArrayStreamString(u" - ");
-				Error.WriteDescription(&WriteBufferInterface,Error.Data);
-				WriteBuffer+=ArrayStreamString(u"; ");
-			}
+		WriteError(&WriteBufferInterface,fReport);
+		iErrorReport *CurReport=fReport->ParentReport();
+		uIntn InnerReportIndex=0;
+		while(CurReport!=nullptr){
+			InnerReportIndex++;
+			WriteBuffer+=StringStreamFormat(u"\n(%d) ",InnerReportIndex);
+			WriteError(&WriteBufferInterface,CurReport);
+			CurReport=CurReport->ParentReport();
 		}
 	}
 
