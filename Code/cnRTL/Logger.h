@@ -151,16 +151,53 @@ public:
 class bcLog
 {
 public:
-	bcLog()noexcept(true);
+	bcLog(iAsyncExecution *Execution)noexcept(true);
 	~bcLog()noexcept(true);
 
 	void InsertRecorder(iLogRecorder *Recorder)noexcept(true);
 	void RemoveRecorder(iLogRecorder *Recorder)noexcept(true);
 	void ClearRecorder(void)noexcept(true);
 	void Submit(aClsConstRef<cLogMessage> Message)noexcept(true);
-protected:
-	rPtr<iSharedMutex> fRecordListLock;
-	cSeqSet< rPtr<iLogRecorder> > fRecordList;
+private:
+
+	struct cMsgItem : cRTLAllocator
+	{
+		cMsgItem *Next;
+		enum eMsg{
+			mInsert,
+			mRemove,
+			mClear,
+			mSubmit,
+		}Msg;
+
+		rPtr<iLogRecorder> Recorder;
+		aClsConstRef<cLogMessage> Message;
+	};
+
+	class cContext : public iReference
+	{
+	public:
+		cContext(iAsyncExecution *Execution)noexcept(true);
+		~cContext()noexcept(true);
+		iPtr<iAsyncExecution> AsyncExecution;
+		cExclusiveFlag RecordExclusive;
+		cSeqSet< rPtr<iLogRecorder> > RecorderSet;
+		rPtr<iAsyncProcedure> ProcessWork;
+		cAtomicQueueSO<cMsgItem> MsgQueue;
+		cAtomicStack<cMsgItem> MsgRecycler;
+
+		void NotifyRecorder(cMsgItem::eMsg Msg,iLogRecorder *Recorder)noexcept(true);
+		void SubmitMessage(aClsConstRef<cLogMessage> Message)noexcept(true);
+		void ProcessMsgQueue(void)noexcept(true);
+		void ProcessMsgQueueThread(void)noexcept(true);
+		void ProcessMsgItem(cMsgItem *Item)noexcept(true);
+
+		class cProcessProcedure : public iProcedure
+		{
+			virtual void cnLib_FUNC Execute(void)noexcept(true);
+		}fProcessProcedure;
+	};
+	rPtr<cContext> fContext;
 };
 //---------------------------------------------------------------------------
 class cLogBuffer
@@ -205,7 +242,7 @@ template<uIntn LogLevel>
 class cLog : public bcLog
 {
 public:
-	cLog()noexcept(true){}
+	cLog(iAsyncExecution *Execution=nullptr)noexcept(true):bcLog(Execution){}
 	~cLog()noexcept(true){}
 
 	template<uIntn Level,class TPath>
