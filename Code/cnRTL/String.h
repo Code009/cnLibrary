@@ -1775,7 +1775,7 @@ protected:
 template<class TStreamWriteBuffer>
 struct cFormatStringStreamOutput<TStreamWriteBuffer>
 {
-	typedef typename TStreamWriteBuffer::tElement tCharacter;
+	typedef typename cnVar::TRemoveReference<TStreamWriteBuffer>::Type::tElement tCharacter;
 
 	cnStream::cCountingStreamWriteBuffer<TStreamWriteBuffer> WriteBuffer;
 	cnVar::cVarPack<> Args;
