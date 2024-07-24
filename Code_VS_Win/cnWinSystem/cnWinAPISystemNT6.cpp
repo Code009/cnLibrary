@@ -28,12 +28,6 @@ cnLib_GlobalVar cDependentRegistration cnWin::gSystemDependentRegistration;
 //- Memory Heap -------------------------------------------------------------
 // memory heap should be the first object to be initialized
 cnLib_GlobalVar cReferenceStaticImplementT<tDefaultMemoryHeap> cnWin::gDefaultMemoryHeap;
-
-//- Debug -------------------------------------------------------------------
-//cnLib_GlobalVar cInterfaceStaticImplementT<cDebugLogStream> cnWin::gDebugLogStream;
-//cnLib_GlobalVar cnRTL::cReferenceLog cnWin::gDebugReferenceLog;
-//static cnRTL::cLogger _RTLLogger;
-//cnLib_GlobalVar cnRTL::cLogger &cnRTL::gRTLLogger=_RTLLogger;
 //---------------------------------------------------------------------------
 cnLib_GlobalVar HANDLE cnWin::gCurrentProcessHandle=::GetCurrentProcess();
 cnLib_GlobalVar HANDLE cnWin::gCurrentThreadHandle=::GetCurrentThread();
@@ -46,13 +40,17 @@ template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cThr
 cnLib_GlobalVar cNT6TLSStaticPointer<cThread> gTLS_cThread;
 iThreadLocalVariable *const cThread::gTLS=&gTLS_cThread;
 
-
-template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cErrorReportRecord>::gDataTLS=nullptr;
-cnLib_GlobalVar cNT6TLSStaticPointer<cErrorReportRecord> gTLS_ErrorReportRecord;
-iThreadLocalVariable *const cErrorReportRecord::gTLSRecord=&gTLS_ErrorReportRecord;
-
 //- thread pool -------------------------------------------------------------
 cnLib_GlobalVar vcDefaultThreadPool vcDefaultThreadPool::gInstance;
+
+
+//- Debug -------------------------------------------------------------------
+template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cErrorReportRecord>::gDataTLS=nullptr;	// add this definition to supresss dynamic initialization of tls
+cnLib_GlobalVar cNT6TLSStaticPointer<cErrorReportRecord> gTLS_ErrorReportRecord;
+iThreadLocalVariable *const cErrorReportRecord::gTLSRecord=&gTLS_ErrorReportRecord;
+cnLib_GlobalVar cnRTL::cReferenceStaticImplementT<cnWinRTL::cWin32DebugTextOutput> cnWin::DebugTextOutput;
+
+cnLib_GlobalVar cWinLogModule cnWin::gWinLogModule;
 
 //- COM ---------------------------------------------------------------------
 cnLib_GlobalVar cCOMApartmentThreadingModule cnWin::gCOMApartmentThreadingModule;
@@ -92,7 +90,6 @@ cnLib_GlobalVar cMessageThreadWindowClass cMessageThreadWindowClass::gMessageThr
 //cnLib_GlobalVar cInterfaceStaticImplementT<cCoreAudioDefaultDevice> gCoreAudioDefaultDevice;
 
 //- misc -------------------------------------------------------------------
-cnLib_GlobalVar cnRTL::cReferenceStaticImplementT<cnWinRTL::cWin32DebugTextOutput> cnWin::DebugTextOutput;
 
 
 

@@ -16,6 +16,8 @@ namespace cnWin{
 extern cnRTL::cnWinRTL::cDependentRegistration gSystemDependentRegistration;
 
 extern cnRTL::cReferenceStaticImplementT<cnRTL::cnWinRTL::cWin32DebugTextOutput> DebugTextOutput;
+
+extern cWinLogModule gWinLogModule;
 //---------------------------------------------------------------------------
 extern cnRTL::cInterfaceStaticImplementT<vSocketStreamProtocol> TCP;
 extern cnRTL::cInterfaceStaticImplementT<vSocketDatagramProtocol> UDP;

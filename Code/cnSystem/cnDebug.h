@@ -12,6 +12,22 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+struct cLogMessage
+{
+	uInt8 Level;
+	uInt64 Time;
+	cArray<uChar16> Path;
+	cArray<uChar16> Text;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iLogRecorder : public iReference
+{
+public:
+	// Submit
+	//	free single threaded
+	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
 struct cErrorInfo
 {
 	union{
@@ -36,6 +52,8 @@ public:
 namespace cnSystem{
 //---------------------------------------------------------------------------
 void AssertionMessage(const char *Message)noexcept(true);
+void LogInsertRecorder(iLogRecorder *Recorder)noexcept(true);
+void LogRemoveRecorder(iLogRecorder *Recorder)noexcept(true);
 //---------------------------------------------------------------------------
 class ErrorReportMaker
 {

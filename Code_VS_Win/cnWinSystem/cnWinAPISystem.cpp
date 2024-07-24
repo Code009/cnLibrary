@@ -33,6 +33,16 @@ void cnSystem::AssertionMessage(const char *Message)noexcept
 		__debugbreak();
 	}
 }
+
+void cnSystem::LogInsertRecorder(iLogRecorder *Recorder)noexcept
+{
+	return gWinLogModule.Hub->InsertRecorder(Recorder);
+}
+void cnSystem::LogRemoveRecorder(iLogRecorder *Recorder)noexcept
+{
+	return gWinLogModule.Hub->RemoveRecorder(Recorder);
+}
+
 //- Default Heap ------------------------------------------------------------
 
 void* cnSystem::DefaultHeap::Alloc(uIntn Alignment,uIntn Size)noexcept

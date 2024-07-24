@@ -6,7 +6,8 @@
 using namespace cnLibrary;
 using namespace cnRTL;
 
-
+//---------------------------------------------------------------------------
+cLog<cnRTL_LOGLEVEL> cnRTL::gRTLLog;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cErrorFrame::~cErrorFrame()noexcept
@@ -97,47 +98,36 @@ cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcLog::bcLog(iAsyncExecution *Execution)noexcept
-	: fContext(rCreate<cContext>(Execution))
+void cLogMessageQueue::Reset(void)noexcept
 {
-}
-//---------------------------------------------------------------------------
-bcLog::~bcLog()noexcept
-{
-}
-//---------------------------------------------------------------------------
-void bcLog::InsertRecorder(iLogRecorder *Recorder)noexcept
-{
-	if(Recorder==nullptr)
-		return;
-	return fContext->NotifyRecorder(cMsgItem::mInsert,Recorder);
-}
-//---------------------------------------------------------------------------
-void bcLog::RemoveRecorder(iLogRecorder *Recorder)noexcept
-{
-	if(Recorder==nullptr)
-		return;
-	return fContext->NotifyRecorder(cMsgItem::mRemove,Recorder);
-}
-//---------------------------------------------------------------------------
-void bcLog::ClearRecorder(void)noexcept
-{
-	return fContext->NotifyRecorder(cMsgItem::mClear,nullptr);
-}
-//---------------------------------------------------------------------------
-void bcLog::Submit(aClsConstRef<cLogMessage> Message)noexcept
-{
-	return fContext->SubmitMessage(cnVar::MoveCast(Message));
-}
-//---------------------------------------------------------------------------
-bcLog::cContext::cContext(iAsyncExecution *Execution)noexcept
-	: AsyncExecution(Execution)
-{
-}
-//---------------------------------------------------------------------------
-bcLog::cContext::~cContext()noexcept
-{
-	auto DeleteItems=MsgRecycler.Swap(nullptr);
+	// prepare notification
+	fAsyncWaitFlag=true;
+	fAsyncContext.AsyncWaitThread=cnSystem::CurrentThread::GetThread();
+
+	// remove asynchronization
+	fNeedAsync=true;
+	ProcessMsgQueue();
+
+	// wait async thread completion
+	if(fAsyncRefCount.Free--!=0){
+		while(fAsyncWaitFlag){
+			cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
+		}
+	}
+	fAsyncRefCount.Free++;
+	fAsyncContext.AsyncWaitThread=nullptr;
+
+	// clear recorder
+	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
+	if(PrevRecorder!=nullptr){
+		rDecReference(PrevRecorder,'logr');
+	}
+
+	fNeedReplaceRecorder=true;
+	ProcessMsgQueue();
+
+	// remove item cache
+	auto DeleteItems=fMsgRecycler.Swap(nullptr);
 	while(DeleteItems!=nullptr){
 		auto CurItem=DeleteItems;
 		DeleteItems=DeleteItems->Next;
@@ -146,135 +136,247 @@ bcLog::cContext::~cContext()noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcLog::cContext::NotifyRecorder(cMsgItem::eMsg Msg,iLogRecorder *Recorder)noexcept
+void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept
 {
-	auto RecordItem=MsgRecycler.Pop();
-	if(RecordItem==nullptr){
-		RecordItem=new cMsgItem;
-	}
-	RecordItem->Msg=Msg;
-	RecordItem->Recorder=Recorder;
-	MsgQueue.Enqueue(RecordItem);
-
-	ProcessMsgQueue();
-}
-//---------------------------------------------------------------------------
-void bcLog::cContext::SubmitMessage(aClsConstRef<cLogMessage> Message)noexcept
-{
-	auto SubmitItem=MsgRecycler.Pop();
+	auto SubmitItem=fMsgRecycler.Pop();
 	if(SubmitItem==nullptr){
 		SubmitItem=new cMsgItem;
 	}
-	SubmitItem->Message=cnVar::MoveCast(Message);
-	SubmitItem->Msg=cMsgItem::mSubmit;
-	MsgQueue.Enqueue(SubmitItem);
+	SubmitItem->Record=cnVar::MoveCast(Record);
+	fMsgQueue.Enqueue(SubmitItem);
 
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
-void bcLog::cContext::ProcessMsgQueue(void)noexcept
+void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
 {
-	if(RecordExclusive.Acquire()==false)
+	iIncReference(Execution,'logr');
+	auto PrevExecution=fReplaceAsyncExecution.Barrier.Xchg(Execution);
+	if(PrevExecution!=nullptr){
+		iDecReference(PrevExecution,'logr');
+	}
+
+	fNeedAsync=true;
+	ProcessMsgQueue();
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
+{
+	rIncReference(Recorder,'logr');
+	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(Recorder);
+	if(PrevRecorder!=nullptr){
+		rDecReference(PrevRecorder,'logr');
+	}
+
+	fNeedReplaceRecorder=true;
+	ProcessMsgQueue();
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::cAsyncContext::IncreaseReference(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
+	++Host->fAsyncRefCount.Free;
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::cAsyncContext::DecreaseReference(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
+	if(Host->fAsyncRefCount.Free--==0){
+		if(AsyncWaitThread!=nullptr){
+			AsyncWaitThread->Wake(&Host->fAsyncWaitFlag);
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::cAsyncContext::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
+	return Host->ProcessMsgQueueThread();
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::ProcessMsgQueue(void)noexcept
+{
+	if(fRecordExclusive.Acquire()==false)
 		return;
 
-	if(AsyncExecution==nullptr){
-		return ProcessMsgQueueThread();
+	ProcessUpdateAsync();
+	if(fAsyncWork!=nullptr){
+		fAsyncWork->Start();
 	}
-	do{
-		RecordExclusive.Continue();
+	else{
+		ProcessMsgQueueThread();
+	}
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
+{
+	if(fNeedAsync){
+		fNeedAsync=false;
 
-		auto *Item=MsgQueue.Dequeue();
-		if(Item!=nullptr){
-			ProcessMsgItem(Item);
+		auto Execution=fReplaceAsyncExecution.Barrier.Xchg(nullptr);
+		if(Execution!=nullptr){
+			auto AsyncWork=Execution->CreateWork(&fAsyncContext,&fAsyncContext);
+			iDecReference(Execution,'logr');
 
-			if(MsgQueue.IsEmpty()==false){
-				// move to other thread
-
-				if(ProcessWork==nullptr){
-					ProcessWork=AsyncExecution->CreateWork(this,&fProcessProcedure);
-				}
-				ProcessWork->Start();
-				return;
+			if(fAsyncWork!=nullptr){
+				rDecReference(fAsyncWork,'logr');
+			}
+			fAsyncWork=rExtract(AsyncWork,'logr');
+		}
+		else{
+			if(fAsyncWork!=nullptr){
+				rDecReference(fAsyncWork,'logr');
+				fAsyncWork=nullptr;
 			}
 		}
-
-	}while(RecordExclusive.Release()==false);
+	}
 }
 //---------------------------------------------------------------------------
-void bcLog::cContext::cProcessProcedure::Execute(void)noexcept
-{
-	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cContext::fProcessProcedure);
-	Host->ProcessMsgQueueThread();
-}
-//---------------------------------------------------------------------------
-void bcLog::cContext::ProcessMsgQueueThread(void)noexcept
+void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 {
 	do{
-		RecordExclusive.Continue();
+		fRecordExclusive.Continue();
+
+		ProcessUpdateAsync();
+
+		if(fNeedReplaceRecorder){
+			fNeedReplaceRecorder=false;
+
+			if(fRecorder!=nullptr){
+				rDecReference(fRecorder,'logr');
+			}
+			fRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
+		}
 
 		cMsgItem *Item;
-		while((Item=MsgQueue.Dequeue())!=nullptr){
-			ProcessMsgItem(Item);
+		if(fRecorder!=nullptr){
+			while((Item=fMsgQueue.Dequeue())!=nullptr){
+				SubmitMsgRecord(Item->Record);
+				Item->Record=nullptr;
+				fMsgRecycler.Push(Item);
+			}
 		}
-	}while(RecordExclusive.Release()==false);
+		else{
+			if(++fRecordMissingCount>64){
+				fRecordMissingCount=0;
+				while((Item=fMsgQueue.Dequeue())!=nullptr){
+					Item->Record=nullptr;
+					fMsgRecycler.Push(Item);
+				}
+			}
+		}
+	}while(fRecordExclusive.Release()==false);
 }
 //---------------------------------------------------------------------------
-void bcLog::cContext::ProcessMsgItem(cMsgItem *Item)noexcept
+void cLogMessageQueue::SubmitMsgRecord(cLogMessageRecord *Record)noexcept
 {
-	switch(Item->Msg){
-	case cMsgItem::mInsert:
-		RecorderSet.Insert(Item->Recorder);
-		Item->Recorder=nullptr;
-		break;
-	case cMsgItem::mRemove:
-		RecorderSet.Remove(Item->Recorder);
-		Item->Recorder=nullptr;
-		break;
-	case cMsgItem::mClear:
-		RecorderSet.Clear();
-		break;
-	case cMsgItem::mSubmit:
-		for(auto &p : RecorderSet){
-			p->Write(Item->Message);
-		}
-		Item->Message=nullptr;
-		break;
+	cLogMessage Message;
+	Message.Time=Record->Time=cnSystem::GetSystemTimeNow();
+	Message.Level=Record->Level;
+	Message.Path=Record->Path.GetArray();
+	Message.Text=Record->TextBuffer.GetArray();
+	fRecorder->Submit(Record,Message);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bcLogRecordSubmission::bcLogRecordSubmission(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept
+	: fQueue(Queue)
+	, fRecord(cnVar::MoveCast(Record))
+{
+}
+//---------------------------------------------------------------------------
+bcLogRecordSubmission::~bcLogRecordSubmission()noexcept
+{
+	if(fRecord->TextBuffer.GetLength()!=0){
+		fQueue->Submit(cnVar::MoveCast(fRecord));
 	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cLogStreamBuffer::cLogStreamBuffer(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept
+	: bcLogRecordSubmission(Queue,cnVar::MoveCast(Record))
+	, fWriteBuffer(fRecord->TextBuffer.StreamWriteBuffer())
+{
+}
+//---------------------------------------------------------------------------
+cLogStreamBuffer::~cLogStreamBuffer()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cLogStreamBuffer::Reset(void)noexcept
+{
+	fRecord->TextBuffer.Clear();
+}
+//---------------------------------------------------------------------------
+cArray<uChar16> cLogStreamBuffer::ReserveWriteBuffer(uIntn QueryLength)noexcept(true)
+{
+	return fWriteBuffer.ReserveWriteBuffer(QueryLength);
+}
+//---------------------------------------------------------------------------
+void cLogStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept(true)
+{
+	return fWriteBuffer.CommitWriteBuffer(Length);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cLogRecordHub::cLogRecordHub()noexcept
+	: fRecorderSetMutex(cnSystem::CreateMutexLock())
+{
+}
+//---------------------------------------------------------------------------
+cLogRecordHub::~cLogRecordHub()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cLogRecordHub::Submit(iReference *Reference,const cLogMessage &Message)noexcept
+{
+	return SubmitMessage(Reference,Message);
+}
+//---------------------------------------------------------------------------
+void cLogRecordHub::InsertRecorder(iLogRecorder *Recorder)noexcept
+{
+	if(Recorder==nullptr)
+		return;
 
-	MsgRecycler.Push(Item);
+	auto AutoLock=TakeLock(fRecorderSetMutex);
+	fNeedUpdateRecorderSet=fConfigRecorderSet.Insert(Recorder);
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cLogBuffer::cLogBuffer(bcLog *Log,uInt8 Level,cString<uChar16> Path)noexcept
-	: fLog(Log)
-	, fLevel(Level)
-	, fPath(cnVar::MoveCast(Path))
+void cLogRecordHub::RemoveRecorder(iLogRecorder *Recorder)noexcept
 {
+	if(Recorder==nullptr)
+		return;
+	
+	auto AutoLock=TakeLock(fRecorderSetMutex);
+	fNeedUpdateRecorderSet=fConfigRecorderSet.Remove(Recorder);
 }
 //---------------------------------------------------------------------------
-cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> cLogBuffer::Stream(void)noexcept
+void cLogRecordHub::ClearRecorder(void)noexcept
 {
-	return fTextBuffer.StreamWriteBuffer();
+	auto AutoLock=TakeLock(fRecorderSetMutex);
+	if(fConfigRecorderSet.GetCount()!=0){
+		fConfigRecorderSet.Clear();
+		fNeedUpdateRecorderSet=true;
+	}
 }
 //---------------------------------------------------------------------------
-void cLogBuffer::Reset(void)noexcept
+void cLogRecordHub::SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept
 {
-	fTextBuffer.Clear();
+	ProcessRecorderSet();
+
+	for(auto &p : fRecorders){
+		p->Submit(Reference,Message);
+	}
 }
 //---------------------------------------------------------------------------
-void cLogBuffer::Commit(void)noexcept
+void cLogRecordHub::ProcessRecorderSet(void)noexcept
 {
-	return Submit(cnVar::MoveCast(fTextBuffer));
-}
-//---------------------------------------------------------------------------
-void cLogBuffer::Submit(cString<uChar16> Text)noexcept
-{
-	auto LogMessage=aClsCreate<cLogMessage>();
-	LogMessage->Level=fLevel;
-	LogMessage->Time=cnSystem::GetSystemTimeNow();
-	LogMessage->Path=fPath;
-	LogMessage->Text=cnVar::MoveCast(Text);
-	fLog->Submit(LogMessage);
+	if(fNeedUpdateRecorderSet){
+		fNeedUpdateRecorderSet=false;
+		auto AutoLock=TakeLock(fRecorderSetMutex);
+
+		fRecorders=fConfigRecorderSet.Storage();
+	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -283,18 +385,18 @@ cTextStreamOutputLogRecorder::cTextStreamOutputLogRecorder(iTextStreamOutput *Ou
 {
 }
 //---------------------------------------------------------------------------
-void cTextStreamOutputLogRecorder::Write(aClsConstRef<cLogMessage> Message)noexcept
+void cTextStreamOutputLogRecorder::Submit(iReference*,const cLogMessage &Message)noexcept
 {
 	cStringBuffer<uChar16> Text;
 	{
 		cDateTime Date;
-		cnSystem::UTCGregorianDateFromSystemTime(Date,Message->Time);		
+		cnSystem::UTCGregorianDateFromSystemTime(Date,Message.Time);
 		auto WriteBuffer=Text.StreamWriteBuffer();
-		StringStream::WriteFormatString(WriteBuffer,u" %.2d:%.2d:%.2d.%.3d - (%d) ",Date.Hour,Date.Minute,Date.Second,(Date.NanoSecond/Time_1ms),Message->Level);
-		ArrayStream::WriteArray(WriteBuffer,Message->Path->Pointer,Message->Path->Length);
+		StringStream::WriteFormatString(WriteBuffer,u" %.2d:%.2d:%.2d.%.3d - (%d) ",Date.Hour,Date.Minute,Date.Second,(Date.NanoSecond/Time_1ms),Message.Level);
+		ArrayStream::WriteArray(WriteBuffer,Message.Path.Pointer,Message.Path.Length);
 		ArrayStream::WriteElement(WriteBuffer,':');
 		ArrayStream::WriteElement(WriteBuffer,' ');
-		ArrayStream::WriteArray(WriteBuffer,Message->Text->Pointer,Message->Text->Length);
+		ArrayStream::WriteArray(WriteBuffer,Message.Text.Pointer,Message.Text.Length);
 		ArrayStream::WriteElement(WriteBuffer,'\n');
 	}
 	fOutput->Print(Text->Pointer,Text->Length);

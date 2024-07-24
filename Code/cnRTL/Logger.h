@@ -98,7 +98,6 @@ protected:
 	static cnSystem::ErrorReportMaker Make(const uChar16 *Function,uIntn Length)noexcept(true);
 };
 //---------------------------------------------------------------------------
-
 class cErrorReport
 {
 public:
@@ -134,137 +133,189 @@ protected:
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-struct cLogMessage
+class cLogMessageRecord : public iReference
 {
-	uInt8 Level;
+public:
+	ufInt8 Level;
 	uInt64 Time;
 	cString<uChar16> Path;
-	cString<uChar16> Text;
+	cStringBuffer<uChar16> TextBuffer;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iLogRecorder : public iReference
+class cLogMessageQueue
 {
 public:
-	virtual void Write(aClsConstRef<cLogMessage> Message)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class bcLog
-{
-public:
-	bcLog(iAsyncExecution *Execution)noexcept(true);
-	~bcLog()noexcept(true);
+	void Reset(void)noexcept(true);
+	void Submit(rPtr<cLogMessageRecord> Record)noexcept(true);
+	void Async(iAsyncExecution *Execution)noexcept(true);
+	void Connect(iLogRecorder *Recorder)noexcept(true);
 
-	void InsertRecorder(iLogRecorder *Recorder)noexcept(true);
-	void RemoveRecorder(iLogRecorder *Recorder)noexcept(true);
-	void ClearRecorder(void)noexcept(true);
-	void Submit(aClsConstRef<cLogMessage> Message)noexcept(true);
+	template<bool Enable>
+	struct tLogFunction;
 private:
 
 	struct cMsgItem : cRTLAllocator
 	{
 		cMsgItem *Next;
-		enum eMsg{
-			mInsert,
-			mRemove,
-			mClear,
-			mSubmit,
-		}Msg;
-
-		rPtr<iLogRecorder> Recorder;
-		aClsConstRef<cLogMessage> Message;
+		rPtr<cLogMessageRecord> Record;
 	};
 
-	class cContext : public iReference
+	cExclusiveFlag fRecordExclusive;
+	bool fNeedReplaceRecorder=false;
+	bool fNeedAsync=false;
+	uInt8 fRecordMissingCount=0;
+	bool fAsyncWaitFlag=false;
+	cAtomicVar<ufInt32> fAsyncRefCount=0;
+	cAtomicQueueSO<cMsgItem> fMsgQueue;
+	cAtomicStack<cMsgItem> fMsgRecycler;
+	cAtomicVar<iLogRecorder*> fReplaceRecorder=nullptr;
+	cAtomicVar<iAsyncExecution*> fReplaceAsyncExecution=nullptr;
+	iLogRecorder *fRecorder=nullptr;
+	iAsyncProcedure *fAsyncWork=nullptr;
+
+	class cAsyncContext : public iReference, public iProcedure
 	{
 	public:
-		cContext(iAsyncExecution *Execution)noexcept(true);
-		~cContext()noexcept(true);
-		iPtr<iAsyncExecution> AsyncExecution;
-		cExclusiveFlag RecordExclusive;
-		cSeqSet< rPtr<iLogRecorder> > RecorderSet;
-		rPtr<iAsyncProcedure> ProcessWork;
-		cAtomicQueueSO<cMsgItem> MsgQueue;
-		cAtomicStack<cMsgItem> MsgRecycler;
+		virtual void cnLib_FUNC IncreaseReference(void)noexcept(true)override;
+		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true)override;
 
-		void NotifyRecorder(cMsgItem::eMsg Msg,iLogRecorder *Recorder)noexcept(true);
-		void SubmitMessage(aClsConstRef<cLogMessage> Message)noexcept(true);
-		void ProcessMsgQueue(void)noexcept(true);
-		void ProcessMsgQueueThread(void)noexcept(true);
-		void ProcessMsgItem(cMsgItem *Item)noexcept(true);
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	
+		iThread *AsyncWaitThread=nullptr;
+	}fAsyncContext;
 
-		class cProcessProcedure : public iProcedure
-		{
-			virtual void cnLib_FUNC Execute(void)noexcept(true);
-		}fProcessProcedure;
-	};
-	rPtr<cContext> fContext;
+	void ProcessMsgQueue(void)noexcept(true);
+	void ProcessMsgQueueThread(void)noexcept(true);
+	void ProcessUpdateAsync(void)noexcept(true);
+	void SubmitMsgRecord(cLogMessageRecord *Record)noexcept(true);
 };
 //---------------------------------------------------------------------------
-class cLogBuffer
+class bcLogRecordSubmission
 {
 public:
-	cLogBuffer(bcLog *Log,ufInt8 Level,cString<uChar16> Path)noexcept(true);
+	bcLogRecordSubmission(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept(true);
+	~bcLogRecordSubmission()noexcept(true);
+protected:
+	cLogMessageQueue *fQueue;
+	rPtr<cLogMessageRecord> fRecord;
+};
+//---------------------------------------------------------------------------
+class cLogStreamBuffer : public bcLogRecordSubmission
+{
+public:
+	cLogStreamBuffer(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept(true);
+	~cLogStreamBuffer()noexcept(true);
 
-	cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> Stream(void)noexcept(true);
 	void Reset(void)noexcept(true);
-	void Commit(void)noexcept(true);
 
-	template<class...TArgs>
-	void Report(const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
-		fTextBuffer.Clear();
-		StringStream::WriteFormatString(fTextBuffer.StreamWriteBuffer(),FormatString,cnVar::Forward<TArgs>(Args)...);
-		return Commit();
-	}
+	typedef uChar16 tElement;
+
+	cArray<uChar16> ReserveWriteBuffer(uIntn QueryLength)noexcept(true);
+	void CommitWriteBuffer(uIntn Length)noexcept(true);
+
 
 protected:
-	bcLog *fLog;
-	ufInt8 fLevel;
-	cString<uChar16> fPath;
-	cStringBuffer<uChar16> fTextBuffer;
+	cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> fWriteBuffer;
+};
+//---------------------------------------------------------------------------
+class cLogVoidStreamBuffer : public cnStream::cVoidStreamBuffer<uChar16>
+{
+public:
+	void Reset(void)noexcept(true){}
+};
+//---------------------------------------------------------------------------
+template<bool LogEnabled>
+struct cLogMessageQueue::tLogFunction
+{
+	typedef cLogStreamBuffer tLogBuffer;
+	template<class TPath>
+	static cLogStreamBuffer MakeBuffer(cLogMessageQueue *Queue,ufInt8 Level,TPath&& Path)noexcept(true){
+		auto Record=rQuerySharedObject<cLogMessageRecord>();
+		Record->Level=Level;
+		Record->Path=cnVar::MoveCast(Path);
+		Record->TextBuffer.Clear();
+		return cLogStreamBuffer(Queue,cnVar::MoveCast(Record));
+	}
 
-	void Submit(cString<uChar16> Text)noexcept(true);
+	template<class TPath,class...TArgs>
+	static void Report(cLogMessageQueue *Queue,ufInt8 Level,TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
+		auto LogBuffer=MakeBuffer(Queue,Level,cnVar::MoveCast(Path));
+		StringStream::WriteFormatString(LogBuffer,FormatString,cnVar::Forward<TArgs>(Args)...);
+	}
 
 };
 //---------------------------------------------------------------------------
-class cLogVoidBuffer
+template<>
+struct cLogMessageQueue::tLogFunction<false>
 {
-public:
-	cLogVoidBuffer(bcLog*,ufInt8,const uChar16*)noexcept(true){}
+	typedef cLogVoidStreamBuffer tLogBuffer;
+	template<class TPath>
+	static cLogVoidStreamBuffer MakeBuffer(cLogMessageQueue*,ufInt8,TPath&&)noexcept(true){
+		return cLogVoidStreamBuffer();
+	}
 
-	cnStream::cVoidStreamBuffer<uChar16> Stream(void)noexcept(true){	return cnStream::VoidStreamWriteBuffer<uChar16>();	}
-	void Reset(void)noexcept(true){}
-	void Commit(void)noexcept(true){}
-
-	template<class...TArgs>	void Report(const uChar16*,TArgs&&...)noexcept(true){}
+	template<class TPath,class...TArgs>
+	static void Report(cLogMessageQueue*,ufInt8,TPath &&,const uChar16 *,TArgs&&...)noexcept(true){}
 };
 //---------------------------------------------------------------------------
 template<uIntn LogLevel>
-class cLog : public bcLog
+class cLog : public cLogMessageQueue
 {
 public:
-	cLog(iAsyncExecution *Execution=nullptr)noexcept(true):bcLog(Execution){}
-	~cLog()noexcept(true){}
-
 	template<uIntn Level,class TPath>
-	typename cnVar::TSelect<Level<LogLevel,cLogBuffer,cLogVoidBuffer>::Type MakeLogBuffer(TPath &&Path)noexcept(true){
-		return {this,Level,cnVar::MoveCast(Path)};
+	typename cLogMessageQueue::tLogFunction<LogLevel<=Level>::tLogBuffer MakeLogBuffer(TPath &&Path)noexcept(true){
+		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::MakeBuffer(this,Level,cnVar::MoveCast(Path));
 	}
 
 	template<uIntn Level,class TPath,class...TArgs>
 	void Report(TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
-		typename cnVar::TSelect<Level<LogLevel,cLogBuffer,cLogVoidBuffer>::Type LogBuffer(this,Level,cnVar::MoveCast(Path));
-		return LogBuffer.Report(FormatString,cnVar::Forward<TArgs>(Args)...);
+		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::Report(this,Level,cnVar::MoveCast(Path),FormatString,cnVar::Forward<TArgs>(Args)...);
 	}
+};
+//---------------------------------------------------------------------------
+class cLogRecordHub : public iLogRecorder
+{
+public:
+	cLogRecordHub()noexcept(true);
+	~cLogRecordHub()noexcept(true);
+
+	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)override;
+
+	void InsertRecorder(iLogRecorder *Recorder)noexcept(true);
+	void RemoveRecorder(iLogRecorder *Recorder)noexcept(true);
+	void ClearRecorder(void)noexcept(true);
+	void SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept(true);
+
+private:
+
+	rPtr<iMutex> fRecorderSetMutex;
+	cSeqSet< rPtr<iLogRecorder> > fConfigRecorderSet;
+	bool fNeedUpdateRecorderSet=false;
+	cSeqList< rPtr<iLogRecorder> > fRecorders;
+
+	void ProcessRecorderSet(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cTextStreamOutputLogRecorder : public iLogRecorder
 {
 public:
 	cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept(true);
-	virtual void Write(aClsConstRef<cLogMessage> Message)noexcept(true)override;
+	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)override;
 protected:
 	rPtr<iTextStreamOutput> fOutput;
 };
+//---------------------------------------------------------------------------
+#ifndef cnRTL_LOGLEVEL
+
+#ifdef cnLib_DEBUG
+#define	cnRTL_LOGLEVEL	0
+#else
+#define	cnRTL_LOGLEVEL	1
+#endif // cnLib_DEBUG
+
+#endif // !cnRTL_LOGLEVEL
+//---------------------------------------------------------------------------
+extern cLog<cnRTL_LOGLEVEL> gRTLLog;
 //---------------------------------------------------------------------------
 }   // namespace cnRTL
 //---------------------------------------------------------------------------

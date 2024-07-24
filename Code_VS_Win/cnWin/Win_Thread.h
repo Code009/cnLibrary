@@ -137,6 +137,15 @@ typedef cnRTL::cnWinRTL::cNT6ThreadPoolEnvironment cThreadPool;
 //---------------------------------------------------------------------------
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
+class cWinLogModule
+{
+public:
+	cWinLogModule()noexcept;
+	~cWinLogModule()noexcept;
+
+	rPtr<cnRTL::cLogRecordHub> Hub;
+};
+//---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
