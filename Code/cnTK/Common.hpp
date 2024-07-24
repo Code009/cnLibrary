@@ -43,9 +43,6 @@
 #define cnLib_ENUM_BEGIN(_type_,_name_)			enum class _name_ : _type_
 #define cnLib_ENUM_END(_name_)					;	typedef _name_ e##_name_
 
-#define cnLib_TYPELESS_ENUM_BEGIN(_name_)		enum class _name_
-#define cnLib_TYPELESS_ENUM_END(_name_)			;	typedef _name_ e##_name_
-
 // !cnLibrary_CPPEXCLUDE_ENUMCLASS
 #else
 // cnLibrary_CPPEXCLUDE_ENUMCLASS
@@ -55,9 +52,6 @@
 
 #define cnLib_ENUM_BEGIN(_type_,_name_)			typedef _type_ e##_name_;	struct _name_{enum Enum_##_name_
 #define cnLib_ENUM_END(_name_)					;}
-
-#define cnLib_TYPELESS_ENUM_BEGIN(_name_)		struct _name_{enum e##_name_
-#define cnLib_TYPELESS_ENUM_END(_name_)			;};	typedef _name_::e##_name_ e##_name_
 
 #endif // cnLibrary_CPPEXCLUDE_ENUMCLASS
 
@@ -169,10 +163,10 @@ struct TypeMissing;
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnMemory{
-cnLib_TYPELESS_ENUM_BEGIN(ByteOrder){
+cnLib_ENUM_BEGIN(ufInt8,ByteOrder){
 	LittleEndian,
 	BigEndian,
-}cnLib_TYPELESS_ENUM_END(ByteOrder);
+}cnLib_ENUM_END(ByteOrder);
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
 //---------------------------------------------------------------------------
