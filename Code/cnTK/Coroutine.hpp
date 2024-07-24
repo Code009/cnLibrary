@@ -136,6 +136,12 @@ public:
 		void await_suspend(TAwaitCoHandle cnLib_UREF CoHandle)noexcept(true){
 			TCoroutineHandleOperator::Assign(Owner.fFinalHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
 
+			// notify awaiter
+			iCoroutinePromiseAwaiter *Awaiter=Owner.fAwaiter.Free.Xchg(reinterpret_cast<iCoroutinePromiseAwaiter*>(&Owner));
+			if(Awaiter!=nullptr){
+				Awaiter->NotifyCompletion();
+			}
+
 			Owner.OnFinish();
 		}
 		void await_resume(void)noexcept(true){}	// never resume from final suspend
@@ -149,7 +155,7 @@ public:
 
 	cAwaiterReadyAlways initial_suspend(void)noexcept(true){	return cAwaiterReadyAlways();	}
 	cFinalSuspension final_suspend(void)noexcept(true){		return *this;	}
-	void unhandled_exception(void)noexcept(true){	OnReturn();	}
+	void unhandled_exception(void)noexcept(true){	}
 
 	bool IsDone(void)const noexcept(true){	return TCoroutineHandleOperator::IsAvailable(fFinalHandle);	}
 
@@ -169,15 +175,6 @@ public:
 		}
 	}
 
-
-protected:
-	void OnReturn(void)noexcept(true){
-		// notify awaiter
-		iCoroutinePromiseAwaiter *Awaiter=fAwaiter.Free.Xchg(reinterpret_cast<iCoroutinePromiseAwaiter*>(this));
-		if(Awaiter!=nullptr){
-			Awaiter->NotifyCompletion();
-		}
-	}
 
 private:
 	cAtomicVariable<typename cnVar::TSelect<0,iCoroutinePromiseAwaiter*,TCoroutineHandleOperator>::Type> fAwaiter;
@@ -211,7 +208,6 @@ public:
 		template<class T>
 		void return_value(T cnLib_UREF Value)noexcept(true){
 			fReturnValue=cnLib_UREFCAST(T)(Value);
-			this->OnReturn();
 		}
 		TRet fReturnValue;
 	};
@@ -308,7 +304,7 @@ public:
 		cnVar::cPtrOwner< cCoroutinePromiseOwnerTokenOperator<promise_type> > get_return_object()noexcept(true)
 		{	return cnVar::cPtrOwner< cCoroutinePromiseOwnerTokenOperator<promise_type> >::TakeFromManual(this);	}
 
-		void return_void()noexcept(true){	this->OnReturn();	}
+		void return_void()noexcept(true){}
 	};
 	typedef cnVar::cPtrOwner< cCoroutinePromiseOwnerTokenOperator<promise_type> > pPtr;
 	
@@ -396,7 +392,7 @@ struct cResumablePromiseOwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<
 {
 	static void Release(T* const &Token)noexcept(true){
 		if(Token!=nullptr)
-			Token->Terminate();
+			Token->OnFinish();
 	}
 };	
 //---------------------------------------------------------------------------
@@ -427,8 +423,8 @@ public:
 		void await_suspend(TAwaitCoHandle cnLib_UREF CoHandle)noexcept(true){
 			TCoroutineHandleOperator::Assign(Owner.fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
 
-			Owner.OnPhaseFinish();
-			Owner.Terminate(1);
+			Owner.OnPhaseFinish(3);
+			Owner.OnFinish();
 		}
 		void await_resume(void)noexcept(true){}	// never resume from final suspend
 
@@ -464,25 +460,49 @@ public:
 	
 	cYieldSuspension YieldSuspend(void)noexcept(true){	return *this;	}
 
-	bool Run(iCoroutinePromiseAwaiter *Awaiter)noexcept(true){
-		if(fRunStateFlag.Acquire.CmpStore(0,2)==false){
+	bool Run(void)noexcept(true){
+		if(fRunStateFlag.Acquire.CmpStore(0,1)==false){
 			return false;
 		}
-		fAwaiter=Awaiter;
-
 		TCoroutineHandleOperator::Resume(fCoHandle);
 		return true;
+	}
+	bool AwaitIsReady(void)noexcept(true){
+		return fRunStateFlag.Free.Load()==2;
+	}
+	bool SetupAwait(iCoroutinePromiseAwaiter *Awaiter)noexcept(true){
+		iCoroutinePromiseAwaiter *PrevAwaiter=fAwaiter.Acquire.Xchg(Awaiter);
+		if(PrevAwaiter==reinterpret_cast<iCoroutinePromiseAwaiter*>(this)){
+			// routine is completed already
+			fAwaiter.Release.Store(nullptr);
+			return false;
+		}
+		else{
+			// registered
+			return true;
+		}
+	}
+
+	bool IsRunnable(void)noexcept(true){
+		return fRunStateFlag.Free.Load()!=3;
 	}
 
 private:
 	typename TCoroutineHandleOperator::tHandle fCoHandle;
-	iCoroutinePromiseAwaiter *fAwaiter;
+	cAtomicVariable<typename cnVar::TSelect<0,iCoroutinePromiseAwaiter*,TCoroutineHandleOperator>::Type> fAwaiter;
+	// fRunStateFlag
+	//	0=paused(runnable),1=running,2=ready(notify awaiter)
 	cAtomicVariable<typename cnVar::TSelect<0,ufInt8,TCoroutineHandleOperator>::Type> fRunStateFlag;
 	cAtomicVariable<typename cnVar::TSelect<0,ufInt8,TCoroutineHandleOperator>::Type> fFinishFlag;
 
 	void OnPhaseFinish(ufInt8 NextState)noexcept(true){
 		fRunStateFlag.Release.Store(NextState);
-		fAwaiter->NotifyCompletion();
+		// notify awaiter
+		iCoroutinePromiseAwaiter *Awaiter=fAwaiter.Acquire.Xchg(reinterpret_cast<iCoroutinePromiseAwaiter*>(this));
+		if(Awaiter!=nullptr){
+			fAwaiter.Release.Store(nullptr);
+			Awaiter->NotifyCompletion();
+		}
 	}
 
 	template<class T> friend struct cnAsync::cResumablePromiseOwnerTokenOperator;
@@ -520,7 +540,7 @@ public:
 		void return_value(T cnLib_UREF Value)
 			noexcept(noexcept(fReturnValue=cnLib_UREFCAST(T)(Value)))
 		{
-			fReturnValue=cnLib_UREFCAST(T)(Value);			
+			fReturnValue=cnLib_UREFCAST(T)(Value);
 		}
 
 		TRet fReturnValue;
@@ -532,7 +552,7 @@ public:
 
 
 	// construct by promise
-	cResumable(promise_type *p)noexcept(true):fPromise(p){}
+	cResumable(pPtr &&p)noexcept(true):fPromise(static_cast<pPtr&&>(p)){}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	// move construct
@@ -564,8 +584,8 @@ public:
 
 	// check state
 
-	operator promise_type*()const noexcept(true){
-		return fPromise;
+	operator bool()const noexcept(true){
+		return fPromise->IsRunnable();
 	}
 
 
@@ -577,17 +597,14 @@ public:
 		bool await_ready(void)const noexcept(true){
 			if(fPromise==nullptr)
 				return true;
-			if(fPromise->Run(this)){
-				return false;
-			}
-			return true;
+			return fPromise->AwaitIsReady();
 		}
 		template<class TAwaitCoHandle>
 		bool await_suspend(TAwaitCoHandle cnLib_UREF CoHandle){
 			TCoroutineHandleOperator::Assign(fCoHandle,cnLib_UREFCAST(TAwaitCoHandle)(CoHandle));
 			return fPromise->SetupAwait(this);
 		}
-		void await_resume(void)noexcept(true){}
+		TRet await_resume(void)noexcept(true){	return static_cast<TRet&&>(fPromise->fReturnValue);	}
 
 		virtual void NotifyCompletion(void)noexcept(true)override{
 			TCoroutineHandleOperator::Resume(fCoHandle);
@@ -600,27 +617,10 @@ public:
 
 	// run function
 
-	cAwaiter Run(void)const noexcept(true){
-		return fPromise;
-	}
 	cAwaiter operator () (void)const noexcept(true){
-		return fPromise;
-	}
-
-	// Get current value
-
-	const TRet& Value(void)const noexcept(true){
-		return fPromise->fReturnValue;
-	}
-	TRet& Value(void)noexcept(true){
-		return fPromise->fReturnValue;
-	}
-
-	const TRet& operator *()const noexcept(true){
-		return fPromise->fReturnValue;
-	}
-	TRet& operator *()noexcept(true){
-		return fPromise->fReturnValue;
+		if(fPromise->Run()==false)
+			return nullptr;
+		return fPromise.Pointer();
 	}
 
 private:
@@ -635,7 +635,8 @@ public:
 	class promise_type : public bcResumablePromise<TCoroutineHandleOperator>
 	{
 	public:
-		promise_type* get_return_object()noexcept(true){	return this;	}
+		cnVar::cPtrOwner< cResumablePromiseOwnerTokenOperator<promise_type> > get_return_object()noexcept(true)
+		{	return cnVar::cPtrOwner< cResumablePromiseOwnerTokenOperator<promise_type> >::TakeFromManual(this);	}
 
 		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(void)noexcept(true){	return this->YieldSuspend();		}
 		typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(int)noexcept(true){		return this->YieldSuspend();		}
@@ -649,7 +650,7 @@ public:
 
 
 	// construct by promise
-	cResumable(promise_type *p)noexcept(true):fPromise(p){}
+	cResumable(pPtr &&p)noexcept(true):fPromise(static_cast<pPtr&&>(p)){}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 	// move construct
@@ -681,10 +682,9 @@ public:
 
 	// check state
 
-	operator promise_type*()const noexcept(true){
-		return fPromise;
+	operator bool()const noexcept(true){
+		return fPromise->IsRunnable();
 	}
-
 
 
 	class cAwaiter : public iCoroutinePromiseAwaiter
@@ -695,10 +695,7 @@ public:
 		bool await_ready(void)const noexcept(true){
 			if(fPromise==nullptr)
 				return true;
-			if(fPromise->Run(this)){
-				return false;
-			}
-			return true;
+			return fPromise->AwaitIsReady();
 		}
 		template<class TAwaitCoHandle>
 		bool await_suspend(TAwaitCoHandle cnLib_UREF CoHandle){
@@ -718,11 +715,10 @@ public:
 
 	// run function
 
-	cAwaiter Run(void)const noexcept(true){
-		return fPromise;
-	}
 	cAwaiter operator () (void)const noexcept(true){
-		return fPromise;
+		if(fPromise->Run()==false)
+			return nullptr;
+		return fPromise.Pointer();
 	}
 
 private:
