@@ -567,6 +567,16 @@ namespace jInterface
 	{ return env->ReleaseStringCritical(reinterpret_cast<jstring>(string),carray); }
 
 
+	inline bool ExceptionCheck(JNIEnv *env)noexcept
+	{	return env->ExceptionCheck();	}
+	inline void ExceptionClear(JNIEnv *env)noexcept
+	{	return env->ExceptionClear();	}
+	inline void ExceptionDescribe(JNIEnv *env)noexcept
+	{	return env->ExceptionDescribe();	}
+	inline jcThrowable* ExceptionOccurred(JNIEnv *env)noexcept
+	{	return reinterpret_cast<jcThrowable*>(env->ExceptionOccurred());	}
+
+
 	template<class T>
 	struct tTypeOp;
 
@@ -1094,110 +1104,10 @@ struct JNIMethodSignatureGenerator
 	}
 };
 
-//---------------------------------------------------------------------------
+
 template<class TJavaClass>
-class jrLocal
-{
-public:
-	jrLocal(JNIEnv *env)noexcept
-		: fEnv(env)
-		, fJavaRef(nullptr)
-	{}
+class jrLocal;
 
-	jrLocal(JNIEnv *env,TJavaClass *Object)noexcept
-		: fEnv(env)
-		, fJavaRef(Object)
-	{}
-
-	~jrLocal()noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			if(fEnv->ExceptionCheck()){
-				fEnv->ExceptionDescribe();
-				fEnv->ExceptionClear();
-			}
-		}
-	}
-
-	jrLocal(const jrLocal&)=delete;
-	jrLocal(jrLocal &&Src)noexcept{
-		fEnv=Src.fEnv;
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-	}
-
-	jrLocal& operator=(const jrLocal &Src)=delete;
-	jrLocal& operator=(jrLocal &&Src){
-		cnLib_ASSERT(fEnv==Src.fEnv);
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			if(fEnv->ExceptionCheck()){
-				fEnv->ExceptionDescribe();
-				fEnv->ExceptionClear();
-			}
-		}
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-		return *this;
-	}
-
-	TJavaClass Get(void)const noexcept{ return fJavaRef; }
-	void Set(TJavaClass Ref)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			if(fEnv->ExceptionCheck()){
-				fEnv->ExceptionDescribe();
-				fEnv->ExceptionClear();
-			}
-		}
-		fJavaRef=Ref;
-	}
-	void Clear(void)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			if(fEnv->ExceptionCheck()){
-				fEnv->ExceptionDescribe();
-				fEnv->ExceptionClear();
-			}
-			fJavaRef=nullptr;
-		}
-	}
-
-	template<class TDest>
-	typename cnVar::TTypeConditional<jrLocal<TDest>&&,cnVar::TIsConvertible<TJavaClass*,TDest*>::Value>
-		::Type Transfer(void)noexcept
-	{
-		return reinterpret_cast<jrLocal<TDest>&&>(*this);
-	}
-
-
-#ifdef JNI_OK
-	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
-#endif // JNI_OK
-
-	operator TJavaClass*()const noexcept{	return fJavaRef; }
-	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
-
-	JNIEnv* env()const noexcept{ return fEnv; }
-
-	TJavaClass* Return(void)noexcept{ auto Ret=fJavaRef;	fJavaRef=nullptr;	return Ret; }
-protected:
-	JNIEnv *fEnv;
-	TJavaClass *fJavaRef;
-};
-template<class T>
-inline jrLocal<T> RefLocal(JNIEnv *env,T *Object)noexcept
-{
-	return jrLocal<T>(env,Object);
-}
-
-template<class T,class TSrc>
-inline typename cnVar::TTypeConditional<jrLocal<T>,
-	cnVar::TIsConvertible<TSrc*,T*>::Value
->::Type jRefCast(jrLocal<TSrc> &&Object)noexcept(true)
-{
-	return Object.template Transfer<T>();
-}
 //---------------------------------------------------------------------------
 }	// namespace jCPP
 //---------------------------------------------------------------------------

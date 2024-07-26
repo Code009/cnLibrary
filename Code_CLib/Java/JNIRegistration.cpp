@@ -1,9 +1,37 @@
+#include <cnRTL/Logger.h>
+
 #include "JNIRegistration.h"
+#include "JNICPP.hpp"
+
 
 using namespace cnLibrary;
+using namespace cnRTL;
 using namespace jCPP;
 
 
+//---------------------------------------------------------------------------
+void jCPP::jLogException(JNIEnv *env,jcThrowable *Exception)noexcept
+{
+	// clear exception in order to read exception message
+	jInterface::ExceptionDescribe(env);
+	jInterface::ExceptionClear(env);
+	// read exception message
+	auto ExceptionString=Exception->toString(env);
+	if(ExceptionString!=nullptr){
+		// failed
+		auto StrLength=ExceptionString->length(env);
+		auto StrAccess=ExceptionString->AccessCritical(env);
+		{
+			auto Stream=gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+
+			Stream+=ArrayStreamArray(StrAccess.Pointer,StrLength);
+		}
+	}
+	else{
+		jInterface::ExceptionDescribe(env);
+		jInterface::ExceptionClear(env);
+	}
+}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void cJNIInitializationRegistration::Register(cInitialization *Component)noexcept

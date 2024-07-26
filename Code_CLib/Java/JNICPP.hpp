@@ -13,6 +13,103 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace jCPP{
 //---------------------------------------------------------------------------
+inline bool jLogException(JNIEnv *env)noexcept
+{
+	return jLogExceptionT<jJavaContext>(env);
+}
+//---------------------------------------------------------------------------
+template<class TJavaClass>
+class jrLocal
+{
+public:
+	jrLocal(JNIEnv *env)noexcept
+		: fEnv(env)
+		, fJavaRef(nullptr)
+	{}
+
+	jrLocal(JNIEnv *env,TJavaClass *Object)noexcept
+		: fEnv(env)
+		, fJavaRef(Object)
+	{}
+
+	~jrLocal()noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+	}
+
+	jrLocal(const jrLocal&)=delete;
+	jrLocal(jrLocal &&Src)noexcept{
+		fEnv=Src.fEnv;
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+	}
+
+	jrLocal& operator=(const jrLocal &Src)=delete;
+	jrLocal& operator=(jrLocal &&Src){
+		cnLib_ASSERT(fEnv==Src.fEnv);
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+		return *this;
+	}
+
+	TJavaClass Get(void)const noexcept{ return fJavaRef; }
+	void Set(TJavaClass Ref)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+		fJavaRef=Ref;
+	}
+	void Clear(void)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+			fJavaRef=nullptr;
+		}
+	}
+
+	template<class TDest>
+	typename cnVar::TTypeConditional<jrLocal<TDest>&&,cnVar::TIsConvertible<TJavaClass*,TDest*>::Value>
+		::Type Transfer(void)noexcept
+	{
+		return reinterpret_cast<jrLocal<TDest>&&>(*this);
+	}
+
+
+#ifdef JNI_OK
+	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
+#endif // JNI_OK
+
+	operator TJavaClass*()const noexcept{	return fJavaRef; }
+	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
+
+	JNIEnv* env()const noexcept{ return fEnv; }
+
+	TJavaClass* Return(void)noexcept{ auto Ret=fJavaRef;	fJavaRef=nullptr;	return Ret; }
+protected:
+	JNIEnv *fEnv;
+	TJavaClass *fJavaRef;
+};
+template<class T>
+inline jrLocal<T> RefLocal(JNIEnv *env,T *Object)noexcept
+{
+	return jrLocal<T>(env,Object);
+}
+
+template<class T,class TSrc>
+inline typename cnVar::TTypeConditional<jrLocal<T>,
+	cnVar::TIsConvertible<TSrc*,T*>::Value
+>::Type jRefCast(jrLocal<TSrc> &&Object)noexcept(true)
+{
+	return Object.template Transfer<T>();
+}
+//---------------------------------------------------------------------------
 template<class TJavaClass>
 class jrGlobal
 {
@@ -22,10 +119,7 @@ public:
 		if(fJavaRef!=nullptr){
 			JNIEnv *env=jQueryEnv();
 			jInterface::DeleteGlobalRef(env,fJavaRef);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			jLogException(env);
 		}
 	}
 
@@ -33,10 +127,8 @@ public:
 	jrGlobal(JNIEnv *env,TJavaClass *Ref)noexcept{
 		if(Ref!=nullptr){
 			fJavaRef=jInterface::NewGlobalRef(env,Ref);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			if(fJavaRef==nullptr)
+				jLogException(env);
 		}
 		else{
 			fJavaRef=nullptr;
@@ -55,10 +147,7 @@ public:
 		if(fJavaRef!=nullptr){
 			JNIEnv *env=jQueryEnv();
 			jInterface::DeleteGlobalRef(env,fJavaRef);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			jLogException(env);
 		}
 		fJavaRef=Src.fJavaRef;
 		Src.fJavaRef=nullptr;
@@ -72,10 +161,8 @@ public:
 			JNIEnv *env=jQueryEnv();
 			if(env==Src.env()){
 				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
-				if(env->ExceptionCheck()){
-					env->ExceptionDescribe();
-					env->ExceptionClear();
-				}
+				if(fJavaRef==nullptr)
+					jLogException(env);
 			}
 		}
 		else{
@@ -89,17 +176,12 @@ public:
 			JNIEnv *env=jQueryEnv();
 			if(fJavaRef!=nullptr){
 				jInterface::DeleteGlobalRef(env,fJavaRef);
-				if(env->ExceptionCheck()){
-					env->ExceptionDescribe();
-					env->ExceptionClear();
-				}
+				jLogException(env);
 			}
 			if(env==Src.env()){
 				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
-				if(env->ExceptionCheck()){
-					env->ExceptionDescribe();
-					env->ExceptionClear();
-				}
+				if(fJavaRef==nullptr)
+					jLogException(env);
 			}
 			else{
 				fJavaRef=nullptr;
@@ -109,10 +191,7 @@ public:
 			if(fJavaRef!=nullptr){
 				JNIEnv *env=jQueryEnv();
 				jInterface::DeleteGlobalRef(env,fJavaRef);
-				if(env->ExceptionCheck()){
-					env->ExceptionDescribe();
-					env->ExceptionClear();
-				}
+				jLogException(env);
 				fJavaRef=nullptr;
 			}
 		}
@@ -124,17 +203,12 @@ public:
 	void Set(JNIEnv *env,TJavaClass* Ref)noexcept{
 		if(fJavaRef!=nullptr){
 			jInterface::DeleteGlobalRef(env,fJavaRef);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			jLogException(env);
 		}
 		if(Ref!=nullptr){
 			fJavaRef=jInterface::NewGlobalRef(env,Ref);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			if(fJavaRef==nullptr)
+				jLogException(env);
 		}
 		else{
 			fJavaRef=nullptr;
@@ -144,10 +218,7 @@ public:
 	void Clear(JNIEnv *env)noexcept{
 		if(fJavaRef!=nullptr){
 			jInterface::DeleteGlobalRef(env,fJavaRef);
-			if(env->ExceptionCheck()){
-				env->ExceptionDescribe();
-				env->ExceptionClear();
-			}
+			jLogException(env);
 			fJavaRef=nullptr;
 		}
 	}
@@ -166,10 +237,7 @@ inline jrLocal<TClass> jNew(JNIEnv *env)noexcept
 {
 	TClass *Ret=jInterface::NewObjectA<TClass>(env,TClassRef<jJavaContext,TClass>::Value,TConstructorMethod<jJavaContext,TClass,&jNew<TClass> >::Value,nullptr);
 	if(Ret==nullptr){
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 	return RefLocal(env,Ret);
 }
@@ -180,10 +248,7 @@ inline jrLocal<TClass> jNew(JNIEnv *env,TArgs...Args)noexcept
 	jvalue args[sizeof...(TArgs)]={MakeJValue(Args)...};
 	TClass *Ret=jInterface::NewObjectA<TClass>(env,TClassRef<jJavaContext,TClass>::Value,TConstructorMethod<jJavaContext,TClass,&jNew<TClass,TArgs...> >::Value,args);
 	if(Ret==nullptr){
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 	return RefLocal(env,Ret);
 }
@@ -198,19 +263,13 @@ struct jFieldAccess
 
 	TField Get(JNIEnv *env)noexcept{
 		TField Ret=jInterface::GetField<TField>(env,JavaRef,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 		return Ret;
 	}
 
 	void Set(JNIEnv *env,TField Value)noexcept{
 		jInterface::SetField<TField>(env,JavaRef,FieldID,Value);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcObject *JavaRef;
@@ -227,19 +286,14 @@ struct jFieldAccess<TFieldClass*>
 
 	jrLocal<TFieldClass> Get(JNIEnv *env)noexcept{
 		TFieldClass* Ret=jInterface::GetField<TFieldClass*>(env,JavaRef,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		if(Ret==nullptr)
+			jLogException(env);
 		return jrLocal<TFieldClass>(env,Ret);
 	}
 
 	void Set(JNIEnv *env,TFieldClass *Value)noexcept{
 		jInterface::SetField<TFieldClass*>(env,JavaRef,FieldID,Value);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcObject *JavaRef;
@@ -256,19 +310,13 @@ struct jPointerFieldAccess
 
 	T* Get(JNIEnv *env)noexcept{
 		jlong Ret=jInterface::GetField<jlong>(env,JavaRef,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 		return reinterpret_cast<T*>(static_cast<uIntn>(Ret));
 	}
 
 	void Set(JNIEnv *env,T *Value)noexcept{
 		jInterface::SetField<jlong>(env,JavaRef,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcObject *JavaRef;
@@ -308,19 +356,13 @@ struct jStaticFieldAccess
 
 	TField Get(JNIEnv *env)noexcept{
 		TField Ret=jInterface::GetStaticField<TField>(env,Class,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 		return Ret;
 	}
 
 	void Set(JNIEnv *env,TField Value)noexcept{
 		jInterface::SetStaticField<TField>(env,Class,FieldID,Value);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcClass *Class;
@@ -337,19 +379,14 @@ struct jStaticFieldAccess<TFieldClass*>
 
 	jrLocal<TFieldClass> Get(JNIEnv *env)noexcept{
 		TFieldClass* Ret=jInterface::GetStaticField<TFieldClass*>(env,Class,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		if(Ret==nullptr)
+			jLogException(env);
 		return jrLocal<TFieldClass>(env,Ret);
 	}
 
 	void Set(JNIEnv *env,TFieldClass *Value)noexcept{
 		jInterface::SetStaticField<TFieldClass*>(env,Class,FieldID,Value);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcClass *Class;
@@ -366,19 +403,13 @@ struct jPointerStaticFieldAccess
 
 	T* Get(JNIEnv *env)noexcept{
 		jlong Ret=jInterface::GetStaticField<jlong>(env,Class,FieldID);
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 		return reinterpret_cast<T*>(static_cast<uIntn>(Ret));
 	}
 
 	void Set(JNIEnv *env,T *Value)noexcept{
 		jInterface::SetStaticField<jlong>(env,Class,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
-		if(env->ExceptionCheck()){
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
+		jLogException(env);
 	}
 
 	jcClass *Class;
@@ -566,6 +597,7 @@ struct jcString : jcObject
 //---------------------------------------------------------------------------
 struct jcThrowable : jcObject
 {
+	static constexpr const char jClassName[]="java/lang/Throwable";
 };
 //---------------------------------------------------------------------------
 struct jbcArray : jcObject
