@@ -102,7 +102,7 @@ void cLogMessageQueue::Reset(void)noexcept
 {
 	// prepare notification
 	fAsyncWaitFlag=true;
-	fAsyncContext.AsyncWaitThread=cnSystem::CurrentThread::GetThread();
+	fAsyncContext->AsyncWaitThread=cnSystem::CurrentThread::GetThread();
 
 	// remove asynchronization
 	fNeedAsync=true;
@@ -115,7 +115,7 @@ void cLogMessageQueue::Reset(void)noexcept
 		}
 	}
 	fAsyncRefCount.Free++;
-	fAsyncContext.AsyncWaitThread=nullptr;
+	fAsyncContext->AsyncWaitThread=nullptr;
 
 	// clear recorder
 	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
@@ -212,6 +212,11 @@ void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
 {
 	if(fNeedAsync){
 		fNeedAsync=false;
+		
+		if(fAsyncInitialized==false){
+			fAsyncContext.Construct();
+			fAsyncInitialized=true;
+		}
 
 		auto Execution=fReplaceAsyncExecution.Barrier.Xchg(nullptr);
 		if(Execution!=nullptr){

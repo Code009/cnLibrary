@@ -163,6 +163,7 @@ private:
 	cExclusiveFlag fRecordExclusive;
 	bool fNeedReplaceRecorder=false;
 	bool fNeedAsync=false;
+	bool fAsyncInitialized=false;
 	uInt8 fRecordMissingCount=0;
 	bool fAsyncWaitFlag=false;
 	cAtomicVar<ufInt32> fAsyncRefCount=0;
@@ -182,7 +183,8 @@ private:
 		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	
 		iThread *AsyncWaitThread=nullptr;
-	}fAsyncContext;
+	};
+	cnVar::cStaticVariable<cAsyncContext> fAsyncContext;
 
 	void ProcessMsgQueue(void)noexcept(true);
 	void ProcessMsgQueueThread(void)noexcept(true);
