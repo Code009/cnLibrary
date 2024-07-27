@@ -162,9 +162,13 @@ void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
 //---------------------------------------------------------------------------
 void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
 {
+	if(Recorder->Acquire(this)==false)
+		return;
+
 	rIncReference(Recorder,'logr');
 	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(Recorder);
 	if(PrevRecorder!=nullptr){
+		PrevRecorder->Release(this);
 		rDecReference(PrevRecorder,'logr');
 	}
 
@@ -248,6 +252,7 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 			fNeedReplaceRecorder=false;
 
 			if(fRecorder!=nullptr){
+				fRecorder->Release(this);
 				rDecReference(fRecorder,'logr');
 			}
 			fRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
@@ -325,12 +330,22 @@ void cLogStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept(true)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cLogRecordHub::cLogRecordHub()noexcept
-	: fRecorderSetMutex(cnSystem::CreateMutexLock())
+	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
 cLogRecordHub::~cLogRecordHub()noexcept
 {
+}
+//---------------------------------------------------------------------------
+bool cLogRecordHub::Acquire(void *Owner)noexcept
+{
+	return fOwner.Barrier.CmpStore(nullptr,Owner);
+}
+//---------------------------------------------------------------------------
+bool cLogRecordHub::Release(void *Owner)noexcept
+{
+	return fOwner.Barrier.CmpStore(Owner,nullptr);
 }
 //---------------------------------------------------------------------------
 void cLogRecordHub::Submit(iReference *Reference,const cLogMessage &Message)noexcept
@@ -342,52 +357,77 @@ void cLogRecordHub::InsertRecorder(iLogRecorder *Recorder)noexcept
 {
 	if(Recorder==nullptr)
 		return;
+	if(fOwner.Barrier.CmpStore(nullptr,this)==false){
+		// cannot change recorder
+		return;
+	}
 
-	auto AutoLock=TakeLock(fRecorderSetMutex);
-	fNeedUpdateRecorderSet=fConfigRecorderSet.Insert(Recorder);
+	if(Recorder->Acquire(this)){
+		fRecorderSet.Insert(Recorder);
+	}
+
+	fOwner.Release.Store(nullptr);
 }
 //---------------------------------------------------------------------------
 void cLogRecordHub::RemoveRecorder(iLogRecorder *Recorder)noexcept
 {
 	if(Recorder==nullptr)
 		return;
-	
-	auto AutoLock=TakeLock(fRecorderSetMutex);
-	fNeedUpdateRecorderSet=fConfigRecorderSet.Remove(Recorder);
+	if(fOwner.Barrier.CmpStore(nullptr,this)==false){
+		// cannot change recorder
+		return;
+	}
+
+	bool Removed;
+	Removed=fRecorderSet.Remove(Recorder);
+
+	fOwner.Release.Store(nullptr);
+
+	if(Removed){
+		Recorder->Release(this);
+	}
 }
 //---------------------------------------------------------------------------
 void cLogRecordHub::ClearRecorder(void)noexcept
 {
-	auto AutoLock=TakeLock(fRecorderSetMutex);
-	if(fConfigRecorderSet.GetCount()!=0){
-		fConfigRecorderSet.Clear();
-		fNeedUpdateRecorderSet=true;
+	if(fOwner.Barrier.CmpStore(nullptr,this)==false){
+		// cannot change recorder
+		return;
+	}
+	auto ClearList=cnVar::MoveCast(fRecorderSet);
+	fOwner.Release.Store(nullptr);
+
+	for(auto p : ClearList){
+		p->Release(this);
 	}
 }
 //---------------------------------------------------------------------------
 void cLogRecordHub::SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept
 {
-	ProcessRecorderSet();
+	auto Owner=fOwner.Free.Load();
+	if(Owner==nullptr || Owner==this)
+		return;
 
-	for(auto &p : fRecorders){
+	for(auto &p : fRecorderSet){
 		p->Submit(Reference,Message);
-	}
-}
-//---------------------------------------------------------------------------
-void cLogRecordHub::ProcessRecorderSet(void)noexcept
-{
-	if(fNeedUpdateRecorderSet){
-		fNeedUpdateRecorderSet=false;
-		auto AutoLock=TakeLock(fRecorderSetMutex);
-
-		fRecorders=fConfigRecorderSet.Storage();
 	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cTextStreamOutputLogRecorder::cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept
 	: fOutput(Output)
+	, fOwner(nullptr)
 {
+}
+//---------------------------------------------------------------------------
+bool cTextStreamOutputLogRecorder::Acquire(void *Owner)noexcept
+{
+	return fOwner.Free.CmpStore(nullptr,Owner);
+}
+//---------------------------------------------------------------------------
+bool cTextStreamOutputLogRecorder::Release(void *Owner)noexcept
+{
+	return fOwner.Free.CmpStore(Owner,nullptr);
 }
 //---------------------------------------------------------------------------
 void cTextStreamOutputLogRecorder::Submit(iReference*,const cLogMessage &Message)noexcept

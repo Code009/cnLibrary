@@ -218,9 +218,6 @@ rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference 
 cWinLogModule::cWinLogModule()noexcept
 {
 	cnRTL::gRTLLog.Async(&cnWin_THREADING_NAMESPACE::cDefaultThreadPool::gInstance);
-
-	Hub=rCreate<cnRTL::cLogRecordHub>();
-	cnRTL::gRTLLog.Connect(Hub);
 }
 //---------------------------------------------------------------------------
 cWinLogModule::~cWinLogModule()noexcept

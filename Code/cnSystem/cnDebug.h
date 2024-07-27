@@ -23,6 +23,9 @@ struct cLogMessage
 class cnLib_INTERFACE iLogRecorder : public iReference
 {
 public:
+	virtual bool Acquire(void *Owner)noexcept(true)=0;
+	virtual bool Release(void *Owner)noexcept(true)=0;
+	
 	// Submit
 	//	free single threaded
 	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)=0;
@@ -52,8 +55,7 @@ public:
 namespace cnSystem{
 //---------------------------------------------------------------------------
 void AssertionMessage(const char *Message)noexcept(true);
-void LogInsertRecorder(iLogRecorder *Recorder)noexcept(true);
-void LogRemoveRecorder(iLogRecorder *Recorder)noexcept(true);
+void LogConnectRecorder(iLogRecorder *Recorder)noexcept(true);
 //---------------------------------------------------------------------------
 class ErrorReportMaker
 {

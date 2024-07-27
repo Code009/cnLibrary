@@ -34,13 +34,9 @@ void cnSystem::AssertionMessage(const char *Message)noexcept
 	}
 }
 
-void cnSystem::LogInsertRecorder(iLogRecorder *Recorder)noexcept
+void cnSystem::LogConnectRecorder(iLogRecorder *Recorder)noexcept
 {
-	return gWinLogModule.Hub->InsertRecorder(Recorder);
-}
-void cnSystem::LogRemoveRecorder(iLogRecorder *Recorder)noexcept
-{
-	return gWinLogModule.Hub->RemoveRecorder(Recorder);
+	return gRTLLog.Connect(Recorder);
 }
 
 //- Default Heap ------------------------------------------------------------

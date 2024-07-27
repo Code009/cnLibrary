@@ -142,8 +142,6 @@ class cWinLogModule
 public:
 	cWinLogModule()noexcept;
 	~cWinLogModule()noexcept;
-
-	rPtr<cnRTL::cLogRecordHub> Hub;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

@@ -281,6 +281,8 @@ public:
 	cLogRecordHub()noexcept(true);
 	~cLogRecordHub()noexcept(true);
 
+	virtual bool Acquire(void *Owner)noexcept(true)override;
+	virtual bool Release(void *Owner)noexcept(true)override;
 	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)override;
 
 	void InsertRecorder(iLogRecorder *Recorder)noexcept(true);
@@ -289,22 +291,20 @@ public:
 	void SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept(true);
 
 private:
-
-	rPtr<iMutex> fRecorderSetMutex;
-	cSeqSet< rPtr<iLogRecorder> > fConfigRecorderSet;
-	bool fNeedUpdateRecorderSet=false;
-	cSeqList< rPtr<iLogRecorder> > fRecorders;
-
-	void ProcessRecorderSet(void)noexcept(true);
+	cAtomicVar<void*> fOwner;
+	cSeqSet< rPtr<iLogRecorder> > fRecorderSet;
 };
 //---------------------------------------------------------------------------
 class cTextStreamOutputLogRecorder : public iLogRecorder
 {
 public:
 	cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept(true);
+	virtual bool Acquire(void *Owner)noexcept(true)override;
+	virtual bool Release(void *Owner)noexcept(true)override;
 	virtual void Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)override;
 protected:
 	rPtr<iTextStreamOutput> fOutput;
+	cAtomicVar<void*> fOwner;
 };
 //---------------------------------------------------------------------------
 #ifndef cnRTL_LOGLEVEL
