@@ -20,9 +20,11 @@
 
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+#define	cnLib_MOVEREF			&&
 #define	cnLib_UREF				&&
 #define	cnLib_UREFCAST(_type_)	static_cast<_type_&&>
 #else	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
+#define	cnLib_MOVEREF			&
 #define	cnLib_UREF
 #define	cnLib_UREFCAST(_type_)
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES
