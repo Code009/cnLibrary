@@ -408,9 +408,6 @@
     <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDebug.h">
       <Filter>Code\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\ThreadSync.hpp">
-      <Filter>Code\cnTK</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h">
       <Filter>Code - Windows\cnTK</Filter>
     </ClInclude>
@@ -447,10 +444,16 @@
     <ClInclude Include="..\..\Code_CLib\CRT\CRTFeatureCheck.h">
       <Filter>Code - CLib\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\cnRTLCore.h">
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp">
+      <Filter>Code - CLib\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\CRTHeader.h">
       <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\CRTHeader.h">
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreAtomic.h">
+      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\cnRTLCore.h">
       <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
     </ClInclude>
   </ItemGroup>

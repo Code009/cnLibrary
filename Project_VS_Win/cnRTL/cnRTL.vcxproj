@@ -167,7 +167,7 @@
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinUI.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\ThreadSync.hpp" />
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTFeatureCheck.h" />
@@ -285,8 +285,9 @@
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.h" />
     <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h" />
-    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\cnRTLCore.h" />
-    <ClInclude Include="..\..\Code_VS_Win_cnRTLCore_CRT\cnRTL\CRTHeader.h" />
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\cnRTLCore.h" />
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\CRTHeader.h" />
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreAtomic.h" />
     <ClInclude Include="dependency.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

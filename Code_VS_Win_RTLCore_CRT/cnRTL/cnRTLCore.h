@@ -11,8 +11,7 @@
 #include <cnRTL\CRTHeader.h>
 #include <cnTK\cnTK.h>
 
-#if defined(cnLib_WINCRT_WIN32ATOMIC)\
-	|| defined(cnLib_WINCRT_WIN32SYNC)
+#if defined(cnLib_WINCRT_WIN32ATOMIC)
 
 #include <cnRTL\WinSDKHeader.h>
 
@@ -26,12 +25,6 @@
 #else
 #include <CRT\CRTAtomic.hpp>
 #endif // !cnLib_WINCRT_WIN32ATOMIC
-
-#ifdef cnLib_WINCRT_WIN32SYNC
-#include <cnRTL\Win32CoreSynchronization.h>
-#else
-#include <CRT\CRTSynchronization.hpp>
-#endif
 
 #include <CRT\CRTCoreTemplateKit.hpp>
 

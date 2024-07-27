@@ -65,12 +65,10 @@ public:
 
 	static LRESULT CALLBACK MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true);
 
-
-
 	struct cWindowMessageThreadParam
 	{
 		aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
-		TKRuntime::ThreadNotification CallerNotify;
+		cnRTL::cThreadOneTimeNotifier CallerNotify;
 	};
 	static DWORD WINAPI MessageThreadProcedure(LPVOID Parameter)noexcept(true);
 

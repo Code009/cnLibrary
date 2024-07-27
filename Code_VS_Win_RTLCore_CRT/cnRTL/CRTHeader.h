@@ -62,14 +62,6 @@
 //	_MSC_VER : 1930			Visual Studio 2022 RTW 17.0
 #if _MSC_VER >= 1930
 
-#ifndef cnLib_WINCRT_WIN32SYNC
-
-// the following headers are not supported before VS2022
-#include <mutex>
-#include <condition_variable>
-
-#endif	//!cnLib_WINCRT_WIN32SYNC
-
 #ifndef cnLib_WINCRT_WIN32ATOMIC
 
 // atomic needs alignment to work, which is not supported before VS2022
@@ -83,10 +75,6 @@
 
 #ifndef cnLib_WINCRT_WIN32ATOMIC
 #define	cnLib_WINCRT_WIN32ATOMIC	// use win32 atomic before VS2022
-#endif
-
-#ifndef cnLib_WINCRT_WIN32SYNC
-#define cnLib_WINCRT_WIN32SYNC		// use win32 synchronization before VS2022
 #endif
 
 #endif // _MSC_VER >= 1930

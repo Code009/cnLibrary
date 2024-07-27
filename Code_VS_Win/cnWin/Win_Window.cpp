@@ -137,14 +137,13 @@ aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> cMessageThreadWindowClass::StartM
 {
 	cWindowMessageThreadParam ThreadParam;
 
-	ThreadParam.CallerNotify.Start();
+	//ThreadParam.CallerNotify.Reset();
 
 	HANDLE ThreadHandle=::CreateThread(nullptr,0,MessageThreadProcedure,&ThreadParam,0,nullptr);
 
 
 	ThreadParam.CallerNotify.Wait();
 
-	ThreadParam.CallerNotify.Finish();
 	::CloseHandle(ThreadHandle);
 
 	return cnVar::MoveCast(ThreadParam.MessageThread);

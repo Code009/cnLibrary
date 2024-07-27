@@ -26,7 +26,6 @@
 #include <cnTK/AtomicStructure.hpp>
 #include <cnTK/SeqStruct.hpp>
 #include <cnTK/LinkStruct.hpp>
-#include <cnTK/ThreadSync.hpp>
 
 /*-------------------------------------------------------------------------*/
 #endif
