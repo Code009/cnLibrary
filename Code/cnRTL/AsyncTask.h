@@ -25,96 +25,86 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-//TAsyncTask
-//{
-//	bool IsDone(void)const;
-//	bool SetNotify(iProcedure *Procedrue);
-//};
+template<class TAsyncTaskPtr>
+class cAsyncTaskAwaiter : private iProcedure
+{
+public:
+	cAsyncTaskAwaiter(TAsyncTaskPtr&& Task)noexcept(true):fTask(cnVar::MoveCast(Task)){}
+	cAsyncTaskAwaiter(cAsyncTaskAwaiter &&Src)noexcept(true):fTask(cnVar::MoveCast(Src.fTask)){}
+
+	bool await_ready(void)const noexcept(true){
+		if(fTask==nullptr)
+			return true;
+		return fTask->IsDone();
+	}
+	template<class TAwaitCoHandle>
+	bool await_suspend(TAwaitCoHandle && CoHandle){
+		cCoroutineHandleOperator::Assign(fCoHandle,cnVar::MoveCast(CoHandle));
+		return fTask->Await(this);
+	}
+	decltype(cnVar::DeclVal<TAsyncTaskPtr>()->Result()) await_resume(void)noexcept(true){
+		return fTask->Result();
+	}
+
+
+protected:
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
+		cCoroutineHandleOperator::Resume(fCoHandle);
+	}
+
+	cCoroutineHandleOperator::tHandle fCoHandle;
+	TAsyncTaskPtr fTask;
+};
 //---------------------------------------------------------------------------
 class cWaitForTaskProcedure : public cThreadOneTimeNotifier, public iProcedure
 {
 	virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-template<class TAsyncTaskPtr>
-inline void WaitForTask(TAsyncTaskPtr&& Task)noexcept(true)
+template<class TAsyncTask>
+inline decltype(cnVar::DeclVal<TAsyncTask>().Result()) WaitForTask(TAsyncTask&& Task)noexcept(true)
 {
-	cWaitForTaskProcedure Notifier;
-	if(Task->SetNotify(&Notifier)==false){
-		// already done
+	if(Task.IsDone())
 		return;
+	cWaitForTaskProcedure Notifier;
+	if(Task.Await(&Notifier)){
+		Notifier.Wait();
 	}
-	Notifier.Wait();
+	return Task.Result();
 }
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-class cAsyncTaskAwaiter : private iProcedure
-{
-public:
-	cAsyncTaskAwaiter(TAsyncTaskPtr &&Task)noexcept(true)
-		: fTask(static_cast<TAsyncTaskPtr&&>(Task)){}
-	~cAsyncTaskAwaiter()noexcept(true){}
-
-	bool await_ready(void)const noexcept(true){	return fTask->IsDone();		}
-	template<class TCoHandle>
-	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
-		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
-		return fTask->SetNotify(this);
-	}
-	void await_resume(void)noexcept(true){}
-private:
-	TAsyncTaskPtr fTask;
-	cCoroutineHandleOperator::tHandle fCoHandle;
-	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
-		cCoroutineHandleOperator::Resume(fCoHandle);
-	}
-};
-//---------------------------------------------------------------------------
-template<class TAsyncTaskPtr>
-inline cAsyncTaskAwaiter<TAsyncTaskPtr> TaskAwaiter(TAsyncTaskPtr&& Task)noexcept(true)
+inline cAsyncTaskAwaiter<TAsyncTaskPtr> AsyncTaskAwaiter(TAsyncTaskPtr&& Task)noexcept(true)
 {
 	return cAsyncTaskAwaiter<TAsyncTaskPtr>(static_cast<TAsyncTaskPtr&&>(Task));
 }
 //---------------------------------------------------------------------------
 template<class TAsyncTaskPtr>
-class cAsyncTaskExecutionAwaiter
+class cAsyncTaskExecutionAwaiter : public cAsyncTaskAwaiter<TAsyncTaskPtr>
 {
 public:
 	cAsyncTaskExecutionAwaiter(TAsyncTaskPtr &&Task,iPtr<iAsyncExecution> ResumeExecution)noexcept(true)
-		: fTask(static_cast<TAsyncTaskPtr&&>(Task))
+		: cAsyncTaskAwaiter<TAsyncTaskPtr>(static_cast<TAsyncTaskPtr&&>(Task))
 		, fResumeExecution(cnVar::MoveCast(ResumeExecution)){}
 	~cAsyncTaskExecutionAwaiter(){}
 
-	bool await_ready(void)const noexcept(true){	return fTask->IsDone();		}
-	template<class TCoHandle>
-	bool await_suspend(TCoHandle&& CoHandle)noexcept(true){
-		cCoroutineHandleOperator::Assign(fCoHandle,static_cast<TCoHandle&&>(CoHandle));
-		return fTask->SetNotify(&fTaskNotifyProcedure);
-	}
-	void await_resume(void)noexcept(true){}
 private:
-	TAsyncTaskPtr fTask;
 	iPtr<iAsyncExecution> fResumeExecution;
-	cCoroutineHandleOperator::tHandle fCoHandle;
 
-	class cTaskNotifyProcedure : public iProcedure
-	{
-		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
-			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTaskExecutionAwaiter::fTaskNotifyProcedure);
-			if(Host->fResumeExecution!=nullptr){
-				Host->fResumeExecution->Execute(nullptr,&Host->fDispatchResumeProcedure);
-			}
-			else{
-				cCoroutineHandleOperator::Resume(Host->fCoHandle);
-			}
+	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
+		if(fResumeExecution!=nullptr){
+			fResumeExecution->Execute(nullptr,&fDispatchResumeProcedure);
 		}
-	}fTaskNotifyProcedure;
+		else{
+			cAsyncTaskAwaiter<TAsyncTaskPtr>::Execute();
+		}
+	}
 
 	class cDispatchResumeProcedure : public iProcedure
 	{
 		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cAsyncTaskExecutionAwaiter::fDispatchResumeProcedure);
-			cCoroutineHandleOperator::Resume(Host->fCoHandle);
+			Host->cAsyncTaskAwaiter<TAsyncTaskPtr>::Execute();
 		}
 	}fDispatchResumeProcedure;
 
@@ -143,7 +133,8 @@ public:
 	void SetDone(void)noexcept(true);
 
 	bool IsDone(void)const noexcept(true);
-	bool SetNotify(iProcedure *NotifyProcedure)noexcept(true);
+	bool Await(iProcedure *NotifyProcedure)noexcept(true);
+	void Result(void)noexcept(true){}
 
 protected:
 
@@ -158,7 +149,7 @@ public:
 	~cAsyncTask()noexcept(true);
 
 	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+	virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 protected:
 	cAsyncTaskState fTaskState;
@@ -195,6 +186,8 @@ protected:
 //---------------------------------------------------------------------------
 iPtr<iAsyncTask> DelayTask(uInt64 NS)noexcept(true);
 //---------------------------------------------------------------------------
+#if 0
+
 class cAsyncTaskCoroutine : public iPtr<iAsyncTask>
 {
 public:
@@ -247,7 +240,7 @@ public:
 		impAsyncFunction(cCoroutine<void>::pPtr &&Promise)noexcept(true);
 	};
 
-	cAsyncFunctionCoroutine(cCoroutine<void> &&Src)noexcept(true):iPtr< iAsyncFunction<TResultInterface> >(iCreate<impAsyncFunction>(Src.TakePromise())){}
+	cAsyncFunctionCoroutine(cCoroutine<void> &&Src)noexcept(true):iPtr< iAsyncFunction<TResultInterface> >(iCreate<impAsyncFunction>(static_cast<typename cCoroutine<TResult>::pPtr&&>(Src))){}
 
 	cAsyncFunctionCoroutine(const cAsyncFunctionCoroutine&)=delete;
 	cAsyncFunctionCoroutine &operator=(const cAsyncFunctionCoroutine&)=delete;
@@ -255,6 +248,7 @@ public:
 	cAsyncFunctionCoroutine &operator=(cAsyncFunctionCoroutine &&Src)noexcept(true){	*this=cnVar::MoveCast(Src);	return *this;	}
 	~cAsyncFunctionCoroutine()noexcept(true){}
 };
+#endif // 0
 //---------------------------------------------------------------------------
 class cTaskQueue
 {

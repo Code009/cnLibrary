@@ -454,9 +454,9 @@ bool cNTFileOverlappedIOHandleAsyncIOTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTFileOverlappedIOHandleAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cNTFileOverlappedIOHandleAsyncIOTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 void cNTFileOverlappedIOHandleAsyncIOTask::Cancel(void)noexcept

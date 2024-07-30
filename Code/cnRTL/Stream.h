@@ -232,7 +232,7 @@ protected:
 
 		virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+		virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 		virtual bool cnLib_FUNC GetResult(uIntn &SizeCompleted)noexcept(true)override;
 
 		eStreamError cnLib_FUNC GetStreamError(void)noexcept(true)override;
@@ -356,7 +356,7 @@ protected:
 
 		virtual void* cnLib_FUNC CastInterface(iTypeID InterfaceID)noexcept(true) override;
 		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+		virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 		virtual bool cnLib_FUNC GetResult(uIntn &SizeCompleted)noexcept(true)override;
 
 		eStreamError cnLib_FUNC GetStreamError(void)noexcept(true)override;

@@ -298,9 +298,9 @@ bool cDNetUIThread::cExecuteAsyncTask::IsDone(void)noexcept
 	return TaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::cExecuteAsyncTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cDNetUIThread::cExecuteAsyncTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return TaskState.SetNotify(NotifyProcedure);
+	return TaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 void cDNetUIThread::cExecuteAsyncTask::ExecuteTask(void)noexcept

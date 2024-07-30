@@ -178,9 +178,9 @@ bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cNTSocketOverlappedIOHandleStreamAsyncIOTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 void cNTSocketOverlappedIOHandleStreamAsyncIOTask::Cancel(void)noexcept
@@ -409,9 +409,9 @@ bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 void cNTSocketOverlappedIOHandleDatagramAsyncIOSendTask::Cancel(void)noexcept
@@ -758,9 +758,9 @@ bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::IsDo
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 iConnection* bcNTSocketOverlappedIOHandleConnectionConnector::cAsyncConnectionTask::GetConnection(void)noexcept
@@ -930,9 +930,9 @@ bool	bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::IsDone(vo
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 iConnection* bcNTSocketOverlappedIOHandleConnectionListener::cAsyncAcceptTask::GetConnection(void)noexcept

@@ -1457,7 +1457,7 @@ void cProtocolQueueFromConnector::SetupConnectTask(void)noexcept
 	if(fConnectTask==nullptr){
 		return;
 	}
-	if(fConnectTask->SetNotify(&fConnectTaskCompleteProcedure)){
+	if(fConnectTask->Await(&fConnectTaskCompleteProcedure)){
 		InnerIncReference('ctsk');
 		return;
 	}

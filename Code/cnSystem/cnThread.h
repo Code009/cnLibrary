@@ -50,19 +50,18 @@ public:
 	// return true if operation is done, or false is in progress
 	virtual bool cnLib_FUNC IsDone(void)noexcept(true)=0;
 
-	// SetNotify
+	// Await
 	// return true if notification registered, or false if the task is already done
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)=0;
+	virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)=0;
+
+	void Result(void)noexcept(true){}
 };
 //---------------------------------------------------------------------------
 template<class TResult>
 class cnLib_INTERFACE iAsyncFunction : public iAsyncTask
 {
 public:
-	// Cancel
-	virtual void cnLib_FUNC Cancel(void)noexcept(true)=0;
-
-	virtual TResult cnLib_FUNC GetResult(void)noexcept(true)=0;
+	virtual TResult& cnLib_FUNC Result(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iMutex : public iReference

@@ -530,7 +530,7 @@ void bcReadQueueFromStream::OnStartRead(void)noexcept
 			if(Reference!=nullptr){
 				rIncReference(Reference,'task');
 			}
-			if(Task->SetNotify(&fTaskProcedure)==false){
+			if(Task->Await(&fTaskProcedure)==false){
 				ProcessTask();
 				if(Reference!=nullptr){
 					rDecReference(Reference,'task');
@@ -696,7 +696,7 @@ void bcWriteQueueFromStream::SendWriteBuffer(cWriteItem &Item)noexcept
 		if(Reference!=nullptr){
 			rIncReference(Reference,'task');
 		}
-		if(Task->SetNotify(&fTaskProcedure)==false){
+		if(Task->Await(&fTaskProcedure)==false){
 			// already done
 			ProcessTask();
 
@@ -993,7 +993,7 @@ void cConnectionListenerFromAsyncListener::QueueTask(void)noexcept
 						rIncReference(Reference,'task');
 					}
 
-					if(TaskItem.AcceptTask->SetNotify(&TaskItem)==false){
+					if(TaskItem.AcceptTask->Await(&TaskItem)==false){
 						UpdateQueueState(false);
 						if(Reference!=nullptr){
 							rDecReference(Reference,'task');
@@ -1245,7 +1245,7 @@ void cMultipointQueueFromStream::cSendItem::Execute(void)noexcept
 void cMultipointQueueFromStream::SendItemSetNotify(cSendItem &Item)noexcept
 {
 	InnerIncReference('stsk');
-	if(Item.Task->SetNotify(&Item)==false){
+	if(Item.Task->Await(&Item)==false){
 		SendItemCompletionNotify(&Item);
 	}
 }
@@ -1267,7 +1267,7 @@ void cMultipointQueueFromStream::cReceiveItem::Execute(void)noexcept
 void cMultipointQueueFromStream::ReceiveItemSetNotify(cReceiveItem &Item)noexcept
 {
 	InnerIncReference('rtsk');
-	if(Item.Task->SetNotify(&Item)==false){
+	if(Item.Task->Await(&Item)==false){
 		ReceiveItemCompletionNotify(&Item);
 	}
 }

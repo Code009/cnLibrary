@@ -301,10 +301,10 @@ typedef cnAsync::cVariantCoroutineHandleOperator<sizeof(void*)*2> cCoroutineHand
 
 
 template<class TRet>
-using cResumable=cnAsync::cResumable<TRet,cCoroutineHandleOperator>;
+using cResumable=cnAsync::cResumable<cCoroutineHandleOperator,TRet>;
 
 template<class TRet>
-using cCoroutine=cnAsync::cCoroutine<TRet,cCoroutineHandleOperator>;
+using cCoroutine=cnAsync::cCoroutine<cCoroutineHandleOperator,TRet>;
 
 
 //---------------------------------------------------------------------------

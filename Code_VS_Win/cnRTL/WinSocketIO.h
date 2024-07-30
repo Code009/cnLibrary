@@ -83,7 +83,7 @@ public:
 // iAsyncTask
 
 	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+	virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 // iSteamTask
 
@@ -154,7 +154,7 @@ public:
 // iAsyncTask
 
 	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+	virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 // iSteamTask
 
@@ -280,7 +280,7 @@ public:
 		~cAsyncConnectionTask()noexcept(true);
 
 		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+		virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 		virtual void cnLib_FUNC Cancel(void)noexcept(true)override;
 
@@ -342,7 +342,7 @@ public:
 		~cAsyncAcceptTask()noexcept(true);
 
 		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-		virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+		virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 		virtual void cnLib_FUNC Cancel(void)noexcept(true)override;
 

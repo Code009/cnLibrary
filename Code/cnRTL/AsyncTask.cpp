@@ -42,7 +42,7 @@ bool cAsyncTaskState::IsDone(void)const noexcept
 	return fNotified;
 }
 //---------------------------------------------------------------------------
-bool cAsyncTaskState::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cAsyncTaskState::Await(iProcedure *NotifyProcedure)noexcept
 {
 	if(NotifyProcedure==nullptr)
 		return false;
@@ -73,9 +73,9 @@ bool cAsyncTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cAsyncTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool cAsyncTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -132,6 +132,8 @@ iPtr<iAsyncTask> cnRTL::DelayTask(uInt64 NS)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+#if 0
+
 cAsyncTaskCoroutine::impAsyncTask::impAsyncTask(cCoroutine<void>::pPtr &&Promise)noexcept
 	: Promise(cnVar::MoveCast(Promise))
 {
@@ -175,6 +177,7 @@ cAsyncTaskCoroutine& cAsyncTaskCoroutine::operator=(cAsyncTaskCoroutine &&Src)no
 cAsyncTaskCoroutine::~cAsyncTaskCoroutine()noexcept
 {
 }
+#endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cTaskQueue::cTask::cTask()noexcept

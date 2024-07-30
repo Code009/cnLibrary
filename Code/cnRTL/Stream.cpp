@@ -631,9 +631,9 @@ bool bcStream::cAccessTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcStream::cAccessTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool bcStream::cAccessTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 bool bcStream::cAccessTask::GetResult(uIntn &SizeCompleted)noexcept
@@ -817,7 +817,7 @@ bool bcStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 	UpdateReadTaskQueue();
 	// sync access
 
-	WaitForTask(Task);
+	WaitForTask(*Task);
 
 	SizeCompleted=Task->TotalSizeCompleted;
 	fLastErrorCode=Task->AccessErrorCode;
@@ -838,7 +838,7 @@ bool bcStream::Write(const void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept
 	UpdateWriteTaskQueue();
 	// sync access
 
-	WaitForTask(Task);
+	WaitForTask(*Task);
 
 	SizeCompleted=Task->TotalSizeCompleted;
 	fLastErrorCode=Task->AccessErrorCode;
@@ -1045,9 +1045,9 @@ bool bcFileStream::cAccessTask::IsDone(void)noexcept
 	return fTaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool bcFileStream::cAccessTask::SetNotify(iProcedure *NotifyProcedure)noexcept
+bool bcFileStream::cAccessTask::Await(iProcedure *NotifyProcedure)noexcept
 {
-	return fTaskState.SetNotify(NotifyProcedure);
+	return fTaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
 bool bcFileStream::cAccessTask::GetResult(uIntn &SizeCompleted)noexcept
@@ -1201,7 +1201,7 @@ bool bcFileStream::Read(void *Buffer,uIntn Size,uInt64 Offset,uIntn &SizeComplet
 	UpdateReadTaskQueue();
 	// sync access
 
-	WaitForTask(Task);
+	WaitForTask(*Task);
 
 	SizeCompleted=Task->TotalSizeCompleted;
 	fLastErrorCode=Task->AccessErrorCode;
@@ -1222,7 +1222,7 @@ bool bcFileStream::Write(const void *Buffer,uIntn Size,uInt64 Offset,uIntn &Size
 	UpdateWriteTaskQueue();
 	// sync access
 
-	WaitForTask(Task);
+	WaitForTask(*Task);
 
 	SizeCompleted=Task->TotalSizeCompleted;
 	fLastErrorCode=Task->AccessErrorCode;

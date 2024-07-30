@@ -155,7 +155,7 @@ public:
 	// iAsyncTask
 
 	virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetNotify(iProcedure *NotifyProcedure)noexcept(true)override;
+	virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
 
 	// iSteamTask
 
