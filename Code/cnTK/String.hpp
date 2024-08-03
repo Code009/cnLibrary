@@ -1898,7 +1898,7 @@ public:
 	// string by cString
 
 	cString(const cString &Src)noexcept(true)
-		: cConstString<TStringTokenOperator>(Src){}
+		: cConstString<TStringTokenOperator>(static_cast<const cConstString<TStringTokenOperator>&>(Src)){}
 
 	cString& operator = (const cString &Src)noexcept(true){
 		cConstString<TStringTokenOperator>::operator =(static_cast<const cConstString<TStringTokenOperator>&>(Src));
@@ -1908,7 +1908,7 @@ public:
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	cString(cString &&Src)noexcept(true)
-		: cConstString<TStringTokenOperator>(static_cast<cString&&>(Src)){}
+		: cConstString<TStringTokenOperator>(static_cast<cConstString<TStringTokenOperator>&&>(Src)){}
 
 	cString& operator = (cString &&Src)noexcept(true){
 		cConstString<TStringTokenOperator>::operator =(static_cast<cConstString<TStringTokenOperator>&&>(Src));
