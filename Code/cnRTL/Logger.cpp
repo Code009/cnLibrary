@@ -162,10 +162,11 @@ void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
 //---------------------------------------------------------------------------
 void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
 {
-	if(Recorder->Acquire(this)==false)
-		return;
-
-	rIncReference(Recorder,'logr');
+	if(Recorder!=nullptr){
+		if(Recorder->Acquire(this)==false)
+			return;
+		rIncReference(Recorder,'logr');
+	}
 	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(Recorder);
 	if(PrevRecorder!=nullptr){
 		PrevRecorder->Release(this);
@@ -241,6 +242,19 @@ void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
+void cLogMessageQueue::ProcessUpdateRecorder(void)noexcept
+{
+	if(fNeedReplaceRecorder){
+		fNeedReplaceRecorder=false;
+
+		if(fRecorder!=nullptr){
+			fRecorder->Release(this);
+			rDecReference(fRecorder,'logr');
+		}
+		fRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
+	}
+}
+//---------------------------------------------------------------------------
 void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 {
 	do{
@@ -248,14 +262,8 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 
 		ProcessUpdateAsync();
 
-		if(fNeedReplaceRecorder){
-			fNeedReplaceRecorder=false;
-
-			if(fRecorder!=nullptr){
-				fRecorder->Release(this);
-				rDecReference(fRecorder,'logr');
-			}
-			fRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
+		if(fRecorder==nullptr){
+			ProcessUpdateRecorder();
 		}
 
 		cMsgItem *Item;
@@ -265,6 +273,7 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 				Item->Record=nullptr;
 				fMsgRecycler.Push(Item);
 			}
+			ProcessUpdateRecorder();
 		}
 		else{
 			if(++fRecordMissingCount>64){

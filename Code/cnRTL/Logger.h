@@ -189,6 +189,7 @@ private:
 	void ProcessMsgQueue(void)noexcept(true);
 	void ProcessMsgQueueThread(void)noexcept(true);
 	void ProcessUpdateAsync(void)noexcept(true);
+	void ProcessUpdateRecorder(void)noexcept(true);
 	void SubmitMsgRecord(cLogMessageRecord *Record)noexcept(true);
 };
 //---------------------------------------------------------------------------
@@ -234,14 +235,14 @@ struct cLogMessageQueue::tLogFunction
 	static cLogStreamBuffer MakeBuffer(cLogMessageQueue *Queue,ufInt8 Level,TPath&& Path)noexcept(true){
 		auto Record=rQuerySharedObject<cLogMessageRecord>();
 		Record->Level=Level;
-		Record->Path=cnVar::MoveCast(Path);
+		Record->Path=cnVar::Forward<TPath>(Path);
 		Record->TextBuffer.Clear();
 		return cLogStreamBuffer(Queue,cnVar::MoveCast(Record));
 	}
 
 	template<class TPath,class...TArgs>
 	static void Report(cLogMessageQueue *Queue,ufInt8 Level,TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
-		auto LogBuffer=MakeBuffer(Queue,Level,cnVar::MoveCast(Path));
+		auto LogBuffer=MakeBuffer(Queue,Level,cnVar::Forward<TPath>(Path));
 		StringStream::WriteFormatString(LogBuffer,FormatString,cnVar::Forward<TArgs>(Args)...);
 	}
 
@@ -266,12 +267,12 @@ class cLog : public cLogMessageQueue
 public:
 	template<uIntn Level,class TPath>
 	typename cLogMessageQueue::tLogFunction<LogLevel<=Level>::tLogBuffer MakeLogBuffer(TPath &&Path)noexcept(true){
-		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::MakeBuffer(this,Level,cnVar::MoveCast(Path));
+		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::MakeBuffer(this,Level,cnVar::Forward<TPath>(Path));
 	}
 
 	template<uIntn Level,class TPath,class...TArgs>
 	void Report(TPath &&Path,const uChar16 *FormatString,TArgs&&...Args)noexcept(true){
-		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::Report(this,Level,cnVar::MoveCast(Path),FormatString,cnVar::Forward<TArgs>(Args)...);
+		return cLogMessageQueue::tLogFunction<LogLevel<=Level>::Report(this,Level,cnVar::Forward<TPath>(Path),FormatString,cnVar::Forward<TArgs>(Args)...);
 	}
 };
 //---------------------------------------------------------------------------
