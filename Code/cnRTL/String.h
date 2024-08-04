@@ -1662,6 +1662,12 @@ protected:
 			this->WriteResult=StringStream::WriteFormatItem(this->WriteBuffer,IntConversion,ConversionMap,this->Width,this->Token.AlignLeft,false);
 		}
 
+		template<class T>
+		void operator ()(T *Value)const noexcept(true){
+
+			return operator()(reinterpret_cast<uIntn>(Value));
+		}
+
 	};
 	
 	template<ufInt8 Radix>
