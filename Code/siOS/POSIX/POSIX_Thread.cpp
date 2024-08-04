@@ -569,6 +569,7 @@ void cPOSIXThreadExecutionPool::Post(iProcedure *Procedure)noexcept
 	Item->Procedure=Procedure;
 	fProcQueue.Enqueue(Item);
 
+	fProcQueueAvailable=true;
 	fThreadWaitMutex.lock();
 	fThreadWaitCond.signal();
 	fThreadWaitMutex.unlock();
@@ -596,6 +597,7 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
 			
 				ProcItem=fProcQueue.Dequeue();
 			}while(ProcItem!=nullptr);
+
 		}
 		
 		ufInt32 WaitingThreadCount=++fWaitingThreads.Acquire;
@@ -607,17 +609,21 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
 
 		int WaitRet;
 		fThreadWaitMutex.lock();
-
-		if(WaitInfinite){
-			WaitRet=fThreadWaitCond.wait(fThreadWaitMutex);
+		if(fProcQueueAvailable){
+			fProcQueueAvailable=false;
+			WaitRet=0;
 		}
 		else{
-			WaitRet=fThreadWaitCond.timedwait(fThreadWaitMutex,WaitTimeOut);
+			if(WaitInfinite){
+				WaitRet=fThreadWaitCond.wait(fThreadWaitMutex);
+			}
+			else{
+				WaitRet=fThreadWaitCond.timedwait(fThreadWaitMutex,WaitTimeOut);
+			}
 		}
-
 		fThreadWaitMutex.unlock();
 
-        WaitingThreadCount=--fWaitingThreads.Barrier;
+		WaitingThreadCount=--fWaitingThreads.Barrier;
 
 		if(WaitRet==ETIMEDOUT){
 			CompactRecycler(8);

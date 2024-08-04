@@ -214,7 +214,7 @@ protected:
 
 
 	bool fClose=false;
-	
+	bool fProcQueueAvailable=false;
 	c_pthread_mutex fThreadWaitMutex;
 	c_pthread_cond fThreadWaitCond;
 	TKRuntime::ThreadNotification fCloseNotification;
