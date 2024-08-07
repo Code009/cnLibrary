@@ -516,7 +516,7 @@ public:
 	arPtr<T> operator ()(void)noexcept(true){	Query();	}
 	arPtr<T> Query(void)noexcept(true){
 		auto Object=fManager->Query();
-		tLifeCycleRecyclableManager::Start(Object);
+		tLifeCycleRecyclableManager::tLifeCycleActivation::Start(Object);
 		return arPtr<T>::TakeFromManual(Object);
 	}
 
