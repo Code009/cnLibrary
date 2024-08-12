@@ -153,6 +153,16 @@ struct jcBluetoothGatt : jcObject
 {
 	static constexpr const char jClassName[]="android/bluetooth/BluetoothGatt";
 
+	// CONNECTION_PRIORITY_HIGH
+	//	Request a high priority, low latency connection.
+	//	An application should only request high priority connection parameters to transfer large amounts of data over LE quickly.
+	//	Once the transfer is complete, the application should request BluetoothGatt#CONNECTION_PRIORITY_BALANCED connection parameters to reduce energy use.
+	static constexpr jint CONNECTION_PRIORITY_HIGH	=1;
+	
+	// CONNECTION_PRIORITY_LOW_POWER
+	//	Request low power, reduced data rate connection parameters.
+	static constexpr jint CONNECTION_PRIORITY_LOW_POWER	=2;
+	
 	static constexpr jint GATT_SUCCESS						=0;
 	static constexpr jint GATT_READ_NOT_PERMITTED			=2;
 	static constexpr jint GATT_WRITE_NOT_PERMITTED			=3;
@@ -160,14 +170,55 @@ struct jcBluetoothGatt : jcObject
 	static constexpr jint GATT_REQUEST_NOT_SUPPORTED		=6;
 	static constexpr jint GATT_INVALID_OFFSET				=7;
 	static constexpr jint GATT_INSUFFICIENT_AUTHORIZATION	=8;
-	static constexpr jint GATT_INVALID_ATTRIBUTE_LENGTH		=13;
-	static constexpr jint GATT_INSUFFICIENT_ENCRYPTION		=15;
-	static constexpr jint GATT_ERROR						=0x85;
-	static constexpr jint GATT_CONNECTION_CONGESTED			=0x8F;
+	static constexpr jint GATT_INVALID_ATTRIBUTE_LENGTH		=0x0D;
+	static constexpr jint GATT_INSUFFICIENT_ENCRYPTION		=0x0F;
+
+	static constexpr jint GATT_NO_RESSOURCES				=0x80;	// 128
+	static constexpr jint GATT_INTERNAL_ERROR				=0x81;	// 129
+	static constexpr jint GATT_WRONG_STATE					=0x82;	// 130
+	static constexpr jint GATT_DB_FULL						=0x83;	// 131
+	static constexpr jint GATT_BUSY							=0x84;	// 132
+	static constexpr jint GATT_ERROR						=0x85;	// 133
+	static constexpr jint GATT_ILLEGAL_PARAMETER			=0x87;	// 135
+	static constexpr jint GATT_AUTH_FAIL					=0x89;	// 137 A GATT operation failed, errors other than the above
+	static constexpr jint GATT_CONNECTION_CONGESTED			=0x8F;	// A remote device connection is congested.
 	static constexpr jint GATT_CONNECTION_TIMEOUT			=0x93;
 	static constexpr jint GATT_FAILURE						=0x101;
 
-	static constexpr jint CONNECTION_PRIORITY_LOW_POWER	=2;
+	static constexpr jint BLE_HCI_STATUS_CODE_SUCCESS						=0;
+	static constexpr jint BLE_HCI_STATUS_CODE_UNKNOWN_BTLE_COMMAND			=1;
+	// BLE_HCI_AUTHENTICATION_FAILURE
+	//	Insufficient authentication for a given operation
+	static constexpr jint BLE_HCI_AUTHENTICATION_FAILURE					=5;
+	static constexpr jint BLE_HCI_STATUS_CODE_PIN_OR_KEY_MISSING			=6;
+	static constexpr jint BLE_HCI_MEMORY_CAPACITY_EXCEEDED					=7;
+	// BLE_HCI_CONNECTION_TIMEOUT
+	//	Could not establish a connection in specified period.
+	//	When distance for connect is so long
+	//	Device is currently connected to something else
+	static constexpr jint BLE_HCI_CONNECTION_TIMEOUT						=8;
+
+	static constexpr jint BLE_HCI_STATUS_CODE_COMMAND_DISALLOWED				=0x0C;	// 12
+	static constexpr jint BLE_HCI_STATUS_CODE_INVALID_BTLE_COMMAND_PARAMETERS	=0x12;	// 18
+	//	Remote device has forced a disconnect.
+	static constexpr jint BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION				=0x13;	// 19
+	static constexpr jint BLE_HCI_REMOTE_DEV_TERMINATION_DUE_TO_LOW_RESOURCES	=0x14;	// 20
+	static constexpr jint BLE_HCI_REMOTE_DEV_TERMINATION_DUE_TO_POWER_OFF		=0x15;	// 21
+	static constexpr jint BLE_HCI_LOCAL_HOST_TERMINATED_CONNECTION				=0x16;	// 22
+	static constexpr jint BLE_HCI_UNSUPPORTED_REMOTE_FEATURE					=0x1A;	// 26
+	static constexpr jint BLE_HCI_STATUS_CODE_INVALID_LMP_PARAMETERS			=0x1E;	// 30
+	static constexpr jint BLE_HCI_STATUS_CODE_UNSPECIFIED_ERROR					=0x1F;	// 31
+	static constexpr jint BLE_HCI_STATUS_CODE_LMP_RESPONSE_TIMEOUT			=0x22;	// 34
+	static constexpr jint BLE_HCI_STATUS_CODE_LMP_PDU_NOT_ALLOWED			=0x24;	// 36
+	static constexpr jint BLE_HCI_INSTANT_PASSED							=0x28;	// 40
+	static constexpr jint BLE_HCI_PAIRING_WITH_UNIT_KEY_UNSUPPORTED			=0x29;	// 41
+	static constexpr jint BLE_HCI_DIFFERENT_TRANSACTION_COLLISION			=0x2A;	// 42
+	static constexpr jint BLE_HCI_CONTROLLER_BUSY							=0x3A;	// 58
+	static constexpr jint BLE_HCI_CONN_INTERVAL_UNACCEPTABLE				=0x3B;	// 59
+	static constexpr jint BLE_HCI_DIRECTED_ADVERTISER_TIMEOUT				=0x3C;	// 60
+	static constexpr jint BLE_HCI_CONN_TERMINATED_DUE_TO_MIC_FAILURE		=0x3D;	// 61
+	static constexpr jint BLE_HCI_CONN_FAILED_TO_BE_ESTABLISHED				=0x3E;	// 62
+
 
 	static constexpr const char jname_close[]="close";
 	void close(JNIEnv *env)noexcept{
