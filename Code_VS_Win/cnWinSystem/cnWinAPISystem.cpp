@@ -36,7 +36,7 @@ void cnSystem::AssertionMessage(const char *Message)noexcept
 
 void cnSystem::LogConnectRecorder(iLogRecorder *Recorder)noexcept
 {
-	return gRTLLog.Connect(Recorder);
+	return gWinLogModule.LogConnectRecorder(Recorder);
 }
 
 //- Default Heap ------------------------------------------------------------

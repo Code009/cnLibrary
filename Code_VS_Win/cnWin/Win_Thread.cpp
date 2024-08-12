@@ -215,13 +215,3 @@ rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference 
 //---------------------------------------------------------------------------
 #endif	// _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
-cWinLogModule::cWinLogModule()noexcept
-{
-	cnRTL::gRTLLog.Async(&cnWin_THREADING_NAMESPACE::cDefaultThreadPool::gInstance);
-}
-//---------------------------------------------------------------------------
-cWinLogModule::~cWinLogModule()noexcept
-{
-	cnRTL::gRTLLog.Reset();
-}
-//---------------------------------------------------------------------------

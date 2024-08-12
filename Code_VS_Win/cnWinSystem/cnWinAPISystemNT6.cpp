@@ -50,7 +50,7 @@ cnLib_GlobalVar cNT6TLSStaticPointer<cErrorReportRecord> gTLS_ErrorReportRecord;
 iThreadLocalVariable *const cErrorReportRecord::gTLSRecord=&gTLS_ErrorReportRecord;
 cnLib_GlobalVar cnRTL::cReferenceStaticImplementT<cnWinRTL::cWin32DebugTextOutput> cnWin::DebugTextOutput;
 
-cnLib_GlobalVar cWinLogModule cnWin::gWinLogModule;
+static cWinLogModule cnWin::gWinLogModule;
 
 //- COM ---------------------------------------------------------------------
 cnLib_GlobalVar cCOMApartmentThreadingModule cnWin::gCOMApartmentThreadingModule;

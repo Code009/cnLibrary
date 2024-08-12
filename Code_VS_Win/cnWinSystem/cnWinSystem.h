@@ -89,6 +89,21 @@ namespace vnWindowSubclass=cnWin_WINDOWSUBCLASS_NAMESPACE;
 #endif // cnWin_WINDOWSUBCLASS_NAMESPACE
 
 //---------------------------------------------------------------------------
+class cWinLogModule
+{
+public:
+	cWinLogModule()noexcept{
+		cnRTL::gRTLLog.Async(&cnWin_THREADING_NAMESPACE::cDefaultThreadPool::gInstance);
+	}
+	~cWinLogModule()noexcept{
+		cnRTL::gRTLLog.Reset();
+	}
+
+	void LogConnectRecorder(iLogRecorder *Recorder)noexcept{
+		return cnRTL::gRTLLog.Connect(Recorder);
+	}
+};
+//---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
