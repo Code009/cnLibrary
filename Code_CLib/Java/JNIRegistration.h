@@ -78,8 +78,6 @@ protected:
 template<class TJavaContext>
 inline bool jLogExceptionT(JNIEnv *env)noexcept;
 //---------------------------------------------------------------------------
-void jLogException(JNIEnv *env,jcThrowable *Exception)noexcept;
-//---------------------------------------------------------------------------
 template<class TJavaContext,class T>
 struct TClassRef
 {
@@ -112,26 +110,6 @@ struct TClassRef
 };
 template<class TJavaContext,class T>
 typename TClassRef<TJavaContext,T>::cInitialization TClassRef<TJavaContext,T>::Init;
-//---------------------------------------------------------------------------
-template<class TJavaContext>
-inline bool jLogExceptionT(JNIEnv *env)noexcept
-{
-	if(TClassRef<TJavaContext,jcThrowable>::Value==nullptr){
-		if(jInterface::ExceptionCheck(env)){
-			jInterface::ExceptionDescribe(env);
-			jInterface::ExceptionClear(env);
-			return true;
-		}
-		return false;
-	}
-
-	auto Exception=jInterface::ExceptionOccurred(env);
-	if(Exception==nullptr)
-		return false;
-	
-	jLogException(env,Exception);
-	return true;
-};
 //---------------------------------------------------------------------------
 template<class TJavaContext,const char *FieldName,class TClass,class TField>
 struct TInstanceField

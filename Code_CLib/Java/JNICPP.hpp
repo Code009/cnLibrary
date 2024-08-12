@@ -5,6 +5,8 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 #include <Java/JNIRegistration.h>
+#include <cnRTL/TextProcess.h>
+#include <cnRTL/Logger.h>
 
 #ifdef __cplusplus
 
@@ -12,11 +14,6 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace jCPP{
-//---------------------------------------------------------------------------
-inline bool jLogException(JNIEnv *env)noexcept
-{
-	return jLogExceptionT<jJavaContext>(env);
-}
 //---------------------------------------------------------------------------
 template<class TJavaClass>
 class jrLocal
@@ -595,10 +592,169 @@ struct jcString : jcObject
 
 };
 //---------------------------------------------------------------------------
+namespace java{
+//---------------------------------------------------------------------------
+namespace io{
+//---------------------------------------------------------------------------
+struct jcWriter : jcObject
+{
+	static constexpr const char jClassName[]="java/io/Writer";
+};
+//---------------------------------------------------------------------------
+struct jcStringWriter : jcWriter
+{
+	static constexpr const char jClassName[]="java/io/StringWriter";
+};
+//---------------------------------------------------------------------------
+struct jcPrintWriter : jcWriter
+{
+	static constexpr const char jClassName[]="java/io/PrintWriter";
+};
+//---------------------------------------------------------------------------
+}	// namespace io
+//---------------------------------------------------------------------------
+}	// namespace java
+//---------------------------------------------------------------------------
 struct jcThrowable : jcObject
 {
 	static constexpr const char jClassName[]="java/lang/Throwable";
+
+
+	static constexpr const char jname_getCause[]="getCause";
+	jrLocal<jcThrowable> getCause(JNIEnv *env)noexcept{
+		return jMethodCall<jname_getCause,&jcThrowable::getCause>::Call(env,this);
+	}
+
+
+	static constexpr const char jname_printStackTrace[]="printStackTrace";
+	void printStackTrace(JNIEnv *env,java::io::jcPrintWriter *PrintWriter)noexcept{
+		return jMethodCall<jname_printStackTrace,&jcThrowable::printStackTrace>::Call(env,this,PrintWriter);
+	}
 };
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+inline jrLocal<jcString> jMakeExceptionDescription(JNIEnv *env,jcThrowable *Exception)noexcept
+{
+	auto Writer=jNew<java::io::jcStringWriter>(env);
+	if(Writer==nullptr){
+		return nullptr;
+	}
+	auto Printer=jNew<java::io::jcPrintWriter,java::io::jcWriter*>(env,Writer);
+	if(Printer==nullptr){
+		return nullptr;
+	}
+	Exception->printStackTrace(env,Printer);
+	if(jInterface::ExceptionCheck(env)){
+		return nullptr;
+	}
+
+	auto CauseException=Exception->getCause(env);
+	while(CauseException!=nullptr){
+		CauseException->printStackTrace(env,Printer);
+		if(jInterface::ExceptionCheck(env)){
+			return nullptr;
+		}
+
+		CauseException=CauseException->getCause(env);
+	}
+	if(jInterface::ExceptionCheck(env)){
+		return nullptr;
+	}
+	return Writer->toString(env);
+}
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+inline bool jLogExceptionT(JNIEnv *env)noexcept
+{
+	if(TClassRef<TJavaContext,jcThrowable>::Value==nullptr){
+		if(jInterface::ExceptionCheck(env)){
+			jInterface::ExceptionDescribe(env);
+			jInterface::ExceptionClear(env);
+			return true;
+		}
+		return false;
+	}
+
+	auto Exception=jInterface::ExceptionOccurred(env);
+	if(Exception==nullptr){
+		return false;
+	}
+	else{
+		// clear exception in order to read exception message
+		jInterface::ExceptionDescribe(env);
+		jInterface::ExceptionClear(env);
+
+		// read exception message
+		auto ExceptionString=jMakeExceptionDescription<TJavaContext>(env,Exception);
+		if(ExceptionString!=nullptr){
+			// failed
+			auto StrLength=ExceptionString->length(env);
+			auto StrAccess=ExceptionString->AccessCritical(env);
+			{
+				auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+
+				Stream+=cnRTL::ArrayStreamArray(StrAccess.Pointer,StrLength);
+			}
+		}
+		else{
+			jInterface::ExceptionDescribe(env);
+			jInterface::ExceptionClear(env);
+		}
+	}
+	return true;
+}
+//---------------------------------------------------------------------------
+inline bool jLogException(JNIEnv *env)noexcept
+{
+	return jLogExceptionT<jJavaContext>(env);
+}
+//---------------------------------------------------------------------------
+inline void jCPPInterfaceCallCheck(JNIEnv *env,const char *Function)noexcept
+{
+	if(TClassRef<jJavaContext,jcThrowable>::Value==nullptr){
+		if(jInterface::ExceptionCheck(env)){
+			jInterface::ExceptionDescribe(env);
+		}
+		return;
+	}
+
+	auto Exception=jInterface::ExceptionOccurred(env);
+	if(Exception==nullptr)
+		return;
+
+	// clear exception in order to read exception message
+	jInterface::ExceptionDescribe(env);
+	jInterface::ExceptionClear(env);
+
+
+	{
+		auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+		Stream+=cnRTL::ArrayStreamArray(u"Exception pending when calling jni interface ");
+		Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+		Stream+=cnRTL::ArrayStreamArray(u":\n");
+		// read exception message
+		auto ExceptionString=jMakeExceptionDescription<jJavaContext>(env,Exception);
+		if(ExceptionString!=nullptr){
+			// failed
+			auto StrLength=ExceptionString->length(env);
+			if(StrLength!=0){
+				auto StrAccess=ExceptionString->AccessCritical(env);
+				{
+					Stream+=cnRTL::ArrayStreamArray(StrAccess.Pointer,StrLength);
+				}
+			}
+			else{
+				jInterface::ExceptionClear(env);
+			}
+		}
+		else{
+			jInterface::ExceptionClear(env);
+		}
+	}
+	// rethrow exception
+	jInterface::Throw(env,Exception);
+	jInterface::DeleteLocalRefNoCheck(env,Exception);
+}
 //---------------------------------------------------------------------------
 struct jbcArray : jcObject
 {

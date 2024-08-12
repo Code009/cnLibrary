@@ -100,7 +100,9 @@ struct jcUUID : jcObject
 			jlong IDValue[2];
 		};
 		jlong lsb=getLeastSignificantBits(env);
+		jLogException(env);
 		jlong msb=getMostSignificantBits(env);
+		jLogException(env);
 
 		IDValue[1]=cnMemory::SwapBigEndian(lsb);
 		IDValue[0]=msb>>32;
