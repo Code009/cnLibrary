@@ -101,7 +101,8 @@ public:
 
 	void SetupCurrentThread(HWND MessageWindow)noexcept(true);
 
-	void MessageLoop(void)noexcept(true);
+	void PostQuitMessageLoop(int ExitCode)noexcept(true);
+	int MessageLoop(void)noexcept(true);
 
 	void Execute(iReference *Reference,iProcedure *Procedure)noexcept(true);
 	void ExecuteNoRef(iProcedure *Procedure)noexcept(true);
@@ -121,6 +122,7 @@ protected:
 	static const UINT Message_Terminate;
 	static const UINT Message_Execute;
 	static const UINT Message_ExecuteRef;
+	static const UINT Message_QuitLoop;
 };
 //---------------------------------------------------------------------------
 class cWindowMessageQueueDispatch : public iDispatch
@@ -205,6 +207,42 @@ protected:
 		}fTimerDispatchProcedure;
 	};
 
+};
+//---------------------------------------------------------------------------
+class cWindowMessageUIThread : public iUIThread
+{
+public:
+	cWindowMessageUIThread(aClsRef<cWindowMessageThread> MessageThread)noexcept(true);
+	~cWindowMessageUIThread()noexcept(true);
+
+	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)override;
+	virtual iDispatch* cnLib_FUNC GetDispatch(bool HighPriority)noexcept(true)override;
+	virtual iUIKeyboard* cnLib_FUNC GetDefaultKeyboard(void)noexcept(true)override;
+	virtual iUIMouse* cnLib_FUNC GetDefaultMouse(void)noexcept(true)override;
+
+	aCls<cWindowMessageThread>* GetMessageThread(void)const noexcept(true);
+protected:
+	aClsRef<cWindowMessageThread> fMessageThread;
+	iPtr<cWindowMessageQueueDispatch> fDispatch;
+};
+//---------------------------------------------------------------------------
+class cWindowMessageUIApplication : public iWindowsUIApplication
+{
+public:
+	cWindowMessageUIApplication(iPtr<cWindowMessageUIThread> Thread)noexcept(true);
+	~cWindowMessageUIApplication()noexcept(true);
+
+	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)override;
+	virtual bool cnLib_FUNC InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)override;
+	virtual bool cnLib_FUNC RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)override;
+	virtual void cnLib_FUNC UIMain(void)noexcept(true)override;
+	virtual void cnLib_FUNC CloseUISession(void)noexcept(true)override;
+
+private:
+	iPtr<cWindowMessageUIThread> fUIThread;
+	cnRTL::cSeqSet<iWindowsUISessionHandler*> fHandlers;
+	bool fUISession=false;
+	bool fUITerminate=false;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL

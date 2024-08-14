@@ -222,6 +222,7 @@ iWindow* cnWinRTL::GetWindowFromUIView(iUIView *View)noexcept
 const UINT cWindowMessageThread::Message_Terminate		=WM_USER+0;
 const UINT cWindowMessageThread::Message_Execute		=WM_USER+1;
 const UINT cWindowMessageThread::Message_ExecuteRef		=WM_USER+2;
+const UINT cWindowMessageThread::Message_QuitLoop		=WM_USER+3;
 //---------------------------------------------------------------------------
 cWindowMessageThread::cWindowMessageThread()noexcept
 {
@@ -282,17 +283,31 @@ bool cWindowMessageThread::MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,L
 		reinterpret_cast<iProcedure*>(lParam)->Execute();
 		rDecReference(reinterpret_cast<iReference*>(wParam),'mexe');
 		return true;
+	case Message_QuitLoop:
+		::PostQuitMessage(static_cast<int>(wParam));
+		return true;
 	}
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWindowMessageThread::MessageLoop(void)noexcept
+void cWindowMessageThread::PostQuitMessageLoop(int ExitCode)noexcept
+{
+	if(IsCurrentThread()){
+		::PostQuitMessage(ExitCode);
+	}
+	else{
+		::PostMessageW(fMessageWindow,Message_QuitLoop,ExitCode,0);
+	}
+}
+//---------------------------------------------------------------------------
+int cWindowMessageThread::MessageLoop(void)noexcept
 {
 	MSG msg;
 	while(::GetMessageW(&msg,nullptr,0,0)){
 		::TranslateMessage(&msg);
 		::DispatchMessageW(&msg);
 	}
+	return static_cast<int>(msg.wParam);
 }
 //---------------------------------------------------------------------------
 bool cWindowMessageThread::IsCurrentThread(void)const noexcept
@@ -492,6 +507,115 @@ void cWindowMessageQueueDispatch::cAsyncTimer::TimerHit(void)noexcept
 	}
 	else{
 		fThreadPoolTimer->Start(fDueTime,0);
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWindowMessageUIThread::cWindowMessageUIThread(aClsRef<cWindowMessageThread> MessageThread)noexcept
+	: fMessageThread(cnVar::MoveCast(MessageThread))
+	, fDispatch(iCreate<cWindowMessageQueueDispatch>(fMessageThread))
+{
+}
+//---------------------------------------------------------------------------
+cWindowMessageUIThread::~cWindowMessageUIThread()noexcept
+{
+}
+//---------------------------------------------------------------------------
+aCls<cWindowMessageThread>* cWindowMessageUIThread::GetMessageThread(void)const noexcept
+{
+	return fMessageThread;
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageUIThread::IsCurrentThread(void)noexcept
+{
+	return fMessageThread->IsCurrentThread();
+}
+//---------------------------------------------------------------------------
+iDispatch* cWindowMessageUIThread::GetDispatch(bool)noexcept
+{
+	return fDispatch;
+}
+//---------------------------------------------------------------------------
+iUIKeyboard* cWindowMessageUIThread::GetDefaultKeyboard(void)noexcept
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+iUIMouse* cWindowMessageUIThread::GetDefaultMouse(void)noexcept
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWindowMessageUIApplication::cWindowMessageUIApplication(iPtr<cWindowMessageUIThread> Thread)noexcept
+	: fUIThread(cnVar::MoveCast(Thread))
+{
+}
+//---------------------------------------------------------------------------
+cWindowMessageUIApplication::~cWindowMessageUIApplication()noexcept
+{
+}
+//---------------------------------------------------------------------------
+iUIThread* cWindowMessageUIApplication::GetMainUIThread(void)noexcept
+{
+	return fUIThread;
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageUIApplication::InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept
+{
+	if(fUIThread->GetMessageThread()->IsCurrentThread()==false)
+		return false;
+
+	fHandlers.Insert(SessionHandler);
+	return true;
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageUIApplication::RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept
+{
+	if(fUIThread->GetMessageThread()->IsCurrentThread()==false)
+		return false;
+
+	fHandlers.Remove(SessionHandler);
+	return true;
+}
+//---------------------------------------------------------------------------
+void cWindowMessageUIApplication::UIMain(void)noexcept
+{
+	auto MessageThread=fUIThread->GetMessageThread();
+	if(MessageThread->IsCurrentThread()==false)
+		return;
+
+	if(fUISession)
+		return;
+
+	fUISession=true;
+	fUITerminate=false;
+
+	cSeqList<iWindowsUISessionHandler*> Handlers;
+	Handlers=fHandlers.Storage();
+	for(auto Handler : Handlers){
+		Handler->UISessionStart();
+	}
+	// message loop
+	while(!fUITerminate){
+		MessageThread->MessageLoop();
+	}
+
+
+	fUISession=false;
+
+	Handlers=fHandlers.Storage();
+	for(auto Handler : Handlers){
+		Handler->UISessionExit();
+	}
+}
+//---------------------------------------------------------------------------
+void cWindowMessageUIApplication::CloseUISession(void)noexcept
+{
+	if(fUISession){
+		fUITerminate=true;
+		auto MessageThread=fUIThread->GetMessageThread();
+		MessageThread->PostQuitMessageLoop(0);
 	}
 }
 //---------------------------------------------------------------------------

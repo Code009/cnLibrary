@@ -416,6 +416,18 @@ rPtr<iWindowsConsoleHost> cnWindows::CreateWindowsConsoleHost(iDispatch *Dispatc
 	return cnWinRTL::CreateWindowsConsoleHost(Dispatch);
 }
 
+rPtr<iWindowsUIApplication> cnWindows::CreateWindowsUIApplication(void)noexcept
+{
+	HWND MessageWindow=::CreateWindowExW(0,cMessageThreadWindowClass::gMessageThreadWindowClass,nullptr,0,0,0,0,0,HWND_MESSAGE,nullptr,nullptr,nullptr);
+	if(MessageWindow==nullptr)
+		return nullptr;
+	auto MessageThread=aClsCreate<cWindowMessageThread>();
+	MessageThread->SetupCurrentThread(MessageWindow);
+
+	auto UIThread=iCreate<cWindowMessageUIThread>(MessageThread);
+	return rCreate<cWindowMessageUIApplication>(cnVar::MoveCast(UIThread));
+}
+
 #if 0
 
 iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept
@@ -424,11 +436,6 @@ iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept
 	return nullptr;
 }
 
-rPtr<iWindowsUIApplication> cnWindows::CreateWindowsUIApplication(void)noexcept
-{
-#pragma message (cnLib_FILE_LINE ": TODO - CreateWindowsUIApplication")
-	return nullptr;
-}
 
 iPtr<iUIThread> cnWindows::CreateUIThreadOnCurrentThread(void)noexcept
 {
