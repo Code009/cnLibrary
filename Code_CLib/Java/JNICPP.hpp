@@ -709,8 +709,14 @@ inline bool jLogException(JNIEnv *env)noexcept
 	return jLogExceptionT<jJavaContext>(env);
 }
 //---------------------------------------------------------------------------
-inline void jCPPInterfaceCallCheck(JNIEnv *env,const char *Function)noexcept
+inline void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept
 {
+	if(env==nullptr){
+		auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+		Stream+=cnRTL::ArrayStreamCString(u"passing null method id when calling jni interface ");
+		Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+		return;
+	}
 	if(TClassRef<jJavaContext,jcThrowable>::Value==nullptr){
 		if(jInterface::ExceptionCheck(env)){
 			jInterface::ExceptionDescribe(env);
@@ -754,6 +760,71 @@ inline void jCPPInterfaceCallCheck(JNIEnv *env,const char *Function)noexcept
 	// rethrow exception
 	jInterface::Throw(env,Exception);
 	jInterface::DeleteLocalRefNoCheck(env,Exception);
+}
+//---------------------------------------------------------------------------
+template<class TClass>
+inline void jCPPInterfaceCallCheckPointer(const char *Function,TClass *CheckObject)noexcept
+{
+	if(CheckObject!=nullptr)
+		return;
+
+	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+	Stream+=cnRTL::ArrayStreamCString(u"pass null object when calling jni interface ");
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,Function,cnString::FindLength(Function));
+	Stream+=cnRTL::ArrayStreamCString(u": instance of class: ");
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,TClass::jClassName,sizeof(TClass::jClassName)-1);
+}
+//---------------------------------------------------------------------------
+inline void jCPPInterfaceCallCheckPointer(const char *Function,jbMethod *Method)
+{
+	if(Method!=nullptr)
+		return;
+
+	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+	Stream+=cnRTL::ArrayStreamCString(u"passing null method id when calling jni interface ");
+	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+}
+//---------------------------------------------------------------------------
+inline void jCPPInterfaceCallCheckPointer(const char *Function,jbField *Field)
+{
+	if(Field!=nullptr)
+		return;
+
+	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+	Stream+=cnRTL::ArrayStreamCString(u"passing null field id when calling jni interface ");
+	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+}
+//---------------------------------------------------------------------------
+inline void jCPPInterfaceCallCheckPointer(const char *Function,const jvalue *args)
+{
+	if(args!=nullptr)
+		return;
+
+	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+	Stream+=cnRTL::ArrayStreamCString(u"passing null for <const jvalue *> when calling jni interface ");
+	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+}
+//---------------------------------------------------------------------------
+inline void jCPPInterfaceCallCheckPointer(const char *Function,const char *string)
+{
+	if(string!=nullptr)
+		return;
+
+	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+	Stream+=cnRTL::ArrayStreamCString(u"passing null for C string when calling jni interface ");
+	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+}
+//---------------------------------------------------------------------------
+template<class TClass,class...TClasses>
+inline void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env,TClass *CheckPointer,TClasses*...CheckPointers)noexcept
+{
+	jCPPInterfaceCallCheckPointer(Function,CheckPointer);
+	return jCPPInterfaceCallCheck(Function,env,CheckPointers...);
 }
 //---------------------------------------------------------------------------
 struct jbcArray : jcObject

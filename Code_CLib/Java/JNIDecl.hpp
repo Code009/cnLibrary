@@ -201,7 +201,9 @@ template<class TJavaContext>
 bool jLogExceptionT(JNIEnv *env)noexcept;	// define in JNICPP.hpp
 bool jLogException(JNIEnv *env)noexcept;	// define in JNICPP.hpp
 
-void jCPPInterfaceCallCheck(JNIEnv *env,const char *Function)noexcept;	// define in JNICPP.hpp
+void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept;	// define in JNICPP.hpp
+template<class TClass,class...TClasses>
+void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env,TClass *CheckObject,TClasses*...CheckObjects)noexcept;	// define in JNICPP.hpp
 
 #ifndef JCPP_JNICHECK
 #ifdef cnLib_DEBUG
@@ -210,9 +212,9 @@ void jCPPInterfaceCallCheck(JNIEnv *env,const char *Function)noexcept;	// define
 #endif // !JCPP_JNICHECK
 
 #ifdef JCPP_JNICHECK
-#define	JCPP_INTERFACECALLCHECK(_env_)	jCPPInterfaceCallCheck(_env_,__func__)
+#define	JCPP_INTERFACECALLCHECK(...)	jCPPInterfaceCallCheck(__func__,__VA_ARGS__)
 #else
-#define	JCPP_INTERFACECALLCHECK(_env_)
+#define	JCPP_INTERFACECALLCHECK(...)
 #endif // cnLib_DEBUG
 
 class jEnv
@@ -528,61 +530,63 @@ namespace jInterface
 
 
 	template<class T>
-	inline T*		NewGlobalRef(JNIEnv *env,T *obj)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<T*>(env->NewGlobalRef(reinterpret_cast<jobject>(obj)));	}
-	inline void			DeleteGlobalRef(JNIEnv *env,jcObject *globalRef)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->DeleteGlobalRef(reinterpret_cast<jobject>(globalRef)); }
+	inline T*			NewGlobalRef(JNIEnv *env,T *obj)noexcept
+	{	JCPP_INTERFACECALLCHECK(env,obj);	return reinterpret_cast<T*>(env->NewGlobalRef(reinterpret_cast<jobject>(obj)));	}
+	template<class T>
+	inline void			DeleteGlobalRef(JNIEnv *env,T *globalRef)noexcept
+	{	JCPP_INTERFACECALLCHECK(env,globalRef);	return env->DeleteGlobalRef(reinterpret_cast<jobject>(globalRef)); }
 	inline void			DeleteLocalRefNoCheck(JNIEnv *env,jcObject *localRef)noexcept
 	{	return env->DeleteLocalRef(reinterpret_cast<jobject>(localRef)); }
-	inline void			DeleteLocalRef(JNIEnv *env,jcObject *localRef)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->DeleteLocalRef(reinterpret_cast<jobject>(localRef)); }
+	template<class T>
+	inline void			DeleteLocalRef(JNIEnv *env,T *localRef)noexcept
+	{	JCPP_INTERFACECALLCHECK(env,localRef);	return env->DeleteLocalRef(reinterpret_cast<jobject>(localRef)); }
 
 	inline jbMethod*	GetMethodID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jbMethod*>(env->GetMethodID(reinterpret_cast<jclass>(clazz),name,sig)); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz,name,sig);	return reinterpret_cast<jbMethod*>(env->GetMethodID(reinterpret_cast<jclass>(clazz),name,sig)); }
 	inline jbField*	GetFieldID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jbField*>(env->GetFieldID(reinterpret_cast<jclass>(clazz),name,sig)); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz,name,sig);	return reinterpret_cast<jbField*>(env->GetFieldID(reinterpret_cast<jclass>(clazz),name,sig)); }
 	inline jbMethod*	GetStaticMethodID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jbMethod*>(env->GetStaticMethodID(reinterpret_cast<jclass>(clazz),name,sig)); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz,name,sig);	return reinterpret_cast<jbMethod*>(env->GetStaticMethodID(reinterpret_cast<jclass>(clazz),name,sig)); }
 	inline jbField*	GetStaticFieldID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jbField*>(env->GetStaticFieldID(reinterpret_cast<jclass>(clazz),name,sig)); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz,name,sig);	return reinterpret_cast<jbField*>(env->GetStaticFieldID(reinterpret_cast<jclass>(clazz),name,sig)); }
 
 	inline jcString*	NewString(JNIEnv *env,const jchar* unicodeChars,jsize len)noexcept
 	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcString*>(env->NewString(unicodeChars,len)); }
 	inline jsize		GetStringLength(JNIEnv *env,jcString *string)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringLength(reinterpret_cast<jstring>(string)); }
+	{	JCPP_INTERFACECALLCHECK(env,string);	return env->GetStringLength(reinterpret_cast<jstring>(string)); }
 	inline const jchar*GetStringChars(JNIEnv *env,jcString *string,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringChars(reinterpret_cast<jstring>(string),isCopy); }
+	{	JCPP_INTERFACECALLCHECK(env,string);	return env->GetStringChars(reinterpret_cast<jstring>(string),isCopy); }
 	inline void			ReleaseStringChars(JNIEnv *env,jcString *string,const jchar* chars)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseStringChars(reinterpret_cast<jstring>(string),chars); }
+	{	JCPP_INTERFACECALLCHECK(env,string);	return env->ReleaseStringChars(reinterpret_cast<jstring>(string),chars); }
 	//inline jcString*	NewStringUTF(JNIEnv *env,const char* bytes)noexcept
 	//{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcString*>(env->NewStringUTF(bytes)); }
 	//inline jsize		GetStringUTFLength(JNIEnv *env,jcString *string)noexcept
 	//{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringUTFLength(reinterpret_cast<jstring>(string)); }
 
 	inline jsize	GetArrayLength(JNIEnv *env,jbcArray *array)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetArrayLength(reinterpret_cast<jarray>(array)); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return env->GetArrayLength(reinterpret_cast<jarray>(array)); }
 
 	template<class TObjectElement>
 	inline jcArray<TObjectElement*>*	NewObjectArray(JNIEnv *env,jsize length,jcClass *elementClass,TObjectElement *initialElement)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<TObjectElement*>*>(env->NewObjectArray(length,reinterpret_cast<jclass>(elementClass),reinterpret_cast<jobject>(initialElement))); }
+	{	JCPP_INTERFACECALLCHECK(env,elementClass,initialElement);	return reinterpret_cast<jcArray<TObjectElement*>*>(env->NewObjectArray(length,reinterpret_cast<jclass>(elementClass),reinterpret_cast<jobject>(initialElement))); }
 
 	template<class TObjectElement>
 	inline TObjectElement*		GetObjectArrayElement(JNIEnv *env,jcArray<TObjectElement*> *array,jsize index)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<TObjectElement*>(env->GetObjectArrayElement(reinterpret_cast<jobjectArray>(array),index)); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return reinterpret_cast<TObjectElement*>(env->GetObjectArrayElement(reinterpret_cast<jobjectArray>(array),index)); }
 	template<class TObjectElement>
 	inline void					SetObjectArrayElement(JNIEnv *env,jcArray<TObjectElement*> *array,jsize index,TObjectElement *value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetObjectArrayElement(reinterpret_cast<jobjectArray>(array),index,reinterpret_cast<jobject>(value)); }
+	{	JCPP_INTERFACECALLCHECK(env,array,value);	return env->SetObjectArrayElement(reinterpret_cast<jobjectArray>(array),index,reinterpret_cast<jobject>(value)); }
 
 	inline jint	RegisterNatives(JNIEnv *env,jcClass *clazz,const JNINativeMethod* methods,jint nMethods)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->RegisterNatives(reinterpret_cast<jclass>(clazz),methods,nMethods); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz);	return env->RegisterNatives(reinterpret_cast<jclass>(clazz),methods,nMethods); }
 	inline jint	UnregisterNatives(JNIEnv *env,jcClass *clazz)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->UnregisterNatives(reinterpret_cast<jclass>(clazz)); }
+	{	JCPP_INTERFACECALLCHECK(env,clazz);	return env->UnregisterNatives(reinterpret_cast<jclass>(clazz)); }
 
 	inline jint	GetJavaVM(JNIEnv *env,JavaVM* &vm)noexcept
 	{	JCPP_INTERFACECALLCHECK(env);	return env->GetJavaVM(reinterpret_cast<JavaVM**>(&vm)); }
 
 	inline const jchar* GetStringCritical(JNIEnv *env,jcString *string,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringCritical(reinterpret_cast<jstring>(string),isCopy); }
+	{	JCPP_INTERFACECALLCHECK(env,string);	return env->GetStringCritical(reinterpret_cast<jstring>(string),isCopy); }
 	inline void ReleaseStringCritical(JNIEnv *env,jcString *string,const jchar* carray)noexcept
 	{	return env->ReleaseStringCritical(reinterpret_cast<jstring>(string),carray); }
 
@@ -607,53 +611,51 @@ namespace jInterface
 
 	template<class TField>
 	inline TField GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TField>::GetField(env,Object,FieldID);	}
+	{	JCPP_INTERFACECALLCHECK(env,Object,FieldID);	return tTypeOp<TField>::GetField(env,Object,FieldID);	}
 	template<class TField>
 	inline void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,TField Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TField>::SetField(env,Object,FieldID,Value);	}
+	{	JCPP_INTERFACECALLCHECK(env,Object,FieldID);	return tTypeOp<TField>::SetField(env,Object,FieldID,Value);	}
 
 	template<class TField>
 	inline TField GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TField>::GetStaticField(env,Class,FieldID);	}
+	{	JCPP_INTERFACECALLCHECK(env,Class,FieldID);	return tTypeOp<TField>::GetStaticField(env,Class,FieldID);	}
 	template<class TField>
 	inline void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,TField Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TField>::SetStaticField(env,Class,FieldID,Value);	}
+	{	JCPP_INTERFACECALLCHECK(env,Class,FieldID);	return tTypeOp<TField>::SetStaticField(env,Class,FieldID,Value);	}
 
 	template<class TRet>
 	inline TRet CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TRet>::CallMethodA(env,Object,MethodID,args);	}
+	{	JCPP_INTERFACECALLCHECK(env,Object,MethodID,args);	return tTypeOp<TRet>::CallMethodA(env,Object,MethodID,args);	}
 	template<class TRet>
 	inline TRet CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<TRet>::CallStaticMethodA(env,Class,MethodID,args);	}
+	{	JCPP_INTERFACECALLCHECK(env,Class,MethodID,args);	return tTypeOp<TRet>::CallStaticMethodA(env,Class,MethodID,args);	}
 
 	template<class TClass>
-	inline TClass* NewObjectA(JNIEnv *env,jcClass *cls,jbMethod *MethodID,jvalue *args)noexcept{
-		JCPP_INTERFACECALLCHECK(env);
-		return reinterpret_cast<TClass*>(env->NewObjectA(reinterpret_cast<jclass>(cls),reinterpret_cast<jmethodID>(MethodID),args));
-	}
+	inline TClass* NewObjectA(JNIEnv *env,jcClass *cls,jbMethod *MethodID,const jvalue *args)noexcept
+	{	JCPP_INTERFACECALLCHECK(env,cls,MethodID,args);	return reinterpret_cast<TClass*>(env->NewObjectA(reinterpret_cast<jclass>(cls),reinterpret_cast<jmethodID>(MethodID),args));	}
 
 	template<class T>
 	inline T*	GetArrayElements(JNIEnv *env,jcArray<T> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<T>::GetArrayElements(env,array,isCopy); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return tTypeOp<T>::GetArrayElements(env,array,isCopy); }
 
 	template<class T>
 	inline void ReleaseArrayElements(JNIEnv *env,jcArray<T> *array,T *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<T>::ReleaseArrayElements(env,array,elems,mode); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return tTypeOp<T>::ReleaseArrayElements(env,array,elems,mode); }
 
 	template<class T>
 	inline void	GetArrayRegion(JNIEnv *env,jcArray<T> *array,jsize start,jsize len,T *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<T>::GetArrayRegion(env,array,start,len,buf); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return tTypeOp<T>::GetArrayRegion(env,array,start,len,buf); }
 
 	template<class T>
 	inline void	SetArrayRegion(JNIEnv *env,jcArray<T> *array,jsize start,jsize len,const T *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<T>::SetArrayRegion(env,array,start,len,buf); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return tTypeOp<T>::SetArrayRegion(env,array,start,len,buf); }
 
 	template<class T>
 	struct tTypeOp_ArrayElementsCritical;
 
 	template<class T>
 	inline T*	GetArrayElementsCritical(JNIEnv *env,jcArray<T> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return tTypeOp<T>::GetArrayElementsCritical(env,array,isCopy); }
+	{	JCPP_INTERFACECALLCHECK(env,array);	return tTypeOp<T>::GetArrayElementsCritical(env,array,isCopy); }
 
 	template<class T>
 	inline void ReleaseArrayElementsCritical(JNIEnv *env,jcArray<T> *array,T *elems,jint mode)noexcept
@@ -665,7 +667,7 @@ template<class T>
 struct jInterface::tTypeOp_ArrayElementsCritical
 {
 	static T*	GetArrayElementsCritical(JNIEnv *env,jcArray<T> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return static_cast<T*>(env->GetPrimitiveArrayCritical(reinterpret_cast<jarray>(array),isCopy)); }
+	{	return static_cast<T*>(env->GetPrimitiveArrayCritical(reinterpret_cast<jarray>(array),isCopy)); }
 
 	static void ReleaseArrayElementsCritical(JNIEnv *env,jcArray<T> *array,T *elems,jint mode)noexcept
 	{	return env->ReleasePrimitiveArrayCritical(reinterpret_cast<jarray>(array),elems,mode); }
@@ -675,32 +677,32 @@ template<>
 struct jInterface::tTypeOp<void>
 {
 	static void CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallVoidMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallVoidMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static void CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticVoidMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticVoidMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 };
 //---------------------------------------------------------------------------
 template<class TClass>
 struct jInterface::tTypeOp<TClass*>
 {
 	static TClass* GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<TClass*>(env->GetObjectField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID)));	}
+	{	return reinterpret_cast<TClass*>(env->GetObjectField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID)));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,TClass *Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetObjectField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),reinterpret_cast<jobject>(Value));	}
+	{	return env->SetObjectField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),reinterpret_cast<jobject>(Value));	}
 
 	static TClass* GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<TClass*>(env->GetStaticObjectField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID)));	}
+	{	return reinterpret_cast<TClass*>(env->GetStaticObjectField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID)));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,TClass* Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticObjectField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),reinterpret_cast<jobject>(Value));	}
+	{	return env->SetStaticObjectField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),reinterpret_cast<jobject>(Value));	}
 
 	static TClass* CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<TClass*>(env->CallObjectMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args));	}
+	{	return reinterpret_cast<TClass*>(env->CallObjectMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args));	}
 
 	static TClass* CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<TClass*>(env->CallStaticObjectMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args));	}
+	{	return reinterpret_cast<TClass*>(env->CallStaticObjectMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args));	}
 };
 //---------------------------------------------------------------------------
 template<>
@@ -708,37 +710,37 @@ struct jInterface::tTypeOp<jboolean>
 	: tTypeOp_ArrayElementsCritical<jboolean>
 {
 	static jcArray<jboolean>*	NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jboolean>*>(env->NewBooleanArray(length)); }
+	{	return reinterpret_cast<jcArray<jboolean>*>(env->NewBooleanArray(length)); }
 
 	static jboolean GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetBooleanField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetBooleanField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jboolean Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetBooleanField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetBooleanField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jboolean GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticBooleanField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticBooleanField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jboolean Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticBooleanField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticBooleanField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jboolean CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallBooleanMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallBooleanMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jboolean CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticBooleanMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticBooleanMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jboolean*	GetArrayElements(JNIEnv *env,jcArray<jboolean> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetBooleanArrayElements(reinterpret_cast<jbooleanArray>(array),isCopy); }
+	{	return env->GetBooleanArrayElements(reinterpret_cast<jbooleanArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jboolean> *array,jboolean* elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseBooleanArrayElements(reinterpret_cast<jbooleanArray>(array),elems,mode); }
+	{	return env->ReleaseBooleanArrayElements(reinterpret_cast<jbooleanArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jboolean> *array,jsize start,jsize len,jboolean *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetBooleanArrayRegion(reinterpret_cast<jbooleanArray>(array),start,len,buf); }
+	{	return env->GetBooleanArrayRegion(reinterpret_cast<jbooleanArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jboolean> *array,jsize start,jsize len,const jboolean *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetBooleanArrayRegion(reinterpret_cast<jbooleanArray>(array),start,len,buf); }
+	{	return env->SetBooleanArrayRegion(reinterpret_cast<jbooleanArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -746,37 +748,37 @@ struct jInterface::tTypeOp<jbyte>
 	: tTypeOp_ArrayElementsCritical<jbyte>
 {
 	static jcArray<jbyte>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jbyte>*>(env->NewByteArray(length)); }
+	{	return reinterpret_cast<jcArray<jbyte>*>(env->NewByteArray(length)); }
 
 	static jbyte GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetByteField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetByteField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jbyte Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetByteField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetByteField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jbyte GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticByteField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticByteField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jbyte Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticByteField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticByteField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jbyte CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallByteMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallByteMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jbyte CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticByteMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticByteMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jbyte*		GetArrayElements(JNIEnv *env,jcArray<jbyte> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetByteArrayElements(reinterpret_cast<jbyteArray>(array),isCopy); }
+	{	return env->GetByteArrayElements(reinterpret_cast<jbyteArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jbyte> *array,jbyte *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseByteArrayElements(reinterpret_cast<jbyteArray>(array),elems,mode); }
+	{	return env->ReleaseByteArrayElements(reinterpret_cast<jbyteArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jbyte> *array,jsize start,jsize len,jbyte *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetByteArrayRegion(reinterpret_cast<jbyteArray>(array),start,len,buf); }
+	{	return env->GetByteArrayRegion(reinterpret_cast<jbyteArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jbyte> *array,jsize start,jsize len,const jbyte *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetByteArrayRegion(reinterpret_cast<jbyteArray>(array),start,len,buf); }
+	{	return env->SetByteArrayRegion(reinterpret_cast<jbyteArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -784,37 +786,37 @@ struct jInterface::tTypeOp<jchar>
 	: tTypeOp_ArrayElementsCritical<jchar>
 {
 	static jcArray<jchar>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jchar>*>(env->NewCharArray(length)); }
+	{	return reinterpret_cast<jcArray<jchar>*>(env->NewCharArray(length)); }
 
 	static jchar GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetCharField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetCharField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jchar Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetCharField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetCharField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jchar GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticCharField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticCharField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jchar Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticCharField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticCharField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jchar CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallCharMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallCharMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jchar CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticCharMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticCharMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jchar*		GetArrayElements(JNIEnv *env,jcArray<jchar> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetCharArrayElements(reinterpret_cast<jcharArray>(array),isCopy); }
+	{	return env->GetCharArrayElements(reinterpret_cast<jcharArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jchar> *array,jchar *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseCharArrayElements(reinterpret_cast<jcharArray>(array),elems,mode); }
+	{	return env->ReleaseCharArrayElements(reinterpret_cast<jcharArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jchar> *array,jsize start,jsize len,jchar *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetCharArrayRegion(reinterpret_cast<jcharArray>(array),start,len,buf); }
+	{	return env->GetCharArrayRegion(reinterpret_cast<jcharArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jchar> *array,jsize start,jsize len,const jchar *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetCharArrayRegion(reinterpret_cast<jcharArray>(array),start,len,buf); }
+	{	return env->SetCharArrayRegion(reinterpret_cast<jcharArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -822,37 +824,37 @@ struct jInterface::tTypeOp<jshort>
 	: tTypeOp_ArrayElementsCritical<jshort>
 {
 	static jcArray<jshort>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jshort>*>(env->NewShortArray(length)); }
+	{	return reinterpret_cast<jcArray<jshort>*>(env->NewShortArray(length)); }
 
 	static jshort GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetShortField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetShortField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jshort Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetShortField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);}
+	{	return env->SetShortField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);}
 
 	static jshort GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticShortField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticShortField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jshort Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticShortField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticShortField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jshort CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallShortMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallShortMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jint CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticIntMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticIntMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jshort*		GetArrayElements(JNIEnv *env,jcArray<jshort> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetShortArrayElements(reinterpret_cast<jshortArray>(array),isCopy); }
+	{	return env->GetShortArrayElements(reinterpret_cast<jshortArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jshort> *array,jshort *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseShortArrayElements(reinterpret_cast<jshortArray>(array),elems,mode); }
+	{	return env->ReleaseShortArrayElements(reinterpret_cast<jshortArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jshort> *array,jsize start,jsize len,jshort *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetShortArrayRegion(reinterpret_cast<jshortArray>(array),start,len,buf); }
+	{	return env->GetShortArrayRegion(reinterpret_cast<jshortArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jshort> *array,jsize start,jsize len,const jshort *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetShortArrayRegion(reinterpret_cast<jshortArray>(array),start,len,buf); }
+	{	return env->SetShortArrayRegion(reinterpret_cast<jshortArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -860,37 +862,37 @@ struct jInterface::tTypeOp<jint>
 	: tTypeOp_ArrayElementsCritical<jint>
 {
 	static jcArray<jint>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jint>*>(env->NewIntArray(length)); }
+	{	return reinterpret_cast<jcArray<jint>*>(env->NewIntArray(length)); }
 
 	static jint GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetIntField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetIntField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jint Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetIntField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetIntField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jint GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticIntField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticIntField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jint Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticIntField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticIntField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jint CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallIntMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallIntMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jshort CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticShortMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticShortMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jint*		GetArrayElements(JNIEnv *env,jcArray<jint> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetIntArrayElements(reinterpret_cast<jintArray>(array),isCopy); }
+	{	return env->GetIntArrayElements(reinterpret_cast<jintArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jint> *array,jint *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseIntArrayElements(reinterpret_cast<jintArray>(array),elems,mode); }
+	{	return env->ReleaseIntArrayElements(reinterpret_cast<jintArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jint> *array,jsize start,jsize len,jint *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetIntArrayRegion(reinterpret_cast<jintArray>(array),start,len,buf); }
+	{	return env->GetIntArrayRegion(reinterpret_cast<jintArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jint> *array,jsize start,jsize len,const jint *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetIntArrayRegion(reinterpret_cast<jintArray>(array),start,len,buf); }
+	{	return env->SetIntArrayRegion(reinterpret_cast<jintArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -898,37 +900,37 @@ struct jInterface::tTypeOp<jlong>
 	: tTypeOp_ArrayElementsCritical<jlong>
 {
 	static jcArray<jlong>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jlong>*>(env->NewLongArray(length)); }
+	{	return reinterpret_cast<jcArray<jlong>*>(env->NewLongArray(length)); }
 
 	static jlong GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetLongField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetLongField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jlong Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetLongField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetLongField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jlong GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticLongField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticLongField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jlong Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticLongField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticLongField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jlong CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallLongMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallLongMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jlong CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticLongMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticLongMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jlong*		GetArrayElements(JNIEnv *env,jcArray<jlong> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetLongArrayElements(reinterpret_cast<jlongArray>(array),isCopy); }
+	{	return env->GetLongArrayElements(reinterpret_cast<jlongArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jlong> *array,jlong *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseLongArrayElements(reinterpret_cast<jlongArray>(array),elems,mode); }
+	{	return env->ReleaseLongArrayElements(reinterpret_cast<jlongArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jlong> *array,jsize start,jsize len,jlong *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetLongArrayRegion(reinterpret_cast<jlongArray>(array),start,len,buf); }
+	{	return env->GetLongArrayRegion(reinterpret_cast<jlongArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jlong> *array,jsize start,jsize len,const jlong *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetLongArrayRegion(reinterpret_cast<jlongArray>(array),start,len,buf); }
+	{	return env->SetLongArrayRegion(reinterpret_cast<jlongArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -936,37 +938,37 @@ struct jInterface::tTypeOp<jfloat>
 	: tTypeOp_ArrayElementsCritical<jfloat>
 {
 	static jcArray<jfloat>*		NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jfloat>*>(env->NewFloatArray(length)); }
+	{	return reinterpret_cast<jcArray<jfloat>*>(env->NewFloatArray(length)); }
 
 	static jfloat GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetFloatField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetFloatField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jfloat Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetFloatField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetFloatField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jfloat GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticFloatField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticFloatField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jfloat Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticFloatField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticFloatField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jfloat CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallFloatMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallFloatMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jfloat CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticFloatMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticFloatMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jfloat*		GetArrayElements(JNIEnv *env,jcArray<jfloat> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetFloatArrayElements(reinterpret_cast<jfloatArray>(array),isCopy); }
+	{	return env->GetFloatArrayElements(reinterpret_cast<jfloatArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jfloat> *array,jfloat *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseFloatArrayElements(reinterpret_cast<jfloatArray>(array),elems,mode); }
+	{	return env->ReleaseFloatArrayElements(reinterpret_cast<jfloatArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jfloat> *array,jsize start,jsize len,jfloat *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetFloatArrayRegion(reinterpret_cast<jfloatArray>(array),start,len,buf); }
+	{	return env->GetFloatArrayRegion(reinterpret_cast<jfloatArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jfloat> *array,jsize start,jsize len,const jfloat *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetFloatArrayRegion(reinterpret_cast<jfloatArray>(array),start,len,buf); }
+	{	return env->SetFloatArrayRegion(reinterpret_cast<jfloatArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 template<>
@@ -974,37 +976,37 @@ struct jInterface::tTypeOp<jdouble>
 	: tTypeOp_ArrayElementsCritical<jdouble>
 {
 	static jcArray<jdouble>*	NewArray(JNIEnv *env,jsize length)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcArray<jdouble>*>(env->NewDoubleArray(length)); }
+	{	return reinterpret_cast<jcArray<jdouble>*>(env->NewDoubleArray(length)); }
 
 	static jdouble GetField(JNIEnv *env,jcObject *Object,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetDoubleField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetDoubleField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetField(JNIEnv *env,jcObject *Object,jbField *FieldID,jdouble Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetDoubleField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetDoubleField(reinterpret_cast<jobject>(Object),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jdouble GetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStaticDoubleField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
+	{	return env->GetStaticDoubleField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID));	}
 
 	static void SetStaticField(JNIEnv *env,jcClass *Class,jbField *FieldID,jdouble Value)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetStaticDoubleField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
+	{	return env->SetStaticDoubleField(reinterpret_cast<jclass>(Class),reinterpret_cast<jfieldID>(FieldID),Value);	}
 
 	static jdouble CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallDoubleMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallDoubleMethodA(reinterpret_cast<jobject>(Object),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jdouble CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->CallStaticDoubleMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
+	{	return env->CallStaticDoubleMethodA(reinterpret_cast<jclass>(Class),reinterpret_cast<jmethodID>(MethodID),args);	}
 
 	static jdouble*	GetArrayElements(JNIEnv *env,jcArray<jdouble> *array,jboolean* isCopy)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetDoubleArrayElements(reinterpret_cast<jdoubleArray>(array),isCopy); }
+	{	return env->GetDoubleArrayElements(reinterpret_cast<jdoubleArray>(array),isCopy); }
 
 	static void ReleaseArrayElements(JNIEnv *env,jcArray<jdouble> *array,jdouble *elems,jint mode)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->ReleaseDoubleArrayElements(reinterpret_cast<jdoubleArray>(array),elems,mode); }
+	{	return env->ReleaseDoubleArrayElements(reinterpret_cast<jdoubleArray>(array),elems,mode); }
 
 	static void	GetArrayRegion(JNIEnv *env,jcArray<jdouble> *array,jsize start,jsize len,jdouble *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->GetDoubleArrayRegion(reinterpret_cast<jdoubleArray>(array),start,len,buf); }
+	{	return env->GetDoubleArrayRegion(reinterpret_cast<jdoubleArray>(array),start,len,buf); }
 
 	static void	SetArrayRegion(JNIEnv *env,jcArray<jdouble> *array,jsize start,jsize len,const jdouble *buf)noexcept
-	{	JCPP_INTERFACECALLCHECK(env);	return env->SetDoubleArrayRegion(reinterpret_cast<jdoubleArray>(array),start,len,buf); }
+	{	return env->SetDoubleArrayRegion(reinterpret_cast<jdoubleArray>(array),start,len,buf); }
 };
 //---------------------------------------------------------------------------
 }	// namespace jCPP
