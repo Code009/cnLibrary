@@ -958,6 +958,24 @@ private:
 	cAtomicVar<uInt8> RunFlag;
 };
 //---------------------------------------------------------------------------
+class cResourceAvailableFlag
+{
+public:
+	cnLib_CONSTEXPR_FUNC cResourceAvailableFlag():AvailableFlag(rfIdle){}
+
+	void Start(void)noexcept(true);
+	void Pause(void)noexcept(true);
+
+	bool Finish(void)noexcept(true);
+
+	bool MarkAvailable(void)noexcept(true);
+private:
+	static cnLib_CONSTVAR ufInt8 rfIdle=0;
+	static cnLib_CONSTVAR ufInt8 rfPending=1;
+	static cnLib_CONSTVAR ufInt8 rfRunning=2;
+	cAtomicVar<ufInt8> AvailableFlag;
+};
+//---------------------------------------------------------------------------
 
 // Reference Logger
 

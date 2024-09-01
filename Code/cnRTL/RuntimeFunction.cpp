@@ -387,7 +387,7 @@ void cExclusiveFlag::Reset(void)noexcept
 //---------------------------------------------------------------------------
 bool cExclusiveFlag::Acquire(void)noexcept
 {
-	auto PrevRunFlag=RunFlag.Acquire<<=rfPending;
+	auto PrevRunFlag=RunFlag.Release<<=rfPending;
 	switch(PrevRunFlag){
 	case rfIdle:
 		// new start
@@ -427,6 +427,28 @@ void cExclusiveFlag::Continue(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void cResourceAvailableFlag::Start(void)noexcept
+{
+	AvailableFlag.Free.Store(rfRunning);
+}
+//---------------------------------------------------------------------------
+void cResourceAvailableFlag::Pause(void)noexcept
+{
+	AvailableFlag.Free.Store(rfPending);
+}
+//---------------------------------------------------------------------------
+bool cResourceAvailableFlag::Finish(void)noexcept
+{
+	return AvailableFlag.Barrier.CmpStore(rfRunning,rfIdle);
+}
+//---------------------------------------------------------------------------
+bool cResourceAvailableFlag::MarkAvailable(void)noexcept
+{
+	ufInt8 LastFlag=AvailableFlag.Barrier.Xchg(rfPending);
+	return LastFlag==rfIdle;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept
 {
 	auto Item=fRecycleStack.Pop();
@@ -457,11 +479,13 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 	auto ObjectPair=fObjectMap.GetPair(Object);
 	if(ObjectPair==nullptr){
 		// error! object not found
+		cnSystem::AssertionMessage("object not found");
 	}
 	else{
 		auto TagPair=ObjectPair->Value.GetPair(Tag);
 		if(TagPair==nullptr){
 			// error! tag not found
+			cnSystem::AssertionMessage("tag not found");
 		}
 		else{
 			if(--TagPair->Value==0){
@@ -556,9 +580,11 @@ void cReferenceCountLogger::NotifyProcess(void)noexcept
 
 	if(fInitialized==false){
 
-		if(cnSystem::SystemDependentRegistration==nullptr){
+		while(cnSystem::SystemDependentRegistration==nullptr){
 			// system not started? delay process
-			return;
+			if(fExclusiveFlag.Release()){
+				return;
+			}
 		}
 
 		fInitialized=true;
