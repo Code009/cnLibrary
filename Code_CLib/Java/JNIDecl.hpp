@@ -197,26 +197,6 @@ using ::JavaVM;
 typedef jVM JavaVM;
 #endif // !JCPP_JNIHEADER
 
-template<class TJavaContext>
-bool jLogExceptionT(JNIEnv *env)noexcept;	// define in JNICPP.hpp
-bool jLogException(JNIEnv *env)noexcept;	// define in JNICPP.hpp
-
-void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept;	// define in JNICPP.hpp
-template<class TClass,class...TClasses>
-void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env,TClass *CheckObject,TClasses*...CheckObjects)noexcept;	// define in JNICPP.hpp
-
-#ifndef JCPP_JNICHECK
-#ifdef cnLib_DEBUG
-#define	JCPP_JNICHECK
-#endif // cnLib_DEBUG
-#endif // !JCPP_JNICHECK
-
-#ifdef JCPP_JNICHECK
-#define	JCPP_INTERFACECALLCHECK(...)	jCPPInterfaceCallCheck(__func__,__VA_ARGS__)
-#else
-#define	JCPP_INTERFACECALLCHECK(...)
-#endif // cnLib_DEBUG
-
 class jEnv
 {
 private:
@@ -505,6 +485,27 @@ using ::JNIEnv;
 typedef jEnv JNIEnv;
 #endif // !JCPP_JNIHEADER
 
+
+template<class TJavaContext>
+bool jLogExceptionT(JNIEnv *env)noexcept;	// define in JNICPP.hpp
+bool jLogException(JNIEnv *env)noexcept;	// define in JNICPP.hpp
+
+void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept;	// define in JNICPP.hpp
+template<class TClass,class...TClasses>
+void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env,TClass *CheckObject,TClasses*...CheckObjects)noexcept;	// define in JNICPP.hpp
+
+#ifndef JCPP_JNICHECK
+#ifdef cnLib_DEBUG
+#define	JCPP_JNICHECK
+#endif // cnLib_DEBUG
+#endif // !JCPP_JNICHECK
+
+#ifdef JCPP_JNICHECK
+#define	JCPP_INTERFACECALLCHECK(...)	jCPPInterfaceCallCheck(__func__,__VA_ARGS__)
+#else
+#define	JCPP_INTERFACECALLCHECK(...)
+#endif // cnLib_DEBUG
+
 //---------------------------------------------------------------------------
 
 
@@ -568,7 +569,7 @@ namespace jInterface
 
 	template<class TObjectElement>
 	inline jcArray<TObjectElement*>*	NewObjectArray(JNIEnv *env,jsize length,jcClass *elementClass,TObjectElement *initialElement)noexcept
-	{	JCPP_INTERFACECALLCHECK(env,elementClass,initialElement);	return reinterpret_cast<jcArray<TObjectElement*>*>(env->NewObjectArray(length,reinterpret_cast<jclass>(elementClass),reinterpret_cast<jobject>(initialElement))); }
+	{	JCPP_INTERFACECALLCHECK(env,elementClass);	return reinterpret_cast<jcArray<TObjectElement*>*>(env->NewObjectArray(length,reinterpret_cast<jclass>(elementClass),reinterpret_cast<jobject>(initialElement))); }
 
 	template<class TObjectElement>
 	inline TObjectElement*		GetObjectArrayElement(JNIEnv *env,jcArray<TObjectElement*> *array,jsize index)noexcept
@@ -625,14 +626,14 @@ namespace jInterface
 
 	template<class TRet>
 	inline TRet CallMethodA(JNIEnv *env,jcObject *Object,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env,Object,MethodID,args);	return tTypeOp<TRet>::CallMethodA(env,Object,MethodID,args);	}
+	{	JCPP_INTERFACECALLCHECK(env,Object,MethodID);	return tTypeOp<TRet>::CallMethodA(env,Object,MethodID,args);	}
 	template<class TRet>
 	inline TRet CallStaticMethodA(JNIEnv *env,jcClass *Class,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env,Class,MethodID,args);	return tTypeOp<TRet>::CallStaticMethodA(env,Class,MethodID,args);	}
+	{	JCPP_INTERFACECALLCHECK(env,Class,MethodID);	return tTypeOp<TRet>::CallStaticMethodA(env,Class,MethodID,args);	}
 
 	template<class TClass>
 	inline TClass* NewObjectA(JNIEnv *env,jcClass *cls,jbMethod *MethodID,const jvalue *args)noexcept
-	{	JCPP_INTERFACECALLCHECK(env,cls,MethodID,args);	return reinterpret_cast<TClass*>(env->NewObjectA(reinterpret_cast<jclass>(cls),reinterpret_cast<jmethodID>(MethodID),args));	}
+	{	JCPP_INTERFACECALLCHECK(env,cls,MethodID);	return reinterpret_cast<TClass*>(env->NewObjectA(reinterpret_cast<jclass>(cls),reinterpret_cast<jmethodID>(MethodID),args));	}
 
 	template<class T>
 	inline T*	GetArrayElements(JNIEnv *env,jcArray<T> *array,jboolean* isCopy)noexcept
