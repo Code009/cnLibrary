@@ -16,6 +16,29 @@ namespace android{
 //---------------------------------------------------------------------------
 namespace bluetooth{
 //---------------------------------------------------------------------------
+struct jcBluetoothProfile : jcObject
+{
+	static constexpr const char jClassName[]="android/bluetooth/BluetoothProfile";
+	
+	static constexpr jint HEADSET=1;
+	static constexpr jint A2DP=2;
+	static constexpr jint HEALTH=3;
+	static constexpr jint GATT=7;
+	static constexpr jint GATT_SERVER=8;
+	static constexpr jint SAP=10;
+	static constexpr jint HID_DEVICE=19;
+	static constexpr jint HEARING_AID=21;
+	static constexpr jint LE_AUDIO=22;
+	static constexpr jint CSIP_SET_COORDINATOR=25;
+	static constexpr jint HAP_CLIENT=28;
+	
+
+	static constexpr jint STATE_DISCONNECTED=0;
+	static constexpr jint STATE_CONNECTING=1;
+	static constexpr jint STATE_CONNECTED=2;
+	static constexpr jint STATE_DISCONNECTING=3;
+};
+//---------------------------------------------------------------------------
 struct jcBluetoothGattService;
 struct jcBluetoothGattCharacteristic;
 //---------------------------------------------------------------------------
