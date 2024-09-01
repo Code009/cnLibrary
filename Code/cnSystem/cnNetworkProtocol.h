@@ -42,8 +42,7 @@ extern iDatagramProtocol*const UDP;
 // GATT
 //---------------------------------------------------------------------------
 
-cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties)
-{
+cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties){
 	None					=0x00,
 	Broadcast				=0x01,
 	Read					=0x02,
@@ -57,20 +56,17 @@ cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties)
 //	WritableAuxiliaries		=0x200,
 }cnLib_INTENUM_END(GATTCharacteristicProperties);
 
-cnLib_ENUM_BEGIN(ufInt8,GATTCharacteristicNotification)
-{
+cnLib_ENUM_BEGIN(ufInt8,GATTCharacteristicNotification){
 	None,
 	Notify,
 	Indicate,
 }cnLib_ENUM_END(GATTCharacteristicNotification);
 
-cnLib_ENUM_BEGIN(ufInt8,GATTFunctionState)
-{
+cnLib_ENUM_BEGIN(ufInt8,GATTAvailability){
 	Absent,
 	Scanning,
-	Inactive,
-	Active,
-}cnLib_ENUM_END(GATTFunctionState);
+	Available,
+}cnLib_ENUM_END(GATTAvailability);
 
 //---------------------------------------------------------------------------
 class iGATTClient;
@@ -81,7 +77,7 @@ class iGATTDescriptor;
 class cnLib_INTERFACE iGATTDescriptorHandler
 {
 public:
-	virtual void cnLib_FUNC GATTDescriptorStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC GATTDescriptorAvailabilityChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTDescriptor : public iReference
@@ -92,7 +88,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTDescriptorHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTDescriptorHandler *Handler)noexcept(true)=0;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)=0;
 	virtual iGATTCharacteristic* cnLib_FUNC GetCharacterist(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -111,7 +107,7 @@ public:
 class cnLib_INTERFACE iGATTCharacteristicHandler
 {
 public:
-	virtual void cnLib_FUNC GATTCharacteristStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC GATTCharacteristAvailabilityChanged(void)noexcept(true)=0;
 
 	virtual void cnLib_FUNC GATTCharacteristEffectiveValueNotificationChanged(void)noexcept(true)=0;
 	virtual void cnLib_FUNC GATTCharacteristValueNotify(const void *Data,uIntn DataSize)noexcept(true)=0;
@@ -125,7 +121,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTCharacteristicHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTCharacteristicHandler *Handler)noexcept(true)=0;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)=0;
 	virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)=0;
@@ -154,7 +150,7 @@ public:
 class cnLib_INTERFACE iGATTServiceHandler
 {
 public:
-	virtual void cnLib_FUNC GATTServiceStateChanged(void)noexcept(true)=0;
+	virtual void cnLib_FUNC GATTServiceAvailabilityChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTService : public iReference
@@ -165,7 +161,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTServiceHandler *Handler)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *Handler)noexcept(true)=0;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)=0;
 	virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)=0;
 	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTCharacteristicObserver> cnLib_FUNC CreateCharacteristicObserver(void)noexcept(true)=0;
@@ -187,7 +183,8 @@ class cnLib_INTERFACE iGATTClient : public iReference
 {
 public:
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)=0;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)=0;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC IsConnected(void)noexcept(true)=0;
 
 	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)=0;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)=0;
@@ -353,6 +350,8 @@ public:
 
 	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)=0;
 	virtual rPtr<iReference> cnLib_FUNC QueryName(cArray<const uChar16> &Name)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetConnect(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetConnect(bool Value)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 cnLib_ENUM_BEGIN(ufInt8,BluetoothLEAdvertisementType)

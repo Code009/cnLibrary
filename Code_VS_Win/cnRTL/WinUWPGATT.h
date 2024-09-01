@@ -48,7 +48,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTDescriptorHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTDescriptorHandler *Handler)noexcept(true)override;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)override;
 	virtual iGATTCharacteristic* cnLib_FUNC GetCharacterist(void)noexcept(true)override;
 
 	void CharacteristicUpdateDescriptor(IBLEDescriptor *Descriptor)noexcept(true);
@@ -67,7 +67,7 @@ private:
 	void SetupDescriptor(void)noexcept(true);
 	void ClearDescriptor(void)noexcept(true);
 
-	eGATTFunctionState fFuncState;
+	eGATTAvailability fAvailability;
 
 	rPtr<iAsyncProcedure> fMainProcessWork;
 
@@ -109,7 +109,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTCharacteristicHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTCharacteristicHandler *Handler)noexcept(true)override;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)override;
 	virtual iGATTService* cnLib_FUNC GetService(void)noexcept(true)override;
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)override;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)override;
@@ -126,8 +126,6 @@ public:
 	void ServiceInvalidateCharacteristic(void)noexcept(true);
 	void ServiceUpdateCharacteristic(IBLECharacteristic *Characteristic)noexcept(true);
 	void ServiceNotifyFunctionStatus(void)noexcept(true);
-
-	eGATTFunctionState CharacteristicGetFunctionState(void)noexcept(true);
 
 protected:
 	void VirtualStarted(void)noexcept(true);
@@ -151,7 +149,7 @@ private:
 	EventRegistrationToken fBLEValueChangedToken;
 
 	cExclusiveFlag fMainProcessExclusiveFlag;
-	eGATTFunctionState fFuncState;
+	eGATTAvailability fAvailability;
 	enum{
 		psIdle,
 		psRefreshDescriptor,psRefreshDescriptorDone,
@@ -293,7 +291,7 @@ public:
 	virtual bool cnLib_FUNC InsertHandler(iGATTServiceHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveHandler(iGATTServiceHandler *Handler)noexcept(true)override;
 
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)override;
 	virtual iGATTClient* cnLib_FUNC GetClient(void)noexcept(true)override;
 	virtual rPtr<iGATTCharacteristic> cnLib_FUNC AccessCharacteristic(const cUUID &ID)noexcept(true)override;
 	virtual iPtr<iGATTCharacteristicObserver> cnLib_FUNC CreateCharacteristicObserver(void)noexcept(true)override;
@@ -302,9 +300,6 @@ public:
 	void PeripheralNotifyClose(void)noexcept(true);
 	void PeripheralNotifyScanService(void)noexcept(true);
 	void PeripheralNotifyConnectionStatus(void)noexcept(true);
-	
-	eGATTFunctionState ServiceGetFunctionState(void)noexcept(true);
-
 	
 	class cOpenServiceProcedure : public iReference
 	{
@@ -387,7 +382,7 @@ private:
 	void ServiceOpenFailed(void)noexcept(true);
 
 	cExclusiveFlag fMainProcessExclusiveFlag;
-	eGATTFunctionState fFuncState;
+	eGATTAvailability fAvailability;
 	ufInt8 fCloseState=0;
 	bool fScaningService;
 	enum{
@@ -463,7 +458,8 @@ public:
 	iDispatch* GetDispatch(void)const noexcept(true);
 
 	virtual iDispatch* cnLib_FUNC GetHandlerDispatch(void)noexcept(true)override;
-	virtual eGATTFunctionState cnLib_FUNC GetFunctionState(void)noexcept(true)override;
+	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)override;
+	virtual bool cnLib_FUNC IsConnected(void)noexcept(true)override;
 
 	virtual rPtr<iGATTService> cnLib_FUNC AccessService(const cUUID &ID)noexcept(true)override;
 	virtual iPtr<iGATTServiceObserver> cnLib_FUNC CreateServiceObserver(void)noexcept(true)override;
@@ -476,10 +472,11 @@ public:
 	virtual iBluetoothCentral* cnLib_FUNC GetCentral(void)noexcept(true)override;
 
 	virtual rPtr<iReference> cnLib_FUNC QueryName(cArray<const uChar16> &Name)noexcept(true)override;
+	virtual bool cnLib_FUNC GetConnect(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetConnect(bool Value)noexcept(true)override;
 
 	void CentralConnectionOperation(COMPtr<IBLEConnectAsyncOp> ConnectOp)noexcept(true);
-	
-	eGATTFunctionState ClientGetFunctionState(void)const noexcept(true);
+	eGATTAvailability ClientGetAvailability(void)const noexcept(true);
 
 protected:
 	void VirtualStarted(void)noexcept(true);
@@ -534,7 +531,7 @@ private:
 
 	cExclusiveFlag fMainProcessExclusiveFlag;
 	cExclusiveFlag fQueryServiceExclusiveFlag;
-	eGATTFunctionState fFuncState;
+	eGATTAvailability fAvailability;
 	ufInt8 fCloseState=0;
 	bool fConnectOpRunning=false;
 	bool fNeedNotifyConnectionStateChange=false;

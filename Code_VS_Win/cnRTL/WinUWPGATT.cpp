@@ -72,7 +72,7 @@ cGATTDescriptor::cGATTDescriptor(cGATTCharacteristic *Owner,const cUUID &ID)noex
 	: DescriptorUUID(ID)
 	, fOwner(Owner)
 	, fDispatch(Owner->GetDispatch())
-	, fFuncState(GATTFunctionState::Scanning)
+	, fAvailability(GATTAvailability::Scanning)
 {
 }
 //---------------------------------------------------------------------------
@@ -119,9 +119,9 @@ bool cGATTDescriptor::RemoveHandler(iGATTDescriptorHandler *Handler)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTDescriptor::GetFunctionState(void)noexcept
+eGATTAvailability cGATTDescriptor::GetAvailability(void)noexcept
 {
-	return fFuncState;
+	return fAvailability;
 }
 //---------------------------------------------------------------------------
 iGATTCharacteristic* cGATTDescriptor::GetCharacterist(void)noexcept
@@ -173,24 +173,24 @@ void cGATTDescriptor::CharacteristicNotifyFunctionStatus(void)noexcept
 //---------------------------------------------------------------------------
 void cGATTDescriptor::UpdateFuncState(void)noexcept
 {
-	eGATTFunctionState NewState;
+	eGATTAvailability NewState;
 	if(fDescriptor==nullptr){
 		if(fOwner->DescriptorIsRefreshing()){
-			NewState=GATTFunctionState::Scanning;
+			NewState=GATTAvailability::Scanning;
 		}
 		else{
-			NewState=GATTFunctionState::Absent;
+			NewState=GATTAvailability::Absent;
 		}
 	}
 	else{
-		NewState=fOwner->CharacteristicGetFunctionState();
+		NewState=GATTAvailability::Available;
 	}
 
-	if(fFuncState!=NewState){
-		fFuncState=NewState;
+	if(fAvailability!=NewState){
+		fAvailability=NewState;
 
 		for(auto Handler : fHandlers){
-			Handler->GATTDescriptorStateChanged();
+			Handler->GATTDescriptorAvailabilityChanged();
 		}
 	}
 }
@@ -201,7 +201,7 @@ cGATTCharacteristic::cGATTCharacteristic(cGATTService *Owner,const cUUID &ID)noe
 	, fOwner(Owner)
 	, fDispatch(Owner->GetDispatch())
 	, fMainProcessWork(Owner->GetDispatch()->CreateWork(&fInnerReference,&fMainProcessProcedure))
-	, fFuncState(GATTFunctionState::Scanning)
+	, fAvailability(GATTAvailability::Scanning)
 	, fMainProcessState(psIdle)
 {
 	fOwner->CharacteristicAttach(this);
@@ -256,9 +256,9 @@ bool cGATTCharacteristic::RemoveHandler(iGATTCharacteristicHandler *Handler)noex
 	return true;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTCharacteristic::GetFunctionState(void)noexcept
+eGATTAvailability cGATTCharacteristic::GetAvailability(void)noexcept
 {
-	return fFuncState;
+	return fAvailability;
 }
 //---------------------------------------------------------------------------
 iGATTService* cGATTCharacteristic::GetService(void)noexcept
@@ -392,11 +392,6 @@ void cGATTCharacteristic::ServiceNotifyFunctionStatus(void)noexcept
 	NotifyMainProcess();
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTCharacteristic::CharacteristicGetFunctionState(void)noexcept
-{
-	return fFuncState;
-}
-//---------------------------------------------------------------------------
 void cGATTCharacteristic::DescriptorAttach(cGATTDescriptor *Descriptor)noexcept
 {
 	fDescriptorMap[Descriptor->DescriptorUUID]=Descriptor;
@@ -460,21 +455,21 @@ void cGATTCharacteristic::MainProcessStateChange(void)noexcept
 	if(fNeedNotifyCharacteristicState){
 		fNeedNotifyCharacteristicState=false;
 		
-		eGATTFunctionState NewState;
+		eGATTAvailability NewState;
 		if(fCharacteristic==nullptr){
 			if(fOwner->CharacteristicIsRefreshing()){
-				NewState=GATTFunctionState::Scanning;
+				NewState=GATTAvailability::Scanning;
 			}
 			else{
-				NewState=GATTFunctionState::Absent;
+				NewState=GATTAvailability::Absent;
 			}
 		}
 		else{
-			NewState=fOwner->ServiceGetFunctionState();
+			NewState=GATTAvailability::Available;
 		}
 
-		if(fFuncState!=NewState){
-			fFuncState=NewState;
+		if(fAvailability!=NewState){
+			fAvailability=NewState;
 
 			cSeqList< rInnerPtr<cGATTDescriptor> > DescListCache;
 			for(auto Pair : fDescriptorMap){
@@ -486,7 +481,7 @@ void cGATTCharacteristic::MainProcessStateChange(void)noexcept
 			}
 
 			for(auto Handler : fHandlers){
-				Handler->GATTCharacteristStateChanged();
+				Handler->GATTCharacteristAvailabilityChanged();
 			}
 		}
 	}
@@ -877,7 +872,7 @@ cGATTService::cGATTService(cBluetoothSlave *Owner,const cUUID &ID)noexcept
 	, fOwner(Owner)
 	, fDispatch(Owner->GetDispatch())
 	, fMainProcessWork(Owner->GetDispatch()->CreateWork(&fInnerReference,&fMainProcessProcedure))
-	, fFuncState(GATTFunctionState::Scanning)
+	, fAvailability(GATTAvailability::Scanning)
 	, fMainProcessState(psIdle)
 	, fScaningService(false)
 {
@@ -930,9 +925,9 @@ bool cGATTService::RemoveHandler(iGATTServiceHandler *Handler)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cGATTService::GetFunctionState(void)noexcept
+eGATTAvailability cGATTService::GetAvailability(void)noexcept
 {
-	return fFuncState;
+	return fAvailability;
 }
 //---------------------------------------------------------------------------
 iGATTClient* cGATTService::GetClient(void)noexcept
@@ -994,11 +989,6 @@ void cGATTService::PeripheralNotifyConnectionStatus(void)noexcept
 {
 	fNeedNotifyServiceState=true;
 	RunMainProcess();
-}
-//---------------------------------------------------------------------------
-eGATTFunctionState cGATTService::ServiceGetFunctionState(void)noexcept
-{
-	return fFuncState;
 }
 //---------------------------------------------------------------------------
 void cGATTService::CharacteristicAttach(cGATTCharacteristic *Characteristic)noexcept
@@ -1089,28 +1079,28 @@ void cGATTService::MainProcessStateChange(void)noexcept
 	if(fNeedNotifyServiceState){
 		fNeedNotifyServiceState=false;
 		
-		eGATTFunctionState NewState;
+		eGATTAvailability NewState;
 		if(fService==nullptr){
 			if(fScaningService){
-				NewState=GATTFunctionState::Scanning;
+				NewState=GATTAvailability::Scanning;
 			}
 			else{
-				NewState=GATTFunctionState::Absent;
+				NewState=GATTAvailability::Absent;
 			}
 		}
 		else{
-			NewState=fOwner->ClientGetFunctionState();
+			NewState=GATTAvailability::Available;
 		}
 
-		if(fFuncState!=NewState){
-			fFuncState=NewState;
+		if(fAvailability!=NewState){
+			fAvailability=NewState;
 
 			for(auto Pair : fCharacteristicMap){
 				Pair.Value->ServiceNotifyFunctionStatus();
 			}
 
 			for(auto Handler : fHandlers){
-				Handler->GATTServiceStateChanged();
+				Handler->GATTServiceAvailabilityChanged();
 			}
 		}
 	}
@@ -1259,7 +1249,7 @@ cBluetoothSlave::cBluetoothSlave(cBluetoothCentral *Central,iPtr<cBluetoothAddre
 	, fDispatch(Central->GetDispatch())
 	, fAddress(cnVar::MoveCast(Address))
 	, fMainProcessWork(Central->GetDispatch()->CreateWork(&fInnerReference,&fMainProcessProcedure))
-	, fFuncState(GATTFunctionState::Scanning)
+	, fAvailability(GATTAvailability::Scanning)
 {
 }
 //---------------------------------------------------------------------------
@@ -1317,14 +1307,14 @@ iAddress* cBluetoothSlave::GetPeripheralAddress(void)noexcept
 	return fAddress;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cBluetoothSlave::GetFunctionState(void)noexcept
+eGATTAvailability cBluetoothSlave::GetAvailability(void)noexcept
 {
-	return fFuncState;
+	return fAvailability;
 }
 //---------------------------------------------------------------------------
-eGATTFunctionState cBluetoothSlave::ClientGetFunctionState(void)const noexcept
+bool cBluetoothSlave::IsConnected(void)noexcept
 {
-	return fFuncState;
+	return false;
 }
 //---------------------------------------------------------------------------
 iBluetoothCentral* cBluetoothSlave::GetCentral(void)noexcept
@@ -1361,6 +1351,16 @@ rPtr<iGATTService> cBluetoothSlave::AccessService(const cUUID &ID)noexcept
 iPtr<iGATTServiceObserver> cBluetoothSlave::CreateServiceObserver(void)noexcept
 {
 	return nullptr;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothSlave::GetConnect(void)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
+bool cBluetoothSlave::SetConnect(bool Value)noexcept
+{
+	return false;
 }
 //---------------------------------------------------------------------------
 void cBluetoothSlave::DeviceOpened(COMPtr<IBLEDevice> Device)noexcept
@@ -1690,13 +1690,13 @@ void cBluetoothSlave::MainProcess(void)noexcept
 	if(fNeedNotifyConnectionStateChange){
 		fNeedNotifyConnectionStateChange=false;
 
-		eGATTFunctionState NewFuncState;
+		eGATTAvailability NewFuncState;
 		if(fDevice==nullptr){
 			if(fConnectOpRunning){
-				NewFuncState=GATTFunctionState::Scanning;
+				NewFuncState=GATTAvailability::Scanning;
 			}
 			else{
-				NewFuncState=GATTFunctionState::Absent;
+				NewFuncState=GATTAvailability::Absent;
 			}
 		}
 		else{
@@ -1704,24 +1704,16 @@ void cBluetoothSlave::MainProcess(void)noexcept
 			hr=fDevice->get_ConnectionStatus(&NewStatus);
 			if(FAILED(hr)){
 				// error
-				NewFuncState=GATTFunctionState::Absent;
+				NewFuncState=GATTAvailability::Absent;
 			}
 			else{
-				switch(NewStatus){
-				case ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus::BluetoothConnectionStatus_Connected:
-					NewFuncState=GATTFunctionState::Active;
-					break;
-				default:
-				case ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus::BluetoothConnectionStatus_Disconnected:
-					NewFuncState=GATTFunctionState::Inactive;
-					break;
-				}
+				NewFuncState=GATTAvailability::Available;
 			}
 		}
 
 
-		if(fFuncState!=NewFuncState){
-			fFuncState=NewFuncState;
+		if(fAvailability!=NewFuncState){
+			fAvailability=NewFuncState;
 
 			for(auto Pair : fServiceMap){
 				Pair.Value->PeripheralNotifyConnectionStatus();
