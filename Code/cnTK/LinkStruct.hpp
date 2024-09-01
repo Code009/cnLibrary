@@ -2078,6 +2078,7 @@ public:
 			return false;
 		// found
 		fTree.RemoveNode(Node);
+		TColorBinaryTreeNodeOperator::SetParentNull(Node);
 
 		fNodeCount--;
 		return true;
@@ -2088,6 +2089,7 @@ public:
     void Remove(tIterator Position)noexcept(true){
     	tNode *DeleteNode=*Position;
 		fTree.RemoveNode(DeleteNode);
+		TColorBinaryTreeNodeOperator::SetParentNull(DeleteNode);
 
 		fNodeCount--;
 	}
