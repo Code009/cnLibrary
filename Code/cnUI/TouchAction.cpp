@@ -156,8 +156,9 @@ void cnLib_FUNC cUITouchActionLongPress::cTimerProcedure::Execute(void)noexcept
 //---------------------------------------------------------------------------
 void cUITouchActionLongPress::TimerHit(void)noexcept
 {
-	if(fTouchID==nullptr)
+	if(fTouchID==nullptr){
 		return;
+	}
 
 	if(OnPress!=nullptr)
 		OnPress();
@@ -165,8 +166,9 @@ void cUITouchActionLongPress::TimerHit(void)noexcept
 //---------------------------------------------------------------------------
 void cUITouchActionLongPress::TouchDown(iUITouchEvent *TouchEvent)noexcept
 {
-	if(fTouchID!=nullptr)
+	if(fTouchID!=nullptr){
 		return;
+	}
 
 	fTouchID=TouchEvent->GetTouchID();
 	TouchEvent->GetPosition(fView,TapPos);
@@ -197,8 +199,18 @@ void cUITouchActionLongPress::TouchMove(iUITouchEvent *TouchEvent)noexcept
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
 	}
-	fPressTimer->Stop();
-	fTouchID=nullptr;
+	cUIPoint CurrentPos;
+	if(TouchEvent->GetPosition(fView,CurrentPos)==false)
+		return;
+
+	auto dx=static_cast<sIntn>(cnMath::FloatAbsolute(CurrentPos.x-TapPos.x));
+	auto dy=static_cast<sIntn>(cnMath::FloatAbsolute(CurrentPos.y-TapPos.y));
+	static constexpr sIntn TapSize=10;
+	if(dx>TapSize || dy>TapSize){
+		// move out of range
+		fPressTimer->Stop();
+	}
+
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
