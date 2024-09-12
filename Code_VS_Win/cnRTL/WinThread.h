@@ -229,6 +229,8 @@ struct cNT6TLSStaticThreadData
 	void operator delete(void*p)noexcept(true);
 
 	void Setup(void)noexcept(true);
+	void Cancel(void)noexcept(true);
+	void Clear(void)noexcept(true);
 	static VOID NTAPI WaitCallback(
 		_Inout_     PTP_CALLBACK_INSTANCE Instance,
 		_Inout_opt_ PVOID                 Context,
@@ -241,6 +243,18 @@ template<class T>
 class cNT6TLSStaticPointer : public iThreadLocalVariable
 {
 public:
+	~cNT6TLSStaticPointer()noexcept(true){
+		// destroy data in current thread, since the thread will last after the library destruct
+		cNT6TLSStaticThreadData *ThreadData=gDataTLS;
+		if(ThreadData==nullptr){
+			return;
+		}
+
+		ThreadData->Cancel();
+		ThreadData->Clear();
+		delete ThreadData;
+		gDataTLS=nullptr;
+	}
 
 	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true)override{}
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true)override{}

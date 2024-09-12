@@ -595,6 +595,26 @@ void cNT6TLSStaticThreadData::Setup(void)noexcept
 	::SetThreadpoolWait(Waiter,ThreadHandle,nullptr);
 }
 //---------------------------------------------------------------------------
+void cNT6TLSStaticThreadData::Cancel(void)noexcept
+{
+	::SetThreadpoolWait(Waiter,nullptr,nullptr);
+	::WaitForThreadpoolWaitCallbacks(Waiter,TRUE);
+}
+//---------------------------------------------------------------------------
+void cNT6TLSStaticThreadData::Clear(void)noexcept
+{
+	::CloseThreadpoolWait(Waiter);
+	::CloseHandle(ThreadHandle);
+	if(NotifyProc!=nullptr){
+		NotifyProc->Execute(rPtr<iReference>::TakeFromManual(Reference),Object);
+	}
+	else{
+		if(Reference!=nullptr){
+			Reference->DecreaseReference();
+		}
+	}
+}
+//---------------------------------------------------------------------------
 VOID NTAPI cNT6TLSStaticThreadData::WaitCallback(
 	_Inout_     PTP_CALLBACK_INSTANCE Instance,
 	_Inout_opt_ PVOID                 Context,
@@ -603,16 +623,7 @@ VOID NTAPI cNT6TLSStaticThreadData::WaitCallback(
 )noexcept
 {Instance;Wait;WaitResult;
 	auto *Variable=static_cast<cNT6TLSStaticThreadData*>(Context);
-	::CloseThreadpoolWait(Variable->Waiter);
-	::CloseHandle(Variable->ThreadHandle);
-	if(Variable->NotifyProc!=nullptr){
-		Variable->NotifyProc->Execute(rPtr<iReference>::TakeFromManual(Variable->Reference),Variable->Object);
-	}
-	else{
-		if(Variable->Reference!=nullptr){
-			Variable->Reference->DecreaseReference();
-		}
-	}
+	Variable->Clear();
 	delete Variable;
 }
 //---------------------------------------------------------------------------
