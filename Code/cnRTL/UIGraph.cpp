@@ -2294,6 +2294,20 @@ bool cnRTL::UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
+bool cnRTL::UIRectangleIsEqual(const cUIRectangle &Rect1,const cUIRectangle &Rect2)noexcept
+{
+	if(Rect1.Left!=Rect2.Left)
+		return false;
+	if(Rect1.Top!=Rect2.Top)
+		return false;
+	if(Rect1.Right!=Rect2.Right)
+		return false;
+	if(Rect1.Bottom!=Rect2.Bottom)
+		return false;
+	return true;
+}
+
+//---------------------------------------------------------------------------
 //void cBitmapDataSourceFromBlendingRGBA32::BlendAddConstant(uInt32 Constant)
 //{
 //	auto *pSrcChannel=reinterpret_cast<uInt8*>(&Constant);

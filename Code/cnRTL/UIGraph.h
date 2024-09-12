@@ -1421,6 +1421,7 @@ extern const cUIRect UIRectZero;
 extern const cUIRectangle UIRectangleZero;
 //---------------------------------------------------------------------------
 bool UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept(true);
+bool UIRectangleIsEqual(const cUIRectangle &Rect1,const cUIRectangle &Rect2)noexcept(true);
 //---------------------------------------------------------------------------
 bool BitmapColorHasAlpha(eBitmapChannelColor Color)noexcept(true);
 //---------------------------------------------------------------------------
