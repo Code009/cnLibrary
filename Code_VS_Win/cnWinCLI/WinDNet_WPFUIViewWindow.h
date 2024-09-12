@@ -101,7 +101,7 @@ public:
 	// iWindowClient
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true)override;
+	bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true);
 
 protected:
 	
@@ -133,8 +133,12 @@ public:
 	virtual bool cnLib_FUNC InsertMessageHandler(iWindowMessageHandler *WindowHandler,sfInt8 Order)noexcept(true)override;
 	virtual bool cnLib_FUNC RemoveMessageHandler(iWindowMessageHandler *WindowHandler)noexcept(true)override;
 	virtual iWindowClient* GetClient(void)noexcept(true)override;
+	virtual bool SetClient(iWindowClient*)noexcept(true)override;
 	virtual iWindowFrame* GetFrame(void)noexcept(true)override;
+	virtual bool SetFrame(iWindowFrame*)noexcept(true)override;
 	virtual rPtr<iVariable> QueryAffixedVariable(const void *Token)noexcept(true)override;
+	virtual bool cnLib_FUNC GetMouseAutoCapture(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetMouseAutoCapture(bool Enable)noexcept(true)override;
 
 	cDNetUIThread* GetWPFUIThread(void)noexcept(true);
 	eUIState GetUIState(void)const noexcept(true);
@@ -175,7 +179,7 @@ public:
 	// iWindowClient
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true)override;
+	bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true);
 
 protected:
 

@@ -843,18 +843,18 @@ void cWinNCFrame::ViewSetup(void)noexcept
 
 	ViewInsertMouseHandler(fView,this);
 
-	auto WindowViewport=iCast<iWindowViewport>(fView);
-	if(WindowViewport!=nullptr){
-		WindowViewport->SetMouseAutoCapture(false);
-	}
+	//auto WindowViewport=iCast<iWindowViewport>(fView);
+	//if(WindowViewport!=nullptr){
+		//WindowViewport->SetMouseAutoCapture(false);
+	//}
 }
 //---------------------------------------------------------------------------
 void cWinNCFrame::ViewClear(void)noexcept
 {
-	auto WindowViewport=iCast<iWindowViewport>(fView);
-	if(WindowViewport!=nullptr){
-		WindowViewport->SetMouseAutoCapture(true);
-	}
+	//auto WindowViewport=iCast<iWindowViewport>(fView);
+	//if(WindowViewport!=nullptr){
+		//WindowViewport->SetMouseAutoCapture(true);
+	//}
 
 	ViewRemoveMouseHandler(fView,this);
 

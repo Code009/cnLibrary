@@ -181,7 +181,7 @@ public:
 	INT_PTR Modal(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)noexcept(true);
 
 protected:
-	iPtr<iWindowProvider> fDialogProvider;
+	iPtr<iModalDialogProvider> fDialogProvider;
 	HWND fWindowHandle;
 
 	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;

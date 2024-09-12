@@ -15,7 +15,7 @@ iPtr<iWindowClient> cnUI::CreateUIWindow(HWND Parent,const wchar_t *WindowText,D
 	if(Window==nullptr)
 		return nullptr;
 
-	WindowClient->SetWindow(Window);
+	Window->SetClient(WindowClient);
 	return WindowClient;
 }
 //---------------------------------------------------------------------------
@@ -111,12 +111,12 @@ void WindowClient::WindowSetup(void)noexcept
 {
 	WindowComponent::WindowSetup();
 
-	fWindowClient->SetWindow(fWindow);
+	fWindow->SetClient(fWindowClient);
 }
 //---------------------------------------------------------------------------
 void WindowClient::WindowClear(void)noexcept
 {
-	fWindowClient->SetWindow(nullptr);
+	fWindow->SetClient(nullptr);
 
 	WindowComponent::WindowClear();
 }
@@ -158,12 +158,12 @@ void WindowFrame::WindowSetup(void)noexcept
 {
 	WindowComponent::WindowSetup();
 
-	fWindowFrame->SetWindow(fWindow);
+	fWindow->SetFrame(fWindowFrame);
 }
 //---------------------------------------------------------------------------
 void WindowFrame::WindowClear(void)noexcept
 {
-	fWindowFrame->SetWindow(nullptr);
+	fWindow->SetFrame(nullptr);
 
 	WindowComponent::WindowClear();
 }
@@ -294,7 +294,7 @@ cPopupWindow::~cPopupWindow()noexcept
 	if(fWindow!=nullptr){
 		fWindow->RemoveMessageHandler(this);
 
-		fWindowClient->SetWindow(nullptr);
+		fWindow->SetClient(nullptr);
 	}
 }
 //---------------------------------------------------------------------------
@@ -337,7 +337,7 @@ void cPopupWindow::SetupOwnerWindow(HWND OwnerWindow)noexcept
 	if(fWindow==nullptr){
 		fWindow=cnWindows::CreateWindowHandle(OwnerWindow,WindowTitle,WS_POPUP|WindowStyle,WindowExStyle);
 		fWindow->InsertMessageHandler(this);
-		fWindowClient->SetWindow(fWindow);
+		fWindow->SetClient(fWindowClient);
 	}
 	else{
 		// get root window
@@ -445,7 +445,7 @@ bool cPopupWindow::WindowMessage(LRESULT &Result,const cWindowMessageParam &MsgP
 //---------------------------------------------------------------------------
 ModalDialog::ModalDialog()noexcept
 {
-	fDialogProvider=cnWindows::CreateWindowProvider();
+	fDialogProvider=cnWindows::CreateModalDialogProvider();
 
 	auto DialogWindow=iCast<iWindow>(fDialogProvider);
 	DialogWindow->InsertMessageHandler(this);
@@ -531,7 +531,7 @@ static INT_PTR CALLBACK DialogProcedure_ShowModalWindow(HWND hDlg,UINT Msg,WPARA
 			if(ShowData->ClientProvider!=nullptr){
 				RECT crc;
 				::GetClientRect(hDlg,&crc);
-				ShowData->ClientProvider->Create(hDlg,nullptr,WS_CHILD|WS_VISIBLE,0,crc.left,crc.top,crc.right-crc.left,crc.bottom-crc.top,0);
+				ShowData->ClientProvider->WindowCreate(hDlg,nullptr,WS_CHILD|WS_VISIBLE,0,crc.left,crc.top,crc.right-crc.left,crc.bottom-crc.top,0);
 			}
 		}
 		return FALSE;

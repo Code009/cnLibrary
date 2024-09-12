@@ -537,9 +537,28 @@ iWindowFrame* cWPFWindow::GetFrame(void)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
+bool cWPFWindow::SetClient(iWindowClient*)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
+bool cWPFWindow::SetFrame(iWindowFrame*)noexcept
+{
+	return false;
+}
+//---------------------------------------------------------------------------
 rPtr<iVariable> cWPFWindow::QueryAffixedVariable(const void *Token)noexcept
 {
 	return fAffixedVariableSet.QueryAffixedVariable(Token);
+}
+//---------------------------------------------------------------------------
+bool cWPFWindow::GetMouseAutoCapture(void)noexcept
+{
+	return false;
+}
+bool cWPFWindow::SetMouseAutoCapture(bool Enable)noexcept
+{
+	return false;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

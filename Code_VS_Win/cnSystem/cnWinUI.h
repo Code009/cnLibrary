@@ -70,9 +70,6 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual bool cnLib_FUNC GetMouseAutoCapture(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC SetMouseAutoCapture(bool Enable)noexcept(true)=0;
-
 	//virtual bool cnLib_FUNC InsertWindowViewportHandler(iWindowMessageHandler *Handler)=0;
 	//virtual bool cnLib_FUNC RemoveWindowViewportHandler(iWindowMessageHandler *Handler)=0;
 	//virtual bool cnLib_FUNC IsMouseCaptured(iWindowMessageHandler *Handler)=0;
@@ -95,7 +92,6 @@ public:
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true)=0;
 	// Client
 	virtual void cnLib_FUNC SetBackgroundColor(COLORREF Color)noexcept(true)=0;
 
@@ -108,7 +104,6 @@ public:
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true)=0;
 
 	virtual bool cnLib_FUNC SetBorderDefault(void)noexcept(true)=0;
 	virtual RECT cnLib_FUNC GetBorder(void)noexcept(true)=0;
@@ -129,15 +124,14 @@ public:
 	virtual bool cnLib_FUNC RemoveMessageHandler(iWindowMessageHandler *MessageHandler)noexcept(true)=0;
 
 	virtual iWindowClient* GetClient(void)noexcept(true)=0;
+	virtual bool SetClient(iWindowClient *Client)noexcept(true)=0;
 	virtual iWindowFrame* GetFrame(void)noexcept(true)=0;
+	virtual bool SetFrame(iWindowFrame *Frame)noexcept(true)=0;
 
 	virtual rPtr<iVariable> QueryAffixedVariable(const void *Token)noexcept(true)=0;
 
-	// SetUserInputProvider
-	//	specify user input provider for the ui object
-	// [in]Provider		provider, if the parameter is null, the ui object uses its default provider
-	// return true if provider is accepted
-	//virtual bool cnLib_FUNC SetUserInputProvider(iInterface *Provider)noexcept(true)=0;
+	virtual bool cnLib_FUNC GetMouseAutoCapture(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC SetMouseAutoCapture(bool Enable)noexcept(true)=0;
 
 };
 //---------------------------------------------------------------------------
@@ -146,7 +140,13 @@ class cnLib_INTERFACE iWindowProvider : public iInterface
 public:
 	virtual bool cnLib_FUNC SubclassAttach(HWND Window,bool LocalClass)noexcept(true)=0;
 	virtual bool cnLib_FUNC SubclassDetach(void)noexcept(true)=0;
-	virtual bool cnLib_FUNC Create(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0,LONG X=CW_USEDEFAULT,LONG Y=CW_USEDEFAULT,LONG Width=CW_USEDEFAULT,LONG Height=CW_USEDEFAULT,UINT ChildID=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC WindowCreate(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0,LONG X=CW_USEDEFAULT,LONG Y=CW_USEDEFAULT,LONG Width=CW_USEDEFAULT,LONG Height=CW_USEDEFAULT,UINT ChildID=0)noexcept(true)=0;
+	virtual bool cnLib_FUNC WindowDestroy(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iModalDialogProvider : public iInterface
+{
+public:
 	virtual INT_PTR cnLib_FUNC ModalDialog(HWND Parent,const wchar_t *WindowText,LONG X=0,LONG Y=0,LONG Width=0,LONG Height=0,DWORD Style=WS_CAPTION|WS_SYSMENU|WS_DLGFRAME,DWORD ExStyle=WS_EX_DLGMODALFRAME)noexcept(true)=0;
 	virtual INT_PTR cnLib_FUNC ModalDialogTemplate(HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName)noexcept(true)=0;
 	virtual INT_PTR cnLib_FUNC ModalDialogTemplateIndirect(HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)noexcept(true)=0;
@@ -292,6 +292,7 @@ iPtr<iUIThread> cnLib_FUNC CreateUIThreadOnCurrentThread(void)noexcept(true);
 iPtr<iUIThread> cnLib_FUNC StartUIThread(void)noexcept(true);
 //---------------------------------------------------------------------------
 iPtr<iWindowProvider> cnLib_FUNC CreateWindowProvider(void)noexcept(true);
+iPtr<iModalDialogProvider> cnLib_FUNC CreateModalDialogProvider(void)noexcept(true);
 iPtr<iWindowClient> cnLib_FUNC CreateWindowClient(void)noexcept(true);
 iPtr<iWindowFrame> cnLib_FUNC CreateWindowFrame(void)noexcept(true);
 iPtr<iOwnerFocusWindowClient> cnLib_FUNC CreateOwnerFocusWindowClient(void)noexcept(true);
