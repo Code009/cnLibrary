@@ -6,6 +6,7 @@
 #define __cnLibrary_cnRTL_ThreadSynchronization_H__
 /*-------------------------------------------------------------------------*/
 #include <cnRTL/cnRTLHeader.h>
+#include <cnRTL/RuntimeFunction.h>
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
@@ -25,8 +26,12 @@ namespace cnRTL{
 class cWaitObject
 {
 public:
-	cWaitObject()noexcept(true);
-	~cWaitObject()noexcept(true);
+#ifdef cnLib_DEBUG
+	~cWaitObject()noexcept(true){
+		cnLib_ASSERT(fRefCount==0);
+	}
+#endif // cnLib_DEBUG
+
 
 	void Acquire(void)noexcept(true);
 	void Release(void)noexcept(true);
@@ -35,9 +40,91 @@ public:
 	void Wait(void)noexcept(true);
 	bool WaitUntil(uInt64 SystemTime)noexcept(true);
 private:
-	cAtomicVar<uIntn> fRefCount;
+	cAtomicVar<uIntn> fRefCount=0;
 	iThread *fWaitThread=nullptr;
 	bool fWaitFlag;
+};
+//---------------------------------------------------------------------------
+class cWaitObjectRegistration : public cWaitObject
+{
+public:
+#ifdef cnLib_DEBUG
+	void Acquire(void *Object)noexcept(true){
+		Log(Object,true);
+		return cWaitObject::Acquire();
+	}
+	void Release(void *Object)noexcept(true){
+		Log(Object,false);
+		return cWaitObject::Release();
+	}
+private:
+
+	struct cItem
+	{
+		cItem *Next;
+		void *Object;
+		uInt32 Tag;
+		bool Inc;
+	};
+	cAtomicQueueSO<cItem> fItemQueue;
+	cAtomicStack<cItem> fRecycleStack;
+	cnRTL::cExclusiveFlag fExclusiveFlag;
+
+	void Log(void *Object,bool Inc)noexcept(true){
+		auto Item=fRecycleStack.Pop();
+		if(Item==nullptr){
+			Item=new cItem;
+		}
+		Item->Object=Object;
+		Item->Inc=Inc;
+		fItemQueue.Enqueue(Item);
+		NotifyProcess();
+	}
+
+	void NotifyProcess(void)noexcept(true){
+		if(fExclusiveFlag.Acquire()==false)
+			return;
+
+		fExclusiveFlag.Continue();
+		do{
+			fExclusiveFlag.Continue();
+
+			Process();
+
+		}while(fExclusiveFlag.Release()==false);
+	}
+	
+	cSeqMap<void*,uIntn> fObjectMap;
+
+	void Process(void)noexcept(true){
+
+		auto Items=fItemQueue.DequeueAll();
+		while(Items!=nullptr){
+			auto CurItem=Items;
+			Items=Items->Next;
+			if(CurItem->Inc){
+				fObjectMap[CurItem->Object]++;
+			}
+			else{
+				auto ObjectPair=fObjectMap.GetPair(CurItem->Object);
+				if(ObjectPair==nullptr){
+					// error! object not found
+					cnSystem::AssertionMessage("object not found");
+				}
+				else{
+					if(--ObjectPair->Value==0){
+						fObjectMap.RemovePair(ObjectPair);
+					}
+				}
+			}
+			fRecycleStack.Push(CurItem);
+		}
+	}
+
+#else
+	void Acquire(void *Object)noexcept(true){	return cWaitObject::Acquire();	}
+	void Release(void *Object)noexcept(true){	return cWaitObject::Release();	}
+#endif
 };
 //---------------------------------------------------------------------------
 class cWaitReference : public iReference, public cWaitObject
