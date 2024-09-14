@@ -258,7 +258,14 @@ void cDependentRegistration::Shutdown(void)noexcept
 			for(auto NotifyToken : fDependentSet){
 				auto Dependent=reinterpret_cast<iDependentInfo*>(NotifyToken);
 				auto Description=Dependent->DependentCreateDescription();
-				auto DescArray=Description->Get();
+				cArray<const uChar16> DescArray;
+				if(Description!=nullptr){
+					DescArray=Description->Get();
+				}
+				else{
+					DescArray.Pointer=u"Unknown Object";
+					DescArray.Length=14;
+				}
 				StringStream::WriteFormatString(ReportText.StreamWriteBuffer(),u"%.*s\n",DescArray.Length,DescArray.Pointer);
 			}
 			ReportText.Append(u"End of Dependent Object List\n");
