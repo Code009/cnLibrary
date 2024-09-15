@@ -13,7 +13,9 @@
 #endif	/* _MANAGED */
 
 
-#include <cnTK\cnTK.h>
+#include <cnTK\Memory.hpp>
+#include <cnTK\Interface.hpp>
+#include <cnSystem\cnFundamental.h>
 
 #if _MANAGED
 
@@ -29,7 +31,23 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
+//TManagedClass
+//{
+//	static constexpr uIntn ManagedSize;
+//}
+//---------------------------------------------------------------------------
+template<class TManagedClass>
+class cManagedStruct : public TManagedClass, cnMemory::cPlainAlignedData<TManagedClass::ManagedSize-sizeof(TManagedClass),uIntn>
+{
+};
+//---------------------------------------------------------------------------
 #if _MANAGED
+//---------------------------------------------------------------------------
+template<class TManagedClass>
+struct TManagedStructCheck
+	: cnVar::TConstantValueBool<(TManagedClass::ManagedSize>=sizeof(TManagedClass))>
+{
+};
 //---------------------------------------------------------------------------
 template<class T>
 T* mPassMemberPtr(interior_ptr<T> v)noexcept(true){	return v;	}
@@ -40,13 +58,13 @@ inline T* __clrcall ManagedToPointer(interior_ptr<T> p)noexcept(true)
 	return static_cast<T*>(*reinterpret_cast<void**>(&p));
 }
 //---------------------------------------------------------------------------
-template<class TMemberClass,class TMember>
-inline TMemberClass* GetObjectFromManagedPointer(interior_ptr<TMember> Pointer,TMember TMemberClass::*MemberPointer)noexcept(true)
-{
-	typedef const volatile uInt8 TInterpret;
-	TInterpret *MemberOffsetPointer=&reinterpret_cast<TInterpret&>(static_cast<TMemberClass*>(nullptr)->*MemberPointer);
-	return reinterpret_cast<TMemberClass*>(reinterpret_cast<TInterpret*>(ManagedToPointer(Pointer))-MemberOffsetPointer);
-}
+//template<class TMemberClass,class TMember>
+//inline TMemberClass* GetObjectFromManagedPointer(interior_ptr<TMember> Pointer,TMember TMemberClass::*MemberPointer)noexcept(true)
+//{
+//	typedef const volatile uInt8 TInterpret;
+//	TInterpret *MemberOffsetPointer=&reinterpret_cast<TInterpret&>(static_cast<TMemberClass*>(nullptr)->*MemberPointer);
+//	return reinterpret_cast<TMemberClass*>(reinterpret_cast<TInterpret*>(ManagedToPointer(Pointer))-MemberOffsetPointer);
+//}
 //---------------------------------------------------------------------------
 #endif	// _MANAGED
 //---------------------------------------------------------------------------
@@ -62,264 +80,81 @@ class cGCHandle
 {
 #if _MANAGED
 public:
-	cGCHandle()noexcept(true):GCHandleStorage{0}{}
-	~cGCHandle()noexcept(true){
 #ifdef cnLib_DEBUG
-		cnLib_ASSERT(RefHandle().IsAllocated==false);
-#endif // cnLib_DEBUG
+	~cGCHandle()noexcept(true){
+		cnLib_ASSERT(fHandle.IsAllocated==false);
 	}
+#endif // cnLib_DEBUG
 
 	__clrcall operator System::Object^(void)const noexcept(true){
-		auto &Handle=RefHandle();
-		return Handle.Target;
+		return const_cast<cGCHandle*>(this)->fHandle.Target;
 	}
 
 	template<class T>
 	T^ __clrcall Cast(void)const noexcept(true){
-		auto &Handle=RefHandle();
-		return static_cast<T^>(Handle.Target);
+		return static_cast<T^>(const_cast<cGCHandle*>(this)->fHandle.Target);
 	}
 	template<class T>
 	T^ __clrcall DynamicCast(void)const noexcept(true){
-		auto &Handle=RefHandle();
-		return dynamic_cast<T^>(Handle.Target);
+		return dynamic_cast<T^>(const_cast<cGCHandle*>(this)->fHandle.Target);
 	}
 
-	System::Runtime::InteropServices::GCHandle& RefHandle(void)const noexcept(true){
-		return reinterpret_cast<System::Runtime::InteropServices::GCHandle&>(const_cast<cGCHandle*>(this)->GCHandleStorage);
+	void __clrcall Clear(void)noexcept(true){
+		fHandle.Target=nullptr;
 	}
 
-#endif // _MANAGED
+	void __clrcall Alloc(System::Object ^Object,eGCHandleType RefType=eGCHandleType::Normal){
+		fHandle=System::Runtime::InteropServices::GCHandle::Alloc(Object,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
+	}
+
+	void __clrcall Free(void){
+		fHandle.Free();
+	}
+
+	bool __clrcall IsAllocated(void)const{
+		return const_cast<cGCHandle*>(this)->fHandle.IsAllocated;
+	}
+	void __clrcall SafeFree(void){
+		if(fHandle.IsAllocated)
+			fHandle.Free();
+	}
 
 protected:
-	void* GCHandleStorage[1];
-
-	void Reset(void)noexcept(true){
-		for(void* &p : GCHandleStorage){
-			p=0;
-		}
-	}
-};
-//---------------------------------------------------------------------------
-#if _MANAGED
-//---------------------------------------------------------------------------
-#ifdef cnLib_DEBUG
-
-struct cGCHandleStructure{
 	System::Runtime::InteropServices::GCHandle fHandle;
-};
-static_assert(sizeof(cGCHandle)==sizeof(cGCHandleStructure),"error sizeof(cGCHandle)");
-static_assert(alignof(cGCHandle)==alignof(cGCHandleStructure),"error alignof(cGCHandle)");
 
-#endif // cnLib_DEBUG
-
-//---------------------------------------------------------------------------
-template<class T>
-class mcGCHandleT : public cGCHandle
-{
-public:
-
-	void __clrcall Alloc(T ^Object)noexcept(true){
-		auto &Handle=RefHandle();
-		cnLib_ASSERT(!Handle.IsAllocated);
-		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object);
-	}
-
-	void __clrcall Free(void)noexcept(true){
-		auto &Handle=RefHandle();
-		cnLib_ASSERT(Handle.IsAllocated);
-		Handle.Free();
-	}
-
-	template<class...VT>
-	T^ __clrcall Create(VT...Args)noexcept(true){
-		auto &Handle=RefHandle();
-		cnLib_ASSERT(!Handle.IsAllocated);
-		T ^Object=gcnew T(Args...);
-		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object);
-		return Object;
-	}
-
-	T^ __clrcall Discard(void)noexcept(true){
-		auto &Handle=RefHandle();
-		if(Handle.IsAllocated){
-			T ^RetTarget=static_cast<T^>(Handle.Target);
-			Handle.Free();
-			return RetTarget;
-		}
-		return nullptr;
-	}
-
-	void __clrcall Store(T^ Object)noexcept(true){
-		auto &Handle=RefHandle();
-		if(Handle.IsAllocated){
-			Handle.Target=Object;
-		}
-		else{
-			Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object);
-		}
-	}
-
-	T^ __clrcall Get(void)const noexcept(true){
-		auto &Handle=RefHandle();
-		cnLib_ASSERT(Handle.IsAllocated);
-		return static_cast<T^>(Handle.Target);
-	}
-
-	void __clrcall Set(T ^Object)noexcept(true){
-		auto &Handle=RefHandle();
-		cnLib_ASSERT(Handle.IsAllocated);
-		return Handle.Target=Object;
-	}
-
-	__clrcall operator T^(void)const noexcept(true){	return Get();	}
-	void __clrcall operator =(T^ Object)noexcept(true){	return Set(Object);	}
-};
-//---------------------------------------------------------------------------
-#endif // _MANAGED
-//---------------------------------------------------------------------------
-template<eGCHandleType RefType>
-class cGCReference : public cGCHandle
-{
-#if _MANAGED
-public:
-
-	cGCReference()noexcept(true){
-		auto &Handle=RefHandle();
-		Handle=System::Runtime::InteropServices::GCHandle::Alloc(nullptr,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
-	}
-
-	~cGCReference()noexcept(true){
-		auto &Handle=RefHandle();
-		Handle.Free();
-	}
-
-	cGCReference(const cGCReference &Src)noexcept(true){
-		auto &Handle=RefHandle();
-		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Src,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
-	}
-
-	cGCReference(cGCReference &&Src)noexcept(true){
-		auto &Handle=RefHandle();
-		auto &SrcHandle=Src.RefHandle();
-		Handle=SrcHandle;
-		SrcHandle=System::Runtime::InteropServices::GCHandle::Alloc(nullptr,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
-	}
-
-	__clrcall cGCReference(System::Object ^Object)noexcept(true){
-		auto &Handle=RefHandle();
-		Handle=System::Runtime::InteropServices::GCHandle::Alloc(Object,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
-	}
-	// _MANAGED
 #else
-	// !_MANAGED
 protected:
-	cGCReference()noexcept(true);
-	~cGCReference()noexcept(true);
-#endif // !_MANAGED
-
+	void* GCHandleStorage;
+#endif
 };
-//---------------------------------------------------------------------------
-typedef cGCReference<eGCHandleType::Normal> cGCRef;
-typedef cGCReference<eGCHandleType::Weak> cGCWeakRef;
-//---------------------------------------------------------------------------
-static_assert(sizeof(cGCRef)==sizeof(cGCHandle),"error sizeof(cGCReference)");
 //---------------------------------------------------------------------------
 #if _MANAGED
 //---------------------------------------------------------------------------
-template<class TManaged,eGCHandleType RefType>
-class mcGCReferenceT : public cGCReference<RefType>
+static_assert(sizeof(void*)>=sizeof(cGCHandle),"incorrect GCHandle struct size");
+//---------------------------------------------------------------------------
+template<class TManaged,eGCHandleType RefType=eGCHandleType::Normal>
+class mcGCHandle : public cGCHandle
 {
 public:
 
-	__clrcall mcGCReferenceT(TManaged ^Object=nullptr)noexcept(true)	: cGCRef(Object){}
-
-	__clrcall mcGCReferenceT(const mcGCReferenceT &Src)noexcept(true)	: cGCRef(Src){}
-	__clrcall mcGCReferenceT(mcGCReferenceT &&Src)noexcept(true)		: cGCRef(static_cast<mcGCReferenceT&&>(Src)){}
-
-	template<class TManagedSrc>
-	__clrcall mcGCReferenceT(mcGCReferenceT<TManagedSrc,RefType> &&Src)noexcept(true)
-		: cGCRef(static_cast<mcGCReferenceT<TManagedSrc,RefType>&&>(Src))
-	{
-		static_cast<TManaged^>(static_cast<TManagedSrc^>(Src));
+	void __clrcall Alloc(TManaged ^Object){
+		fHandle=System::Runtime::InteropServices::GCHandle::Alloc(Object,static_cast<System::Runtime::InteropServices::GCHandleType>(RefType));
 	}
 
-	__clrcall operator TManaged^(void)const noexcept(true){
-		auto &Handle=this->RefHandle();
-		return static_cast<TManaged^>(Handle.Target);
-	}
-	void __clrcall operator =(TManaged^ Object)noexcept(true){
-		auto &Handle=this->RefHandle();
-		Handle.Target=Object;
+	TManaged^ __clrcall FetchFree(void){
+		TManaged ^Ret=static_cast<TManaged^>(fHandle.Target);
+		fHandle.Free();
+		return Ret;
 	}
 
-	TManaged^ __clrcall Get(void)const noexcept(true){
-		auto &Handle=this->RefHandle();
-		return static_cast<TManaged^>(Handle.Target);
+	TManaged^ __clrcall Get(void)const{
+		return static_cast<TManaged^>(const_cast<mcGCHandle*>(this)->fHandle.Target);
 	}
 
-	void __clrcall Set(TManaged^ Target)noexcept(true){
-		auto &Handle=this->RefHandle();
-		Handle.Target=Target;
+	void __clrcall Set(TManaged^ Target){
+		fHandle.Target=Target;
 	}
-
 };
-
-//---------------------------------------------------------------------------
-template<class T>	using mcGCRefT=mcGCReferenceT<T,eGCHandleType::Normal> ;
-template<class T>	using mcGCWeakRefT=mcGCReferenceT<T,eGCHandleType::Weak> ;
-
-static_assert(sizeof(cGCRef)==sizeof(mcGCRefT<System::Object>),"error sizeof(mcGCReferenceT)");
-
-//---------------------------------------------------------------------------
-#endif	// _MANAGED
-//---------------------------------------------------------------------------
-template<class TManaged,uIntn Size>
-class cManagedValueStruct
-{
-	uIntn _space_[(Size+sizeof(uIntn)+1)/sizeof(uIntn)];
-public:
-#if _MANAGED
-
-#ifdef cnLib_DEBUG
-
-
-	struct cSize{
-		TManaged m;
-	};
-
-	static_assert(sizeof(cSize)<=sizeof(cManagedValueStruct::_space_),"not enough size");
-	static_assert(sizeof(cSize)+sizeof(void*)*4>sizeof(cManagedValueStruct::_space_),"size too large");
-
-#endif // cnLib_DEBUG
-
-	void __clrcall Initialize(void)noexcept(true){
-		*reinterpret_cast<TManaged*>(this)=TManaged();
-	}
-
-	TManaged% operator *()noexcept(true){			return *reinterpret_cast<TManaged*>	(this);	}
-	TManaged% operator *()const noexcept(true){		return *reinterpret_cast<TManaged*>	(const_cast<cManagedValueStruct*>(this));	}
-	TManaged* operator ->()noexcept(true){			return reinterpret_cast<TManaged*>	(this);	}
-	TManaged* operator ->()const noexcept(true){	return reinterpret_cast<TManaged*>	(const_cast<cManagedValueStruct*>(this));	}
-
-#endif // _MANAGED
-};
-//---------------------------------------------------------------------------
-#if _MANAGED
-#define	cnCLI_MANAGED_VALUE_STRUCT(__TManaged__,__PointerCount__,__Size__)	cManagedValueStruct<__TManaged__,sizeof(void*)*(__PointerCount__)+(__Size__)>
-#else
-#define	cnCLI_MANAGED_VALUE_STRUCT(__TManaged__,__PointerCount__,__Size__)	cManagedValueStruct<void,sizeof(void*)*(__PointerCount__)+(__Size__)>
-#endif // _MANAGED
-//---------------------------------------------------------------------------
-#if _MANAGED
-//---------------------------------------------------------------------------
-template<class TMemberClass,class TManagedStruct,uIntn Size>
-inline TMemberClass* GetObjectFromManagedValueStruct(TManagedStruct *Pointer,cManagedValueStruct<TManagedStruct,Size> TMemberClass::*MemberPointer)noexcept(true)
-{
-	typedef const volatile uInt8 TInterpret;
-	TInterpret *MemberOffsetPointer=&reinterpret_cast<TInterpret&>(static_cast<TMemberClass*>(nullptr)->*MemberPointer);
-	return reinterpret_cast<TMemberClass*>(reinterpret_cast<TInterpret*>(Pointer)-MemberOffsetPointer);
-}
 //---------------------------------------------------------------------------
 
 #if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L

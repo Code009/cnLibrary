@@ -1,442 +1,42 @@
-#include "WinDNetM_WPFUICore.h"
-
+#include "WinCLIM_WPFUICore.h"
 
 using namespace cnLibrary;
-using namespace cnRTL;
-using namespace cnWinRTL;
+//using namespace cnRTL;
+//using namespace cnWinRTL;
 using namespace cnWin;
-using namespace DNet;
+//using namespace DNet;
+
+static_assert(TManagedStructCheck<mcWPFUIThreadAsyncTimerExecutor>::Value,"managed class has an incorrect ManagedSize");
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rcWPFUICoreProcedureCaller::rcWPFUICoreProcedureCaller(void *CPP)
+rcNativeCaller_WPFUICore::rcNativeCaller_WPFUICore(void *CPP)
 	: CPP(CPP)
 {
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureExecutor::mcDNetUIThreadAsyncProcedureExecutor(bool HighPriority,iProcedure *Procedure)noexcept
-{
-	auto Caller=gcnew rcProcedureCaller(Procedure);
-	auto CallerAction=gcnew System::Action(Caller,&rcProcedureCaller::Execute);
-	fManaged->Action=System::Runtime::InteropServices::GCHandle::Alloc(CallerAction);
-	fManaged->Priority=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
-}
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureExecutor::~mcDNetUIThreadAsyncProcedureExecutor(void)noexcept
-{
-	fManaged->Action.Free();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncProcedureExecutor::mStart(mcDNetUIThreadDispatcher *UIDispatch)noexcept
-{
-	auto Dispatcher=UIDispatch->GetDispatcher();
-
-	auto CallerAction=static_cast<System::Action^>(fManaged->Action.Target);
-	Dispatcher->BeginInvoke(CallerAction);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureRefExecutor::mcDNetUIThreadAsyncProcedureRefExecutor(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
-	: fReference(Reference)
-	, fProcedure(Procedure)
-{
-	auto Caller=gcnew rcWPFUICoreProcedureCaller(this);
-	auto CallerAction=gcnew System::Action(Caller,&rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncProcedureRefExecutor_Execute);
-	fManaged->Action=System::Runtime::InteropServices::GCHandle::Alloc(CallerAction);
-	fManaged->Priority=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
-}
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncProcedureRefExecutor::~mcDNetUIThreadAsyncProcedureRefExecutor(void)noexcept
-{
-	fManaged->Action.Free();
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncProcedureRefExecutor_Execute(void)
-{
-	return static_cast<mcDNetUIThreadAsyncProcedureRefExecutor*>(CPP)->CallProc();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncProcedureRefExecutor::mStart(mcDNetUIThreadDispatcher *Owner)noexcept
-{
-	auto Dispatcher=Owner->GetDispatcher();
-
-	auto CallerAction=static_cast<System::Action^>(fManaged->Action.Target);
-	Dispatcher->BeginInvoke(CallerAction);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncTimerExecutor::mcDNetUIThreadAsyncTimerExecutor(mcDNetUIThreadDispatcher *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
-	: fReference(Reference)
-	, fProcedure(Procedure)
-{
-	auto Dispatcher=UIDispatch->GetDispatcher();
-	fManaged->Priority=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
-
-	auto Executor=gcnew rcWPFUICoreProcedureCaller(this);
-	auto TimerTick=gcnew System::EventHandler(Executor,&rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_TimerTick);
-	fTimerTick.Alloc(TimerTick);
-
-	auto Timer=fTimer.Create(fManaged->Priority,Dispatcher);
-	Timer->Tick+=TimerTick;
-
-	fFirstHitAction.Alloc(gcnew System::Action(Executor,&rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_FirstHit));
-}
-//---------------------------------------------------------------------------
-mcDNetUIThreadAsyncTimerExecutor::~mcDNetUIThreadAsyncTimerExecutor(void)noexcept
-{
-	auto TimerTick=fTimerTick.Discard();
-	auto Timer=fTimer.Discard();
-	Timer->Tick-=TimerTick;
-	delete Timer;
-
-	fFirstHitAction.Free();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mStopTimer(void)noexcept
-{
-	auto Timer=fTimer.Get();
-	Timer->Stop();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mHitAndSetTimer(mcDNetUIThreadDispatcher *UIDispatch)noexcept
-{
-	auto Dispatcher=UIDispatch->GetDispatcher();
-	Dispatcher->BeginInvoke(fManaged->Priority,fFirstHitAction);
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::mScheludeFirstHit(uInt64 Delay)noexcept
-{
-	if(fTimerStarted==false)
-		return;
-
-	auto Timer=fTimer.Get();
-	Timer->Interval=System::TimeSpan(Delay/100);
-	Timer->Start();
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_TimerTick(System::Object ^,System::EventArgs^)
-{
-	static_cast<mcDNetUIThreadAsyncTimerExecutor*>(CPP)->TimerTick();
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDNetUIThreadAsyncTimerExecutor_FirstHit(void)
-{
-	static_cast<mcDNetUIThreadAsyncTimerExecutor*>(CPP)->TimerFirstHit();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerTick(void)noexcept
-{
-	auto Timer=fTimer.Get();
-	if(fTimerStarted==false){
-		Timer->Stop();
-		return;
-	}
-
-	if(fTimerSwitchInterval){
-		fTimerSwitchInterval=false;
-
-		Timer->Interval=System::TimeSpan(fPeriod/100);
-
-		ExecuteAndState();
-	}
-	else{
-		fProcedure->Execute();
-	}
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerFirstHit(void)noexcept
-{
-	if(fTimerStarted==false)
-		return;
-
-	fTimerSwitchInterval=false;
-	auto Timer=fTimer.Get();
-	Timer->Interval=System::TimeSpan(fPeriod/100);
-
-	ExecuteAndState();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher::mcDNetUIThreadDispatcher(iReference *OwnerInnerReference)noexcept
-	: fOnShutdownEvent(gcnew System::EventHandler(gcnew rcWPFUICoreProcedureCaller(this),&rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_OnShutdownFinished))
-	, fOwnerInnerReference(OwnerInnerReference)
-{
-}
-//---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher::~mcDNetUIThreadDispatcher()noexcept
-{
-}
-//---------------------------------------------------------------------------
-System::Windows::Threading::Dispatcher^ __clrcall mcDNetUIThreadDispatcher::GetDispatcher(void)noexcept
-{
-	return fDispatcher.Get();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::SetupDispatcher(System::Windows::Threading::Dispatcher ^Dispatcher)noexcept
-{
-	rIncReference(fOwnerInnerReference,'disp');
-	fDispatcher.Set(Dispatcher);
-	Dispatcher->ShutdownFinished+=fOnShutdownEvent;
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::ClearDispatcher(void)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	if(Dispatcher!=nullptr){
-		fDispatcher.Set(nullptr);
-		Dispatcher->ShutdownFinished-=fOnShutdownEvent;
-	}
-	rDecReference(fOwnerInnerReference,'disp');
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_OnShutdownFinished(System::Object ^,System::EventArgs ^)
-{
-	auto CPPDispatcher=static_cast<mcDNetUIThreadDispatcher*>(CPP);
-	if(CPPDispatcher==rcDNetUIThreadContext::gTLSContext.CPPDispatcher){
-		rcDNetUIThreadContext::gTLSContext.CPPDispatcher=nullptr;
-	}
-	//dynamic_cast<System::Windows::Threading::Dispatcher^>(sender)
-	CPPDispatcher->WPFOnShutdown();
-}
-//---------------------------------------------------------------------------
-System::Windows::Threading::DispatcherPriority __clrcall mcDNetUIThreadDispatcher::GetDispatcherPriority(bool HighPriority)noexcept
-{
-	if(HighPriority){
-		return System::Windows::Threading::DispatcherPriority::Normal;
-	}
-	else{
-		return System::Windows::Threading::DispatcherPriority::Background;
-	}
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mIsCurrent(void)noexcept
-{
-	if(fDispatcherShutdown)
-		return true;
-	auto Dispatcher=fDispatcher.Get();
-	return Dispatcher->CheckAccess();
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mIsShutdown(void)noexcept
-{
-	return fDispatcherShutdown;
-}
-//---------------------------------------------------------------------------
-mcDNetUIThreadDispatcher* mcDNetUIThreadDispatcher::mCurrentUIDispatcher(void)noexcept
-{
-	return rcDNetUIThreadContext::gTLSContext.CPPDispatcher;
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::SetThreadReleaseNotify(System::Action ^Action)noexcept
-{
-	fReleaseNotify.Set(Action);
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mCreateOnCurrentThread(void)noexcept
-{
-	auto Dispatcher=System::Windows::Threading::Dispatcher::CurrentDispatcher;
-	if(Dispatcher==nullptr)
-		return false;
-
-	if(Dispatcher->HasShutdownStarted)
-		return nullptr;
-
-	SetupDispatcher(Dispatcher);
-
-	rcDNetUIThreadContext::gTLSContext.CPPDispatcher=this;
-	return true;
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_ThreadExitProcedure(void)
-{
-	static_cast<mcDNetUIThreadDispatcher*>(CPP)->ThreadExitProc();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::ThreadExitProc(void)noexcept
-{
-	fDispatchedRelease=false;
-	UIThreadRelease();
-	rDecReference(fOwnerInnerReference,'shut');
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mShutdownFrame(void)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	if(Dispatcher==nullptr){
-		// not started
-		return;
-	}
-
-	if(Dispatcher->CheckAccess()){
-		// current thread
-		return UIThreadRelease();
-	}
-
-	auto AutoLock=TakeLock(&fShutdownLock);
-		
-	if(fDispatcherShutdown==false){
-		rIncReference(fOwnerInnerReference,'shut');
-
-		Dispatcher->BeginInvoke(
-			System::Windows::Threading::DispatcherPriority::Normal,
-			gcnew System::Action(gcnew rcWPFUICoreProcedureCaller(this),&rcWPFUICoreProcedureCaller::mcDNetUIThreadDispatchFrame_ThreadExitProcedure)
-		);
-		fDispatchedRelease=true;
-	}
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::WPFOnShutdown(void)noexcept
-{
-	auto AutoLock=TakeLock(&fShutdownLock);
-	fDispatcherShutdown=true;
-
-	for(auto NotifyToken : fFinishNotifySet){
-		NotifyToken->NotifyProcedure(NotifyToken,true);
-	}
-	fFinishNotifySet.RemoveAll();
-
-	ClearDispatcher();
-	if(fDispatchedRelease){
-		rDecReference(fOwnerInnerReference,'shut');
-	}
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::UIThreadRelease(void)noexcept
-{
-	auto ReleaseNoitify=fReleaseNotify.Get();
-	if(ReleaseNoitify!=nullptr){
-		ReleaseNoitify->Invoke();
-	}
-
-	rcDNetUIThreadContext::gTLSContext.CPPDispatcher=nullptr;
-
-	ClearDispatcher();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mAttachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	auto AutoLock=TakeLock(&fShutdownLock);
-	if(Dispatcher->HasShutdownFinished){
-		NotifyToken->NotifyProcedure(NotifyToken,true);
-		return;
-	}
-	fFinishNotifySet.Insert(NotifyToken);
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mDetachDispatcher(cDispatcherFinishNotify *NotifyToken)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	if(Dispatcher->CheckAccess()){
-		// this Thread
-		fFinishNotifySet.Remove(NotifyToken);
-		if(fDispatcherShutdown){
-			return false;
-		}
-		NotifyToken->NotifyProcedure(NotifyToken,false);
-		return true;
-	}
-	else{
-		auto AutoLock=TakeLock(&fShutdownLock);
-		
-		if(fDispatcherShutdown==false){
-			auto Params=gcnew array<System::IntPtr>(2);
-			Params[0]=System::IntPtr(this);
-			Params[1]=System::IntPtr(NotifyToken);
-			Dispatcher->BeginInvoke(System::Windows::Threading::DispatcherPriority::Normal,gcnew System::Action<System::IntPtr,System::IntPtr>(FinishNotifyRelease),Params);
-			return true;
-		}
-		else{
-			fFinishNotifySet.Remove(NotifyToken);
-			return false;
-		}
-	}
-}
-//---------------------------------------------------------------------------
-void __clrcall mcDNetUIThreadDispatcher::FinishNotifyRelease(System::IntPtr This,System::IntPtr FinishNotify)noexcept
-{
-	static_cast<mcDNetUIThreadDispatcher*>(This.ToPointer())->NotifyFinish(static_cast<cDispatcherFinishNotify*>(FinishNotify.ToPointer()));
-}
-//---------------------------------------------------------------------------
-void __clrcall mcDNetUIThreadDispatcher::NotifyFinish(cDispatcherFinishNotify *FinishNotify)noexcept
-{
-	fFinishNotifySet.Remove(FinishNotify);
-	if(fDispatcherShutdown){
-		// already shutdown
-		return;
-	}
-
-	FinishNotify->NotifyProcedure(FinishNotify,false);
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	auto dp=GetDispatcherPriority(HighPriority);
-	auto ProcExecute=gcnew rcProcedureCaller(Procedure);
-	Dispatcher->BeginInvoke(dp,gcnew System::Action(ProcExecute,&rcProcedureCaller::Execute));
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	auto dp=GetDispatcherPriority(HighPriority);
-	auto ProcExecute=gcnew rcProcedureCaller(Procedure);
-	Dispatcher->Invoke(dp,gcnew System::Action(ProcExecute,&rcProcedureCaller::Execute));
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	auto dp=GetDispatcherPriority(HighPriority);
-	auto ProcExecute=gcnew rcRefProcedureCaller(Reference,Procedure);
-	Dispatcher->BeginInvoke(dp,gcnew System::Action(ProcExecute,&rcRefProcedureCaller::Execute));
-}
-//---------------------------------------------------------------------------
-void rcWPFUICoreProcedureCaller::mcDispatchExecuteAsyncTask_Execute(void)
-{
-	static_cast<mcDNetUIThreadDispatcher::mcDispatchExecuteAsyncTask*>(CPP)->ExecuteTask();
-}
-//---------------------------------------------------------------------------
-void mcDNetUIThreadDispatcher::mDispatchExecuteAsync(mcDispatchExecuteAsyncTask *Task,bool HighPriority)noexcept
-{
-	auto Dispatcher=fDispatcher.Get();
-	auto dp=mcDNetUIThreadDispatcher::GetDispatcherPriority(HighPriority);
-
-	auto Executor=gcnew rcWPFUICoreProcedureCaller(Task);
-	auto dproc=gcnew System::Action(Executor,&rcWPFUICoreProcedureCaller::mcDispatchExecuteAsyncTask_Execute);
-	Dispatcher->BeginInvoke(dp,dproc);
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept
+bool mcWPFInput::mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyDown(Key);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept
+bool mcWPFInput::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyToggled(Key);
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(cGCRef &UIViewVisualHandle,cUIPoint &Position)noexcept
+bool mcWPFInput::mMouseGetPosition(const cGCHandle &UIViewVisualHandle,cUIPoint &Position)noexcept
 {
-	System::Object^ RelativeObject=UIViewVisualHandle;
-	auto ViewVisual=dynamic_cast<IWPFUIViewVisual^>(RelativeObject);
-	if(ViewVisual!=nullptr){
-		return mMouseGetPosition(ViewVisual,Position);
-	}
-	auto Visual=dynamic_cast<System::Windows::Media::Visual^>(RelativeObject);
+	auto Visual=UIViewVisualHandle.DynamicCast<System::Windows::Media::Visual>();
 	if(Visual!=nullptr){
-		return mMouseGetPosition(Visual,Position);
+		return MouseGetPosition(Visual,Position);
 	}
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
+bool mcWPFInput::MouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
 	if(RelativeElement==nullptr)
@@ -448,20 +48,7 @@ bool mcDNetUIThreadDispatcher::mMouseGetPosition(System::Windows::Media::Visual 
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseGetPosition(IWPFUIViewVisual ^ViewVisual,cUIPoint &Position)noexcept
-{
-	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(ViewVisual->Visual);
-	if(RelativeElement==nullptr)
-		return false;
-	Float32 LayoutScale=ViewVisual->LayoutScale;
-
-	auto MousePos=System::Windows::Input::Mouse::GetPosition(RelativeElement);
-	Position.x=static_cast<Float32>(MousePos.X*LayoutScale);
-	Position.y=static_cast<Float32>(MousePos.Y*LayoutScale);
-	return true;
-}
-//---------------------------------------------------------------------------
-bool mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(eMouseButton Button)noexcept
+bool mcWPFInput::mMouseEventIsButtonDown(eMouseButton Button)noexcept
 {
 	System::Windows::Input::MouseButtonState BtnState;
 	switch(Button){
@@ -484,80 +71,497 @@ bool mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(eMouseButton Button)noexc
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rcDNetUIThreadDispatchFrame::rcDNetUIThreadDispatchFrame(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher,System::Threading::ManualResetEvent ^DoneEvent)
+void mcWPFUIThreadAsyncTimerExecutor::mSetup(mbcWPFUIThread *UIDispatch,bool HighPriority)noexcept
+{
+	fPriority=rcWPFUIThread::ToDispatcherPriority(HighPriority);
+
+	auto Caller=gcnew rcNativeCaller_WPFUICore(this);
+	auto TimerTick=gcnew System::EventHandler(Caller,&rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_TimerTick);
+	fTimerTickEventHandler.Alloc(TimerTick);
+
+	fScheduleAction.Alloc(gcnew System::Action(Caller,&rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Schedule));
+	fHitAction.Alloc(gcnew System::Action(Caller,&rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Hit));
+	fCleanupAction.Alloc(gcnew System::Action(Caller,&rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Cleanup));
+
+	auto WPFThread=UIDispatch->GetWPFThread();
+	auto Timer=gcnew System::Windows::Threading::DispatcherTimer(fPriority,WPFThread->Dispatcher);
+	fTimer.Alloc(Timer);
+	Timer->Tick+=TimerTick;
+
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mClear(void)noexcept
+{
+	fScheduleAction.Free();
+	fHitAction.Free();
+	fCleanupAction.Free();
+
+	auto TimerTick=fTimerTickEventHandler.Get();
+	fTimerTickEventHandler.Free();
+	auto Timer=fTimer.Get();
+	fTimer.Free();
+	Timer->Tick-=TimerTick;
+	delete Timer;
+
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_TimerTick(System::Object ^,System::EventArgs^)
+{
+	static_cast<mcWPFUIThreadAsyncTimerExecutor*>(CPP)->TimerTick();
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Schedule(void)
+{
+	static_cast<mcWPFUIThreadAsyncTimerExecutor*>(CPP)->Schedule();
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Hit(void)
+{
+	static_cast<mcWPFUIThreadAsyncTimerExecutor*>(CPP)->TimerTick();
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Cleanup(void)
+{
+	static_cast<mcWPFUIThreadAsyncTimerExecutor*>(CPP)->TimerCleanup();
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mSchedule(void)noexcept
+{
+	auto Timer=fTimer.Get();
+	Timer->Dispatcher->BeginInvoke(fScheduleAction.Get());
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mHit(void)noexcept
+{
+	auto Timer=fTimer.Get();
+	Timer->Dispatcher->BeginInvoke(fHitAction.Get());
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mStart(uInt64 Interval)noexcept
+{
+	auto Timer=fTimer.Get();
+	Timer->Interval=System::TimeSpan(static_cast<long long>(Interval/100));
+	Timer->Start();
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mStop(void)noexcept
+{
+	auto Timer=fTimer.Get();
+	Timer->Stop();
+}
+//---------------------------------------------------------------------------
+void mcWPFUIThreadAsyncTimerExecutor::mStopCleanup(void)noexcept
+{
+	auto Timer=fTimer.Get();
+	Timer->Stop();
+	Timer->Dispatcher->BeginInvoke(fCleanupAction.Get());
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rcWPFUIThread::rcWPFUIThread(System::Windows::Threading::Dispatcher ^Dispatcher,rcWPFUIThreadDispatcherProcedure ^Procedure,mbcWPFUIThread *CPP)
 	: fDispatcher(Dispatcher)
-	, fDispatcherReference(DispatcherReference)
-	, fDoneEvent(DoneEvent)
+	, fProcedure(Procedure)
+	, fCPP(CPP)
 {
+	fOnShutdownEvent=gcnew System::EventHandler(this,&rcWPFUIThread::OnShutdownFinished);
+	fDispatcher->ShutdownFinished+=fOnShutdownEvent;
+
+	gTLS->Value=this;
 }
 //---------------------------------------------------------------------------
-rcDNetUIThreadDispatchFrame::~rcDNetUIThreadDispatchFrame()
+void rcWPFUIThread::CPPDispose(void)
 {
-}
-//---------------------------------------------------------------------------
-void rcDNetUIThreadDispatchFrame::ThreadProcedure(void)
-{
-	//rInnerPtr<mcDNetUIThread> UIThread;
-	auto ReleaseNotification=gcnew System::Action(this,&rcDNetUIThreadDispatchFrame::UIThreadExit);
-	fDispatcher->SetThreadReleaseNotify(ReleaseNotification);
-	if(fDispatcher->mCreateOnCurrentThread()==false){
-		fDoneEvent->Set();
-		fDoneEvent=nullptr;
-		fDispatcher->SetThreadReleaseNotify(nullptr);
-		return;
+	fDispatcher->ShutdownFinished-=fOnShutdownEvent;
+	fOnShutdownEvent=nullptr;
+
+	if(gTLS->IsValueCreated){
+		if(gTLS->Value==this)
+			gTLS->Value=nullptr;
 	}
 
-	fDispatcherReference->IncreaseReference();
+	if(fFallbackDispatcher!=nullptr){
+		fFallbackDispatcher=nullptr;
+		// close fallback dispatch
+		ClearFallbackDispatcher();
+	}
 
-	fDoneEvent->Set();
-	fDoneEvent=nullptr;
-
-	auto Dispatcher=fDispatcher->GetDispatcher();
-	Dispatcher->PushFrame(%fDispatchFrame);
-
-	fDispatcher->SetThreadReleaseNotify(nullptr);
-
-	fDispatcherReference->DecreaseReference();
+	fCPP=nullptr;
 }
 //---------------------------------------------------------------------------
-void rcDNetUIThreadDispatchFrame::UIThreadExit(void)
+System::Windows::Threading::DispatcherPriority rcWPFUIThread::ToDispatcherPriority(bool HighPriority)
+{
+	if(HighPriority){
+		return System::Windows::Threading::DispatcherPriority::Normal;
+	}
+	else{
+		return System::Windows::Threading::DispatcherPriority::Background;
+	}
+}
+//---------------------------------------------------------------------------
+System::Windows::Threading::Dispatcher ^rcWPFUIThread::Dispatcher::get()
+{
+	return fDispatcher;
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::OnShutdownFinished(System::Object ^,System::EventArgs ^)
+{
+	if(fCPP!=nullptr)
+		fCPP->WPFOnShutdown();
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::CPPCallClose(void)
+{
+	fCPP->WPFOnCPPClose();
+}
+//---------------------------------------------------------------------------
+System::Windows::Threading::Dispatcher^ rcWPFUIThread::QueryFallbackDispatcher(void)
+{
+	if(fFallbackDispatcher==nullptr)
+		fFallbackDispatcher=SetupFallbackDispatcher();
+
+	return fFallbackDispatcher;
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::FallbackDispatcherProcedure(void)
+{
+	System::Windows::Threading::DispatcherFrame DispatchFrame;
+	auto Dispatcher=DispatchFrame.Dispatcher;
+	bool LockTaken=false;
+	try{
+		gFallbackLock.Enter(LockTaken);
+
+		gFallbackDispatcher=Dispatcher;
+
+	}
+	finally{
+		if(LockTaken)
+			gFallbackLock.Exit();
+	}
+	gFallbackCreateCompleteEvent->Set();
+	Dispatcher->PushFrame(%DispatchFrame);
+}
+//---------------------------------------------------------------------------
+System::Windows::Threading::Dispatcher^ rcWPFUIThread::SetupFallbackDispatcher(void)
+{
+	if(System::Threading::Interlocked::Increment(gFallbackDispatcherRefCount)==1){
+		auto Thread=gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(&FallbackDispatcherProcedure));
+		Thread->SetApartmentState(System::Threading::ApartmentState::STA);
+		Thread->Start();
+	}
+	while(gFallbackDispatcher==nullptr){
+		gFallbackCreateCompleteEvent->WaitOne();
+	}
+	gFallbackCreateCompleteEvent->Reset();
+	return gFallbackDispatcher;
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::ClearFallbackDispatcher(void)
+{
+	if(System::Threading::Interlocked::Decrement(gFallbackDispatcherRefCount)==0){
+		System::Windows::Threading::Dispatcher ^RemovedDispatcher;
+		bool LockTaken=false;
+		try{
+			gFallbackLock.Enter(LockTaken);
+
+			RemovedDispatcher=gFallbackDispatcher;
+			gFallbackDispatcher=nullptr;
+
+		}
+		finally{
+			if(LockTaken)
+				gFallbackLock.Exit();
+		}
+
+		RemovedDispatcher->BeginInvokeShutdown(System::Windows::Threading::DispatcherPriority::Normal);
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mSetup(mcWPFDispatcherReference &DispatcherReference)noexcept
+{
+	auto WPFThread=gcnew rcWPFUIThread(DispatcherReference.Dispatcher,DispatcherReference.Procedure,this);
+	fUIThreadHandle.Alloc(WPFThread);
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mClear(void)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	WPFThread->CPPDispose();
+	fUIThreadHandle.Free();
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mCPPClose(void)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	auto Dispatcher=WPFThread->Dispatcher;
+
+	if(WPFThread->fProcedure!=nullptr){
+		// exit ui thread if backed
+		WPFThread->fProcedure->NotifyExit();
+	}
+
+	if(Dispatcher->CheckAccess()){
+		WPFOnCPPClose();
+	}
+	else{
+		ExecuteDelegate(System::Windows::Threading::DispatcherPriority::Normal,
+			gcnew System::Action(WPFThread,&rcWPFUIThread::CPPCallClose)
+		);
+	}
+}
+//---------------------------------------------------------------------------
+rcWPFUIThread^ mbcWPFUIThread::GetWPFThread(void)const noexcept
+{
+	return fUIThreadHandle.Get();
+}
+//---------------------------------------------------------------------------
+bool mbcWPFUIThread::IsShutdown(void)const noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	return WPFThread->Dispatcher->HasShutdownStarted;
+}
+//---------------------------------------------------------------------------
+bool mbcWPFUIThread::mIsCurrent(void)const noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	if(WPFThread->Dispatcher==nullptr)
+		return false;
+	return WPFThread->Dispatcher->CheckAccess();
+}
+//---------------------------------------------------------------------------
+mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(void)noexcept
+{
+	if(rcWPFUIThread::gTLS->IsValueCreated){
+		auto WPFUIThread=rcWPFUIThread::gTLS->Value;
+		if(WPFUIThread!=nullptr)
+			return WPFUIThread->fCPP;
+	}
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(iFunction<void (mcWPFDispatcherReference&)noexcept(true)> *MakeObject)noexcept
+{
+	if(rcWPFUIThread::gTLS->IsValueCreated){
+		auto WPFUIThread=rcWPFUIThread::gTLS->Value;
+		if(WPFUIThread!=nullptr)
+			return WPFUIThread->fCPP;
+	}
+
+	auto Dispatcher=System::Windows::Threading::Dispatcher::CurrentDispatcher;
+	if(Dispatcher==nullptr)
+		return nullptr;
+
+	if(Dispatcher->HasShutdownStarted)
+		return nullptr;
+
+	rcWPFUIThreadDispatcherProcedure ^NullProcedure=nullptr;
+	mcWPFDispatcherReference DispatcherReference={Dispatcher,NullProcedure};
+	MakeObject->Execute(DispatcherReference);
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::rcDelegateExecutor::Aborted(void)
+{
+	if(System::Threading::Interlocked::Exchange(AbortProcessFlag,1)!=0)
+		return;	// other thread is processing
+
+	// reroute execution to backup thread
+	auto FallbackDispatcher=Thread->QueryFallbackDispatcher();
+	FallbackDispatcher->BeginInvoke(Priority,Procedure);
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::rcDelegateExecutor::OnAborted(System::Object^,System::EventArgs^)
+{
+	Aborted();
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::ExecuteDelegate(System::Windows::Threading::DispatcherPriority Priority,System::Action ^Procedure)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	auto Executor=gcnew rcWPFUIThread::rcDelegateExecutor();
+	Executor->Thread=WPFThread;
+	Executor->Procedure=Procedure;
+	Executor->Priority=Priority;
+	auto Operation=WPFThread->Dispatcher->BeginInvoke(Priority,Procedure);
+	Operation->Aborted+=gcnew System::EventHandler(Executor,&rcWPFUIThread::rcDelegateExecutor::OnAborted);
+
+	auto CurrentStatus=Operation->Wait(System::TimeSpan(0));
+	if(CurrentStatus==System::Windows::Threading::DispatcherOperationStatus::Aborted){
+		// already aborted
+		Executor->Aborted();
+	}
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mExecuteDelegate(bool HighPriority,mbcActionDelegate &Delegate)noexcept
+{
+	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
+	return ExecuteDelegate(dp,Delegate.GetAction());
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
+	auto Caller=gcnew rcNativeCaller_CLICommon(Procedure);
+	return ExecuteDelegate(dp,gcnew System::Action(Caller,&rcNativeCaller_CLICommon::iProcedure_Execute));
+}
+//---------------------------------------------------------------------------
+System::Object^ rcNativeCaller_WPFUICore::iProcedure_ExecuteSync(void)
+{
+	static_cast<iProcedure*>(CPP)->Execute();
+	return rcWPFUIThread::gTLS;
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUICore::iProcedure_ExecuteFallback(void)
+{
+	static_cast<iProcedure*>(CPP)->Execute();
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
+	auto Caller=gcnew rcNativeCaller_WPFUICore(Procedure);
+	auto RetObject=WPFThread->Dispatcher->Invoke(dp,gcnew System::Func<System::Object^>(Caller,&rcNativeCaller_WPFUICore::iProcedure_ExecuteSync));
+	if(RetObject==nullptr){
+		// the procedure was cancelled and not executed, reroute to fallback thread
+		auto FallbackDispatcher=WPFThread->QueryFallbackDispatcher();
+		FallbackDispatcher->Invoke(dp,gcnew System::Action(Caller,&rcNativeCaller_WPFUICore::iProcedure_ExecuteFallback));
+	}
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThread::rcReferencedProcedureExecutor::Execute(void)
+{
+	CPP->nExecuteProcedureReference(Reference,Procedure);
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIThread::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+{
+	auto WPFThread=fUIThreadHandle.Get();
+	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
+	auto Executor=gcnew rcWPFUIThread::rcReferencedProcedureExecutor();
+	Executor->CPP=this;
+	Executor->Reference=Reference;
+	Executor->Procedure=Procedure;
+	ExecuteDelegate(dp,gcnew System::Action(Executor,&rcWPFUIThread::rcReferencedProcedureExecutor::Execute));
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rcWPFUIThreadDispatcherProcedure::rcWPFUIThreadDispatcherProcedure(iFunction<void (mcWPFDispatcherReference*)noexcept> *Callback)
+	: fCallback(Callback)
+{
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThreadDispatcherProcedure::ThreadProcedure(void)
+{
+	auto Dispatcher=System::Windows::Threading::Dispatcher::CurrentDispatcher;
+	if(Dispatcher==nullptr || Dispatcher->HasShutdownStarted){
+		fCallback->Execute(nullptr);
+		return;
+	}
+	{
+		mcWPFDispatcherReference DispatcherReference={Dispatcher,this};
+		fCallback->Execute(&DispatcherReference);
+	}
+
+	Dispatcher->PushFrame(%fDispatchFrame);
+}
+//---------------------------------------------------------------------------
+void rcWPFUIThreadDispatcherProcedure::NotifyExit(void)
 {
 	fDispatchFrame.Continue=false;
 }
 //---------------------------------------------------------------------------
-void cnWin::rcDNetUIThreadDispatchFrame_StartUIThread(iReference *DispatcherReference,mcDNetUIThreadDispatcher *Dispatcher)noexcept
+//---------------------------------------------------------------------------
+void cnWin::WPFUIThreadNewThread(iFunction<void (mcWPFDispatcherReference*)noexcept> *Callback)noexcept
 {
-	System::Threading::ManualResetEvent DoneEvent(false);
-	auto ThreadProcedure=gcnew rcDNetUIThreadDispatchFrame(DispatcherReference,Dispatcher,%DoneEvent);
-
-	auto UIThread=gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(ThreadProcedure,&rcDNetUIThreadDispatchFrame::ThreadProcedure));
-	UIThread->SetApartmentState(System::Threading::ApartmentState::STA);
-	UIThread->Start();
-
-	// wait for thread procedure
-	DoneEvent.WaitOne();
+	auto ThreadProcedure=gcnew rcWPFUIThreadDispatcherProcedure(Callback);
+	auto Thread=gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(ThreadProcedure,&rcWPFUIThreadDispatcherProcedure::ThreadProcedure));
+	Thread->SetApartmentState(System::Threading::ApartmentState::STA);
+	Thread->Start();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcDNetUIApplicationDispatchFrame::mcDNetUIApplicationDispatchFrame()noexcept
-	: fDispatchFrameRef(gcnew System::Windows::Threading::DispatcherFrame())
+void mcWPFDispatchFrame::mSetup(void)noexcept
 {
+	fDispatchFrameRef.Alloc(gcnew System::Windows::Threading::DispatcherFrame());
 }
 //---------------------------------------------------------------------------
-mcDNetUIApplicationDispatchFrame::~mcDNetUIApplicationDispatchFrame()noexcept
+void mcWPFDispatchFrame::mClear(void)noexcept
 {
+	fDispatchFrameRef.Free();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIApplicationDispatchFrame::mNotifyStopRun(void)noexcept
+void mcWPFDispatchFrame::mNotifyStopRun(void)noexcept
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=false;
 }
 //---------------------------------------------------------------------------
-void mcDNetUIApplicationDispatchFrame::mWPFUIMain(void)noexcept
+void mcWPFDispatchFrame::mUIMain(void)noexcept
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=true;
 	System::Windows::Threading::Dispatcher::PushFrame(DispatchFrame);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void mcWPFKeyEventArgs::mCancelEvent(void)noexcept
+{
+	EventArgs->Handled=true;
+}
+//---------------------------------------------------------------------------
+bool mcWPFKeyEventArgs::mIsCancelled(void)noexcept
+{
+	return EventArgs->Handled;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void mcWPFMouseEventArgs::mCancelEvent(void)noexcept
+{
+	EventArgs->Handled=true;
+}
+//---------------------------------------------------------------------------
+bool mcWPFMouseEventArgs::mIsCancelled(void)noexcept
+{
+	return EventArgs->Handled;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void* mcWPFTouchEventArgs::mGetTouchID(void)noexcept
+{
+	return reinterpret_cast<void*>(static_cast<uIntn>(EventArgs->TouchDevice->Id));
+}
+//---------------------------------------------------------------------------
+void mcWPFTouchEventArgs::mCancelEvent(void)noexcept
+{
+	EventArgs->Handled=true;
+}
+//---------------------------------------------------------------------------
+bool mcWPFTouchEventArgs::mIsCancelled(void)noexcept
+{
+	return EventArgs->Handled;
+}
+//---------------------------------------------------------------------------
+bool mcWPFTouchEventArgs::mGetPosition(const cGCHandle &UIElementHandle,cUIPoint &Position)noexcept
+{
+	System::Object^ RelativeObject=UIElementHandle;
+	auto Visual=dynamic_cast<System::Windows::Media::Visual^>(RelativeObject);
+	if(Visual!=nullptr){
+		return mGetPosition(Visual,Position);
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
+{
+	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
+	if(RelativeElement==nullptr)
+		return false;
+
+	auto TouchPos=EventArgs->TouchDevice->GetTouchPoint(RelativeElement);
+	Position.x=static_cast<Float32>(TouchPos->Position.X);
+	Position.y=static_cast<Float32>(TouchPos->Position.Y);
+	return true;
 }
 //---------------------------------------------------------------------------

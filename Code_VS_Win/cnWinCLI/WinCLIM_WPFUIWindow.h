@@ -1,4 +1,4 @@
-﻿/*- cnWinWPF - Window and View --------------------------------------------*/
+/*- cnWinCLI - Managed - WPF Window ---------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2020-04-15                                          */
 /*-------------------------------------------------------------------------*/
@@ -8,31 +8,31 @@
 #using <PresentationCore.dll>
 #endif	/* _MANAGED */
 
-
-#include <cnWinCLI\WinDNetM_Common.h>
-#include <cnWinCLI\WinDNetM_WPFUICore.h>
-#include <cnWinCLI\WinDNetM_WPFUIView.h>
-
+#include <cnWinCLI\WinCLIM_WPFUIView.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
+//---------------------------------------------------------------------------
 class iWindowClient;
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> DNetCreateWindowClient(void)noexcept(true);
-rPtr<iPopupWindowControl> DNetCreatePopupWindowControl(void)noexcept(true);
+#if _MANAGED
 //---------------------------------------------------------------------------
-class iWPFWindowClient
+private ref class rcNativeCaller_WPFUIWindow sealed
 {
 public:
-	virtual iWindowClient* WPFWindowGetInterface(void)noexcept(true)=0;
-	virtual void WPFWindowStateChanged(eUIState NewState)noexcept(true)=0;
-	virtual void WPFWindowDPIChanged(Float32 NewScale)noexcept(true)=0;
+	rcNativeCaller_WPFUIWindow(void *CPP);
+	
+	void mbcWPFUIViewRoot_ShutdownStarted(System::Object ^,System::EventArgs ^e);
+private:
+	void *CPP;
 };
 //---------------------------------------------------------------------------
-class mcWPFViewRoot;
+#endif	// _MANAGED
+//---------------------------------------------------------------------------
+class mbcWPFUIViewRoot;
 class mcWPFWindowClient;
 //---------------------------------------------------------------------------
 }	// namespace cnWin
@@ -41,20 +41,50 @@ class mcWPFWindowClient;
 //---------------------------------------------------------------------------
 namespace DNet{
 //---------------------------------------------------------------------------
-
-private interface class IWPFViewRoot : IWPFViewParent
+value class WPFUIViewRootAdapter;
+//---------------------------------------------------------------------------
+public interface class IWPFUIViewRootTargetElement
 {
-	void CPPAttach(cnWin::mcWPFViewRoot *CPP);
-	void CPPDetach(cnWin::mcWPFViewRoot *CPP);
+	property WPFUIViewRootAdapter %Adapter{
+		WPFUIViewRootAdapter% get(void);
+	}
 
 	property System::Windows::UIElement ^ClientElement{
 		System::Windows::UIElement^ get();
 		void set(System::Windows::UIElement ^Element);
 	};
 
-	void DispatcherFinishCleanup(void);
+	property IWPFUIViewRootTargetElement ^OwnerTargetElement{
+		IWPFUIViewRootTargetElement^ get();
+		void set(IWPFUIViewRootTargetElement ^Owner);
+	}
 
-	bool SetOwner(IWPFViewRoot ^Root);
+	property bool IsActive{
+		bool get();
+	}
+
+	bool SetBackgroundColor(System::Windows::Media::Color Color);
+};
+//---------------------------------------------------------------------------
+public value class WPFUIViewRootAdapter
+{
+public:
+	void CPPAttach(cnWin::mbcWPFUIViewRoot *CPP);
+	void CPPDetach(cnWin::mbcWPFUIViewRoot *CPP);
+
+	void RemoteChildAttach(IWPFUIViewTargetElement ^RemoteChild);
+	void RemoteChildDetach(IWPFUIViewTargetElement ^RemoteChild);
+
+	void OnActiveChanged(void);
+
+internal:
+	cnWin::mbcWPFUIViewRoot *CPP;
+
+private:
+	cnWin::rcNativeCaller_WPFUIWindow ^NativeCaller;
+
+	static cnWin::mbcWPFUIViewRoot* CPPFromSender(System::Object ^sender);
+	static void OnIsVisibleChanged(System::Object ^sender,System::Windows::DependencyPropertyChangedEventArgs e);
 };
 //---------------------------------------------------------------------------
 }	// namespace DNet
@@ -63,80 +93,67 @@ private interface class IWPFViewRoot : IWPFViewParent
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-class cWPFUIWindow;
-//---------------------------------------------------------------------------
-class mcWPFViewRoot : public iWPFViewParent//, public iWPFWindowClient
+#if _MANAGED
+private ref class rcWPFUIViewRootTargetElementAsRemoteRoot sealed : riWPFUIViewRemoteRoot
 {
 public:
-	struct mcConstructParameter
-	{
-#if !_MANAGED
-		mcConstructParameter()=delete;
-		~mcConstructParameter()=delete;
-#endif // !_MANAGED
+	rcWPFUIViewRootTargetElementAsRemoteRoot(DNet::IWPFUIViewRootTargetElement ^Target);
 
-#if _MANAGED
-		mcGCRefT<DNet::IWPFViewRoot> WPFRoot;
-#else
-		cGCRef WPFRoot;
-#endif
-	};
-
-	virtual void WPFWindowStateChanged(eUIState NewState)noexcept(true)=0;
 private:
-	friend cWPFUIWindow;
-
-	mcWPFViewRoot(mcConstructParameter &Parameter)noexcept(true);
-	~mcWPFViewRoot()noexcept(true);
-
-protected:
-#if _MANAGED
-	mcGCRefT<DNet::IWPFViewRoot> fWPFRoot;
-	mcGCRefT<DNet::IWPFView> fWPFClient;
-#else
-	cGCRef fWPFRoot;
-	cGCRef fWPFClient;
+	DNet::IWPFUIViewRootTargetElement ^fTarget;
+	virtual void RemoteChildAttach(DNet::IWPFUIViewTargetElement ^RemoteChild)sealed=riWPFUIViewRemoteRoot::RemoteChildAttach;
+	virtual void RemoteChildDetach(DNet::IWPFUIViewTargetElement ^RemoteChild)sealed=riWPFUIViewRemoteRoot::RemoteChildDetach;
+};
 #endif // _MANAGED
-	
-	iWPFViewChild *fClient=nullptr;
-	iUIView *fClientView;
-
-	bool GetWindowVisible(void)noexcept(true);
-	bool SetWindowVisible(bool Visible)noexcept(true);
-	bool SetWindowOwner(cGCRef &WPFRootRef)noexcept(true);
-	void ClearWindowOwner(void)noexcept(true);
-private:
-	
-	mcDNetUIThreadDispatcher::cDispatcherFinishNotify fDispatcherFinishNotify;
-#if _MANAGED
-
-	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept(true);
-	void __clrcall DispatcherFinishNotify(bool Shutdown)noexcept(true);
-	void __clrcall CleanupWPF(void)noexcept(true);
-	
-#endif // _MANAGED
-
-	void nDispatcherFinishNotify(bool Shutdown)noexcept(true);
-
+//---------------------------------------------------------------------------
+class mbcWPFUIViewRoot
+{
 public:
-#if _MANAGED
-	System::Object^ mGetWPFRootObject(void)noexcept(true);
-#endif // _MANAGED
-	
-	iUIWindow* nGetUIWindowInterface(void)noexcept(true);
+	const cGCHandle& GetTargetElementHandle(void)const noexcept(true);
 
-	bool mSetClient(cGCRef &ObjectHandle)noexcept(true);
+
+#if _MANAGED
+	DNet::IWPFUIViewRootTargetElement^ GetTargetElement(void)const noexcept(true);
+#endif // _MANAGED
+
+	bool mSetClient(const cGCHandle &ObjectHandle)noexcept(true);
 	void mResetClient(void)noexcept(true);
 
-	// WPF Notification
+
+	bool mGetVisible(void)noexcept(true);
+	bool mSetVisible(bool Visible)noexcept(true);
+
+	bool mSetBackgroundColor(uInt8 r,uInt8 g,uInt8 b)noexcept(true);
+
+	bool mSetWindowOwner(const cGCHandle &WPFRootRef)noexcept(true);
+	void mClearWindowOwner(void)noexcept(true);
+
+
+protected:
+	void mSetup(const cGCHandle &WPFUIViewRootTargetElement)noexcept(true);
+	void mClear(void)noexcept(true);
+#if _MANAGED
+	mcGCHandle<DNet::IWPFUIViewRootTargetElement,eGCHandleType::Weak> fTargetRootElement;
+#else
+	cGCHandle fTargetRootElement;
+#endif // _MANAGED
+
+	bool fWindowVisible;
+	bool fWindowActive;
+
+	virtual void WPFWindowStateChanged(void)noexcept(true)=0;
+	virtual void WPFWindowShutdownStarted(void)noexcept(true)=0;
+private:
 
 #if _MANAGED
-	void __clrcall WPFUIWindowRemoveSubview(DNet::IWPFView ^Subview)noexcept(true);
-#endif
+	friend DNet::WPFUIViewRootAdapter;
+	friend rcNativeCaller_WPFUIWindow;
+
+	__forceinline void __clrcall WPFDispatcherShutdownStarted(void)noexcept(true);
+
+#endif // _MANAGED
 
 };
-//---------------------------------------------------------------------------
-iPtr<iUIWindow> DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------
@@ -144,8 +161,8 @@ iPtr<iUIWindow> DNetCreateWPFWindowAsWindowClient(mcDNetUIThreadDispatcher *Disp
 //---------------------------------------------------------------------------
 namespace DNet{
 //---------------------------------------------------------------------------
-private ref class WPFViewRoot : public System::Windows::UIElement
-	, public IWPFViewRoot, public IWPFUIWindowElement
+private ref class WPFViewRoot sealed : System::Windows::UIElement
+	, IWPFUIViewRootTargetElement
 {
 public:
 	WPFViewRoot();
@@ -155,42 +172,31 @@ public:
 		System::Windows::Media::Color get();
 		void set(System::Windows::Media::Color c);
 	};
-
 internal:
 
-	void *CPPWPFWindow;
-	// IWPFViewParent
+	// IWPFUIViewRootTargetElement
 
-	virtual property cnWin::iWPFViewParent* ParentInterface{
-		virtual cnWin::iWPFViewParent* get(void)=IWPFViewRoot::IWPFViewParent::Interface::get;
-	};
-
-	virtual void ParentRemoveViewChild(IWPFView ^Subview)=IWPFViewRoot::IWPFViewParent::RemoveViewChild;
-
-	// IWPFUIWindowElement
-
-	virtual property iUIWindow* UIWindowInterface{
-		virtual iUIWindow* get(void)=IWPFUIWindowElement::UIWindowInterface::get;
-	};
-	virtual void RemoteChildAttach(System::Object^)=IWPFUIWindowElement::RemoteChildAttach;
-	virtual void RemoteChildDetach(System::Object^)=IWPFUIWindowElement::RemoteChildDetach;
-
-	// IWPFViewRoot
-
-	virtual void CPPAttach(cnWin::mcWPFViewRoot *CPP)sealed=IWPFViewRoot::CPPAttach;
-	virtual void CPPDetach(cnWin::mcWPFViewRoot *CPP)sealed=IWPFViewRoot::CPPDetach;
-
+	property WPFUIViewRootAdapter% Adapter{
+		virtual WPFUIViewRootAdapter% get(void)=IWPFUIViewRootTargetElement::Adapter::get;
+	}
+	
 	property System::Windows::UIElement ^ClientElement{
-		virtual System::Windows::UIElement^ get()=IWPFViewRoot::ClientElement::get;
-		virtual void set(System::Windows::UIElement ^Element)=IWPFViewRoot::ClientElement::set;
+		virtual System::Windows::UIElement^ get()=IWPFUIViewRootTargetElement::ClientElement::get;
+		virtual void set(System::Windows::UIElement ^Element)=IWPFUIViewRootTargetElement::ClientElement::set;
 	};
 
-	virtual void DispatcherFinishCleanup(void)=IWPFViewRoot::DispatcherFinishCleanup;
+	property IWPFUIViewRootTargetElement^ OwnerTargetElement{
+		virtual IWPFUIViewRootTargetElement^ get()=IWPFUIViewRootTargetElement::OwnerTargetElement::get;
+		virtual void set(IWPFUIViewRootTargetElement ^Owner)=IWPFUIViewRootTargetElement::OwnerTargetElement::set;
+	}
 
-	virtual bool SetOwner(IWPFViewRoot ^Root)=IWPFViewRoot::SetOwner;
+	property bool IsActive{
+		virtual bool get()=IWPFUIViewRootTargetElement::IsActive::get;
+	}
+	virtual bool SetBackgroundColor(System::Windows::Media::Color Color)=IWPFUIViewRootTargetElement::SetBackgroundColor;
 protected:
-	cnWin::mcWPFViewRoot *fCPP;
-
+	WPFUIViewRootAdapter fViewRootAdapter;
+	
 	System::Windows::Media::GeometryDrawing fBackgroundDrawing;
 	System::Windows::Media::SolidColorBrush ^fBGBrush;
 	System::Windows::UIElement ^fClientElement;
@@ -211,99 +217,73 @@ protected:
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-void mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)noexcept(true);
-//---------------------------------------------------------------------------
-class cWPFWindow;
-class mcWPFWindow;
-
-class mcWPFHwndSource;
+class mbcWPFWindow;
 //---------------------------------------------------------------------------
 #if _MANAGED
 //---------------------------------------------------------------------------
-private ref class rcWPFWindow
+private ref class rcWPFHwndHandler sealed
 {
 public:
-	rcWPFWindow(mcWPFWindow *CPP);
+	rcWPFHwndHandler(mbcWPFWindow *CPP);
 
 	property System::Windows::Interop::HwndSource ^Source{
-		System::Windows::Interop::HwndSource^get(void){	return fSource;	}
+		System::Windows::Interop::HwndSource^ get(void);
+		void set(System::Windows::Interop::HwndSource ^value);
 	}
 	
 internal:
-	mcWPFWindow *CPP;
-	void Create(System::Windows::Interop::HwndSourceParameters %Parameter);
-	void Destroy(void);
-
+	mbcWPFWindow *CPP;
 protected:
 	System::Windows::Interop::HwndSource ^fSource;
-	initonly System::Windows::Interop::HwndSourceHook ^fHook;
+	System::Windows::Interop::HwndSourceHook ^fHook;
 
 
+	void HwndSourceAttach(void);
+	void HwndSourceDetach(void);
 	System::IntPtr WindowMessageHook(System::IntPtr hwnd, int msg, System::IntPtr wParam, System::IntPtr lParam, bool %handled);
 };
 //---------------------------------------------------------------------------
 #endif	// _MANAGED
 //---------------------------------------------------------------------------
-class mcWPFWindow
+class mbcWPFWindow
 {
-	friend cWPFWindow;
-	mcWPFWindow()noexcept(true);
-	~mcWPFWindow()noexcept(true);
 public:
+	bool mCreate(void* Parent,const wchar_t *WindowText,uInt32 Style,uInt32 ExStyle,sInt32 X,sInt32 Y,sInt32 Width,sInt32 Height)noexcept(true);
+	bool mDestroy(void)noexcept(true);
+
+	Float32 mQueryLayoutScale(void)const noexcept(true);
+
+	bool mGetVisualRoot(cGCRef &VisualHandle)noexcept(true);
+	bool mSetVisualRoot(const cGCHandle &VisualHandle)noexcept(true);
+	bool mClearVisualRoot(void)noexcept(true);
+
 #if _MANAGED
-	HWND __clrcall mGetHandle(void)noexcept(true);
+	friend rcWPFHwndHandler;
 
 #endif // _MANAGED
-
-	bool Create(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height)noexcept(true);
-
-	SIZE GetClientSize(void)noexcept(true);
-
-
-	static mcWPFWindow* mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept(true);
-	bool mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept(true);
-	bool mWindowDetachClient(mcWPFViewRoot *ViewRoot)noexcept(true);
 
 protected:
+	void mSetup(void)noexcept(true);
+	void mClear(void)noexcept(true);
 #if _MANAGED
-	mcGCRefT<rcWPFWindow> fWPFWindow;
-	mcGCRefT<DNet::WPFViewRoot> fWPFViewRoot;
+	mcGCHandle<rcWPFHwndHandler> fWPFHwndHandler;
 #else
-	cGCRef fWPFWindow;
-	cGCRef fWPFViewRoot;
+	cGCHandle fWPFHwndHandler;
 #endif	// _MANAGED
 
-	HWND fWindowHandle;
-	Float32 fWindowLayoutScale;
-	Float32 fWindowDPIScale;
-	iWPFWindowClient *fWindowClient;
-
+	virtual void WPFSourceAttach(void* WindowHandle)noexcept(true)=0;
+	virtual void WPFSourceDetach(void)noexcept(true)=0;
+	virtual bool WPFSourceMessage(uIntn &Result,void* hwnd, uInt32 msg, uIntn wParam, uIntn lParam)noexcept(true)=0;
 private:
-	mcDNetUIThreadDispatcher::cDispatcherFinishNotify fDispatcherFinishNotify;
-#if _MANAGED
-	friend rcWPFWindow;
-
-	void __clrcall WPFSourceAttach(rcWPFWindow ^Window)noexcept(true);
-	void __clrcall WPFSourceDetach(void)noexcept(true);
-	System::IntPtr WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept(true);
-
-	bool __clrcall ClientAttach(DNet::WPFViewRoot ^Client,iWPFWindowClient *WindowClient)noexcept(true);
-	void __clrcall ClearClient(void)noexcept(true);
-
-	static void __clrcall DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept(true);
-	void __clrcall DispatcherFinishNotify(bool Shutdown)noexcept(true);
-	void CleanupWPF(void)noexcept(true);
-	
-#endif // _MANAGED
-
-	void nWPFSourceAttach(void)noexcept(true);
-	void nWPFSourceDetach(void)noexcept(true);
-	bool nWPFMessage(LRESULT &Result,HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)noexcept(true);
-	void nDispatcherFinishNotify(bool Shutdown)noexcept(true);
 };
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> DNetCreateWindowClient(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
-rPtr<iPopupWindowControl> DNetCreatePopupWindowControl(mcDNetUIThreadDispatcher *Dispatcher,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
+void mMakeWPFViewRoot(cGCRef &Ref)noexcept(true);
+//---------------------------------------------------------------------------
+#if _MANAGED
+//---------------------------------------------------------------------------
+riWPFUIViewRemoteRoot^ WPFUIViewQueryRemoteRootFromRootVisual(System::Windows::Media::Visual ^RootVisual)noexcept(true);
+//---------------------------------------------------------------------------
+#endif // _MANAGED
 //---------------------------------------------------------------------------
 }	// namespace cnWin
 //---------------------------------------------------------------------------

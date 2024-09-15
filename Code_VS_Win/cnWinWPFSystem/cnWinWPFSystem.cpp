@@ -16,6 +16,10 @@ void cnSystem::AssertionMessage(const char *Message)noexcept
 	}
 }
 
+void cnSystem::LogConnectRecorder(iLogRecorder *Recorder)noexcept
+{
+	return gRTLLog.Connect(Recorder);
+}
 //- Default Heap ------------------------------------------------------------
 
 void* cnSystem::DefaultHeap::Alloc(uIntn Alignment,uIntn Size)noexcept
@@ -145,22 +149,22 @@ iPtr<iSocketAddress> cnSystem::CreateSocketAddress(const sockaddr *addr,socklen_
 //---------------------------------------------------------------------------
 iPtr<iUIView> cnSystem::CreateUIView(void)noexcept
 {
-	return DNetCreateUIView();
+	return WPFCreateUIView();
 }
 //---------------------------------------------------------------------------
 rPtr<iPopupWindowControl> cnSystem::CreatePopupWindowControl(void)noexcept
 {
-	return DNetCreatePopupWindowControl();
+	return WPFCreatePopupWindowControl();
 }
 //---------------------------------------------------------------------------
 iUIThread* cnSystem::CurrentUIThread::GetUIThread(void)noexcept
 {
-	return cDNetUIThread::CurrentUIThread();
+	return cWPFUIThread::CurrentUIThread();
 }
 //---------------------------------------------------------------------------
 iDispatch* cnSystem::CurrentUIThread::GetDispatch(bool HighPriority)noexcept
 {
-	auto UIThread=cDNetUIThread::CurrentUIThread();
+	auto UIThread=cWPFUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
 		return nullptr;
 
@@ -400,32 +404,34 @@ iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept
 
 rPtr<iWindowsUIApplication> cnWindows::CreateWindowsUIApplication(void)noexcept
 {
-	return cnWin::DNetCreateWindowsUIApplication();
+	return cWPFUIApplication::CreateWindowsUIApplication();
 }
 
 iPtr<iUIThread> cnWindows::CreateUIThreadOnCurrentThread(void)noexcept
 {
-	return cnWin::DNetCreateOnCurrentThread();
+	return cWPFUIThread::CreateOnCurrentThread();
 }
 iPtr<iUIThread> cnWindows::StartUIThread(void)noexcept
 {
-	return cnWin::DNetStartUIThread();
+	return cWPFUIThread::StartUIThread();
 }
 
 iPtr<iWindowProvider> cnWindows::CreateWindowProvider(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - rpCreateWindowProvider")
-	return nullptr;
+	auto UIThread=cWPFUIThread::CurrentUIThread();
+	if(UIThread==nullptr)
+		return nullptr;
+	return iCreate<cWPFWindow>(UIThread);
 }
 
 iPtr<iWindowClient> cnWindows::CreateWindowClient(void)noexcept
 {
-	return DNetCreateWindowClient();
+	return WPFCreateWindowClient();
 }
 
 iPtr<iWindowFrame> cnWindows::CreateWindowFrame(void)noexcept
 {
-#pragma message (cnLib_FILE_LINE ": TODO - rpCreateWindowFrameComponent")
+	// no frame support
 	return nullptr;
 }
 
@@ -437,7 +443,15 @@ iPtr<iOwnerFocusWindowClient> cnWindows::CreateOwnerFocusWindowClient(void)noexc
 
 iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept
 {
-	return cnWin::DNetCreateWPFWindow(Parent,WindowText,Style,ExStyle,X,Y,Width,Height,ChildID);
+	auto UIThread=cWPFUIThread::CurrentUIThread();
+	if(UIThread==nullptr)
+		return nullptr;
+	auto Window=iCreate<cWPFWindow>(UIThread);
+	Style&=~WS_CHILD;
+	if(Window->mCreate(Parent,WindowText,Style,ExStyle,X,Y,Width,Height)==false){
+		return nullptr;
+	}
+	return Window;
 }
 
 //---------------------------------------------------------------------------
@@ -446,7 +460,8 @@ iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowTex
 
 rPtr<iDCPaintDevice> cnWindows::QueryDCPaintDevice(void)noexcept
 {
-	return nullptr;
+	auto Context=cWPFGDIModule::QueryThreadContext();
+	return Context->Device;
 }
 
 rPtr<iDCViewContent> cnWindows::CreateDCViewContent(iDCPainter *Painter,uIntn DCViewContentOptions)noexcept

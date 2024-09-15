@@ -46,7 +46,6 @@ using namespace InterfaceID;
 
 using namespace cnWin;
 
-cnLib_INTERFACE_LOCALID_DEFINE(iWPFViewChild);
 cnLib_INTERFACE_LOCALID_DEFINE(cWPFUIView);
 cnLib_INTERFACE_LOCALID_DEFINE(miWPFUISimpleGraph);
 

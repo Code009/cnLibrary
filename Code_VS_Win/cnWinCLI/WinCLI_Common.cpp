@@ -1,5 +1,4 @@
-
-#include "WinDNet_Common.h"
+#include "WinCLI_Common.h"
 
 
 using namespace cnLibrary;
@@ -8,22 +7,34 @@ using namespace cnWin;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+cGCRef::cGCRef()noexcept
+{
+	GCHandleStorage=nullptr;
+}
+//---------------------------------------------------------------------------
+cGCRef::cGCRef(cGCRef &&Src)noexcept
+{
+	GCHandleStorage=Src.GCHandleStorage;
+	Src.GCHandleStorage=nullptr;
+}
+//---------------------------------------------------------------------------
+cGCRef::cGCRef(cGCHandle &&Src)noexcept
+{
+	GCHandleStorage=static_cast<cGCRef&>(Src).GCHandleStorage;
+	static_cast<cGCRef&>(Src).GCHandleStorage=nullptr;
+}
+//---------------------------------------------------------------------------
+cGCRef::~cGCRef()noexcept
+{
+	if(mIsAllocated())
+		mFree();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void* iCLIObject::CastInterface(iTypeID IID)noexcept
 {
 	if(iCLIObject::tInterfaceID::Value==IID)
 		return this;
 	return iInterface::CastInterface(IID);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cnWin::rcRefProcedureCaller_RefProc(iReference *Reference)noexcept
-{
-	rIncReference(Reference,'exec');
-}
-//---------------------------------------------------------------------------
-void cnWin::rcRefProcedureCaller_CallProc(iReference *Reference,iProcedure *Procedure)noexcept
-{
-	Procedure->Execute();
-	rDecReference(Reference,'exec');
 }
 //---------------------------------------------------------------------------

@@ -1,12 +1,13 @@
-/*- cnWin - WPF - UI Core -------------------------------------------------*/
+/*- cnWinCLI - WPF - UI Core ----------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2023-10-07                                          */
 /*-------------------------------------------------------------------------*/
 #pragma once
 /*-------------------------------------------------------------------------*/
 
-#include <cnWinCLI\WinDNet_Common.h>
-#include <cnWinCLI\WinDNetM_WPFUICore.h>
+#include <cnRTL\cnRTL.h>
+#include <cnWinCLI\WinCLI_Common.h>
+#include <cnWinCLI\WinCLIM_WPFUICore.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
@@ -14,10 +15,18 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-iUIThread* DNetCurrentUIThread(void)noexcept(true);
-iPtr<iUIThread> DNetCreateOnCurrentThread(void)noexcept(true);
-iPtr<iUIThread> DNetStartUIThread(void)noexcept(true);
-rPtr<iWindowsUIApplication> DNetCreateWindowsUIApplication(void)noexcept(true);
+struct cWPFModule : iDependentInfo
+{
+	cWPFModule()noexcept(true);
+	~cWPFModule()noexcept(true);
+	
+	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
+
+	cnRTL::cWaitObjectRegistration ObjectRegistration;
+};
+extern cWPFModule gWPFModule;
+//---------------------------------------------------------------------------
+class cWPFUIThread;
 //---------------------------------------------------------------------------
 class cWPFKeyboard : public iUIKeyboard
 {
@@ -38,57 +47,91 @@ public:
 
 };
 //---------------------------------------------------------------------------
-class cDNetUIThread;
-//---------------------------------------------------------------------------
-class cDNetUIThreadAsyncProcedure : public iAsyncProcedure, private mcDNetUIThreadAsyncProcedureExecutor
+class cWPFUIThreadAsyncProcedure : public iAsyncProcedure
 {
 public:
-	cDNetUIThreadAsyncProcedure(cDNetUIThread *UIThread,bool HighPriority,iProcedure *Procedure)noexcept(true);
-	~cDNetUIThreadAsyncProcedure()noexcept(true);
+	cWPFUIThreadAsyncProcedure(cWPFUIThread *UIThread,bool HighPriority,iProcedure *Procedure)noexcept(true);
+	~cWPFUIThreadAsyncProcedure()noexcept(true);
 
 	virtual void cnLib_FUNC Start(void)noexcept(true)override;
 
 protected:
-	iPtr<cDNetUIThread> fUIThread;
+	iPtr<cWPFUIThread> fUIThread;
+	mcNativeProcedureDelegate fExecutor;
+	bool fHighPriority;
 };
 //---------------------------------------------------------------------------
-class cDNetUIThreadAsyncProcedureRef : public iAsyncProcedure, public mcDNetUIThreadAsyncProcedureRefExecutor
+class cWPFUIThreadAsyncProcedureRef : public iAsyncProcedure, protected mbcCLICallback
 {
 public:
-	cDNetUIThreadAsyncProcedureRef(cDNetUIThread *UIThread,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
-	~cDNetUIThreadAsyncProcedureRef()noexcept(true);
+	cWPFUIThreadAsyncProcedureRef(cWPFUIThread *UIThread,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~cWPFUIThreadAsyncProcedureRef()noexcept(true);
 
 	virtual void cnLib_FUNC Start(void)noexcept(true)override;
 
 protected:
-	iPtr<cDNetUIThread> fUIThread;
+	iPtr<cWPFUIThread> fUIThread;
+	iReference *fReference;
+	iProcedure *fProcedure;
+	bool fHighPriority;
+	
+	virtual void CLIExecute(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-class cDNetUIThreadAsyncTimer : public iAsyncTimer, private mcDNetUIThreadAsyncTimerExecutor
+class cWPFUIThreadAsyncTimer : public iAsyncTimer, public cnRTL::cDualReference
 {
 public:
-	cDNetUIThreadAsyncTimer(cDNetUIThread *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
-	~cDNetUIThreadAsyncTimer()noexcept(true);
+	cWPFUIThreadAsyncTimer(cWPFUIThread *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
+	~cWPFUIThreadAsyncTimer()noexcept(true);
 
 	virtual void cnLib_FUNC Start(uInt64 DueTime,uInt64 Period)noexcept(true)override;
 	virtual void cnLib_FUNC Stop(void)noexcept(true)override;
-		
+
 protected:
-	iPtr<cDNetUIThread> fUIDispatch;
+	void VirtualStopped(void)noexcept(true);
+
+	iPtr<cWPFUIThread> fUIDispatch;
+	iReference *fReference;
+	iProcedure *fProcedure;
+
+	class cExecutor : public mcWPFUIThreadAsyncTimerExecutor
+	{
+		virtual void Schedule(void)noexcept(true)override;
+		virtual void TimerTick(void)noexcept(true)override;
+		virtual void TimerCleanup(void)noexcept(true)override;
+	};
+	cManagedStruct<cExecutor> fExecutor;
+
+	uInt64 fDueTime;
+	uInt64 fPeriod;
+	bool fActive=false;
+	bool fUpdate=false;
+	bool fClose=false;
+
+	void TimerTick(void)noexcept(true);
+private:
+
+	cnRTL::cExclusiveFlag fTimerStateFlag;
+	bool fTimerActive=false;
+	bool fTimerDue;
+
+	cnRTL::rAtomicPtr<iReference> fStateProcRefrence;
+
+	void NotifyStateProcedure(void)noexcept(true);
+	void StateProcedureThread(void)noexcept(true);
+	void StateProcedure(void)noexcept(true);
+
+	void State_UpdateTimer(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-class cDNetUIThread : public iUIThread, public cnRTL::cDualReference, public mcDNetUIThreadDispatcher
+class cWPFUIThread : public iUIThread, public cnRTL::cDualReference
+	, public mbcWPFUIThread
 {
-protected:
-	cDNetUIThread()noexcept(true);
-	~cDNetUIThread()noexcept(true);
-
-	void VirtualStopped(void)noexcept(true);
-	
 public:
+	cWPFUIThread(mcWPFDispatcherReference &DispatcherReference)noexcept(true);
+	~cWPFUIThread()noexcept(true);
 
-	bool IsCurrent(void)noexcept(true);
-	bool IsShutdown(void)noexcept(true);
+	bool IsCurrent(void)const noexcept(true);
 
 	// iUIThread
 
@@ -98,21 +141,25 @@ public:
 	virtual iUIMouse* cnLib_FUNC GetDefaultMouse(void)noexcept(true)override;
 
 
-	static cDNetUIThread* CurrentUIThread(void)noexcept(true);
-	static iPtr<cDNetUIThread> CreateOnCurrentThread(void)noexcept(true);
-	static iPtr<cDNetUIThread> StartUIThread(void)noexcept(true);
-
+	static cWPFUIThread* CurrentUIThread(void)noexcept(true);
+	static iPtr<cWPFUIThread> CreateOnCurrentThread(void)noexcept(true);
+	static iPtr<cWPFUIThread> StartUIThread(void)noexcept(true);
 
 	void DispatchExecute(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
 	iPtr<iAsyncTask> DispatchExecuteAsync(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true);
 
 
 protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+
+	virtual void WPFOnShutdown(void)noexcept(true)override;
+	virtual void WPFOnCPPClose(void)noexcept(true)override;
 
 	class mcWPFDispatchHigh : public iDispatch
 	{
 	public:
-		cDNetUIThread* GetHost(void)noexcept(true);
+		cWPFUIThread* GetHost(void)noexcept(true);
 		virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 		virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)override;
@@ -126,7 +173,7 @@ protected:
 	class mcWPFDispatchLow : public iDispatch
 	{
 	public:
-		cDNetUIThread* GetHost(void)noexcept(true);
+		cWPFUIThread* GetHost(void)noexcept(true);
 		virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
 		virtual rPtr<iAsyncProcedure>	cnLib_FUNC CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept(true)override;
@@ -141,27 +188,57 @@ protected:
 	rPtr<iAsyncProcedure> DispatchCreateWork(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept(true);
 	rPtr<iAsyncTimer> DispatchCreateTimer(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept(true);
 
-	class cExecuteAsyncTask : public iAsyncTask, public mcDispatchExecuteAsyncTask
+	class cExecuteAsyncTask : public iAsyncTask, private iProcedure
 	{
 	public:
+		cExecuteAsyncTask(iReference *Reference,iProcedure *Procedure)noexcept;
 		virtual bool cnLib_FUNC IsDone(void)noexcept(true)override;
 		virtual bool cnLib_FUNC Await(iProcedure *NotifyProcedure)noexcept(true)override;
-		virtual void ExecuteTask(void)noexcept(true)override;
+
+		void Queue(mbcWPFUIThread *Thread,bool HighPriority)noexcept(true);
+
+	private:
+		rPtr<iReference> Reference;
+		iProcedure *Procedure;
+		cnRTL::cManualAsyncTask TaskState;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 	};
 
 private:
+	mutable DWORD fNativeThreadID;
 
-	DWORD fNativeThreadID;
+	bool fDispatcherShutdown=false;
+
+	class cCreateOnCurrentProcedure : public iFunction<void(mcWPFDispatcherReference&)noexcept(true)>
+	{
+	public:
+		iPtr<cWPFUIThread> Thread;
+		virtual void cnLib_FUNC Execute(mcWPFDispatcherReference &DispatcherReference)noexcept(true)override;
+	};
+
+	class cThreadSetupProcedure : public iFunction<void(mcWPFDispatcherReference*)noexcept(true)>
+	{
+	public:
+		iPtr<cWPFUIThread> Thread;
+
+		void Wait(void)noexcept(true);
+		virtual void cnLib_FUNC Execute(mcWPFDispatcherReference *DispatcherReference)noexcept(true)override;
+	private:
+		cnRTL::cThreadOneTimeNotifier fNotifier;
+	};
 
 	iPtr<cWPFKeyboard> fWPFKeyboard;
 	iPtr<cWPFMouse> fWPFMouse;
 };
 //---------------------------------------------------------------------------
-class cDNetUIApplication : public iWindowsUIApplication, private mcDNetUIApplicationDispatchFrame
+class cWPFUIApplication : public iWindowsUIApplication
 {
 public:
-	cDNetUIApplication(iPtr<cDNetUIThread> Thread)noexcept(true);
-	~cDNetUIApplication()noexcept(true);
+	static rPtr<iWindowsUIApplication> CreateWindowsUIApplication(void)noexcept(true);
+
+
+	cWPFUIApplication(iPtr<cWPFUIThread> Thread)noexcept(true);
+	~cWPFUIApplication()noexcept(true);
 
 	virtual iUIThread* cnLib_FUNC GetMainUIThread(void)noexcept(true)override;
 	virtual bool cnLib_FUNC InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept(true)override;
@@ -170,9 +247,11 @@ public:
 	virtual void cnLib_FUNC CloseUISession(void)noexcept(true)override;
 
 private:
-	iPtr<cDNetUIThread> fUIThread;
+	iPtr<cWPFUIThread> fUIThread;
 	cnRTL::cSeqSet<iWindowsUISessionHandler*> fHandlers;
 	bool fUISession=false;
+
+	mcWPFDispatchFrame fDispatchFrame;
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

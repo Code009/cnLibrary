@@ -75,22 +75,28 @@
     <ClInclude Include="dependency.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIViewContent.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_Common.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_Common.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUICore.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUICore.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIFramework.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIView.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIView.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIViewWindow.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIViewContent.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFComponent.h">
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIWindow.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\cnWinCLI.h">
+      <Filter>Code - Windows\cnWinCLI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\cnWinWPF.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -125,22 +131,22 @@
     <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_AudioDevice.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_Common.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUICore.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIViewWindow.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIFramework.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUICore.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIView.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIView.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIViewContent.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFUIViewContent.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIWindow.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinDNet_WPFComponent.cpp">
+    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_Common.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
   </ItemGroup>

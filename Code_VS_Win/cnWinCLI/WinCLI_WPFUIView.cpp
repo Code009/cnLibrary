@@ -1,23 +1,20 @@
-﻿#include "WinDNet_WPFUIView.h"
+#include "WinCLI_WPFUIView.h"
 
 using namespace cnLibrary;
 
 using namespace cnRTL;
 using namespace cnWin;
 
-
 //---------------------------------------------------------------------------
-void* iWPFViewChild::CastInterface(iTypeID ID)noexcept
+iPtr<iUIView> cnWin::WPFCreateUIView(void)noexcept
 {
-	if(ID==TInterfaceID<iWPFViewChild>::Value){
-		return this;
-	}
-	return iInterface::CastInterface(ID);
-}
-//---------------------------------------------------------------------------
-iPtr<iUIView> cnWin::DNetCreateUIView(mcDNetUIThreadDispatcher *Dispatcher,mcWPFView::mcConstructParameter &Parameter)noexcept
-{
-	return iCreate<cWPFUIView>(static_cast<cDNetUIThread*>(Dispatcher),Parameter);
+	auto UIThread=cWPFUIThread::CurrentUIThread();
+	if(UIThread==nullptr)
+		return nullptr;
+	
+	cGCRef WPFViewHandle;
+	mMakeWPFView(WPFViewHandle);
+	return iCreate<cWPFUIView>(UIThread,WPFViewHandle);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -33,7 +30,7 @@ iUIView* bcWPFKeyEvent::GetSourceView(void)noexcept
 //---------------------------------------------------------------------------
 iUIKeyboard* bcWPFKeyEvent::GetKeyboard(void)noexcept
 {
-	auto Thread=cDNetUIThread::CurrentUIThread();
+	auto Thread=cWPFUIThread::CurrentUIThread();
 	if(Thread==nullptr)
 		return nullptr;
 	return Thread->GetDefaultKeyboard();
@@ -50,12 +47,12 @@ bool bcWPFKeyEvent::IsCancelled(void)noexcept
 //---------------------------------------------------------------------------
 bool bcWPFKeyEvent::IsKeyDown(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyDown(KeyCode);
 }
 //---------------------------------------------------------------------------
 bool bcWPFKeyEvent::IsKeyToggled(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyToggled(KeyCode);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -66,10 +63,11 @@ eUIEventSourceType bcWPFMouseEvent::GetSourceType(void)noexcept
 //---------------------------------------------------------------------------
 iUIMouse* bcWPFMouseEvent::GetMouse(void)noexcept
 {
-	auto Thread=cDNetUIThread::CurrentUIThread();
+	auto Thread=mbcWPFUIThread::mCurrentUIThread();
 	if(Thread==nullptr)
 		return nullptr;
-	return Thread->GetDefaultMouse();
+	auto WPFUIThread=static_cast<cWPFUIThread*>(Thread);
+	return WPFUIThread->GetDefaultMouse();
 }
 //---------------------------------------------------------------------------
 void bcWPFMouseEvent::CancelEvent(void)noexcept
@@ -88,12 +86,12 @@ bool bcWPFMouseEvent::GetPosition(iInterface *Relative,cUIPoint &Position)noexce
 		return false;
 
 	auto &Handle=RelativeObject->GetObjecHandle();
-	return mcDNetUIThreadDispatcher::mMouseGetPosition(Handle,Position);
+	return mcWPFInput::mMouseGetPosition(Handle,Position);
 }
 //---------------------------------------------------------------------------
 bool bcWPFMouseEvent::IsButtonDown(eMouseButton Button)noexcept
 {
-	return mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(Button);
+	return mcWPFInput::mMouseEventIsButtonDown(Button);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -214,489 +212,12 @@ void* cWPFTouchEvent::GetTouchID(void)noexcept
 //---------------------------------------------------------------------------
 bool cWPFTouchEvent::GetPosition(iInterface *Relative,cUIPoint &Position)noexcept
 {
-	auto RelativeSubview=iCast<iWPFViewChild>(Relative);
+	auto RelativeSubview=iCast<cWPFUIView>(Relative);
 	if(RelativeSubview==nullptr)
 		return false;
 
-	auto &Handle=RelativeSubview->WPFChildGetElementHandle();
+	auto &Handle=RelativeSubview->GetTargetElementHandle();
 	return fEventArgs.mGetPosition(Handle,Position);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cWPFVisualAsWindow::cWPFVisualAsWindow(mcWPFVisual &&Visual)noexcept
-	: mcWPFVisual(cnVar::MoveCast(Visual))
-{
-}
-//---------------------------------------------------------------------------
-cWPFVisualAsWindow::~cWPFVisualAsWindow()noexcept
-{
-}
-//---------------------------------------------------------------------------
-iUIThread* cWPFVisualAsWindow::GetUIThread(void)noexcept
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-eUIState cWPFVisualAsWindow::GetUIState(void)noexcept
-{
-	return UIState::Active;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::RemoveStateHandler(iUIStateHandler *Handler)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::GetVisible(void)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::SetVisible(bool Visible)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::IsEnabled(void)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::GetEnable(void)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::SetEnable(bool Enable)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-cUIPoint cWPFVisualAsWindow::GetSize(void)noexcept
-{
-	return {0,0};
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::SetSize(cUIPoint Size)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::TranslatePointTo(iInterface *Relative,cUIPoint &Position)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::MoveTo(iInterface *Relative,cUIPoint Position)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-Float32 cWPFVisualAsWindow::GetZPosition(void)noexcept
-{
-	return 0.f;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::SetZPosition(Float32)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-Float32 cWPFVisualAsWindow::GetContentScale(void)noexcept
-{
-	return 1.f;
-}
-//---------------------------------------------------------------------------
-iUIScreen* cWPFVisualAsWindow::GetScreen(void)noexcept
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-iUIWindow* cWPFVisualAsWindow::GetParent(void)noexcept
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::RemoveWindowHandler(iUIWindowHandler *Handler)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-iUIView* cWPFVisualAsWindow::GetClient(void)noexcept
-{
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-bool cWPFVisualAsWindow::SetClient(iUIView*)noexcept
-{
-	return false;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void* cnWin::rcWPFVisualRootAsWindow_MakeWindowInterface(mcWPFVisual &&TargetVisual)noexcept
-{
-	auto Window=iCreate<cWPFVisualAsWindow>(cnVar::MoveCast(TargetVisual));
-	return iExtract(Window,'wpfr');
-}
-//---------------------------------------------------------------------------
-void cnWin::rcWPFVisualRootAsWindow_DropWindowInterface(void *Window)noexcept
-{
-	iTake(static_cast<cWPFVisualAsWindow*>(Window),'wpfr');
-}
-//---------------------------------------------------------------------------
-iUIWindow* cnWin::rcWPFVisualRootAsWindow_GetUIWindow(void *Window)noexcept
-{
-	return static_cast<cWPFVisualAsWindow*>(Window);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void mcUIElementAsWPFViewParent::WPFUpdateVisible(bool IsVisible)noexcept
-{
-	bool Changed=false;
-	if(IsVisible){
-		if(fViewState!=UIState::Active){
-			Changed=true;
-			fViewState=UIState::Active;
-		}
-	}
-	else{
-		if(fViewState!=UIState::Null){
-			Changed=true;
-			fViewState=UIState::Null;
-		}
-	}
-	if(Changed){
-		for(auto c : fChildSet){
-			c->WPFChildTreeNotifyState();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-uIntn mcUIElementAsWPFViewParent::GetChildCount(void)const noexcept
-{
-	return fChildSet.GetCount();
-}
-//---------------------------------------------------------------------------
-bool mcUIElementAsWPFViewParent::WPFChildAttach(iWPFViewChild *Child)noexcept
-{
-	return fChildSet.Insert(Child);
-}
-//---------------------------------------------------------------------------
-bool mcUIElementAsWPFViewParent::WPFChildDetach(iWPFViewChild *Child)noexcept
-{
-	return fChildSet.Remove(Child);
-}
-//---------------------------------------------------------------------------
-void mcUIElementAsWPFViewParent::WPFNotifyWindowChange(iUIWindow *Window)noexcept
-{
-}
-//---------------------------------------------------------------------------
-eUIState mcUIElementAsWPFViewParent::WPFParentGetState(void)noexcept
-{
-	return fViewState;
-}
-//---------------------------------------------------------------------------
-Float32 mcUIElementAsWPFViewParent::WPFParentGetContentScale(void)noexcept
-{
-	return 1.f;
-}
-//---------------------------------------------------------------------------
-Float32 mcUIElementAsWPFViewParent::WPFParentGetLayoutScale(void)noexcept
-{
-	return 1.f;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void mcWPFView::UpdateSubviewZPosition(iWPFViewChild *Subview)noexcept
-{
-	auto SubviewPair=fSubviewMap.GetPair(Subview);
-	if(SubviewPair==fSubviewMap.end())
-		return;
-
-	// update item
-	fSubviewZOrderSet.Remove(SubviewPair);
-
-	SubviewPair->Value.ZPosition=Subview->WPFChildGetZPosition();
-	fSubviewZOrderSet.Insert(SubviewPair);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFNotifyVisible(bool Visible)noexcept
-{
-	if(fStateVisible==Visible)
-		return;
-	fStateVisible=Visible;
-	
-	WPFChildTreeNotifyState();
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewUpdateContentSize(Float32 Scale,Float32 Width,Float32 Height)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-
-	for(auto *Content : UIView->fContents){
-		Content->WPFSetSize(fLayoutScale,Width,Height);
-	}
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewNotifyArrange(bool Moved,bool Sized)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	
-	UIView->fViewNotification.RectangleChanged(Moved,Sized);
-
-	if(fLayoutInProgress){
-		return;
-	}
-	fLayoutInProgress=true;
-
-	UIView->fViewNotification.Layout();
-
-	fLayoutInProgress=false;
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnIsKeyboardFocusedChanged(bool Focused)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEventByMessage KeyEvent(UIView);
-
-	if(Focused){
-		UIView->WPFNotifyFocusEnter(&KeyEvent);
-	}
-	else{
-		UIView->WPFNotifyFocusLeave(&KeyEvent);
-	}
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnIsKeyboardFocusWithinChanged(bool Focused)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEventByMessage KeyEvent(UIView);
-
-	//auto Msg=cnRTL::CreateStringFormat(L"%p WPFOnIsKeyboardFocusWithinChanged %d\n",KeyEvent->GetSourceView(),Focused);
-	//OutputDebugStringW(Msg);
-	if(Focused){
-		UIView->WPFNotifyFocusEnterRange(&KeyEvent);
-	}
-	else{
-		UIView->WPFNotifyFocusLeave(&KeyEvent);
-
-		UIView->WPFNotifyFocusLeaveRange(&KeyEvent);
-	}
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnKeyDownFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode Key,bool Repeat)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEvent KeyEvent(UIView,KeyEventArgs);
-	if(Repeat==false){
-		UIView->fKeyNotification.FilterKeyDown(&KeyEvent,Key);
-	}
-	else{
-		UIView->fKeyNotification.FilterKeyInput(&KeyEvent,Key);
-	}
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnKeyDown(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode Key,bool Repeat)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEvent KeyEvent(UIView,KeyEventArgs);
-	
-	if(Repeat==false){
-		
-		UIView->fKeyNotification.HandleKeyDown(&KeyEvent,Key);
-
-		// trigger one extea Key Input route event
-		UIView->ParentNotifyKeyboardKeyInput(&KeyEvent,Key);
-	}
-	
-	UIView->fKeyNotification.HandleKeyInput(&KeyEvent,Key);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnKeyUp(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode Key)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEvent KeyEvent(UIView,KeyEventArgs);
-
-	UIView->fKeyNotification.HandleKeyUp(&KeyEvent,Key);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnKeyUpFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode Key)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFKeyEvent KeyEvent(UIView,KeyEventArgs);
-
-	UIView->fKeyNotification.FilterKeyUp(&KeyEvent,Key);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnIsMouseDirectlyOverChanged(bool InRange)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEventByMessage MouseEvent(UIView);
-
-	if(InRange){
-		UIView->WPFNotifyMouseIsDirectlyEnter(&MouseEvent);
-	}
-	else{
-		UIView->WPFNotifyMouseIsDirectlyLeave(&MouseEvent);
-	}
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseEnter(mcWPFMouseEventArgs &MouseEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->WPFNotifyMouseEnterRange(&MouseEvent);
-
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseLeave(mcWPFMouseEventArgs &MouseEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->WPFNotifyMouseLeave(&MouseEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseMove(mcWPFMouseEventArgs &MouseEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.HandleMove(&MouseEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseMoveFilter(mcWPFMouseEventArgs &MouseEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.FilterMove(&MouseEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseDown(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.HandleDown(&MouseEvent,Button);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseDownFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.FilterDown(&MouseEvent,Button);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseUp(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.HandleUp(&MouseEvent,Button);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseUpFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.FilterUp(&MouseEvent,Button);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseWheel(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.HandleWheel(&MouseEvent,ScrollX,ScrollY);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnMouseWheelFilter(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFMouseEvent MouseEvent(UIView,MouseEventArgs);
-
-	UIView->fMouseNotification.FilterWheel(&MouseEvent,ScrollX,ScrollY);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchDown(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.HandleDown(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchDownFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.FilterDown(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchUp(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.HandleUp(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchUpFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.FilterUp(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchMove(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.HandleMove(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-void mcWPFView::WPFUIViewOnTouchMoveFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
-{
-	auto UIView=static_cast<cWPFUIView*>(this);
-	cWPFTouchEvent TouchEvent(UIView,TouchEventArgs);
-
-	UIView->fTouchNotification.FilterMove(&TouchEvent);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-sfInt8 cWPFUIView::cSubviewItemZOrderOperator::Compare(const tSubviewNode *Item,const tSubviewNode *Value)noexcept
-{
-	if(Item->Value.ZPosition<Value->Value.ZPosition)
-		return -1;
-	if(Item->Value.ZPosition>Value->Value.ZPosition)
-		return 1;
-	if(Item->Key<Value->Key)
-		return -1;
-	if(Item->Key>Value->Key)
-		return 1;
-	return 0;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -704,6 +225,7 @@ bcWPFViewContentDrawing::bcWPFViewContentDrawing()noexcept
 {
 	fView=nullptr;
 	fZPosition=0;
+	fContentMargin=UIRectangleZero;
 }
 //---------------------------------------------------------------------------
 bcWPFViewContentDrawing::~bcWPFViewContentDrawing()noexcept
@@ -735,7 +257,7 @@ bool bcWPFViewContentDrawing::SetView(iUIView *View)noexcept
 	if(fView!=nullptr){
 		fView->InsertViewContent(this);
 	}
-	
+
 	ViewContentUpdateState();
 	return true;
 }
@@ -769,6 +291,19 @@ Float32 bcWPFViewContentDrawing::GetContentScale(void)noexcept
 	return fView->GetViewContentContentScale();
 }
 //---------------------------------------------------------------------------
+cUIRectangle bcWPFViewContentDrawing::GetContentMargin(void)noexcept
+{
+	return fContentMargin;
+}
+//---------------------------------------------------------------------------
+void bcWPFViewContentDrawing::SetContentMargin(cUIRectangle Margin)noexcept
+{
+	if(UIRectangleIsEqual(fContentMargin,Margin))
+		return;
+	fContentMargin=Margin;
+	ViewContentUpdateRect();
+}
+//---------------------------------------------------------------------------
 void bcWPFViewContentDrawing::UpdateDrawing(void)noexcept
 {
 	if(fView!=nullptr){
@@ -784,62 +319,84 @@ eUIState bcWPFViewContentDrawing::CheckViewContentState(void)noexcept
 	return UIState::Null;
 }
 //---------------------------------------------------------------------------
-void bcWPFViewContentDrawing::WPFSetSize(Float32 LayoutScale,Float32 Width,Float32 Height)noexcept
+void bcWPFViewContentDrawing::WPFArrange(Float32 LayoutScale,Float32 Width,Float32 Height)noexcept
 {
-	fDrawingWidth=Width;
-	fDrawingHeight=Height;
+	fViewWidth=Width;
+	fViewHeight=Height;
 	fLayoutScale=LayoutScale;
 	ViewContentUpdateRect();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUIView::cWPFUIView(cDNetUIThread *UIThread,mcConstructParameter &Parameter)noexcept
-	: mcWPFView(Parameter)
-	, fUIThread(UIThread)
+sfInt8 cWPFUIView::cSubviewItemZOrderOperator::Compare(const tSubviewNode *Item,const tSubviewNode *Value)noexcept
+{
+	if(Item->Value.ZPosition<Value->Value.ZPosition)
+		return -1;
+	if(Item->Value.ZPosition>Value->Value.ZPosition)
+		return 1;
+	if(Item->Key<Value->Key)
+		return -1;
+	if(Item->Key>Value->Key)
+		return 1;
+	return 0;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWPFUIView::cWPFUIView(cWPFUIThread *UIThread,const cGCHandle &WPFUIViewTargetElement)noexcept
+	: fUIThread(UIThread)
 	, fViewState(UIState::Null)
 	, fNeedLayout(false)
 {
+	mbcWPFUIView::mSetup(WPFUIViewTargetElement);
 }
 //---------------------------------------------------------------------------
 cWPFUIView::~cWPFUIView()noexcept
 {
+	mbcWPFUIView::mClear();
 }
 //---------------------------------------------------------------------------
 void* cWPFUIView::CastInterface(iTypeID ID)noexcept
 {
-	if(ID==TInterfaceID<cWPFUIView>::Value){
-		return this;
-	}
-	return ImpCastInterface<iCLIObject,iUIView,iWPFViewChild,iUIKeyControl,iUIMouseControl,iUITouchControl>(this,ID);
+	return cnVar::ImplementCastInterface<iCLIObject,iUIView,iUIKeyControl,iUIMouseControl,iUITouchControl>(this,ID);	
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::VirtualStarted(void)noexcept
 {
-	fUIThread->mAttachDispatcher(&fDispatcherFinishNotify);
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::VirtualStopped(void)noexcept
 {
-	if(fUIThread->mDetachDispatcher(&fDispatcherFinishNotify)){
-		// wait for notification
-		return;
+	if(fUIThread->IsCurrent()){
+		Cleanup();
 	}
-	// dispatcher already shutdown
+	else{
+		fUIThread->mDispatchExecute(true,&fExitParentProcedure);
+	}
+}
+//---------------------------------------------------------------------------
+void cWPFUIView::cExitParentProcedure::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWPFUIView::fExitParentProcedure);
+	return Host->Cleanup();
+}
+//---------------------------------------------------------------------------
+void cWPFUIView::Cleanup(void)noexcept
+{
+	if(fParent!=nullptr){
+		fParent->RemoveSubview(this);
+	}
+
 	VirtualDelete();
 }
 //---------------------------------------------------------------------------
-void mcWPFView::nDispatchFinishNotify(bool Shutdown)noexcept
+const cGCHandle& cWPFUIView::WPFGetTargetElementHandle(void)noexcept
 {
-	if(Shutdown==false){
-		// called by VirtualStopped
-		auto UIView=static_cast<cWPFUIView*>(this);
-		UIView->VirtualDelete();
-	}
+	return GetTargetElementHandle();
 }
 //---------------------------------------------------------------------------
-cGCRef& cWPFUIView::GetObjecHandle(void)noexcept
+const cGCHandle& cWPFUIView::GetObjecHandle(void)noexcept
 {
-	return fWPFView;
+	return GetTargetElementHandle();
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::CheckThread(void)noexcept
@@ -859,10 +416,9 @@ Float32 cWPFUIView::GetContentScale(void)noexcept
 //---------------------------------------------------------------------------
 cUIPoint cWPFUIView::GetSize(void)noexcept
 {
-	cUIPoint Size;
-	Size.x=fRectWPF.Size.x*fLayoutScale;
-	Size.y=fRectWPF.Size.y*fLayoutScale;
-	return Size;
+	if(CheckThread()==false)
+		return UIPointZero;
+	return mGetSize();
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::SetSize(cUIPoint Size)noexcept
@@ -873,14 +429,8 @@ bool cWPFUIView::SetSize(cUIPoint Size)noexcept
 	if(Size.x<0){
 		Size.x=0;
 	}
-	else{
-		Size.x=Size.x/fLayoutScale;
-	}
 	if(Size.y<0){
 		Size.y=0;
-	}
-	else{
-		Size.y=Size.y/fLayoutScale;
 	}
 
 	Size.x=cnMath::FloatRoundNearest(Size.x);
@@ -898,7 +448,9 @@ bool cWPFUIView::MoveTo(iInterface *Relative,cUIPoint Position)noexcept
 		return false;
 
 	auto &Handle=RelativeObject->GetObjecHandle();
-	return mSetPosition(Handle,Position);
+	Position.x=cnMath::FloatRoundNearest(Position.x);
+	Position.y=cnMath::FloatRoundNearest(Position.y);
+	return mMovePosition(Handle,Position);
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::TranslatePointTo(iInterface *Relative,cUIPoint &Position)noexcept
@@ -923,8 +475,19 @@ bool cWPFUIView::ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoin
 	if(RelativeObject==nullptr)
 		return false;
 
+	Position.x=cnMath::FloatRoundNearest(Position.x);
+	Position.y=cnMath::FloatRoundNearest(Position.y);
+	if(Size.x<0)
+		Size.x=0;
+	else
+		Size.x=cnMath::FloatRoundNearest(Size.x);
+	if(Size.y<0)
+		Size.y=0;
+	else
+		Size.y=cnMath::FloatRoundNearest(Size.y);
+
 	auto &Handle=RelativeObject->GetObjecHandle();
-	return mSetRectangle(Handle,Position,Size);
+	return mArrangeRectangle(Handle,Position,Size);
 }
 //---------------------------------------------------------------------------
 Float32 cWPFUIView::GetZPosition(void)noexcept
@@ -942,8 +505,8 @@ bool cWPFUIView::SetZPosition(Float32 ZPosition)noexcept
 
 
 	fZPosition=ZPosition;
-	if(fParentView!=nullptr){
-		fParentView->UpdateSubviewZPosition(this);
+	if(fParent!=nullptr){
+		fParent->UpdateSubviewZPosition(this);
 	}
 	return true;
 }
@@ -1037,25 +600,39 @@ cUIRectangle cWPFUIView::GetFrameMargin(void)noexcept
 //---------------------------------------------------------------------------
 iUIWindow* cWPFUIView::GetWindow(void)noexcept
 {
-	return fWindow;
+	if(fWPFWindow==nullptr)
+		return nullptr;
+	return fWPFWindow->WPFWindowInterface();
 }
 //---------------------------------------------------------------------------
 iUIView* cWPFUIView::GetParent(void)noexcept
 {
-	return static_cast<cWPFUIView*>(fParentView);
+	if(fParent!=nullptr)
+		return fParent;
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 eUIState cWPFUIView::EvaluateViewState(void)noexcept
 {
-	if(fParent==nullptr){
+	if(fWPFParent==nullptr){
 		return UIState::Null;
 	}
-	eUIState State=fParent->WPFParentGetState();
-	if(fStateVisible==false || fRectWPF.Size.x==0 || fRectWPF.Size.y==0){
-		if(State>UIState::Background)
-			State=UIState::Background;
+	if(fStateVisible==false){
+		return UIState::Background;
 	}
-	return State;
+	if(fWPFWindow!=nullptr){
+		bool IsActive=fWPFWindow->WPFWindowIsActive();
+		if(IsActive){
+			return UIState::Active;
+		}
+		else{
+			return UIState::Inactive;
+		}
+	}
+	else{
+		// always active when outside uiview container
+		return UIState::Active;
+	}
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::UpdateViewState(void)noexcept
@@ -1076,15 +653,15 @@ bool cWPFUIView::UpdateViewState(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void cWPFUIView::UpdateWindow(iUIWindow *Window)noexcept
+void cWPFUIView::UpdateWindow(iWPFViewWindow *WPFWindow)noexcept
 {
-	if(fWindow==Window){
+	if(fWPFWindow==WPFWindow){
 		// update view state only
 		UpdateViewState();
 		return;
 	}
 
-	fWindow=Window;
+	fWPFWindow=WPFWindow;
 
 	eUIState NewState=EvaluateViewState();
 
@@ -1106,17 +683,30 @@ void cWPFUIView::UpdateWindow(iUIWindow *Window)noexcept
 
 }
 //---------------------------------------------------------------------------
+void cWPFUIView::UpdateSubviewZPosition(cWPFUIView *Subview)noexcept
+{
+	auto SubviewPair=fSubviewMap.GetPair(Subview);
+	if(SubviewPair==fSubviewMap.end())
+		return;
+
+	// update item
+	fSubviewZOrderSet.Remove(SubviewPair);
+
+	SubviewPair->Value.ZPosition=Subview->WPFChildGetZPosition();
+	fSubviewZOrderSet.Insert(SubviewPair);
+}
+//---------------------------------------------------------------------------
 void cWPFUIView::NotifyWindowChanged(void)noexcept
 {
 	fViewNotification.WindowChanged();
 
+	iWindow *Window;
+	if(fWPFWindow==nullptr)
+		Window=nullptr;
+	else
+		Window=fWPFWindow->WPFWindowGetWindow();
 	// notify view contents
 	for(auto *Content : fContents){
-		iWindow *Window=nullptr;
-		auto Component=iCast<iWindowClient>(fWindow);
-		if(Component!=nullptr){
-			Window=Component->GetWindow();
-		}
 		Content->ViewContentUpdateWindow(Window);
 	}
 }
@@ -1127,33 +717,97 @@ bool cWPFUIView::InsertView(iUIView *View)noexcept
 		return false;
 	if(View==nullptr)
 		return false;
-	auto Subview=iCast<iWPFViewChild>(View);
+	auto Subview=iCast<cWPFUIView>(View);
 	if(Subview==nullptr)
 		return false;
 
-	auto &Handle=Subview->WPFChildGetElementHandle();
-	auto ZPosition=Subview->WPFChildGetZPosition();
-	if(mInsertView(Subview,Handle,ZPosition)==false){
+	// add to set
+	bool Exists;
+	auto pSetItem=fSubviewMap.InsertPair(Subview,Exists);
+	if(Exists){
 		return false;
 	}
-	
-	Subview->WPFChildTreeNotifyWindow(fWindow);
+	pSetItem->Value.Child=Subview;
+	pSetItem->Value.ZPosition=Subview->WPFChildGetZPosition();
+	// add to zorder set
+	fSubviewZOrderSet.Insert(pSetItem);
 
-	return true;
+	if(Subview->WPFChildParentAcquire(this)){
+		auto &Handle=Subview->WPFGetTargetElementHandle();
+		if(mInsertView(Handle)){
+			Subview->WPFChildTreeNotifyWindow(fWPFWindow);
+			return true;
+		}
+	}
+	// failed
+	fSubviewZOrderSet.Remove(pSetItem);
+	fSubviewMap.RemovePair(pSetItem);
+	return false;
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::RemoveView(iUIView *View)noexcept
 {
-	if(CheckThread()==false)
-		return false;
 	if(View==nullptr)
 		return false;
-	auto Subview=iCast<iWPFViewChild>(View);
+	auto Subview=iCast<cWPFUIView>(View);
 	if(Subview==nullptr)
 		return false;
 
-	auto &Handle=Subview->WPFChildGetElementHandle();
-	return mRemoveView(Subview,Handle);
+	return RemoveSubview(Subview);
+}
+//---------------------------------------------------------------------------
+bool cWPFUIView::RemoveSubview(cWPFUIView *Subview)noexcept
+{
+	auto pSetItem=fSubviewMap.GetPair(Subview);
+	if(pSetItem==fSubviewMap.end()){
+		// not in the view
+		return false;
+	}
+	// remove from order list
+	fSubviewZOrderSet.Remove(pSetItem);
+	// remove from set
+	fSubviewMap.RemovePair(pSetItem);
+
+	auto &WPFChild=Subview->WPFGetTargetElementHandle();
+	mRemoveView(WPFChild);
+
+	Subview->WPFChildParentRelease(this);
+	return true;
+}
+//---------------------------------------------------------------------------
+cWPFUIView::cChildrenInfo* cWPFUIView::WPFSetupChildrenInfo(void* &Handle)noexcept
+{
+	auto SubviewInfo=new cSubviewInfo;
+
+	SubviewInfo->ChildCount=fSubviewZOrderSet.GetCount();
+	SubviewInfo->ChildList.SetCount(SubviewInfo->ChildCount);
+	
+	for(uIntn i=0;i<SubviewInfo->ChildCount;i++){
+		SubviewInfo->ChildList[i]=fSubviewZOrderSet[i]->Value.Child;
+	}
+	SubviewInfo->Views=SubviewInfo->ChildList;
+	Handle=SubviewInfo;
+	return SubviewInfo;
+}
+//---------------------------------------------------------------------------
+void cWPFUIView::WPFClearChildrenInfo(void *Handle)noexcept
+{
+	delete static_cast<cSubviewInfo*>(Handle);
+}
+//---------------------------------------------------------------------------
+bool cWPFUIView::WPFAttachExtParent(void)noexcept
+{
+	if(WPFChildParentAcquire(&fExternalWPFParent)){
+		iIncReference(this,'pare');
+		return true;
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+void cWPFUIView::WPFDetachExtParent(void)noexcept
+{
+	WPFChildParentRelease(&fExternalWPFParent);	
+	iDecReference(this,'pare');
 }
 //---------------------------------------------------------------------------
 bool cWPFUIView::InsertViewContent(bcWPFViewContentDrawing *Content)noexcept
@@ -1194,7 +848,7 @@ void cWPFUIView::SetupContentOrderCache(void)noexcept
 	if(fContentOrderCacheUpdate==false){
 		return;
 	}
-	
+
 	cSeqMap<Float32,cSeqList<bcWPFViewContentDrawing*> > ZOrderMap;
 
 	fContentOrderCache.Clear();
@@ -1220,8 +874,8 @@ void cWPFUIView::ClearContentOrderCache(void)noexcept
 //---------------------------------------------------------------------------
 void cWPFUIView::ApplyContentChanged(void)noexcept
 {
-	if(fUIThread->IsShutdown())
-		return;
+	//if(fUIThread->IsShutdown())
+	//	return;
 	auto *Drawings=fContentOrderCache.GetItems();
 	uIntn Count=fContentOrderCache.GetCount();
 
@@ -1418,24 +1072,41 @@ bool cWPFUIView::TouchReleaseExclusive(iUITouchHandler *Handler)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-cGCRef& cWPFUIView::WPFChildGetElementHandle(void)noexcept
+bool cWPFUIView::WPFChildParentAcquire(cWPFUIView *Parent)noexcept
 {
-	return fWPFView;
+	if(fWPFParent!=nullptr)
+		return false;
+
+	fParent=Parent;
+	fWPFParent=Parent;
+	return true;
 }
 //---------------------------------------------------------------------------
-eUIState cWPFUIView::WPFParentGetState(void)noexcept
+void cWPFUIView::WPFChildParentRelease(cWPFUIView *Parent)noexcept
 {
-	return fViewState;
+	if(fWPFParent!=Parent)
+		return;
+
+	fParent=nullptr;
+	fWPFParent=nullptr;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIView::WPFParentGetContentScale(void)noexcept
+bool cWPFUIView::WPFChildParentAcquire(iWPFViewParent *Parent)noexcept
 {
-	return fContentScale;
+	if(fWPFParent!=nullptr)
+		return false;
+
+	fParent=nullptr;
+	fWPFParent=Parent;
+	return true;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUIView::WPFParentGetLayoutScale(void)noexcept
+void cWPFUIView::WPFChildParentRelease(iWPFViewParent *Parent)noexcept
 {
-	return fLayoutScale;
+	if(fWPFParent!=Parent)
+		return;
+
+	fWPFParent=nullptr;
 }
 //---------------------------------------------------------------------------
 Float32 cWPFUIView::WPFChildGetLayoutScale(void)noexcept
@@ -1448,11 +1119,11 @@ Float32 cWPFUIView::WPFChildGetZPosition(void)noexcept
 	return fZPosition;
 }
 //---------------------------------------------------------------------------
-void cWPFUIView::WPFChildTreeNotifyWindow(iUIWindow *Window)noexcept
+void cWPFUIView::WPFChildTreeNotifyWindow(iWPFViewWindow *WPFWindow)noexcept
 {
-	UpdateWindow(Window);
+	UpdateWindow(WPFWindow);
 	for(auto &Item : fSubviewZOrderSet){
-		Item->Key->WPFChildTreeNotifyWindow(Window);
+		Item->Key->WPFChildTreeNotifyWindow(WPFWindow);
 	}
 }
 //---------------------------------------------------------------------------
@@ -1465,33 +1136,32 @@ void cWPFUIView::WPFChildTreeNotifyState(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFUIView::WPFChildTreeNotifyScale(void)noexcept
+void cWPFUIView::WPFChildTreeNotifyScale(Float32 LayoutScale,Float32 ContentScale)noexcept
 {
-	if(fParent!=nullptr){
-		fLayoutScale=fParent->WPFParentGetLayoutScale();
-		fContentScale=fParent->WPFParentGetContentScale();
-	}
-	else{
-		fLayoutScale=1.f;
-		fContentScale=1.f;
-	}
+	fLayoutScale=LayoutScale;
+	fContentScale=ContentScale;
 
 	fViewNotification.ContentScaleChanged();
 
 	for(auto &Item : fSubviewZOrderSet){
-		Item->Key->WPFChildTreeNotifyScale();
+		Item->Key->WPFChildTreeNotifyScale(LayoutScale,ContentScale);
+	}
+
+	auto ViewSize=mbcWPFUIView::mGetSize();
+	for(auto *Content : fContents){
+		Content->WPFArrange(fLayoutScale,ViewSize.x,ViewSize.y);
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFUIView::ParentNotifyKeyboardFocusWithin(iWPFViewChild *Subview,iUIKeyEvent *KeyEvent)noexcept
+void cWPFUIView::ParentNotifyKeyboardFocusWithin(cWPFUIView *,iUIKeyEvent *KeyEvent)noexcept
 {
 	WPFNotifyFocusEnterRange(KeyEvent);
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::ParentNotifyKeyboardFocuseEnter(iUIKeyEvent *KeyEvent)noexcept
 {
-	if(fParentView!=nullptr){
-		static_cast<cWPFUIView*>(fParentView)->ParentNotifyKeyboardFocuseEnter(KeyEvent);
+	if(fParent!=nullptr){
+		fParent->ParentNotifyKeyboardFocuseEnter(KeyEvent);
 	}
 
 	fKeyNotification.FilterFocusEnter(KeyEvent);
@@ -1499,8 +1169,8 @@ void cWPFUIView::ParentNotifyKeyboardFocuseEnter(iUIKeyEvent *KeyEvent)noexcept
 //---------------------------------------------------------------------------
 void cWPFUIView::ParentNotifyKeyboardFocuseLeave(iUIKeyEvent *KeyEvent)noexcept
 {
-	if(fParentView!=nullptr){
-		static_cast<cWPFUIView*>(fParentView)->ParentNotifyKeyboardFocuseLeave(KeyEvent);
+	if(fParent!=nullptr){
+		fParent->ParentNotifyKeyboardFocuseLeave(KeyEvent);
 	}
 
 	fKeyNotification.FilterFocusLeave(KeyEvent);
@@ -1508,30 +1178,30 @@ void cWPFUIView::ParentNotifyKeyboardFocuseLeave(iUIKeyEvent *KeyEvent)noexcept
 //---------------------------------------------------------------------------
 void cWPFUIView::ParentNotifyKeyboardKeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 {
-	if(fParentView!=nullptr){
-		static_cast<cWPFUIView*>(fParentView)->ParentNotifyKeyboardKeyInput(KeyEvent,KeyCode);
+	if(fParent!=nullptr){
+		fParent->ParentNotifyKeyboardKeyInput(KeyEvent,KeyCode);
 	}
 
 	fKeyNotification.FilterKeyInput(KeyEvent,KeyCode);
 }
 //---------------------------------------------------------------------------
-void cWPFUIView::ParentNotifyMouseEnter(iWPFViewChild *Subview,iUIMouseEvent *MouseEvent)noexcept
+void cWPFUIView::ParentNotifyMouseEnter(cWPFUIView *,iUIMouseEvent *MouseEvent)noexcept
 {
 	WPFNotifyMouseEnterRange(MouseEvent);
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::ParentNotifyMouseIsDirectlyEnter(iUIMouseEvent *MouseEvent)noexcept
 {
-	if(fParentView!=nullptr){
-		static_cast<cWPFUIView*>(fParentView)->ParentNotifyMouseIsDirectlyEnter(MouseEvent);
+	if(fParent!=nullptr){
+		fParent->ParentNotifyMouseIsDirectlyEnter(MouseEvent);
 	}
 	fMouseNotification.FilterEnter(MouseEvent);
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::ParentNotifyMouseIsDirectlyLeave(iUIMouseEvent *MouseEvent)noexcept
 {
-	if(fParentView!=nullptr){
-		static_cast<cWPFUIView*>(fParentView)->ParentNotifyMouseIsDirectlyLeave(MouseEvent);
+	if(fParent!=nullptr){
+		fParent->ParentNotifyMouseIsDirectlyLeave(MouseEvent);
 	}
 	fMouseNotification.FilterLeave(MouseEvent);
 }
@@ -1542,8 +1212,8 @@ void cWPFUIView::WPFNotifyFocusEnterRange(iUIKeyEvent *KeyEvent)noexcept
 		fKeyFocusInRangeNotified=true;
 
 		// notify parent focus enter range
-		if(fParentView!=nullptr){
-			static_cast<cWPFUIView*>(fParentView)->ParentNotifyKeyboardFocusWithin(this,KeyEvent);
+		if(fParent!=nullptr){
+			fParent->ParentNotifyKeyboardFocusWithin(this,KeyEvent);
 		}
 
 		fKeyNotification.FocusEnterRange(KeyEvent);
@@ -1572,7 +1242,7 @@ void cWPFUIView::WPFNotifyFocusLeave(iUIKeyEvent *KeyEvent)noexcept
 {
 	if(fKeyFocusedNotifyValue){
 		fKeyFocusedNotifyValue=false;
-			
+
 		ParentNotifyKeyboardFocuseLeave(KeyEvent);
 
 		fKeyNotification.HandleFocusLeave(KeyEvent);
@@ -1594,7 +1264,7 @@ void cWPFUIView::WPFNotifyMouseIsDirectlyLeave(iUIMouseEvent *MouseEvent)noexcep
 {
 	if(fMouseIsOverNotifyValue){
 		fMouseIsOverNotifyValue=false;
-			
+
 		ParentNotifyMouseIsDirectlyLeave(MouseEvent);
 
 		fMouseNotification.HandleLeave(MouseEvent);
@@ -1607,8 +1277,8 @@ void cWPFUIView::WPFNotifyMouseEnterRange(iUIMouseEvent *MouseEvent)noexcept
 		fMouseEnterNotified=true;
 
 		// notify parent mouse enter
-		if(fParentView!=nullptr){
-			static_cast<cWPFUIView*>(fParentView)->ParentNotifyMouseEnter(this,MouseEvent);
+		if(fParent!=nullptr){
+			fParent->ParentNotifyMouseEnter(this,MouseEvent);
 		}
 
 		fMouseNotification.MouseEnterRange(MouseEvent);
@@ -1623,218 +1293,226 @@ void cWPFUIView::WPFNotifyMouseLeave(iUIMouseEvent *MouseEvent)noexcept
 	fMouseNotification.MouseLeaveRange(MouseEvent);
 }
 //---------------------------------------------------------------------------
-
-#if 0
-
-
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void* mcWPFUIElementAsUIView::CastInterface(iTypeID ID)noexcept(true)
+void cWPFUIView::WPFNotifyVisible(bool Visible)noexcept
 {
-	return ImpCastInterface<iCLIObject,iUIView,iWPFViewChild>(this,ID);
+	if(fStateVisible==Visible)
+		return;
+	fStateVisible=Visible;
+
+	WPFChildTreeNotifyState();
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::CheckThread(void)
+void cWPFUIView::WPFNotifyArrange(bool Moved,bool Sized,cUIRect Rect)noexcept
 {
-	return fUIThread->IsCurrent();
-}
-//---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::UIViewNotifyParent(iWPFViewParent *Parent)
-{
-	fParent=Parent;
-}
-//---------------------------------------------------------------------------
-iUIThread* mcWPFUIElementAsUIView::GetUIThread(void)
-{
-	return fUIThread;
-}
-//---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::GetZPosition(void)
-{
-	return fZPosition;
-}
-//---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::SetZPosition(Float32 ZPosition)
-{
-	if(fZPosition==ZPosition)
-		return true;
-
-
-	fZPosition=ZPosition;
-	if(fParent!=nullptr){
-		//fParent->WPFParentUpdateSubviewZPosition(this);
+	for(auto *Content : fContents){
+		Content->WPFArrange(fLayoutScale,Rect.Size.x,Rect.Size.y);
 	}
-	return true;
-}
-//---------------------------------------------------------------------------
-cUIPoint mcWPFUIElementAsUIView::GetSize(void)
-{
-	return fRect.Size;
-}
-//---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::SetSize(cUIPoint Size)
-{
-	if(CheckThread()==false)
-		return false;
 
-	if(Size.x<0)
-		Size.x=0;
-	if(Size.y<0)
-		Size.y=0;
-	fRect.Size=Size;
-	mApplyRect();
-	return true;
-}
-//---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::TranslatePointTo(iInterface *Relative,cUIPoint &Position)
-{
-	if(CheckThread()==false)
-		return false;
+	UpdateViewState();
 
-	auto RelativeObject=iCast<iCLIObject>(Relative);
-	if(RelativeObject==nullptr)
-		return false;
+	fViewNotification.RectangleChanged(Moved,Sized);
 
-	auto &Handle=RelativeObject->GetObjecHandle();
-	return mTranslatePointTo(Handle,Position);
-}
-//---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::MoveTo(iInterface *Relative,cUIPoint Position)
-{
-	if(CheckThread()==false)
-		return false;
+	if(fLayoutInProgress){
+		return;
+	}
+	fLayoutInProgress=true;
 
-	auto RelativeObject=iCast<iCLIObject>(Relative);
-	if(RelativeObject==nullptr)
-		return false;
+	fViewNotification.Layout();
 
-	auto &Handle=RelativeObject->GetObjecHandle();
-	return mSetPosition(Handle,Position);
-}
-//---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)
-{
-	if(CheckThread()==false)
-		return false;
+	fLayoutInProgress=false;
 
-	auto RelativeObject=iCast<iCLIObject>(Relative);
-	if(RelativeObject==nullptr)
-		return false;
+	ApplyContentChanged();
+}
+//---------------------------------------------------------------------------
+void cWPFUIView::WPFOnIsKeyboardFocusedChanged(bool Focused)noexcept
+{
+	cWPFKeyEventByMessage KeyEvent(this);
 
-	auto &Handle=RelativeObject->GetObjecHandle();
-	return mSetRectangle(Handle,Position,Size);
+	if(Focused){
+		WPFNotifyFocusEnter(&KeyEvent);
+	}
+	else{
+		WPFNotifyFocusLeave(&KeyEvent);
+	}
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::GetContentScale(void)
+void cWPFUIView::WPFOnIsKeyboardFocusWithinChanged(bool Focused)noexcept
 {
-	return 1.f;
+	cWPFKeyEventByMessage KeyEvent(this);
+
+	//auto Msg=cnRTL::CreateStringFormat(L"%p WPFOnIsKeyboardFocusWithinChanged %d\n",KeyEvent->GetSourceView(),Focused);
+	//OutputDebugStringW(Msg);
+	if(Focused){
+		WPFNotifyFocusEnterRange(&KeyEvent);
+	}
+	else{
+		WPFNotifyFocusLeave(&KeyEvent);
+
+		WPFNotifyFocusLeaveRange(&KeyEvent);
+	}
 }
 //---------------------------------------------------------------------------
-eUIState mcWPFUIElementAsUIView::WPFParentGetState(void)
+void cWPFUIView::WPFOnKeyDownFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode,bool Repeat)noexcept
 {
-	return UIState::Active;
+	cWPFKeyEvent KeyEvent(this,KeyEventArgs);
+	if(Repeat==false){
+		fKeyNotification.FilterKeyDown(&KeyEvent,KeyCode);
+	}
+	else{
+		fKeyNotification.FilterKeyInput(&KeyEvent,KeyCode);
+	}
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::WPFParentGetContentScale(void)
+void cWPFUIView::WPFOnKeyDown(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode,bool Repeat)noexcept
 {
-	return 1.f;
+	cWPFKeyEvent KeyEvent(this,KeyEventArgs);
+
+	if(Repeat==false){
+
+		fKeyNotification.HandleKeyDown(&KeyEvent,KeyCode);
+
+		// trigger one extea Key Input route event
+		ParentNotifyKeyboardKeyInput(&KeyEvent,KeyCode);
+	}
+
+	fKeyNotification.HandleKeyInput(&KeyEvent,KeyCode);
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::WPFParentGetLayoutScale(void)
+void cWPFUIView::WPFOnKeyUp(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode)noexcept
 {
-	return 1.f;
+	cWPFKeyEvent KeyEvent(this,KeyEventArgs);
+
+	fKeyNotification.HandleKeyUp(&KeyEvent,KeyCode);
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::WPFChildGetLayoutScale(void)
+void cWPFUIView::WPFOnKeyUpFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode)noexcept
 {
-	return 1.f;
+	cWPFKeyEvent KeyEvent(this,KeyEventArgs);
+
+	fKeyNotification.FilterKeyUp(&KeyEvent,KeyCode);
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFUIElementAsUIView::WPFChildGetZPosition(void)
+void cWPFUIView::WPFOnIsMouseDirectlyOverChanged(bool InRange)noexcept
 {
-	return fZPosition;
+	cWPFMouseEventByMessage MouseEvent(this);
+
+	if(InRange){
+		WPFNotifyMouseIsDirectlyEnter(&MouseEvent);
+	}
+	else{
+		WPFNotifyMouseIsDirectlyLeave(&MouseEvent);
+	}
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::WPFChildTreeNotifyWindow(iUIWindow *Window)
+void cWPFUIView::WPFOnMouseEnter(mcWPFMouseEventArgs &MouseEventArgs)noexcept
 {
-	fWindow=Window;
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	WPFNotifyMouseEnterRange(&MouseEvent);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::WPFChildTreeNotifyState(void)
+void cWPFUIView::WPFOnMouseLeave(mcWPFMouseEventArgs &MouseEventArgs)noexcept
 {
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	WPFNotifyMouseLeave(&MouseEvent);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::WPFChildTreeNotifyScale(void)
+void cWPFUIView::WPFOnMouseMove(mcWPFMouseEventArgs &MouseEventArgs)noexcept
 {
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.HandleMove(&MouseEvent);
 }
 //---------------------------------------------------------------------------
-eUIState mcWPFUIElementAsUIView::GetUIState(void)
+void cWPFUIView::WPFOnMouseMoveFilter(mcWPFMouseEventArgs &MouseEventArgs)noexcept
 {
-	if(fParent==nullptr)
-		return UIState::Null;
-	return fParent->WPFParentGetState();
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.FilterMove(&MouseEvent);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)
+void cWPFUIView::WPFOnMouseDown(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
 {
-	return false;
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.HandleDown(&MouseEvent,Button);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::RemoveStateHandler(iUIStateHandler *Handler)
+void cWPFUIView::WPFOnMouseDownFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
 {
-	return false;
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.FilterDown(&MouseEvent,Button);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::InsertViewHandler(iUIViewHandler *Handler,sfInt16 Order)
+void cWPFUIView::WPFOnMouseUp(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
 {
-	return false;
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.HandleUp(&MouseEvent,Button);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::RemoveViewHandler(iUIViewHandler *Handler)
+void cWPFUIView::WPFOnMouseUpFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept
 {
-	return false;
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.FilterUp(&MouseEvent,Button);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::SetArrangement(void)
+void cWPFUIView::WPFOnMouseWheel(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept
 {
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.HandleWheel(&MouseEvent,ScrollX,ScrollY);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::ArrangeLayout(void)
+void cWPFUIView::WPFOnMouseWheelFilter(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept
 {
+	cWPFMouseEvent MouseEvent(this,MouseEventArgs);
+
+	fMouseNotification.FilterWheel(&MouseEvent,ScrollX,ScrollY);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIElementAsUIView::SetIncludeParentFrameMargin(bool Include)
+void cWPFUIView::WPFOnTouchDown(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.HandleDown(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-cUIRectangle mcWPFUIElementAsUIView::GetFrameMargin(void)
+void cWPFUIView::WPFOnTouchDownFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
-	return UIRectangleZero;
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.FilterDown(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-iUIWindow* mcWPFUIElementAsUIView::GetWindow(void)
+void cWPFUIView::WPFOnTouchUp(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
-	if(fParent==nullptr)
-		return nullptr;
-	return fWindow;
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.HandleUp(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-iUIView* mcWPFUIElementAsUIView::GetParent(void)
+void cWPFUIView::WPFOnTouchUpFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
-	if(fParent==nullptr)
-		return nullptr;
-	//return fParent->WPFParentGetUIView();
-	return nullptr;
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.FilterUp(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::InsertView(iUIView*)
+void cWPFUIView::WPFOnTouchMove(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
-	return false;
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.HandleMove(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-bool mcWPFUIElementAsUIView::RemoveView(iUIView*)
+void cWPFUIView::WPFOnTouchMoveFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept
 {
-	return false;
+	cWPFTouchEvent TouchEvent(this,TouchEventArgs);
+
+	fTouchNotification.FilterMove(&TouchEvent);
 }
 //---------------------------------------------------------------------------
-#endif // 0

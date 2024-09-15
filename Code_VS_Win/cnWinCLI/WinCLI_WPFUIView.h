@@ -1,18 +1,35 @@
-/*- cnWinWPF - View -------------------------------------------------------*/
+/*- cnWinCLI - WPF - View -------------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2023-10-07                                          */
 /*-------------------------------------------------------------------------*/
 #pragma once
 /*-------------------------------------------------------------------------*/
 
-#include <cnWinCLI\WinDNet_WPFUICore.h>
-#include <cnWinCLI\WinDNetM_WPFUIView.h>
+#include <cnWinCLI\WinCLI_WPFUICore.h>
+#include <cnWinCLI\WinCLIM_WPFUIView.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
+//---------------------------------------------------------------------------
+class cWPFUIView;
+//---------------------------------------------------------------------------
+iPtr<iUIView> WPFCreateUIView(void)noexcept(true);
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iWPFViewWindow
+{
+public:
+	virtual iUIWindow* WPFWindowInterface(void)noexcept(true)=0;
+	virtual iWindow* WPFWindowGetWindow(void)noexcept(true)=0;
+	virtual bool WPFWindowIsActive(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iWPFViewParent
+{
+public:
+};
 //---------------------------------------------------------------------------
 class bcWPFKeyEvent : public iUIKeyEvent
 {
@@ -114,45 +131,6 @@ protected:
 	void *fTouchID;
 };
 //---------------------------------------------------------------------------
-class cWPFVisualAsWindow : public iUIWindow, public mcWPFVisual
-{
-public:
-	cWPFVisualAsWindow(mcWPFVisual &&Visual)noexcept(true);
-	~cWPFVisualAsWindow()noexcept(true);
-
-	// iUIArea
-
-	virtual iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true)override;
-	virtual eUIState cnLib_FUNC GetUIState(void)noexcept(true)override;
-	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order)noexcept(true)override;
-	virtual bool cnLib_FUNC RemoveStateHandler(iUIStateHandler *Handler)noexcept(true)override;
-	virtual bool cnLib_FUNC GetVisible(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetVisible(bool Visible)noexcept(true)override;
-	virtual bool cnLib_FUNC IsEnabled(void)noexcept(true)override;
-	virtual bool cnLib_FUNC GetEnable(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetEnable(bool Enable)noexcept(true)override;
-	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetSize(cUIPoint Size)noexcept(true)override;
-	virtual bool cnLib_FUNC TranslatePointTo(iInterface *Relative,cUIPoint &Position)noexcept(true)override;
-	virtual bool cnLib_FUNC MoveTo(iInterface *Relative,cUIPoint Position)noexcept(true)override;
-	virtual bool cnLib_FUNC ArrangeRectangle(iInterface *Relative,cUIPoint Position,cUIPoint Size)noexcept(true)override;
-	virtual Float32 cnLib_FUNC GetZPosition(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetZPosition(Float32 ZPosition)noexcept(true)override;
-	virtual Float32 cnLib_FUNC GetContentScale(void)noexcept(true)override;
-
-	// iUIWindow
-
-	virtual iUIScreen* cnLib_FUNC GetScreen(void)noexcept(true)override;
-	virtual iUIWindow* cnLib_FUNC GetParent(void)noexcept(true)override;
-	virtual bool cnLib_FUNC InsertWindowHandler(iUIWindowHandler *Handler,sfInt16 Order)noexcept(true)override;
-	virtual bool cnLib_FUNC RemoveWindowHandler(iUIWindowHandler *Handler)noexcept(true)override;
-	virtual iUIView* cnLib_FUNC GetClient(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetClient(iUIView *View)noexcept(true)override;
-
-
-private:
-};
-//---------------------------------------------------------------------------
 class bcWPFViewContentDrawing
 {
 public:
@@ -166,14 +144,18 @@ public:
 	Float32 GetZPosition(void)noexcept(true);
 	bool SetZPosition(Float32 ZPosition)noexcept(true);
 	Float32 GetContentScale(void)noexcept(true);
+	cUIRectangle GetContentMargin(void)noexcept(true);
+	void SetContentMargin(cUIRectangle Margin)noexcept(true);
 
-	virtual cGCRef* GetDrawingPointer(void)noexcept(true)=0;
+
+	virtual const cGCHandle* GetDrawingPointer(void)noexcept(true)=0;
 
 protected:
 	cWPFUIView *fView;
 
-	Float32 fDrawingWidth;
-	Float32 fDrawingHeight;
+	cUIRectangle fContentMargin;
+	Float32 fViewWidth;
+	Float32 fViewHeight;
 	Float32 fLayoutScale;
 	Float32 fZPosition;
 
@@ -185,28 +167,27 @@ protected:
 	virtual void ViewContentUpdateWindow(iWindow *Window)noexcept(true)=0;
 private:
 	friend cWPFUIView;
-	friend mcWPFView;
 
-	void WPFSetSize(Float32 LayoutScale,Float32 Width,Float32 Height)noexcept(true);
+	void WPFArrange(Float32 LayoutScale,Float32 Width,Float32 Height)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cWPFUIView
 	: public iUIView, public iUIKeyControl, public iUIMouseControl, public iUITouchControl
-	, public iCLIObject , public mcWPFView
+	, public mbcWPFUIView, public iCLIObject, protected iWPFViewParent
 	, public cnRTL::bcVirtualLifeCycle
 {
-	friend mcWPFView;
 public:
-
-	cWPFUIView(cDNetUIThread *UIThread,mcConstructParameter &Parameter)noexcept(true);
+	cWPFUIView(cWPFUIThread *UIThread,const cGCHandle &WPFUIViewTargetElement)noexcept(true);
 	~cWPFUIView()noexcept(true);
 
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override;
 
+	const cGCHandle& WPFGetTargetElementHandle(void)noexcept(true);
+
 	// iCLIObject
 
-	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
+	virtual const cGCHandle& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
 
 	// iUIArea
 
@@ -291,23 +272,7 @@ public:
 	virtual bool cnLib_FUNC TouchAcquireExclusive(iUITouchHandler *Handler)noexcept(true)override;
 	virtual bool cnLib_FUNC TouchReleaseExclusive(iUITouchHandler *Handler)noexcept(true)override;
 
-	// iWPFViewChild
-
-	virtual cGCRef& WPFChildGetElementHandle(void)noexcept(true)override;
-
-	virtual Float32 WPFChildGetLayoutScale(void)noexcept(true)override;
-	virtual Float32 WPFChildGetZPosition(void)noexcept(true)override;
-	virtual void WPFChildTreeNotifyWindow(iUIWindow *Window)noexcept(true)override;
-	virtual void WPFChildTreeNotifyState(void)noexcept(true)override;
-	virtual void WPFChildTreeNotifyScale(void)noexcept(true)override;
-
-
 	// iWPFViewParent
-
-	virtual eUIState WPFParentGetState(void)noexcept(true)override;
-	virtual Float32 WPFParentGetContentScale(void)noexcept(true)override;
-	virtual Float32 WPFParentGetLayoutScale(void)noexcept(true)override;
-
 
 	// functions for bcWPFViewContentDrawing
 
@@ -317,11 +282,73 @@ public:
 	void UpdateViewContent(void)noexcept(true);
 	Float32 GetViewContentContentScale(void)noexcept(true);
 
+	// functions for Subview
+
+	bool WPFChildParentAcquire(iWPFViewParent *Parent)noexcept(true);
+	void WPFChildParentRelease(iWPFViewParent *Parent)noexcept(true);
+
+	Float32 WPFChildGetLayoutScale(void)noexcept(true);
+	Float32 WPFChildGetZPosition(void)noexcept(true);
+	void WPFChildTreeNotifyWindow(iWPFViewWindow *WPFWindow)noexcept(true);
+	void WPFChildTreeNotifyState(void)noexcept(true);
+	void WPFChildTreeNotifyScale(Float32 LayoutScale,Float32 ContentScale)noexcept(true);
+
 protected:
 	void VirtualStarted(void)noexcept(true);
 	void VirtualStopped(void)noexcept(true);
 
-	iPtr<cDNetUIThread> fUIThread;
+	iPtr<cWPFUIThread> fUIThread;
+
+	class cExternalWPFParent : public iWPFViewParent
+	{
+	public:
+	}fExternalWPFParent;
+
+	//virtual iWPFViewParent* WPFUIViewGetWPFViewParent(void)noexcept(true)override;
+
+	virtual cChildrenInfo* WPFSetupChildrenInfo(void* &Handle)noexcept(true)override;
+	virtual void WPFClearChildrenInfo(void *Handle)noexcept(true)override;
+	virtual bool WPFAttachExtParent(void)noexcept(true)override;
+	virtual void WPFDetachExtParent(void)noexcept(true)override;
+	virtual void WPFNotifyVisible(bool Visible)noexcept(true)override;
+	virtual void WPFNotifyArrange(bool Moved,bool Sized,cUIRect Rect)noexcept(true)override;
+
+	virtual void WPFOnIsKeyboardFocusedChanged(bool Focused)noexcept(true)override;
+	virtual void WPFOnIsKeyboardFocusWithinChanged(bool Focused)noexcept(true)override;
+	virtual void WPFOnKeyDownFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode,bool Repeat)noexcept(true)override;
+	virtual void WPFOnKeyDown(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode,bool Repeat)noexcept(true)override;
+	virtual void WPFOnKeyUp(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode)noexcept(true)override;
+	virtual void WPFOnKeyUpFilter(mcWPFKeyEventArgs &KeyEventArgs,eKeyCode KeyCode)noexcept(true)override;
+
+
+	// mouse events from IWPFView
+
+	virtual void WPFOnIsMouseDirectlyOverChanged(bool InRange)noexcept(true)override;
+	virtual void WPFOnMouseEnter(mcWPFMouseEventArgs &MouseEventArgs)noexcept(true)override;
+	virtual void WPFOnMouseLeave(mcWPFMouseEventArgs &MouseEventArgs)noexcept(true)override;
+	virtual void WPFOnMouseMove(mcWPFMouseEventArgs &MouseEventArgs)noexcept(true)override;
+	virtual void WPFOnMouseMoveFilter(mcWPFMouseEventArgs &MouseEventArgs)noexcept(true)override;
+	virtual void WPFOnMouseDown(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept(true)override;
+	virtual void WPFOnMouseDownFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept(true)override;
+	virtual void WPFOnMouseUp(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept(true)override;
+	virtual void WPFOnMouseUpFilter(mcWPFMouseEventArgs &MouseEventArgs,eMouseButton Button)noexcept(true)override;
+	virtual void WPFOnMouseWheel(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept(true)override;
+	virtual void WPFOnMouseWheelFilter(mcWPFMouseEventArgs &MouseEventArgs,Float32 ScrollX,Float32 ScrollY)noexcept(true)override;
+
+	// touch events from IWPFView
+
+	virtual void WPFOnTouchDown(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+	virtual void WPFOnTouchDownFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+	virtual void WPFOnTouchUp(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+	virtual void WPFOnTouchUpFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+	virtual void WPFOnTouchMove(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+	virtual void WPFOnTouchMoveFilter(mcWPFTouchEventArgs &TouchEventArgs)noexcept(true)override;
+
+	iWPFViewWindow *fWPFWindow=nullptr;
+	iWPFViewParent *fWPFParent=nullptr;
+	cWPFUIView *fParent=nullptr;
+	Float32 fZPosition;
+	Float32 fContentScale;
 
 	bool CheckThread(void)noexcept(true);
 
@@ -334,13 +361,15 @@ protected:
 	
 	// state
 
+	bool fStateVisible=false;
+	bool fLayoutInProgress=false;
 
 	eUIState fViewState;
 
 	eUIState EvaluateViewState(void)noexcept(true);
 	bool UpdateViewState(void)noexcept(true);
 	void NotifyWindowChanged(void)noexcept(true);
-	void UpdateWindow(iUIWindow *Window)noexcept(true);
+	void UpdateWindow(iWPFViewWindow *WPFWindow)noexcept(true);
 
 	// layout
 
@@ -368,8 +397,45 @@ protected:
 	void ClearContentOrderCache(void)noexcept(true);
 	void ApplyContentChanged(void)noexcept(true);
 
+	// subviews
+
+	struct cSubviewSetItem
+	{
+		Float32 ZPosition;
+		cWPFUIView *Child;
+	};
+	cnRTL::cLinkMap<cWPFUIView*,cSubviewSetItem> fSubviewMap;
+	typedef cnRTL::cLinkMap<cWPFUIView*,cSubviewSetItem>::tContent tSubviewNode;
+
+	struct cSubviewInfo : cChildrenInfo
+	{
+		cnRTL::cSeqList<mbcWPFUIView*> ChildList;
+	};
+
+	// content
+
+	struct cSubviewItemZOrderOperator
+	{
+		static sfInt8 Compare(const tSubviewNode *Item,const tSubviewNode *Value)noexcept(true);
+	};
+	cnRTL::cSeqSet<tSubviewNode*,cSubviewItemZOrderOperator> fSubviewZOrderSet;
+
 
 private:
+	void UpdateSubviewZPosition(cWPFUIView *Subview)noexcept(true);
+	bool RemoveSubview(cWPFUIView *Subview)noexcept(true);
+	void Cleanup(void)noexcept(true);
+
+	class cExitParentProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true);
+	}fExitParentProcedure;
+
+	// functions for WPFChild
+
+	bool WPFChildParentAcquire(cWPFUIView *Parent)noexcept(true);
+	void WPFChildParentRelease(cWPFUIView *Parent)noexcept(true);
+
 	// functions for mcWPFView
 
 	void WPFNotifyFocusEnterRange(iUIKeyEvent *KeyEvent)noexcept(true);
@@ -383,11 +449,11 @@ private:
 
 	// notification as wpf parent
 
-	void ParentNotifyKeyboardFocusWithin(iWPFViewChild *Subview,iUIKeyEvent *KeyEvent)noexcept(true);
+	void ParentNotifyKeyboardFocusWithin(cWPFUIView *Subview,iUIKeyEvent *KeyEvent)noexcept(true);
 	void ParentNotifyKeyboardFocuseEnter(iUIKeyEvent *KeyEvent)noexcept(true);
 	void ParentNotifyKeyboardFocuseLeave(iUIKeyEvent *KeyEvent)noexcept(true);
 	void ParentNotifyKeyboardKeyInput(iUIKeyEvent *KeyEvent,eKeyCode Key)noexcept(true);
-	void ParentNotifyMouseEnter(iWPFViewChild *Subview,iUIMouseEvent *MouseEvent)noexcept(true);
+	void ParentNotifyMouseEnter(cWPFUIView *Subview,iUIMouseEvent *MouseEvent)noexcept(true);
 	void ParentNotifyMouseIsDirectlyEnter(iUIMouseEvent *MouseEvent)noexcept(true);
 	void ParentNotifyMouseIsDirectlyLeave(iUIMouseEvent *MouseEvent)noexcept(true);
 };
@@ -397,4 +463,3 @@ private:
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
-/*-------------------------------------------------------------------------*/

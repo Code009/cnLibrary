@@ -1,156 +1,255 @@
-﻿#include "WinDNetM_WPFUIViewWindow.h"
-
-//#pragma comment(lib,"Imm32.lib")	// IME
+#include "WinCLIM_WPFUIWindow.h"
 
 using namespace cnLibrary;
-
-using namespace cnRTL;
-using namespace cnWinRTL;
 using namespace cnWin;
 using namespace DNet;
 
-
 //---------------------------------------------------------------------------
-iPtr<iWindowClient> cnWin::DNetCreateWindowClient(void)noexcept
+void cnWin::mMakeWPFViewRoot(cGCRef &Ref)noexcept
 {
-	auto DispatchFrame=mcDNetUIThreadDispatcher::mCurrentUIDispatcher();
-	if(DispatchFrame==nullptr)
-		return nullptr;
-
-	mcWPFViewRoot::mcConstructParameter Parameter={
-		gcnew WPFViewRoot()
-	};
-	return DNetCreateWindowClient(DispatchFrame,Parameter);
+	Ref.Set(gcnew WPFViewRoot());
 }
 //---------------------------------------------------------------------------
-rPtr<iPopupWindowControl> cnWin::DNetCreatePopupWindowControl(void)noexcept
+riWPFUIViewRemoteRoot^ cnWin::WPFUIViewQueryRemoteRootFromRootVisual(System::Windows::Media::Visual ^RootVisual)noexcept
 {
-	auto DispatchFrame=mcDNetUIThreadDispatcher::mCurrentUIDispatcher();
-	if(DispatchFrame==nullptr)
-		return nullptr;
-
-	mcWPFViewRoot::mcConstructParameter Parameter={
-		gcnew WPFViewRoot()
-	};
-	return DNetCreatePopupWindowControl(DispatchFrame,Parameter);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-mcWPFViewRoot::mcWPFViewRoot(mcConstructParameter &Parameter)noexcept
-	: fWPFRoot(cnVar::MoveCast(Parameter.WPFRoot))
-{
-	fDispatcherFinishNotify.NotifyProcedure=DispatcherFinishNotify;
-
-	auto WPF=fWPFRoot.Get();
-	WPF->CPPAttach(this);
-}
-//---------------------------------------------------------------------------
-mcWPFViewRoot::~mcWPFViewRoot()noexcept
-{
-	auto WPF=fWPFRoot.Get();
-	WPF->CPPDetach(this);
-}
-//---------------------------------------------------------------------------
-System::Object^ mcWPFViewRoot::mGetWPFRootObject(void)noexcept
-{
-	return fWPFRoot;
-}
-//---------------------------------------------------------------------------
-void mcWPFViewRoot::CleanupWPF(void)noexcept
-{
-	if(fClient!=nullptr){
-		mResetClient();
+	auto RootTargetElement=dynamic_cast<IWPFUIViewRootTargetElement^>(RootVisual);
+	if(RootTargetElement!=nullptr){
+		return gcnew rcWPFUIViewRootTargetElementAsRemoteRoot(RootTargetElement);
 	}
+	return nullptr;
 
-	auto WPFRoot=fWPFRoot.Get();
-	WPFRoot->DispatcherFinishCleanup();
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept
+//---------------------------------------------------------------------------
+rcNativeCaller_WPFUIWindow::rcNativeCaller_WPFUIWindow(void *CPP)
+	: CPP(CPP)
 {
-	auto Host=cnMemory::GetObjectFromMemberPointer(Notify,&mcWPFViewRoot::fDispatcherFinishNotify);
-	return Host->DispatcherFinishNotify(Shutdown);
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::DispatcherFinishNotify(bool Shutdown)noexcept
-{
-	CleanupWPF();
-	nDispatcherFinishNotify(Shutdown);
-}
 //---------------------------------------------------------------------------
-bool mcWPFViewRoot::mSetClient(cGCRef &ObjectHandle)noexcept
+void WPFUIViewRootAdapter::CPPAttach(mbcWPFUIViewRoot *p)
 {
-	auto WPFViewClient=ObjectHandle.Cast<IWPFView>();
-	if(WPFViewClient==nullptr)
-		return false;
+	if(CPP!=nullptr)
+		return;
+	this->CPP=p;
 
-	auto WPFRoot=fWPFRoot.Get();
-	if(WPFViewClient->ParentAcquire(WPFRoot)==false){
-		return false;
-	}
-
-	fWPFClient.Set(WPFViewClient);
-	fClient=WPFViewClient->ChildInterface;
-
-
-	try{
-		WPFRoot->ClientElement=WPFViewClient->Element;
-		return true;
-	}
-	catch(System::Exception ^e){
-		fWPFClient.Set(nullptr);
-		fClient=nullptr;
-		return false;
+	auto TargetElement=CPP->fTargetRootElement.Get();
+	if(TargetElement!=nullptr){
+		auto Element=dynamic_cast<System::Windows::UIElement^>(TargetElement);
+		if(Element!=nullptr){
+			NativeCaller=gcnew rcNativeCaller_WPFUIWindow(CPP);
+			Element->Dispatcher->ShutdownStarted+=gcnew System::EventHandler(NativeCaller,&rcNativeCaller_WPFUIWindow::mbcWPFUIViewRoot_ShutdownStarted);
+			Element->IsVisibleChanged+=gcnew System::Windows::DependencyPropertyChangedEventHandler(OnIsVisibleChanged);
+			CPP->fWindowVisible=Element->IsVisible;
+		}
+		else{
+			CPP->fWindowVisible=true;
+			CPP->fWindowActive=true;
+		}
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::mResetClient(void)noexcept
+void WPFUIViewRootAdapter::CPPDetach(mbcWPFUIViewRoot *p)
 {
-	if(fClient==nullptr)
+	if(CPP!=p)
 		return;
 
-	auto WPFViewClient=fWPFClient.Get();
-	fWPFClient.Set(nullptr);
-	auto WPFRoot=fWPFRoot.Get();
+	auto TargetElement=CPP->fTargetRootElement.Get();
+	if(TargetElement!=nullptr){
+		auto Element=dynamic_cast<System::Windows::UIElement^>(TargetElement);
+		if(Element!=nullptr){
+			Element->Dispatcher->ShutdownStarted-=gcnew System::EventHandler(NativeCaller,&rcNativeCaller_WPFUIWindow::mbcWPFUIViewRoot_ShutdownStarted);
+			Element->IsVisibleChanged-=gcnew System::Windows::DependencyPropertyChangedEventHandler(OnIsVisibleChanged);
+		}
+	}
+	CPP->fWindowVisible=false;
+	CPP->fWindowActive=false;
+	NativeCaller=nullptr;
+	CPP=nullptr;
+}
+//---------------------------------------------------------------------------
+void rcNativeCaller_WPFUIWindow::mbcWPFUIViewRoot_ShutdownStarted(System::Object^,System::EventArgs^)
+{
+	static_cast<mbcWPFUIViewRoot*>(CPP)->WPFDispatcherShutdownStarted();
+}
+//---------------------------------------------------------------------------
+void WPFUIViewRootAdapter::RemoteChildAttach(IWPFUIViewTargetElement ^RemoteChild)
+{
+}
+//---------------------------------------------------------------------------
+void WPFUIViewRootAdapter::RemoteChildDetach(IWPFUIViewTargetElement ^RemoteChild)
+{
+}
+//---------------------------------------------------------------------------
+mbcWPFUIViewRoot* WPFUIViewRootAdapter::CPPFromSender(System::Object ^sender)
+{
+	auto TargetElement=dynamic_cast<IWPFUIViewRootTargetElement^>(sender);
+	if(TargetElement!=nullptr){
+		return TargetElement->Adapter.CPP;
+	}
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+void WPFUIViewRootAdapter::OnActiveChanged(void)
+{
+	if(CPP==nullptr)
+		return;
+
+	auto TargetElement=CPP->fTargetRootElement.Get();
+	bool Active=TargetElement->IsActive;
+	if(CPP->fWindowActive==Active)
+		return;
+
+	CPP->fWindowActive=Active;
+
+	CPP->WPFWindowStateChanged();
+}
+//---------------------------------------------------------------------------
+void WPFUIViewRootAdapter::OnIsVisibleChanged(System::Object ^sender,System::Windows::DependencyPropertyChangedEventArgs e)
+{
+	auto TargetElement=dynamic_cast<IWPFUIViewRootTargetElement^>(sender);
+	if(TargetElement!=nullptr){
+		auto CPPViewRoot=TargetElement->Adapter.CPP;
+		if(CPPViewRoot!=nullptr){
+			bool NewVisible=static_cast<System::Boolean>(e.NewValue);
+			if(CPPViewRoot->fWindowVisible!=NewVisible){
+				CPPViewRoot->fWindowVisible=NewVisible;
+				CPPViewRoot->WPFWindowStateChanged();
+			}
+		}
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rcWPFUIViewRootTargetElementAsRemoteRoot::rcWPFUIViewRootTargetElementAsRemoteRoot(IWPFUIViewRootTargetElement ^Target)
+	: fTarget(Target)
+{
+}
+//---------------------------------------------------------------------------
+void rcWPFUIViewRootTargetElementAsRemoteRoot::RemoteChildAttach(DNet::IWPFUIViewTargetElement ^RemoteChild)
+{
+	return fTarget->Adapter.RemoteChildAttach(RemoteChild);
+}
+//---------------------------------------------------------------------------
+void rcWPFUIViewRootTargetElementAsRemoteRoot::RemoteChildDetach(DNet::IWPFUIViewTargetElement ^RemoteChild)
+{
+	return fTarget->Adapter.RemoteChildDetach(RemoteChild);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void mbcWPFUIViewRoot::mSetup(const cGCHandle &WPFUIViewRootTargetElement)noexcept
+{
+	auto TargetElement=WPFUIViewRootTargetElement.DynamicCast<IWPFUIViewRootTargetElement>();
+	fTargetRootElement.Alloc(TargetElement);
+
+	TargetElement->Adapter.CPPAttach(this);
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIViewRoot::mClear(void)noexcept
+{
+	auto TargetElement=fTargetRootElement.Get();
+	TargetElement->Adapter.CPPDetach(this);
+
+	fTargetRootElement.Free();
+}
+//---------------------------------------------------------------------------
+#pragma unmanaged
+const cGCHandle& mbcWPFUIViewRoot::GetTargetElementHandle(void)const noexcept
+{
+	return fTargetRootElement;
+}
+#pragma managed
+//---------------------------------------------------------------------------
+DNet::IWPFUIViewRootTargetElement^ mbcWPFUIViewRoot::GetTargetElement(void)const noexcept
+{
+	return fTargetRootElement.Get();
+}
+//---------------------------------------------------------------------------
+void mbcWPFUIViewRoot::WPFDispatcherShutdownStarted(void)noexcept
+{
+	auto WPFRoot=fTargetRootElement.Get();
+	if(WPFRoot==nullptr)
+		return;
+
 	WPFRoot->ClientElement=nullptr;
 
-	WPFViewClient->ParentRelease(WPFRoot);
-	fClient=nullptr;
-	fClientView=nullptr;
+	WPFWindowShutdownStarted();
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::WPFUIWindowRemoveSubview(IWPFView ^Subview)noexcept
+bool mbcWPFUIViewRoot::mSetClient(const cGCHandle &ObjectHandle)noexcept
 {
-	if(fClient!=Subview->ChildInterface)
-		return;
+	auto ClientViewTargetElement=ObjectHandle.DynamicCast<System::Windows::UIElement>();
+	if(ClientViewTargetElement==nullptr)
+		return false;
 
-	mResetClient();
+	auto WPFRoot=fTargetRootElement.Get();
+
+	try{
+		WPFRoot->ClientElement=ClientViewTargetElement;
+		return true;
+	}
+	catch(System::Exception^){
+		return false;
+	}
 }
 //---------------------------------------------------------------------------
-bool mcWPFViewRoot::GetWindowVisible(void)noexcept
+void mbcWPFUIViewRoot::mResetClient(void)noexcept
 {
+	auto WPFRoot=fTargetRootElement.Get();
+	WPFRoot->ClientElement=nullptr;
+}
+//---------------------------------------------------------------------------
+bool mbcWPFUIViewRoot::mGetVisible(void)noexcept
+{
+	auto TargetElement=fTargetRootElement.Get();
+	if(TargetElement!=nullptr){
+		auto Element=dynamic_cast<System::Windows::UIElement^>(TargetElement);
+		if(Element!=nullptr){
+			return Element->Visibility==System::Windows::Visibility::Visible;
+		}
+	}
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFViewRoot::SetWindowVisible(bool Visible)noexcept
+bool mbcWPFUIViewRoot::mSetVisible(bool Visible)noexcept
 {
+	auto TargetElement=fTargetRootElement.Get();
+	if(TargetElement!=nullptr){
+		auto Element=dynamic_cast<System::Windows::UIElement^>(TargetElement);
+		if(Element!=nullptr){
+			if(Visible){
+				Element->Visibility=System::Windows::Visibility::Visible;
+			}
+			else{
+				Element->Visibility=System::Windows::Visibility::Hidden;
+			}
+			return true;
+		}
+	}
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFViewRoot::SetWindowOwner(cGCRef &WPFRootRef)noexcept
+bool mbcWPFUIViewRoot::mSetBackgroundColor(uInt8 r,uInt8 g,uInt8 b)noexcept
 {
-	auto OwnerRoot=WPFRootRef.Cast<IWPFViewRoot>();
+	auto WPFRoot=fTargetRootElement.Get();
+	return WPFRoot->SetBackgroundColor(System::Windows::Media::Color::FromRgb(r,g,b));
+}
+//---------------------------------------------------------------------------
+bool mbcWPFUIViewRoot::mSetWindowOwner(const cGCHandle &WPFRootRef)noexcept
+{
+	auto OwnerRoot=WPFRootRef.Cast<IWPFUIViewRootTargetElement>();
 	if(OwnerRoot==nullptr)
 		return false;
 
-	auto WPFRoot=fWPFRoot.Get();
-	return WPFRoot->SetOwner(OwnerRoot);
+	auto WPFRoot=fTargetRootElement.Get();
+	WPFRoot->OwnerTargetElement=OwnerRoot;
+	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFViewRoot::ClearWindowOwner(void)noexcept
+void mbcWPFUIViewRoot::mClearWindowOwner(void)noexcept
 {
-	auto WPFRoot=fWPFRoot.Get();
-	WPFRoot->SetOwner(nullptr);
+	auto WPFRoot=fTargetRootElement.Get();
+	WPFRoot->OwnerTargetElement=nullptr;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -162,43 +261,6 @@ WPFViewRoot::WPFViewRoot()
 	fBGBrush->Freeze();
 
 	fBackgroundDrawing.Brush=fBGBrush;
-}
-//---------------------------------------------------------------------------
-void WPFViewRoot::CPPAttach(mcWPFViewRoot *CPP)
-{
-	if(fCPP!=nullptr)
-		return;
-	fCPP=CPP;
-}
-//---------------------------------------------------------------------------
-void WPFViewRoot::CPPDetach(mcWPFViewRoot *CPP)
-{
-	if(fCPP!=CPP)
-		return;
-	fCPP=nullptr;
-}
-//---------------------------------------------------------------------------
-iWPFViewParent* WPFViewRoot::ParentInterface::get(void)
-{
-	return fCPP;
-}
-//---------------------------------------------------------------------------
-void WPFViewRoot::ParentRemoveViewChild(IWPFView ^Subview)
-{
-	return fCPP->WPFUIWindowRemoveSubview(Subview);
-}
-//---------------------------------------------------------------------------
-iUIWindow* WPFViewRoot::UIWindowInterface::get(void)
-{
-	return fCPP->nGetUIWindowInterface();
-};
-//---------------------------------------------------------------------------
-void WPFViewRoot::RemoteChildAttach(System::Object^)
-{
-}
-//---------------------------------------------------------------------------
-void WPFViewRoot::RemoteChildDetach(System::Object^)
-{
 }
 //---------------------------------------------------------------------------
 System::Windows::Media::Visual^ WPFViewRoot::GetVisualChild(int index)
@@ -252,9 +314,13 @@ void WPFViewRoot::ArrangeCore(System::Windows::Rect finalRect)
 	// arrange
 
 	if(fClientElement!=nullptr){
-		//fClientElement->Measure(fSize);
 		fClientElement->Arrange(LayoutRect);
 	}
+}
+//---------------------------------------------------------------------------
+WPFUIViewRootAdapter% WPFViewRoot::Adapter::get(void)
+{
+	return fViewRootAdapter;
 }
 //---------------------------------------------------------------------------
 System::Windows::UIElement^ WPFViewRoot::ClientElement::get(void)
@@ -279,16 +345,33 @@ void WPFViewRoot::ClientElement::set(System::Windows::UIElement ^Element)
 	}
 }
 //---------------------------------------------------------------------------
-void WPFViewRoot::DispatcherFinishCleanup(void)
+bool WPFViewRoot::IsActive::get()
+{
+	return true;
+}
+//---------------------------------------------------------------------------
+bool WPFViewRoot::SetBackgroundColor(System::Windows::Media::Color Color)
+{
+	BackgroundColor=Color;
+	return true;
+}
+//---------------------------------------------------------------------------
+IWPFUIViewRootTargetElement^ WPFViewRoot::OwnerTargetElement::get()
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+void WPFViewRoot::OwnerTargetElement::set(IWPFUIViewRootTargetElement ^Owner)
 {
 }
 //---------------------------------------------------------------------------
-bool WPFViewRoot::SetOwner(IWPFViewRoot ^Root)
+/*
+bool WPFViewRoot::SetOwner(IWPFUIViewRootTargetElement ^Root)
 {
 	if(CPPWPFWindow==nullptr)
 		return false;
 
-	auto WPFWindow=static_cast<mcWPFWindow*>(CPPWPFWindow);
+	auto WPFWindow=static_cast<mbcWPFWindow*>(CPPWPFWindow);
 	auto WndHandle=WPFWindow->mGetHandle();
 
 	if(Root==nullptr){
@@ -304,7 +387,7 @@ bool WPFViewRoot::SetOwner(IWPFViewRoot ^Root)
 		return false;
 	if(OwnerRoot->CPPWPFWindow==nullptr)
 		return false;
-	auto OwnerWPFWindow=static_cast<mcWPFWindow*>(OwnerRoot->CPPWPFWindow);
+	auto OwnerWPFWindow=static_cast<mbcWPFWindow*>(OwnerRoot->CPPWPFWindow);
 
 	auto OwnerWndHandle=OwnerWPFWindow->mGetHandle();
 	auto Style=::GetWindowLongW(WndHandle,GWL_STYLE);
@@ -314,72 +397,87 @@ bool WPFViewRoot::SetOwner(IWPFViewRoot ^Root)
 	::SetParent(WndHandle,OwnerWndHandle);
 	return true;
 }
-//---------------------------------------------------------------------------
-void cnWin::mWPFViewRoot_SetBackgroundColor(cGCHandle &ViewRoot,uInt8 r,uInt8 g,uInt8 b)noexcept
-{
-	auto WPFRoot=ViewRoot.Cast<WPFViewRoot>();
-	WPFRoot->BackgroundColor=System::Windows::Media::Color::FromRgb(r,g,b);
-}
+*/
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rcWPFWindow::rcWPFWindow(mcWPFWindow *CPP)
+rcWPFHwndHandler::rcWPFHwndHandler(mbcWPFWindow *CPP)
 {
 	this->CPP=CPP;
-	fHook=gcnew System::Windows::Interop::HwndSourceHook(this,&rcWPFWindow::WindowMessageHook);
 }
 //---------------------------------------------------------------------------
-void rcWPFWindow::Create(System::Windows::Interop::HwndSourceParameters %Parameter)
+System::Windows::Interop::HwndSource^ rcWPFHwndHandler::Source::get(void)
 {
-	Destroy();
-
-	fSource=gcnew System::Windows::Interop::HwndSource(Parameter);
-	CPP->WPFSourceAttach(this);
-
-	fSource->AddHook(fHook);
+	return fSource;
 }
 //---------------------------------------------------------------------------
-void rcWPFWindow::Destroy(void)
+void rcWPFHwndHandler::Source::set(System::Windows::Interop::HwndSource ^value)
 {
 	if(fSource!=nullptr){
-		fSource->RemoveHook(fHook);
-		fSource->RootVisual=nullptr;
-		CPP->WPFSourceDetach();
-		delete fSource;
-		fSource=nullptr;
+		HwndSourceDetach();
+	}
+	fSource=value;
+	if(fSource!=nullptr){
+		HwndSourceAttach();
 	}
 }
 //---------------------------------------------------------------------------
-System::IntPtr rcWPFWindow::WindowMessageHook(System::IntPtr hwnd, int msg, System::IntPtr wParam, System::IntPtr lParam, bool %handled)
+void rcWPFHwndHandler::HwndSourceAttach(void)
 {
+	void *WindowHandle=fSource->Handle.ToPointer();
+
+	fHook=gcnew System::Windows::Interop::HwndSourceHook(this,&rcWPFHwndHandler::WindowMessageHook);
+	fSource->AddHook(fHook);
+	CPP->WPFSourceAttach(WindowHandle);
+}
+//---------------------------------------------------------------------------
+void rcWPFHwndHandler::HwndSourceDetach(void)
+{
+	fSource->RemoveHook(fHook);
+	fHook=nullptr;
+	CPP->WPFSourceDetach();
+}
+//---------------------------------------------------------------------------
+System::IntPtr rcWPFHwndHandler::WindowMessageHook(System::IntPtr hwnd, int msg, System::IntPtr wParam, System::IntPtr lParam, bool %handled)
+{
+	static constexpr int WM_DESTROY		=0x0002;
+	static constexpr int WM_NCDESTROY	=0x0082;
 	if(msg==WM_DESTROY || msg==WM_NCDESTROY){
-		fSource->RemoveHook(gcnew System::Windows::Interop::HwndSourceHook(this,&rcWPFWindow::WindowMessageHook));
-		fSource->RootVisual=nullptr;
-		CPP->WPFSourceDetach();
+		HwndSourceDetach();
 		fSource=nullptr;
 		return System::IntPtr::IntPtr(0);
 	}
-	return CPP->WPFSourceMessage(reinterpret_cast<HWND>(hwnd.ToPointer()),static_cast<UINT>(msg),reinterpret_cast<WPARAM>(wParam.ToPointer()),reinterpret_cast<LPARAM>(lParam.ToPointer()),handled);
+	uIntn Result=0;
+	handled=CPP->WPFSourceMessage(Result,hwnd.ToPointer(),static_cast<uInt32>(msg),reinterpret_cast<uIntn>(wParam.ToPointer()),reinterpret_cast<uIntn>(lParam.ToPointer()));
+	return System::IntPtr::IntPtr(reinterpret_cast<void*>(Result));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-mcWPFWindow::mcWPFWindow()noexcept
-	: fWPFWindow(gcnew rcWPFWindow(this))
+void mbcWPFWindow::mSetup(void)noexcept
 {
-	fDispatcherFinishNotify.NotifyProcedure=DispatcherFinishNotify;
+	fWPFHwndHandler.Alloc(gcnew rcWPFHwndHandler(this));
 }
 //---------------------------------------------------------------------------
-mcWPFWindow::~mcWPFWindow()noexcept
+void mbcWPFWindow::mClear(void)noexcept
 {
+	fWPFHwndHandler.Free();
 }
 //---------------------------------------------------------------------------
-HWND mcWPFWindow::mGetHandle(void)noexcept
+Float32 mbcWPFWindow::mQueryLayoutScale(void)const noexcept
 {
-	return fWindowHandle;
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
+	auto Source=WPFHwndHandler->Source;
+	if(WPFHwndHandler->Source==nullptr){
+		return 1.0f;
+	}
+	auto CompositionTarget=Source->CompositionTarget;
+	if(CompositionTarget==nullptr)
+		return 1.0f;
+	return static_cast<Float32>(CompositionTarget->TransformToDevice.M11);
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::Create(HWND ParentWindowHandle,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height)noexcept
+bool mbcWPFWindow::mCreate(void *ParentWindowHandle,const wchar_t *WindowText,uInt32 Style,uInt32 ExStyle,sInt32 X,sInt32 Y,sInt32 Width,sInt32 Height)noexcept
 {
-	auto WPFWnd=fWPFWindow.Get();
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
 
 	System::Windows::Interop::HwndSourceParameters CreateParam(gcnew System::String(WindowText),Width,Height);
 	CreateParam.ParentWindow=System::IntPtr(ParentWindowHandle);
@@ -387,133 +485,55 @@ bool mcWPFWindow::Create(HWND ParentWindowHandle,const wchar_t *WindowText,DWORD
 	CreateParam.ExtendedWindowStyle=ExStyle;
 	CreateParam.PositionX=X;
 	CreateParam.PositionY=Y;
-	
-	WPFWnd->Create(CreateParam);
 
+	auto Source=gcnew System::Windows::Interop::HwndSource(CreateParam);
+
+	WPFHwndHandler->Source=Source;
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::ClientAttach(WPFViewRoot ^ViewRoot,iWPFWindowClient *WindowClient)noexcept
+bool mbcWPFWindow::mDestroy(void)noexcept
 {
-	auto WPFWnd=fWPFWindow.Get();
-	auto Source=WPFWnd->Source;
-	
-	if(Source->Dispatcher->CheckAccess()==false){
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
+
+	auto Source=WPFHwndHandler->Source;
+	if(Source==nullptr)
 		return false;
-	}
-
-	ViewRoot->CPPWPFWindow=this;
-	fWPFViewRoot.Set(ViewRoot);
-	fWindowClient=WindowClient;
-	auto Size=GetClientSize();
-	fWindowClient->WPFWindowDPIChanged(fWindowLayoutScale);
-	if(Source!=nullptr)
-		Source->RootVisual=ViewRoot;
-
+	WPFHwndHandler->Source=nullptr;
+	delete Source;
 	return true;
 }
 //---------------------------------------------------------------------------
-void mcWPFWindow::ClearClient(void)noexcept
+bool mbcWPFWindow::mGetVisualRoot(cGCRef &VisualHandle)noexcept
 {
-	auto WPFWnd=fWPFWindow.Get();
-	auto Source=WPFWnd->Source;
-	
-	auto ViewRoot=fWPFViewRoot.Get();
-	ViewRoot->CPPWPFWindow=nullptr;
-
-	fWPFViewRoot.Set(nullptr);
-
-	if(Source!=nullptr)
-		Source->RootVisual=nullptr;
-}
-//---------------------------------------------------------------------------
-void mcWPFWindow::WPFSourceAttach(rcWPFWindow ^WPFWnd)noexcept
-{
-	HWND WindowHandle=static_cast<HWND>(WPFWnd->Source->Handle.ToPointer());
-
-	fWindowHandle=WindowHandle;
-	fWindowLayoutScale=static_cast<Float32>(WPFWnd->Source->CompositionTarget->TransformToDevice.M11);
-
-	nWPFSourceAttach();
-}
-//---------------------------------------------------------------------------
-void mcWPFWindow::WPFSourceDetach(void)noexcept
-{
-	nWPFSourceDetach();
-	fWindowHandle=nullptr;
-}
-//---------------------------------------------------------------------------
-System::IntPtr mcWPFWindow::WPFSourceMessage(HWND hwnd, int msg, WPARAM wParam, LPARAM lParam, bool %handled)noexcept
-{
-	switch(msg){
-	case WM_WINDOWPOSCHANGED:
-		{
-			auto wpos=reinterpret_cast<const WINDOWPOS*>(lParam);
-			if((wpos->flags&SWP_NOSIZE)==0){
-				// sized
-			}
-		}
-		break;
-	}
-
-	LRESULT Result=0;
-	handled=nWPFMessage(Result,hwnd,msg,wParam,lParam);
-	return System::IntPtr::IntPtr(Result);
-}
-//---------------------------------------------------------------------------
-void mcWPFWindow::DispatcherFinishNotify(mcDNetUIThreadDispatcher::cDispatcherFinishNotify *Notify,bool Shutdown)noexcept
-{
-	auto Host=cnMemory::GetObjectFromMemberPointer(Notify,&mcWPFWindow::fDispatcherFinishNotify);
-	return Host->DispatcherFinishNotify(Shutdown);
-}
-//---------------------------------------------------------------------------
-void mcWPFWindow::DispatcherFinishNotify(bool Shutdown)noexcept
-{
-	CleanupWPF();
-	nDispatcherFinishNotify(Shutdown);
-}
-//---------------------------------------------------------------------------
-void mcWPFWindow::CleanupWPF(void)noexcept
-{
-	auto WPFWnd=fWPFWindow.Get();
-	WPFWnd->Destroy();
-}
-//---------------------------------------------------------------------------
-mcWPFWindow* mcWPFWindow::mWindowAttachClient(cGCHandle &WindowCLIHandle,mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept
-{
-	auto WPFWnd=WindowCLIHandle.DynamicCast<rcWPFWindow>();
-	if(WPFWnd==nullptr)
-		return nullptr;
-
-	auto CPP=WPFWnd->CPP;
-	if(CPP->mWindowAttachClient(ViewRoot,WindowClient)==false)
-		return nullptr;
-
-	return CPP;
-}
-//---------------------------------------------------------------------------
-bool mcWPFWindow::mWindowAttachClient(mcWPFViewRoot *ViewRoot,iWPFWindowClient *WindowClient)noexcept
-{
-	if(static_cast<System::Object^>(fWPFViewRoot)!=nullptr){
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
+	auto Source=WPFHwndHandler->Source;
+	if(Source==nullptr)
 		return false;
-	}
-
-	auto Root=dynamic_cast<WPFViewRoot^>(ViewRoot->mGetWPFRootObject());
-	if(Root==nullptr)
-		return false;
-
-	return ClientAttach(Root,WindowClient);
+	VisualHandle.Set(Source->RootVisual);
+	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFWindow::mWindowDetachClient(mcWPFViewRoot *ViewRoot)noexcept
+bool mbcWPFWindow::mSetVisualRoot(const cGCHandle &VisualHandle)noexcept
 {
-	auto Root=dynamic_cast<WPFViewRoot^>(ViewRoot->mGetWPFRootObject());
-	if(Root==nullptr)
+	auto RootVisual=VisualHandle.DynamicCast<System::Windows::Media::Visual>();
+	if(RootVisual==nullptr)
 		return false;
-
-	if(Root!=fWPFViewRoot.Get())
-		return false;	// incorrect client
-	ClearClient();
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
+	auto Source=WPFHwndHandler->Source;
+	if(Source==nullptr)
+		return false;
+	Source->RootVisual=RootVisual;
+	return true;
+}
+//---------------------------------------------------------------------------
+bool mbcWPFWindow::mClearVisualRoot(void)noexcept
+{
+	auto WPFHwndHandler=fWPFHwndHandler.Get();
+	auto Source=WPFHwndHandler->Source;
+	if(Source==nullptr)
+		return false;
+	Source->RootVisual=nullptr;
 	return true;
 }
 //---------------------------------------------------------------------------

@@ -65,6 +65,13 @@ cnLib_GlobalVar cnRTL::cInterfaceStaticImplementT<vSocketDatagramProtocol> cnWin
 
 cnLib_GlobalVar cMessageThreadWindowClass cMessageThreadWindowClass::gMessageThreadWindowClass(L"cnLibraryMessageThreadWindow");
 
+cnLib_GlobalVar cWPFGDIModule cWPFGDIModule::gModule;
+cnLib_GlobalVar cNT6TLSStaticPointer<cWPFGDIModule> cWPFGDIModule_gTLSContext;
+template<> __declspec(thread) cNT6TLSStaticThreadData* cNT6TLSStaticPointer<cWPFGDIModule>::gDataTLS=nullptr;
+iThreadLocalVariable *const cWPFGDIModule::gTLSContext=&cWPFGDIModule_gTLSContext;
+
+cnWin::cWPFModule cnWin::gWPFModule;
+
 //cnLib_GlobalVar cWindowClass_cnWindow cnWin::gWindowClass_cnWindow;
 
 //cnLib_GlobalVar cTLSPtr cUIThread::gUIThreadTLS;

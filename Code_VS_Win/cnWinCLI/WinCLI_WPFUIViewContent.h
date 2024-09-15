@@ -1,4 +1,4 @@
-﻿/*- cnWinWPF - View Content -----------------------------------------------*/
+﻿/*- cnWinCLI - View Content -----------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2023-10-07                                          */
 /*-------------------------------------------------------------------------*/
@@ -7,10 +7,9 @@
 
 #include <cnWin\Win_GDI.h>
 
-#include <cnWinCLI\WinDNet_Common.h>
-#include <cnWinCLI\WinDNet_WPFUIView.h>
-
-#include <cnWinCLI\WinDNetM_WPFUIViewContent.h>
+#include <cnWinCLI\WinCLI_Common.h>
+#include <cnWinCLI\WinCLI_WPFUIView.h>
+#include <cnWinCLI\WinCLIM_WPFUIViewContent.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
@@ -24,7 +23,7 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnVar::ImplementCastInterface(this,ID);	}
 
-	virtual void Draw(cGCRef &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)=0;
+	virtual void Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 iPtr<iUIFont> DNetCreateFont(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true);
@@ -33,28 +32,32 @@ rPtr<iUITextLineLayout> DNetCreateTextLineLayout(const uChar16 *Text,uIntn Lengt
 class cWPFUIBitmap : public iUIBitmap, public miWPFUISimpleGraph
 {
 public:
-	cWPFUIBitmap(mcWPFUIBitmap &&Bitmap)noexcept(true);
+	cWPFUIBitmap()noexcept(true);
 	~cWPFUIBitmap()noexcept(true);
 
 	using miWPFUISimpleGraph::CastInterface;
+
+	void TakeDrawing(cGCHandle &DrawingHandle)noexcept(true);
 
 	// iUIBitmap
 	
 	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)override;
 
-	virtual void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+	virtual void Draw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
 
 protected:
-	mcWPFUIBitmap fBitmap;
+	mcWPFImageSource fImageSource;
 };
 //---------------------------------------------------------------------------
 class cWPFBitmapDataSource : public iBitmapDataSource, public miWPFUISimpleGraph
 {
 public:
-	cWPFBitmapDataSource(mcWPFBitmapDataSource &&Source)noexcept(true);
+	cWPFBitmapDataSource()noexcept(true);
 	~cWPFBitmapDataSource()noexcept(true);
 
 	using miWPFUISimpleGraph::CastInterface;
+	
+	void TakeDrawing(cGCHandle &DrawingHandle,int Width,int Height)noexcept(true);
 
 	// iBitmapDataSource
 	
@@ -66,16 +69,32 @@ public:
 	virtual void cnLib_FUNC ReleasePixels(void)noexcept(true)override;
 	virtual bool cnLib_FUNC IsTopDown(void)noexcept(true)override;
 
-	virtual void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+	virtual void Draw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
 
 protected:
-	mcWPFBitmapDataSource fBitmapSource;
+	mcWPFBitmapSource fBitmapSource;
 };
 //---------------------------------------------------------------------------
-class cWPFUISimpleBitmapCanvas : public iUISimpleBitmapCanvas, public mcWPFUISimpleBitmapCanvas
+class cWPFDrawingContext : public iUISimplePaintContext
 {
 public:
-	cWPFUISimpleBitmapCanvas(cUIPoint Size)noexcept(true);
+	cWPFDrawingContext()noexcept(true);
+	~cWPFDrawingContext()noexcept(true);
+
+	mcWPFDrawingContext& RefDrawingContext(void)noexcept(true);
+
+	virtual bool cnLib_FUNC Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept(true)override;
+	virtual bool cnLib_FUNC Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)noexcept(true)override;
+	virtual bool cnLib_FUNC Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator=ImageBlendingOperator::Alpha)noexcept(true)override;
+protected:
+	mcWPFDrawingContext fContext;
+};
+
+//---------------------------------------------------------------------------
+class cWPFUISimpleBitmapCanvas : public iUISimpleBitmapCanvas
+{
+public:
+	cWPFUISimpleBitmapCanvas(int Width,int Height)noexcept(true);
 	~cWPFUISimpleBitmapCanvas()noexcept(true);
 
 	// iUISimpleBitmapCanvas
@@ -86,17 +105,22 @@ public:
 	virtual iPtr<iBitmapDataSource> cnLib_FUNC FinishBitmapSource(bool CopyContent)noexcept(true)override;
 
 protected:
-	mcWPFDrawingContext fContext;
+	int fBitmapWidth;
+	int fBitmapHeight;
+	mcWPFDrawingGroup fDrawingGroup;
+	cWPFDrawingContext fContext;
+	
 };
 //---------------------------------------------------------------------------
 class cWPFTypeface : public iUIFont, public iCLIObject
 {
 public:
-	cWPFTypeface(mcWPFTypeface &&Typeface)noexcept(true);
+	cWPFTypeface()noexcept(true);
 	~cWPFTypeface()noexcept(true);
 
 	using iCLIObject::CastInterface;
 
+	bool Create(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true);
 	// iUIFont
 
 	virtual cArray<const uChar16> cnLib_FUNC GetName(void)noexcept(true)override;
@@ -106,33 +130,52 @@ public:
 
 	// iCLIObject
 
-	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
+	virtual const cGCHandle& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
 private:
 	mcWPFTypeface fTypeface;
+	cnRTL::cString<uChar16> fName;
+	Float32 fFontWeight;
+	eUIFontStyle fFontStyle;
 };
 //---------------------------------------------------------------------------
-class cWPFTextLayout : public iUITextLineLayout, public mcWPFTextLayout
+class cWPFTextLayout : public iUITextLineLayout, protected miWPFTextLayout
 {
 public:
+	void Calculate(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true);
+
 	virtual uIntn cnLib_FUNC GetTextLength(void)noexcept(true)override;
 	virtual Float32 cnLib_FUNC GetTextHeight(void)noexcept(true)override;
 	virtual const Float32* cnLib_FUNC GetTextDistance(void)noexcept(true)override;
+protected:
+	Float32 fTextHeight;
+	cnRTL::cSeqList<Float32> fTextDistance;
+
+	virtual void TextLayoutStoreTextHeight(Float32 Height)noexcept(true)override;
+	virtual void TextLayoutMakeTextDistance(uIntn Count)noexcept(true)override;
+	virtual void TextLayoutStoreTextDistance(uIntn Index,Float32 Distance)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-class cWPFUISimpleTextGraph : public iUITextGraph, public miWPFUISimpleGraph, public mcWPFUISimpleTextGraph
+class cWPFUISimpleTextGraph : public iUITextGraph, public miWPFUISimpleGraph
 {
 public:
 	cWPFUISimpleTextGraph()noexcept(true);
 	~cWPFUISimpleTextGraph()noexcept(true);
 
 	using miWPFUISimpleGraph::CastInterface;
+	
+	void SetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true);
 
 	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)override;
 
-	virtual void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+	virtual void Draw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+
+protected:
+
+	mcWPFUISimpleTextGraph fTextGraph;
+	cUIPoint fTextSize;
 };
 //---------------------------------------------------------------------------
-class cWPFUIRichTextGraph : public iUITextGraph, public miWPFUISimpleGraph, public mcWPFUIRichTextGraph
+class cWPFUIRichTextGraph : public iUITextGraph, public miWPFUISimpleGraph
 {
 public:
 	cWPFUIRichTextGraph()noexcept(true);
@@ -142,7 +185,13 @@ public:
 
 	virtual cUIPoint cnLib_FUNC GetSize(void)noexcept(true)override;
 
-	virtual void Draw(cGCRef &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+	void SetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true);
+	virtual void Draw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)override;
+
+protected:
+
+	mcWPFUIRichTextGraph fTextGraph;
+	cUIPoint fTextSize;
 };
 //---------------------------------------------------------------------------
 class cWPFUISimplePaintDevice : public iUISimplePaintDevice
@@ -185,17 +234,18 @@ public:
 
 	// mbcWPFViewContentDrawing
 
-	virtual cGCRef* GetDrawingPointer(void)noexcept(true)override;
+	virtual const cGCHandle* GetDrawingPointer(void)noexcept(true)override;
 
 	virtual void ViewContentUpdateRect(void)noexcept(true)override;
 	virtual void ViewContentUpdateState(void)noexcept(true)override;
 	virtual void ViewContentUpdateWindow(iWindow *Window)noexcept(true)override;
 
 protected:
-	mcWPFUIViewContentDrawingGroup fWPFDrawing;
+	mcWPFDrawingGroup fWPFDrawing;
 	iUISimplePainter *fPainter;
 	cUIPoint fViewContentSize;
 
+	bool fNeedNotifyRect;
 	eUIState fPainterState;
 	eUIState CheckPainterState(void)noexcept(true);
 	void UpdatePainterState(void)noexcept(true);
@@ -204,16 +254,46 @@ protected:
 	void RenderVisual(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-struct cDNetGDIThreadCPPContext
+class cWPFGDIThreadContext
 {
-	cDNetGDIThreadCPPContext()noexcept(true);
-	~cDNetGDIThreadCPPContext()noexcept(true);
+public:
+	cWPFGDIThreadContext()noexcept(true);
+	~cWPFGDIThreadContext()noexcept(true);
 
 	rPtr<cnRTL::cnWinRTL::cDCPaintDevice> Device;
 
 	void NotifyDisplayChanged(void)noexcept(true);
 
-	static cDNetGDIThreadCPPContext* mThreadContext(void)noexcept(true);
+};
+//---------------------------------------------------------------------------
+class cWPFGDIModule : protected mbcWPFGDI
+{
+public:
+	cWPFGDIModule()noexcept(true);
+	~cWPFGDIModule()noexcept(true);
+	
+	static cWPFGDIThreadContext* QueryThreadContext(void)noexcept(true);
+	static cWPFGDIThreadContext* CurrentThreadContext(void)noexcept(true);
+protected:
+	
+	virtual void WPFDisplaySettingsChanged(void)noexcept(true)override;
+
+	cnRTL::cnWinRTL::cCriticalSection fThreadCS;
+	cnRTL::cSeqSet<cWPFGDIThreadContext*> fThreadSet;
+
+	static cWPFGDIModule gModule;
+	static iThreadLocalVariable *const gTLSContext;
+
+	friend cWPFGDIThreadContext;
+
+private:
+	class cThreadContextExitNotify : public iThreadExitNotifyProc
+	{
+		void cnLib_FUNC Execute(rPtr<iReference> Reference,void *Object)noexcept(true)override;
+	}fThreadContextExitNotify;
+	cWPFGDIThreadContext* MakeContext(void)noexcept(true);
+	void DestroyContext(cWPFGDIThreadContext *Context)noexcept(true);
+	void NotifyDisplayChanged(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cWPFDCViewContent : public iDCViewContent, public bcWPFViewContentDrawing
@@ -222,7 +302,7 @@ public:
 	cWPFDCViewContent(iDCPainter *Painter,bool OutputAlpha)noexcept(true);
 	~cWPFDCViewContent()noexcept(true);
 
-	virtual cGCRef* GetDrawingPointer(void)noexcept(true)override;
+	virtual const cGCHandle* GetDrawingPointer(void)noexcept(true)override;
 
 	// iUIViewContent
 
@@ -294,7 +374,7 @@ private:
 	void CPPPaintFinish(void *BitmapData,int Width,int Height)noexcept(true);
 	
 	void SetupBitmap(HDC DC)noexcept(true);
-	void CPPPaint(cDNetGDIThreadCPPContext *CPP)noexcept(true);
+	void CPPPaint(cWPFGDIThreadContext *CPP)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class cD3D9ExWindowDevice : public iReference, public iWindowMessageHandler
@@ -317,13 +397,13 @@ protected:
 	static const D3DPRESENT_PARAMETERS DefaultPresentParameter;
 };
 //---------------------------------------------------------------------------
-class cWPFDXGIViewContent : public iDXGIViewContent, public bcWPFViewContentDrawing
+class cWPFDXGIViewContent : public iDXGIViewContent, public bcWPFViewContentDrawing, protected mbcWPFD3DImageDrawing
 {
 public:
 	cWPFDXGIViewContent(iDXGIPainter *Painter)noexcept(true);
 	~cWPFDXGIViewContent()noexcept(true);
 
-	virtual cGCRef* GetDrawingPointer(void)noexcept(true)override;
+	virtual const cGCHandle* GetDrawingPointer(void)noexcept(true)override;
 
 	// iUIViewContent
 
@@ -343,9 +423,8 @@ public:
 	virtual void UpdateRenderBuffer(void)noexcept(true)override;
 
 protected:
+	virtual void D3DFrontBufferAvailableChanged(void)noexcept(true)override;
 private:
-
-	mcWPFD3DImageDrawing fDrawing;
 
 	iDXGIPainter *fPainter;
 	iWindow *fWindow=nullptr;
@@ -356,15 +435,8 @@ private:
 	virtual void ViewContentUpdateState(void)noexcept(true)override;
 	virtual void ViewContentUpdateWindow(iWindow *Window)noexcept(true)override;
 
-	enum ePainterState
-	{
-		psNone,
-		psBackground,
-		psActive
-	};
-	ePainterState fPainterState;
-	ePainterState CheckPainterState(void)noexcept(true);
-	static void NotifyPainterState(iDXGIPainter *Painter,ePainterState NewState,ePainterState OldState)noexcept(true);
+	eUIState fPainterState;
+	eUIState CheckPainterState(void)noexcept(true);
 	void UpdatePainterState(void)noexcept(true);
 
 	template<class T>
@@ -397,12 +469,6 @@ private:
 
 	COMPtr<IDirect3DSurface9> fSurface;
 	HANDLE fSurfaceSharedHandle;
-
-	void FrontAvailableChanged(void)noexcept(true);
-	class cFrontAvailableChangedProcedure : public iProcedure
-	{
-		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
-	}fFrontAvailableChangedProcedure;
 
 	void SetupBackBuffer(void)noexcept(true);
 	void ClearBackBuffer(void)noexcept(true);

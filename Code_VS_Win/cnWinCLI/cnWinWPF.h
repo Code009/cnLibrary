@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cnWinCLI\WinDNet_Common.h>
-#include <cnWinCLI\WinDNet_WPFUICore.h>
-#include <cnWinCLI\WinDNet_WPFUIView.h>
-#include <cnWinCLI\WinDNet_WPFUIViewWindow.h>
-#include <cnWinCLI\WinDnet_WPFUIViewContent.h>
-#include <cnWinCLI\WinDNetM_WPFUIFramework.h>
+#include <cnWinCLI\WinCLI_Common.h>
+#include <cnWinCLI\WinCLI_WPFUICore.h>
+#include <cnWinCLI\WinCLI_WPFUIView.h>
+#include <cnWinCLI\WinCLI_WPFUIWindow.h>
+#include <cnWinCLI\WinCLI_WPFUIFramework.h>
+#include <cnWinCLI\WinCLI_WPFUIViewContent.h>

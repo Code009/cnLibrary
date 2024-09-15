@@ -1,5 +1,4 @@
-
-#include "WinDNet_WPFUICore.h"
+#include "WinCLI_WPFUICore.h"
 
 
 using namespace cnLibrary;
@@ -7,46 +6,42 @@ using namespace cnRTL;
 using namespace cnWin;
 
 //---------------------------------------------------------------------------
-iUIThread* cnWin::DNetCurrentUIThread(void)noexcept
+//---------------------------------------------------------------------------
+cWPFModule::cWPFModule()noexcept
 {
-	return cDNetUIThread::CurrentUIThread();
+	cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
-iPtr<iUIThread> cnWin::DNetCreateOnCurrentThread(void)noexcept
+cWPFModule::~cWPFModule()noexcept
 {
-	return cDNetUIThread::CreateOnCurrentThread();
+	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
-iPtr<iUIThread> cnWin::DNetStartUIThread(void)noexcept
+void cWPFModule::DependentShutdownNotification(void)noexcept
 {
-	return cDNetUIThread::StartUIThread();
-}
-//---------------------------------------------------------------------------
-rPtr<iWindowsUIApplication> cnWin::DNetCreateWindowsUIApplication(void)noexcept
-{
-	auto UIThread=cDNetUIThread::CreateOnCurrentThread();
-	return rCreate<cDNetUIApplication>(cnVar::MoveCast(UIThread));
+	ObjectRegistration.Wait();
+	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bool cWPFKeyboard::EventIsKeyDown(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyDown(KeyCode);
 }
 //---------------------------------------------------------------------------
 bool cWPFKeyboard::EventIsKeyToggled(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyToggled(KeyCode);
 }
 //---------------------------------------------------------------------------
 bool cWPFKeyboard::IsKeyDown(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyDown(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyDown(KeyCode);
 }
 //---------------------------------------------------------------------------
 bool cWPFKeyboard::IsKeyToggled(eKeyCode KeyCode)noexcept
 {
-	return mcDNetUIThreadDispatcher::mKeyboardEventIsKeyToggled(KeyCode);
+	return mcWPFInput::mKeyboardEventIsKeyToggled(KeyCode);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -54,150 +49,220 @@ bool cWPFMouse::GetPosition(iInterface *Relative,cUIPoint &Position)noexcept
 {
 	auto RelativeObject=iCast<iCLIObject>(Relative);
 	auto &Handle=RelativeObject->GetObjecHandle();
-	return mcDNetUIThreadDispatcher::mMouseGetPosition(Handle,Position);
+	return mcWPFInput::mMouseGetPosition(Handle,Position);
 }
 //---------------------------------------------------------------------------
 bool cWPFMouse::EventIsButtonDown(eMouseButton Button)noexcept
 {
-	return mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(Button);
+	return mcWPFInput::mMouseEventIsButtonDown(Button);
 }
 //---------------------------------------------------------------------------
 bool cWPFMouse::IsButtonDown(eMouseButton Button)noexcept
 {
-	return mcDNetUIThreadDispatcher::mMouseEventIsButtonDown(Button);
+	return mcWPFInput::mMouseEventIsButtonDown(Button);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDNetUIThreadAsyncProcedure::cDNetUIThreadAsyncProcedure(cDNetUIThread *UIThread,bool HighPriority,iProcedure *Procedure)noexcept
+cWPFUIThreadAsyncProcedure::cWPFUIThreadAsyncProcedure(cWPFUIThread *UIThread,bool HighPriority,iProcedure *Procedure)noexcept
 	: fUIThread(UIThread)
-	, mcDNetUIThreadAsyncProcedureExecutor(HighPriority,Procedure)
+	, fHighPriority(HighPriority)
 {
+	fExecutor.mSetup(Procedure);
 }
 //---------------------------------------------------------------------------
-cDNetUIThreadAsyncProcedure::~cDNetUIThreadAsyncProcedure()noexcept
+cWPFUIThreadAsyncProcedure::~cWPFUIThreadAsyncProcedure()noexcept
 {
+	fExecutor.mClear();
 }
 //---------------------------------------------------------------------------
-void cDNetUIThreadAsyncProcedure::Start(void)noexcept
+void cWPFUIThreadAsyncProcedure::Start(void)noexcept
 {
-	return mStart(fUIThread);
+	fUIThread->mExecuteDelegate(fHighPriority,fExecutor);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDNetUIThreadAsyncProcedureRef::cDNetUIThreadAsyncProcedureRef(cDNetUIThread *UIThread,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+cWPFUIThreadAsyncProcedureRef::cWPFUIThreadAsyncProcedureRef(cWPFUIThread *UIThread,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 	: fUIThread(UIThread)
-	, mcDNetUIThreadAsyncProcedureRefExecutor(HighPriority,Reference,Procedure)
+	, fReference(Reference)
+	, fProcedure(Procedure)
+	, fHighPriority(HighPriority)
 {
+	mbcCLICallback::mSetup();
 }
 //---------------------------------------------------------------------------
-cDNetUIThreadAsyncProcedureRef::~cDNetUIThreadAsyncProcedureRef()noexcept
+cWPFUIThreadAsyncProcedureRef::~cWPFUIThreadAsyncProcedureRef()noexcept
 {
+	mbcCLICallback::mClear();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncProcedureRefExecutor::CallProc(void)noexcept
+void cWPFUIThreadAsyncProcedureRef::Start(void)noexcept
+{
+	rIncReference(fReference,'exec');
+	fUIThread->mExecuteDelegate(fHighPriority,*this);
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncProcedureRef::CLIExecute(void)noexcept
 {
 	fProcedure->Execute();
-
 	rDecReference(fReference,'exec');
 }
 //---------------------------------------------------------------------------
-void cDNetUIThreadAsyncProcedureRef::Start(void)noexcept
+//---------------------------------------------------------------------------
+cWPFUIThreadAsyncTimer::cWPFUIThreadAsyncTimer(cWPFUIThread *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+	: fUIDispatch(UIDispatch)
+	, fReference(Reference)
+	, fProcedure(Procedure)
 {
-	rIncReference(fReference,'exec');
-	return mStart(fUIThread);
+	fExecutor.mSetup(UIDispatch,HighPriority);
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerStart(mcDNetUIThreadDispatcher *UIDispatch,uInt64 DueTime,uInt64 Period)noexcept
+cWPFUIThreadAsyncTimer::~cWPFUIThreadAsyncTimer()noexcept
 {
-	if(fTimerStateFlag.Acquire()==false)
-		return;
+	fExecutor.mClear();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::VirtualStopped(void)noexcept
+{
+	fClose=true;
+	NotifyStateProcedure();
 
-	fTimerStateFlag.Continue();
-
-	mStopTimer();
-	fTimerStop=false;
-	if(fTimerStarted==false){
-		fTimerStarted=true;
-		if(fReference!=nullptr)
-			rIncReference(fReference,'timr');
-	}
+	cDualReference::VirtualStopped();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::Start(uInt64 DueTime,uInt64 Period)noexcept
+{
+	fDueTime=DueTime;
 	fPeriod=Period;
-	sInt64 NowST=cnSystem::GetSystemTimeNow();
-	sInt64 DueST=DueTime;
-	
-	if(DueST<NowST){
-		// hit the timer now and continue period
-		mHitAndSetTimer(UIDispatch);
-	}
-	else{
-		// schedule first hit
-		mScheludeFirstHit(DueST-NowST);
-	}
+	fActive=true;
+	fUpdate=true;
 
+	if(fReference!=nullptr)
+		fStateProcRefrence<<=fReference;
+	NotifyStateProcedure();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerStop(void)noexcept
+void cWPFUIThreadAsyncTimer::Stop(void)noexcept
 {
-	fTimerStop=true;
-	if(fTimerStateFlag.Acquire()==false)
-		return;
-
-	TimerStateThreadProc();
+	fActive=false;
+	NotifyStateProcedure();
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::ExecuteAndState(void)noexcept
+void cWPFUIThreadAsyncTimer::cExecutor::Schedule(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWPFUIThreadAsyncTimer::fExecutor);
+	return Host->StateProcedureThread();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::cExecutor::TimerTick(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWPFUIThreadAsyncTimer::fExecutor);
+	return Host->TimerTick();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::cExecutor::TimerCleanup(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWPFUIThreadAsyncTimer::fExecutor);
+	if(Host->fReference!=nullptr)
+		rDecReference(Host->fReference,'timr');
+	Host->InnerDecReference('timr');
+
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::TimerTick(void)noexcept
 {
 	fProcedure->Execute();
+	if(fTimerDue){
+		// first hit
+		fTimerDue=false;
 
-	TimerStateThreadProc();
+		if(fPeriod!=0){
+			// continue time with period interval
+			fExecutor.mStart(fPeriod);
+		}
+		else{
+			fExecutor.mStop();
+		}
+	}
 }
 //---------------------------------------------------------------------------
-void mcDNetUIThreadAsyncTimerExecutor::TimerStateThreadProc(void)noexcept
+void cWPFUIThreadAsyncTimer::NotifyStateProcedure(void)noexcept
+{
+	if(fTimerStateFlag.Acquire()==false)
+		return;
+
+	InnerIncReference('stat');
+
+	if(fUIDispatch->IsCurrent()){
+		StateProcedureThread();
+	}
+	else{
+		fExecutor.mSchedule();
+	}
+}
+//---------------------------------------------------------------------------
+void cWPFUIThreadAsyncTimer::StateProcedureThread(void)noexcept
 {
 	do{
 		fTimerStateFlag.Continue();
-		if(fTimerStop){
-			mStopTimer();
-			if(fTimerStarted){
-				if(fReference!=nullptr)
-					rDecReference(fReference,'timr');
-				fTimerStarted=false;
-			}
-			fTimerStop=false;
-		}
+
+		StateProcedure();
+		fStateProcRefrence<<=nullptr;
 
 	}while(fTimerStateFlag.Release()==false);
+	InnerDecReference('stat');
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cDNetUIThreadAsyncTimer::cDNetUIThreadAsyncTimer(cDNetUIThread *UIDispatch,bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
-	: fUIDispatch(UIDispatch)
-	, mcDNetUIThreadAsyncTimerExecutor(UIDispatch,HighPriority,Reference,Procedure)
+void cWPFUIThreadAsyncTimer::StateProcedure(void)noexcept
 {
+	if(fTimerActive){
+		if(fActive){
+			if(fUpdate){
+				fUpdate=false;
+				State_UpdateTimer();
+			}
+		}
+		else{
+			fTimerActive=false;
+
+			// stop timer
+			fExecutor.mStopCleanup();
+		}
+	}
+	else{
+		if(fActive){
+			fTimerActive=true;
+			InnerIncReference('timr');
+			if(fReference!=nullptr)
+				rIncReference(fReference,'timr');
+
+			fUpdate=false;
+			State_UpdateTimer();
+		}
+	}
 }
 //---------------------------------------------------------------------------
-cDNetUIThreadAsyncTimer::~cDNetUIThreadAsyncTimer()noexcept
+void cWPFUIThreadAsyncTimer::State_UpdateTimer(void)noexcept
 {
+	fTimerDue=true;
+	// start timer
+	uInt64 Now=cnSystem::GetSystemTimeNow();
+	if(fDueTime<Now){
+		// hit the timer now and continue period
+		fExecutor.mHit();
+	}
+	else{
+		// schedule first hit
+		fExecutor.mStart(Now-fDueTime);
+	}
 }
 //---------------------------------------------------------------------------
-void cDNetUIThreadAsyncTimer::Start(uInt64 DueTime,uInt64 Period)noexcept
+//---------------------------------------------------------------------------
+cWPFUIThread* cWPFUIThread::mcWPFDispatchHigh::GetHost(void)noexcept
 {
-	return TimerStart(fUIDispatch,DueTime,Period);
+	return cnMemory::GetObjectFromMemberPointer(this,&cWPFUIThread::fDispatchHigh);
 }
 //---------------------------------------------------------------------------
-void cDNetUIThreadAsyncTimer::Stop(void)noexcept
-{
-	return TimerStop();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cDNetUIThread* cDNetUIThread::mcWPFDispatchHigh::GetHost(void)noexcept
-{
-	return cnMemory::GetObjectFromMemberPointer(this,&cDNetUIThread::fDispatchHigh);
-}
-//---------------------------------------------------------------------------
-void* cDNetUIThread::mcWPFDispatchHigh::CastInterface(iTypeID IID)noexcept
+void* cWPFUIThread::mcWPFDispatchHigh::CastInterface(iTypeID IID)noexcept
 {
 	if(IID==TInterfaceID<iReference>::Value){
 		auto Host=GetHost();
@@ -206,49 +271,49 @@ void* cDNetUIThread::mcWPFDispatchHigh::CastInterface(iTypeID IID)noexcept
 	return iDispatch::CastInterface(IID);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncProcedure> cDNetUIThread::mcWPFDispatchHigh::CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncProcedure> cWPFUIThread::mcWPFDispatchHigh::CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchCreateWork(true,Reference,ThreadProcedure);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncTimer> cDNetUIThread::mcWPFDispatchHigh::CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncTimer> cWPFUIThread::mcWPFDispatchHigh::CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchCreateTimer(true,Reference,ThreadProcedure);
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::mcWPFDispatchHigh::IsCurrentThread(void)noexcept
+bool cWPFUIThread::mcWPFDispatchHigh::IsCurrentThread(void)noexcept
 {
 	auto Host=GetHost();
-	return Host->mIsCurrent();
+	return Host->IsCurrent();
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::mcWPFDispatchHigh::Execute(iReference *Reference,iProcedure *Procedure)noexcept
+void cWPFUIThread::mcWPFDispatchHigh::Execute(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchExecute(true,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::mcWPFDispatchHigh::ExecuteSync(iProcedure *Procedure)noexcept
+void cWPFUIThread::mcWPFDispatchHigh::ExecuteSync(iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->mDispatchExecuteSync(true,Procedure);
 }
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> cDNetUIThread::mcWPFDispatchHigh::ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept
+iPtr<iAsyncTask> cWPFUIThread::mcWPFDispatchHigh::ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchExecuteAsync(true,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDNetUIThread* cDNetUIThread::mcWPFDispatchLow::GetHost(void)noexcept
+cWPFUIThread* cWPFUIThread::mcWPFDispatchLow::GetHost(void)noexcept
 {
-	return cnMemory::GetObjectFromMemberPointer(this,&cDNetUIThread::fDispatchLow);
+	return cnMemory::GetObjectFromMemberPointer(this,&cWPFUIThread::fDispatchLow);
 }
 //---------------------------------------------------------------------------
-void* cDNetUIThread::mcWPFDispatchLow::CastInterface(iTypeID IID)noexcept
+void* cWPFUIThread::mcWPFDispatchLow::CastInterface(iTypeID IID)noexcept
 {
 	if(IID==TInterfaceID<iReference>::Value){
 		auto Host=GetHost();
@@ -257,53 +322,65 @@ void* cDNetUIThread::mcWPFDispatchLow::CastInterface(iTypeID IID)noexcept
 	return iDispatch::CastInterface(IID);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncProcedure> cDNetUIThread::mcWPFDispatchLow::CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncProcedure> cWPFUIThread::mcWPFDispatchLow::CreateWork(iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchCreateWork(false,Reference,ThreadProcedure);
 }
 //------------------------------------------------------------------s---------
-rPtr<iAsyncTimer> cDNetUIThread::mcWPFDispatchLow::CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncTimer> cWPFUIThread::mcWPFDispatchLow::CreateTimer(iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchCreateTimer(false,Reference,ThreadProcedure);
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::mcWPFDispatchLow::IsCurrentThread(void)noexcept
+bool cWPFUIThread::mcWPFDispatchLow::IsCurrentThread(void)noexcept
 {
 	auto Host=GetHost();
-	return Host->mIsCurrent();
+	return Host->IsCurrent();
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::mcWPFDispatchLow::Execute(iReference *Reference,iProcedure *Procedure)noexcept
+void cWPFUIThread::mcWPFDispatchLow::Execute(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchExecute(false,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::mcWPFDispatchLow::ExecuteSync(iProcedure *Procedure)noexcept
+void cWPFUIThread::mcWPFDispatchLow::ExecuteSync(iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->mDispatchExecuteSync(false,Procedure);
 }
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> cDNetUIThread::mcWPFDispatchLow::ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept
+iPtr<iAsyncTask> cWPFUIThread::mcWPFDispatchLow::ExecuteAsync(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	auto Host=GetHost();
 	return Host->DispatchExecuteAsync(false,Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::cExecuteAsyncTask::IsDone(void)noexcept
+cWPFUIThread::cExecuteAsyncTask::cExecuteAsyncTask(iReference *Reference,iProcedure *Procedure)noexcept
+	: Reference(Reference)
+	, Procedure(Procedure)
+{
+}
+//---------------------------------------------------------------------------
+bool cWPFUIThread::cExecuteAsyncTask::IsDone(void)noexcept
 {
 	return TaskState.IsDone();
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::cExecuteAsyncTask::Await(iProcedure *NotifyProcedure)noexcept
+bool cWPFUIThread::cExecuteAsyncTask::Await(iProcedure *NotifyProcedure)noexcept
 {
 	return TaskState.Await(NotifyProcedure);
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::cExecuteAsyncTask::ExecuteTask(void)noexcept
+void cWPFUIThread::cExecuteAsyncTask::Queue(mbcWPFUIThread *WPFThread,bool HighPriority)noexcept
+{
+	iIncReference(this,'exec');
+	WPFThread->mDispatchExecute(HighPriority,this);
+}
+//---------------------------------------------------------------------------
+void cWPFUIThread::cExecuteAsyncTask::Execute(void)noexcept
 {
 	Procedure->Execute();
 
@@ -313,27 +390,91 @@ void cDNetUIThread::cExecuteAsyncTask::ExecuteTask(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDNetUIThread::cDNetUIThread()noexcept
-	: mcDNetUIThreadDispatcher(&fInnerReference)
+void mbcWPFUIThread::nExecuteProcedureReference(iReference *Reference,iProcedure *Procedure)noexcept
 {
+	Procedure->Execute();
+	rDecReference(Reference,'disp');
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void cWPFUIThread::cCreateOnCurrentProcedure::Execute(mcWPFDispatcherReference &DispatcherReference)noexcept
+{
+	Thread=iCreate<cWPFUIThread>(DispatcherReference);
+}
+//---------------------------------------------------------------------------
+iPtr<cWPFUIThread> cWPFUIThread::CreateOnCurrentThread(void)noexcept
+{
+	cCreateOnCurrentProcedure ThreadCallback;
+	auto WPFThread=mbcWPFUIThread::mCurrentUIThread(&ThreadCallback);
+	if(WPFThread!=nullptr)
+		return static_cast<cWPFUIThread*>(WPFThread);
+
+	return cnVar::MoveCast(ThreadCallback.Thread);
+}
+//---------------------------------------------------------------------------
+void cWPFUIThread::cThreadSetupProcedure::Wait(void)noexcept
+{
+	fNotifier.Wait();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThread::cThreadSetupProcedure::Execute(mcWPFDispatcherReference *DispatcherRefrence)noexcept
+{
+	if(DispatcherRefrence!=nullptr){
+		Thread=iCreate<cWPFUIThread>(*DispatcherRefrence);
+	}
+	fNotifier.Notify();
+}
+//---------------------------------------------------------------------------
+iPtr<cWPFUIThread> cWPFUIThread::StartUIThread(void)noexcept
+{
+	cThreadSetupProcedure ThreadCallback;
+	WPFUIThreadNewThread(&ThreadCallback);
+
+	ThreadCallback.Wait();
+	return cnVar::MoveCast(ThreadCallback.Thread);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cWPFUIThread::cWPFUIThread(mcWPFDispatcherReference &DispatcherReference)noexcept
+{
+	mbcWPFUIThread::mSetup(DispatcherReference);
 	fWPFKeyboard=iCreate<cWPFKeyboard>();
 	fWPFMouse=iCreate<cWPFMouse>();
+	fNativeThreadID=::GetCurrentThreadId();
 }
 //---------------------------------------------------------------------------
-cDNetUIThread::~cDNetUIThread(void)noexcept
+cWPFUIThread::~cWPFUIThread(void)noexcept
 {
+	mbcWPFUIThread::mClear();
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::VirtualStopped(void)noexcept
+void cWPFUIThread::VirtualStarted(void)noexcept
 {
-	mShutdownFrame();
-	InnerDecReference('self');
+	cDualReference::VirtualStarted();
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::IsCurrent(void)noexcept
+void cWPFUIThread::VirtualStopped(void)noexcept
+{
+	InnerIncReference('clea');
+	mbcWPFUIThread::mCPPClose();
+	cDualReference::VirtualStopped();
+}
+//---------------------------------------------------------------------------
+void cWPFUIThread::WPFOnCPPClose(void)noexcept
+{
+	InnerDecReference('clea');
+}
+//---------------------------------------------------------------------------
+void cWPFUIThread::WPFOnShutdown(void)noexcept
+{
+	fDispatcherShutdown=true;
+}
+//---------------------------------------------------------------------------
+bool cWPFUIThread::IsCurrent(void)const noexcept
 {
 	if(fDispatcherShutdown)
-		return true;
+		return false;
 
 	DWORD CurrentID=::GetCurrentThreadId();
 	if(fNativeThreadID==CurrentID){
@@ -347,45 +488,20 @@ bool cDNetUIThread::IsCurrent(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cDNetUIThread::IsShutdown(void)noexcept
-{
-	return fDispatcherShutdown;
-}
-//---------------------------------------------------------------------------
-bool cDNetUIThread::IsCurrentThread(void)noexcept
+bool cWPFUIThread::IsCurrentThread(void)noexcept
 {
 	return IsCurrent();
 }
 //---------------------------------------------------------------------------
-cDNetUIThread* cDNetUIThread::CurrentUIThread(void)noexcept
+cWPFUIThread* cWPFUIThread::CurrentUIThread(void)noexcept
 {
-	return static_cast<cDNetUIThread*>(mCurrentUIDispatcher());
-}
-//---------------------------------------------------------------------------
-iPtr<cDNetUIThread> cDNetUIThread::CreateOnCurrentThread(void)noexcept
-{
-	auto DispatchFrame=mCurrentUIDispatcher();
-	if(DispatchFrame!=nullptr)
-		return static_cast<cDNetUIThread*>(DispatchFrame);
-
-	// create ui thread in current thread
-	auto Thread=iCreate<cDNetUIThread>();
-	Thread->fNativeThreadID=::GetCurrentThreadId();
-
-	if(Thread->mCreateOnCurrentThread()==false)
+	auto WPFThread=mbcWPFUIThread::mCurrentUIThread();
+	if(WPFThread==nullptr)
 		return nullptr;
-
-	return Thread;
+	return static_cast<cWPFUIThread*>(WPFThread);
 }
 //---------------------------------------------------------------------------
-iPtr<cDNetUIThread> cDNetUIThread::StartUIThread(void)noexcept
-{
-	auto Thread=iCreate<cDNetUIThread>();
-	rcDNetUIThreadDispatchFrame_StartUIThread(&Thread->fInnerReference,Thread);
-	return Thread;
-}
-//---------------------------------------------------------------------------
-iDispatch* cDNetUIThread::GetDispatch(bool HighPriority)noexcept
+iDispatch* cWPFUIThread::GetDispatch(bool HighPriority)noexcept
 {
 	if(HighPriority){
 		return &fDispatchHigh;
@@ -395,74 +511,70 @@ iDispatch* cDNetUIThread::GetDispatch(bool HighPriority)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iUIKeyboard* cDNetUIThread::GetDefaultKeyboard(void)noexcept
+iUIKeyboard* cWPFUIThread::GetDefaultKeyboard(void)noexcept
 {
 	return fWPFKeyboard;
 }
 //---------------------------------------------------------------------------
-iUIMouse* cDNetUIThread::GetDefaultMouse(void)noexcept
+iUIMouse* cWPFUIThread::GetDefaultMouse(void)noexcept
 {
 	return fWPFMouse;
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncProcedure> cDNetUIThread::DispatchCreateWork(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncProcedure> cWPFUIThread::DispatchCreateWork(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
 	if(ThreadProcedure==nullptr)
 		return nullptr;
 	if(Reference!=nullptr)
-		return rCreate<cDNetUIThreadAsyncProcedureRef>(this,HighPriority,Reference,ThreadProcedure);
+		return rCreate<cWPFUIThreadAsyncProcedureRef>(this,HighPriority,Reference,ThreadProcedure);
 	else
-		return rCreate<cDNetUIThreadAsyncProcedure>(this,HighPriority,ThreadProcedure);
+		return rCreate<cWPFUIThreadAsyncProcedure>(this,HighPriority,ThreadProcedure);
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncTimer> cDNetUIThread::DispatchCreateTimer(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept
+rPtr<iAsyncTimer> cWPFUIThread::DispatchCreateTimer(bool HighPriority,iReference *Reference,iProcedure *ThreadProcedure)noexcept
 {
-	auto AsyncTimer=rCreate<cDNetUIThreadAsyncTimer>(this,HighPriority,Reference,ThreadProcedure);
+	auto AsyncTimer=rCreate<cWPFUIThreadAsyncTimer>(this,HighPriority,Reference,ThreadProcedure);
 	return AsyncTimer;
 }
 //---------------------------------------------------------------------------
-void cDNetUIThread::DispatchExecute(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+void cWPFUIThread::DispatchExecute(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 {
 	if(Reference!=nullptr){
-		rcRefProcedureCaller_RefProc(Reference);
-		mDispatchExecuteReferenced(HighPriority,Reference,Procedure);
+		rIncReference(Reference,'disp');
+		mbcWPFUIThread::mDispatchExecuteReferenced(HighPriority,Reference,Procedure);
 	}
 	else{
-		mDispatchExecute(HighPriority,Procedure);
+		mbcWPFUIThread::mDispatchExecute(HighPriority,Procedure);
 	}
 }
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> cDNetUIThread::DispatchExecuteAsync(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+iPtr<iAsyncTask> cWPFUIThread::DispatchExecuteAsync(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
 {
-	if(Reference!=nullptr)
-		rIncReference(Reference,'exec');
+	auto Task=iCreate<cExecuteAsyncTask>(Reference,Procedure);
 
-	auto Task=iCreate<cExecuteAsyncTask>();
-	Task->Reference=Reference;
-	Task->Procedure=Procedure;
-
-	iIncReference(Task,'exec');
-	mDispatchExecuteAsync(Task,HighPriority);
+	Task->Queue(this,HighPriority);
 
 	return Task;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDNetUIApplication::cDNetUIApplication(iPtr<cDNetUIThread> UIThread)noexcept
+cWPFUIApplication::cWPFUIApplication(iPtr<cWPFUIThread> UIThread)noexcept
 	: fUIThread(cnVar::MoveCast(UIThread))
 {
+	fDispatchFrame.mSetup();
 }
 //---------------------------------------------------------------------------
-cDNetUIApplication::~cDNetUIApplication()noexcept
+cWPFUIApplication::~cWPFUIApplication()noexcept
 {
+	fDispatchFrame.mClear();
 }
 //---------------------------------------------------------------------------
-iUIThread* cDNetUIApplication::GetMainUIThread(void)noexcept
+iUIThread* cWPFUIApplication::GetMainUIThread(void)noexcept
 {
 	return fUIThread;
 }
 //---------------------------------------------------------------------------
-bool cDNetUIApplication::InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept
+bool cWPFUIApplication::InsertHandler(iWindowsUISessionHandler *SessionHandler)noexcept
 {
 	if(fUIThread->IsCurrent()==false)
 		return false;
@@ -471,7 +583,7 @@ bool cDNetUIApplication::InsertHandler(iWindowsUISessionHandler *SessionHandler)
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cDNetUIApplication::RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept
+bool cWPFUIApplication::RemoveHandler(iWindowsUISessionHandler *SessionHandler)noexcept
 {
 	if(fUIThread->IsCurrent()==false)
 		return false;
@@ -480,11 +592,11 @@ bool cDNetUIApplication::RemoveHandler(iWindowsUISessionHandler *SessionHandler)
 	return true;
 }
 //---------------------------------------------------------------------------
-void cDNetUIApplication::UIMain(void)noexcept
+void cWPFUIApplication::UIMain(void)noexcept
 {
 	if(fUIThread->IsCurrent()==false)
 		return;
-	
+
 	if(fUISession)
 		return;
 
@@ -496,7 +608,7 @@ void cDNetUIApplication::UIMain(void)noexcept
 		Handler->UISessionStart();
 	}
 	// message loop
-	mWPFUIMain();
+	fDispatchFrame.mUIMain();
 
 	fUISession=false;
 
@@ -506,9 +618,15 @@ void cDNetUIApplication::UIMain(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cDNetUIApplication::CloseUISession(void)noexcept
+void cWPFUIApplication::CloseUISession(void)noexcept
 {
 	if(fUISession)
-		mNotifyStopRun();
+		fDispatchFrame.mNotifyStopRun();
+}
+//---------------------------------------------------------------------------
+rPtr<iWindowsUIApplication> cWPFUIApplication::CreateWindowsUIApplication(void)noexcept
+{
+	auto UIThread=cWPFUIThread::CreateOnCurrentThread();
+	return rCreate<cWPFUIApplication>(cnVar::MoveCast(UIThread));
 }
 //---------------------------------------------------------------------------

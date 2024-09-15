@@ -1,13 +1,13 @@
-/*- cnWinWPF - View Content -----------------------------------------------*/
+/*- cnWinCLI - WPF Window -------------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2023-10-07                                          */
 /*-------------------------------------------------------------------------*/
 #pragma once
 /*-------------------------------------------------------------------------*/
 
-#include <cnWinCLI\WinDNet_Common.h>
-#include <cnWinCLI\WinDNet_WPFUIView.h>
-#include <cnWinCLI\WinDNetM_WPFUIViewWindow.h>
+#include <cnWinCLI\WinCLI_Common.h>
+#include <cnWinCLI\WinCLI_WPFUIView.h>
+#include <cnWinCLI\WinCLIM_WPFUIWindow.h>
 
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
@@ -15,21 +15,112 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-iPtr<iWindow> DNetCreateWPFWindow(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept(true);
+iPtr<iWindowClient> WPFCreateWindowClient(void)noexcept(true);
+rPtr<iPopupWindowControl> WPFCreatePopupWindowControl(void)noexcept(true);
 //---------------------------------------------------------------------------
-class cWPFUIWindow
-	: public iUIWindow , public iWindowClient, public iWPFWindowClient
-	, public iCLIObject, public cnRTL::bcVirtualLifeCycle
-	, public mcWPFViewRoot
+class cWPFWindow;
+//---------------------------------------------------------------------------
+class iWPFWindowClient : public iInterface
 {
-	friend mcWPFViewRoot;
 public:
-	cWPFUIWindow(cDNetUIThread *UIThread,mcConstructParameter &Parameter)noexcept(true);
-	~cWPFUIWindow()noexcept(true);
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+
+	virtual bool WPFClientSetupWindow(cWPFWindow *Window)noexcept(true)=0;
+	virtual void WPFClientClearWindow(cWPFWindow *Window)noexcept(true)=0;
+	virtual mbcWPFUIViewRoot* WPFClientGetViewRoot(void)noexcept(true)=0;
+	virtual iWindowClient* WPFWindowGetInterface(void)noexcept(true)=0;
+	virtual void WPFWindowDPIChanged(WORD NewDPI)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cWPFWindow
+	: public iWindow, public iWindowProvider
+	, public cnRTL::bcVirtualLifeCycle
+	, protected mbcWPFWindow
+{
+public:
+	cWPFWindow(cWPFUIThread *UIThread)noexcept(true);
+	~cWPFWindow()noexcept(true);
+
+	HWND GetHandle(void)noexcept(true);
+
+	using mbcWPFWindow::mCreate;
+	using mbcWPFWindow::mDestroy;
+	using mbcWPFWindow::mQueryLayoutScale;
+
+
+	struct tInterfaceID{	static iTypeID Value;	};
+	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true)override;
+
+	// iWindow
+
+	virtual iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true)override;
+	virtual HWND cnLib_FUNC GetWindowHandle(void)noexcept(true)override;
+	virtual bool cnLib_FUNC InsertMessageHandler(iWindowMessageHandler *WindowHandler,sfInt8 Order)noexcept(true)override;
+	virtual bool cnLib_FUNC RemoveMessageHandler(iWindowMessageHandler *WindowHandler)noexcept(true)override;
+	virtual iWindowClient* GetClient(void)noexcept(true)override;
+	virtual bool SetClient(iWindowClient *Client)noexcept(true)override;
+	virtual iWindowFrame* GetFrame(void)noexcept(true)override;
+	virtual bool SetFrame(iWindowFrame *Client)noexcept(true)override;
+	virtual rPtr<iVariable> QueryAffixedVariable(const void *Token)noexcept(true)override;
+	virtual bool cnLib_FUNC GetMouseAutoCapture(void)noexcept(true)override;
+	virtual bool cnLib_FUNC SetMouseAutoCapture(bool Enable)noexcept(true)override;
+
+	// iWindowProvider
+
+	virtual bool cnLib_FUNC SubclassAttach(HWND Window,bool LocalClass)noexcept(true)override;
+	virtual bool cnLib_FUNC SubclassDetach(void)noexcept(true)override;
+	virtual bool cnLib_FUNC WindowCreate(HWND Parent,const wchar_t *WindowText,DWORD Style=WS_OVERLAPPEDWINDOW,DWORD ExStyle=0,LONG X=CW_USEDEFAULT,LONG Y=CW_USEDEFAULT,LONG Width=CW_USEDEFAULT,LONG Height=CW_USEDEFAULT,UINT ChildID=0)noexcept(true)override;
+	virtual bool cnLib_FUNC WindowDestroy(void)noexcept(true)override;
+
+
+	cWPFUIThread* GetWPFUIThread(void)noexcept(true);
+	WORD GetWindowDPI(void)const noexcept(true);
+
+
+	void WindowClientExit(iWindowClient *Client)noexcept(true);
+protected:
+	void VirtualStarted(void)noexcept(true);
+	void VirtualStopped(void)noexcept(true);
+
+	cnRTL::cAffixedVariableSet fAffixedVariableSet;
+
+	bool CheckThread(void)noexcept(true);
+	iPtr<cWPFUIThread> fUIThread;
+
+	HWND fWindowHandle;
+	WORD fWindowDPI;
+
+	iWPFWindowClient *fWPFClient=nullptr;
+	cnRTL::cOrderedObjectSet<iWindowMessageHandler*,sfInt8> fHandlers;
+
+	virtual void WPFSourceAttach(void *WindowHandle)noexcept(true)override;
+	virtual void WPFSourceDetach(void)noexcept(true)override;
+	virtual bool WPFSourceMessage(uIntn &Result,void *hwnd, uInt32 msg, uIntn wParam, uIntn lParam)noexcept(true)override;
+private:
+	bool WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)noexcept(true);
+
+	void Cleanup(void)noexcept(true);
+
+	class cExitParentProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true);
+	}fExitParentProcedure;
+};
+//---------------------------------------------------------------------------
+class cWPFWindowClient
+	: public iWindowClient, public iWPFWindowClient
+	, public iUIWindow, public iWPFViewParent, public iWPFViewWindow
+	, public iCLIObject, public cnRTL::bcVirtualLifeCycle
+	, public mbcWPFUIViewRoot
+{
+public:
+	cWPFWindowClient(cWPFUIThread *UIThread,const cGCHandle &WPFUIViewRootTargetElement)noexcept(true);
+	~cWPFWindowClient()noexcept(true);
 
 	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
 
-	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
+	virtual const cGCHandle& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
 
 	// iUIArea
 
@@ -63,6 +154,7 @@ public:
 
 	// iWindowClient
 
+	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)override;
 	virtual void cnLib_FUNC SetBackgroundColor(COLORREF Color)noexcept(true)override;
 
 	bool CheckThread(void)noexcept(true);
@@ -71,143 +163,53 @@ protected:
 	void VirtualStarted(void)noexcept(true);
 	void VirtualStopped(void)noexcept(true);
 
-	iPtr<cDNetUIThread> fUIThread;
+	iPtr<cWPFUIThread> fUIThread;
+	iPtr<cWPFWindow> fWindowHost;
+	cWPFUIView *fClient=nullptr;
+
+	virtual void WPFWindowStateChanged(void)noexcept(true)override;
+	virtual void WPFWindowShutdownStarted(void)noexcept(true)override;
 
 	// iWPFViewParent
 
-	virtual eUIState WPFParentGetState(void)noexcept(true)override;
-	virtual Float32 WPFParentGetContentScale(void)noexcept(true)override;
-	virtual Float32 WPFParentGetLayoutScale(void)noexcept(true)override;
+	// iWPFViewWindow
+
+	virtual iUIWindow* WPFWindowInterface(void)noexcept(true)override;
+	virtual iWindow* WPFWindowGetWindow(void)noexcept(true)override;
+	virtual bool WPFWindowIsActive(void)noexcept(true)override;
 
 	// iWPFWindowClient
 
+	virtual bool WPFClientSetupWindow(cWPFWindow *Window)noexcept(true)override;
+	virtual void WPFClientClearWindow(cWPFWindow *Window)noexcept(true)override;
+	virtual mbcWPFUIViewRoot* WPFClientGetViewRoot(void)noexcept(true)override;
 	virtual iWindowClient* WPFWindowGetInterface(void)noexcept(true)override;
-	virtual void WPFWindowStateChanged(UIState NewState)noexcept(true)override;
-	virtual void WPFWindowDPIChanged(Float32 NewScale)noexcept(true)override;
+	virtual void WPFWindowDPIChanged(WORD NewDPI)noexcept(true)override;
 
 	eUIState fWindowState;
+	Float32 fLayoutScale;
 	Float32 fContentScale;
 
-};
-//---------------------------------------------------------------------------
-class cWPFWindowAsWindowClient
-	: public cWPFUIWindow
-{
-public:
-
-	cWPFWindowAsWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
-	~cWPFWindowAsWindowClient()noexcept(true);
-
-	// iWindowClient
-
-	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)override;
-	bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true);
-
-protected:
-	
-};
-//---------------------------------------------------------------------------
-class cWPFWindow
-	: public iCLIObject, public iWindow
-	, private iDependentInfo, public cnRTL::bcVirtualLifeCycle
-	, public mcWPFWindow
-{
-	friend mcWPFWindow;
-public:
-	cWPFWindow(cDNetUIThread *UIThread)noexcept(true);
-	~cWPFWindow()noexcept(true);
-
-	HWND GetHandle(void)noexcept(true);
-
-
-	virtual void* cnLib_FUNC CastInterface(iTypeID IID)noexcept(true) override;
-
-	// iDNetObject
-
-	virtual cGCRef& cnLib_FUNC GetObjecHandle(void)noexcept(true)override;
-
-	// iWindow
-
-	virtual iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true)override;
-	virtual HWND cnLib_FUNC GetWindowHandle(void)noexcept(true)override;
-	virtual bool cnLib_FUNC InsertMessageHandler(iWindowMessageHandler *WindowHandler,sfInt8 Order)noexcept(true)override;
-	virtual bool cnLib_FUNC RemoveMessageHandler(iWindowMessageHandler *WindowHandler)noexcept(true)override;
-	virtual iWindowClient* GetClient(void)noexcept(true)override;
-	virtual bool SetClient(iWindowClient*)noexcept(true)override;
-	virtual iWindowFrame* GetFrame(void)noexcept(true)override;
-	virtual bool SetFrame(iWindowFrame*)noexcept(true)override;
-	virtual rPtr<iVariable> QueryAffixedVariable(const void *Token)noexcept(true)override;
-	virtual bool cnLib_FUNC GetMouseAutoCapture(void)noexcept(true)override;
-	virtual bool cnLib_FUNC SetMouseAutoCapture(bool Enable)noexcept(true)override;
-
-	cDNetUIThread* GetWPFUIThread(void)noexcept(true);
-	eUIState GetUIState(void)const noexcept(true);
-	Float32 GetLayoutScale(void)const noexcept(true);
-	Float32 GetContentScale(void)const noexcept(true);
-
-protected:
-	void VirtualStarted(void)noexcept(true);
-	void VirtualStopped(void)noexcept(true);
-
-	cnRTL::cAffixedVariableSet fAffixedVariableSet;
-
-	bool CheckThread(void)noexcept(true);
-	iPtr<cDNetUIThread> fUIThread;
-
-	cnRTL::cnWinRTL::cWindowUIState fWindowState;
-	WORD fWindowDPI;
-
-	cnRTL::cOrderedObjectSet<iWindowMessageHandler*,sfInt8> fHandlers;
-
-	void WindowAttach(void)noexcept(true);
-	void WindowDetach(void)noexcept(true);
-private:
-	
-
-	virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
-	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
-
-	bool WindowMessage(LRESULT &MessageResult,HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)noexcept(true);
-};
-//---------------------------------------------------------------------------
-class cWPFWindowClient : public cWPFUIWindow
-{
-public:
-	cWPFWindowClient(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
-	~cWPFWindowClient()noexcept(true);
-
-	// iWindowClient
-
-	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)override;
-	bool cnLib_FUNC SetWindow(iWindow *Window)noexcept(true);
-
-protected:
-
-	iPtr<cWPFWindow> fWindowHost;
-
-	bool WPFSetupWindow(iCLIObject *Object)noexcept(true);
-	bool WPFClearWindow(void)noexcept(true);
-
-	// iWPFViewParent
-
-	virtual Float32 WPFParentGetLayoutScale(void)noexcept(true)override;
-
-	// iWPFWindowClient
-
-	virtual void WPFWindowStateChanged(eUIState NewState)noexcept(true)override;
-	virtual void WPFWindowDPIChanged(Float32 NewScale)noexcept(true)override;
-
-
-	//void mWindowSetBGColor(uInt8 r,uInt8 g,uInt8 b);
-
 	SIZE GetClientSize(void)noexcept(true);
-	
+
+private:
+	eUIState EvaluateUIState(void)const noexcept(true);
+	void UpdateUIState(void)noexcept(true);
+
+	void UpdateContentScale(Float32 NewLayoutScale,Float32 NewContentScale)noexcept(true);
+
+	void Cleanup(void)noexcept(true);
+
+	class cExitParentProcedure : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true);
+	}fExitParentProcedure;
 };
 //---------------------------------------------------------------------------
 class cWPFPopupWindowControl : public iPopupWindowControl, public cWPFWindowClient
 {
 public:
-	cWPFPopupWindowControl(cDNetUIThread *UIThread,mcWPFViewRoot::mcConstructParameter &Parameter)noexcept(true);
+	cWPFPopupWindowControl(cWPFUIThread *UIThread,const cGCHandle &WPFUIViewRootTargetElement)noexcept(true);
 	~cWPFPopupWindowControl()noexcept(true);
 
 	virtual void cnLib_FUNC SetCallback(iPopupWindowControlCallback *Callback)noexcept(true)override;
@@ -226,4 +228,3 @@ protected:
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
 #endif  /* __cplusplus */
-/*-------------------------------------------------------------------------*/
