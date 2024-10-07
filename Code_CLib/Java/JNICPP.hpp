@@ -55,8 +55,8 @@ public:
 		return *this;
 	}
 
-	TJavaClass Get(void)const noexcept{ return fJavaRef; }
-	void Set(TJavaClass Ref)noexcept{
+	TJavaClass* Get(void)const noexcept{ return fJavaRef; }
+	void Set(TJavaClass *Ref)noexcept{
 		if(fJavaRef!=nullptr){
 			jInterface::DeleteLocalRef(fEnv,fJavaRef);
 			jLogException(fEnv);
@@ -635,6 +635,9 @@ struct jcThrowable : jcObject
 template<class TJavaContext>
 inline jrLocal<jcString> jMakeExceptionDescription(JNIEnv *env,jcThrowable *Exception)noexcept
 {
+	if(TInstanceMethod<TJavaContext,jcThrowable::jname_printStackTrace,jcThrowable,void,java::io::jcPrintWriter*>::Value==nullptr){
+		return nullptr;
+	}
 	auto Writer=jNew<java::io::jcStringWriter>(env);
 	if(Writer==nullptr){
 		return nullptr;
@@ -695,10 +698,6 @@ inline bool jLogExceptionT(JNIEnv *env)noexcept
 
 				Stream+=cnRTL::ArrayStreamArray(StrAccess.Pointer,StrLength);
 			}
-		}
-		else{
-			jInterface::ExceptionDescribe(env);
-			jInterface::ExceptionClear(env);
 		}
 	}
 	return true;
