@@ -130,6 +130,11 @@ struct jcFile : jcObject
 {
 	static constexpr const char jClassName[]="java/io/File";
 
+	static jrLocal<jcFile> Make(JNIEnv *env,const uChar16 *Path,uIntn Length)noexcept{
+		auto String=jcString::Make(env,Path,Length);
+		return jNew<jcFile>(env,String.Get());
+	}
+
 	static constexpr const char jname_getPath[]="getPath";
 	jrLocal<jcString> getPath(JNIEnv *env)noexcept{
 		return jMethodCall<jname_getPath,&jcFile::getPath>::Call(env,this);
