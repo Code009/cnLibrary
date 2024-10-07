@@ -19,7 +19,7 @@ namespace siPOSIX{
 #ifdef siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
 uInt64 timespecToNanoSeconds(const timespec &tv)noexcept(true);
-timespec timespecFromNanoSeconds(sInt64 Seconds)noexcept(true);
+timespec timespecFromNanoSeconds(uInt64 Seconds)noexcept(true);
 uInt64 GetSystemTimeNow(void)noexcept(true);
 //---------------------------------------------------------------------------
 class cTimesepcTimepoint : public iTimepoint

@@ -14,7 +14,7 @@ uInt64 siPOSIX::timespecToNanoSeconds(const timespec &tv)noexcept
 	return NanoSeconds;
 }
 //---------------------------------------------------------------------------
-timespec siPOSIX::timespecFromNanoSeconds(sInt64 NanoSeconds)noexcept
+timespec siPOSIX::timespecFromNanoSeconds(uInt64 NanoSeconds)noexcept
 {
 	timespec ts;
 	ts.tv_sec=NanoSeconds/Time_1s;
