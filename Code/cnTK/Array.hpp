@@ -1207,8 +1207,10 @@ struct cArrayStorage : cArrayAllocation<TAllocationOperator,TElement>
 		TAMFunc::CopyConstruct(this->Pointer,Index,Src,0,CopyLength);
 	}
 	void Copy(tConstPointer Src,uIntn SrcLength)noexcept(noexcept(TAMFunc::Destruct(0,0,0)) && noexcept(TAMFunc::CopyHeadConstructTail(0,0,0,0,0,0))){
-		if(SrcLength==0)
+		if(SrcLength==0){
+			this->Length=0;
 			return;
+		}
 		if(this->Length==0){
 			if(SrcLength>this->Capacity){
 				GrowCapacityTo(SrcLength);
