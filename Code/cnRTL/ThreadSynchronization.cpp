@@ -88,6 +88,30 @@ void cWaitReference::DecreaseReference(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void cThreadSingleNotification::Setup(void)noexcept
+{
+	fNotifyThread=cnSystem::CurrentThread::GetThread();
+	fWaiting=true;
+}
+//---------------------------------------------------------------------------
+void cThreadSingleNotification::Wait(void)noexcept
+{
+	while(fWaiting){
+		cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
+	}
+}
+//---------------------------------------------------------------------------
+void cThreadSingleNotification::Notify(void)noexcept
+{
+	fNotifyThread->Wake(&fWaiting);
+}
+//---------------------------------------------------------------------------
+void cThreadSingleNotification::Clear(void)noexcept
+{
+	fNotifyThread=nullptr;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 cThreadOneTimeNotifier::cThreadOneTimeNotifier()noexcept
 {
 	Reset();

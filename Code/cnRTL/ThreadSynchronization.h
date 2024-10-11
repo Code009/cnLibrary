@@ -136,6 +136,18 @@ public:
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
 //---------------------------------------------------------------------------
+class cThreadSingleNotification
+{
+public:
+	void Setup(void)noexcept(true);
+	void Clear(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	void Notify(void)noexcept(true);
+protected:
+	iThread *fNotifyThread;
+	bool fWaiting;
+};
+//---------------------------------------------------------------------------
 class cThreadOneTimeNotifier
 {
 public:
