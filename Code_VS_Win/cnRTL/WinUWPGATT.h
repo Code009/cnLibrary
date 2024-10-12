@@ -50,6 +50,8 @@ public:
 
 	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)override;
 	virtual iGATTCharacteristic* cnLib_FUNC GetCharacterist(void)noexcept(true)override;
+	virtual iPtr<iGATTDataAsyncTask> cnLib_FUNC Read(void)noexcept(true)override;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
 
 	void CharacteristicUpdateDescriptor(IBLEDescriptor *Descriptor)noexcept(true);
 	void CharacteristicNotifyFunctionStatus(void)noexcept(true);
@@ -114,14 +116,14 @@ public:
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)override;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)override;
 
-	virtual iPtr< iAsyncFunction<cConstMemory> > cnLib_FUNC Read(void)noexcept(true)override;
+	virtual iPtr<iGATTDataAsyncTask> cnLib_FUNC Read(void)noexcept(true)override;
 
-	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)override;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)override;
 
 	virtual eGATTCharacteristicNotification cnLib_FUNC EffectiveValueNotification(void)noexcept(true)override;
-	virtual eGATTCharacteristicNotification cnLib_FUNC GetValueNotification(void)noexcept(true)override;
-	virtual void cnLib_FUNC SetValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)override;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC ReadValueNotification(void)noexcept(true)override;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC WriteValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)override;
 
 	void ServiceInvalidateCharacteristic(void)noexcept(true);
 	void ServiceUpdateCharacteristic(IBLECharacteristic *Characteristic)noexcept(true);

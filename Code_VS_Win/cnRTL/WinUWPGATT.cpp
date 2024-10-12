@@ -82,7 +82,7 @@ cGATTDescriptor::~cGATTDescriptor()noexcept
 //---------------------------------------------------------------------------
 void cGATTDescriptor::VirtualStarted(void)noexcept
 {
-	InnerActivate('self');
+	cDualReference::VirtualStarted();
 }
 //---------------------------------------------------------------------------
 void cGATTDescriptor::VirtualStopped(void)noexcept
@@ -90,7 +90,7 @@ void cGATTDescriptor::VirtualStopped(void)noexcept
 	if(fDescriptor!=nullptr){
 		ClearDescriptor();
 	}
-	InnerDecReference('self');
+	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
 cUUID cGATTDescriptor::GetUUID(void)noexcept
@@ -127,6 +127,16 @@ eGATTAvailability cGATTDescriptor::GetAvailability(void)noexcept
 iGATTCharacteristic* cGATTDescriptor::GetCharacterist(void)noexcept
 {
 	return fOwner;
+}
+//---------------------------------------------------------------------------
+iPtr<iGATTDataAsyncTask> cGATTDescriptor::Read(void)noexcept
+{
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+iPtr<iGATTAsyncTask> cGATTDescriptor::Write(const void *Data,uIntn DataSize)noexcept
+{
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 void cGATTDescriptor::SetupDescriptor(void)noexcept
@@ -214,7 +224,7 @@ cGATTCharacteristic::~cGATTCharacteristic()noexcept
 //---------------------------------------------------------------------------
 void cGATTCharacteristic::VirtualStarted(void)noexcept
 {
-	InnerActivate('self');
+	cDualReference::VirtualStarted();
 }
 //---------------------------------------------------------------------------
 void cGATTCharacteristic::VirtualStopped(void)noexcept
@@ -222,7 +232,7 @@ void cGATTCharacteristic::VirtualStopped(void)noexcept
 	if(fCharacteristic!=nullptr){
 		ClearCharacteristic();
 	}
-	InnerDecReference('self');
+	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
 iDispatch* cGATTCharacteristic::GetDispatch(void)const noexcept
@@ -279,7 +289,7 @@ rPtr<iGATTDescriptorObserver> cGATTCharacteristic::CreateDescriptorObserver(void
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr< iAsyncFunction<cConstMemory> > cGATTCharacteristic::Read(void)noexcept
+iPtr<iGATTDataAsyncTask> cGATTCharacteristic::Read(void)noexcept
 {
 	HRESULT hr;
 	ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattCharacteristicProperties prop;
@@ -294,7 +304,7 @@ iPtr< iAsyncFunction<cConstMemory> > cGATTCharacteristic::Read(void)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iAsyncTask> cGATTCharacteristic::Write(const void *Data,uIntn DataSize)noexcept
+iPtr<iGATTAsyncTask> cGATTCharacteristic::Write(const void *Data,uIntn DataSize)noexcept
 {
 	HRESULT hr;
 	auto SendBuffer=MakeBufferFromData(Data,DataSize);
@@ -322,15 +332,14 @@ eGATTCharacteristicNotification cGATTCharacteristic::EffectiveValueNotification(
 	return fEffectiveNotificationConfig;
 }
 //---------------------------------------------------------------------------
-eGATTCharacteristicNotification cGATTCharacteristic::GetValueNotification(void)noexcept
+iPtr<iGATTAsyncTask> cGATTCharacteristic::ReadValueNotification(void)noexcept
 {
-	return fTargetNotificationConfig;
+	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cGATTCharacteristic::SetValueNotification(eGATTCharacteristicNotification Notification)noexcept
+iPtr<iGATTAsyncTask> cGATTCharacteristic::WriteValueNotification(eGATTCharacteristicNotification Notification)noexcept
 {
-	fTargetNotificationConfig=Notification;
-	NotifyMainProcess();
+	return nullptr;
 }
 //---------------------------------------------------------------------------
 void cGATTCharacteristic::SetupCharacteristic(void)noexcept

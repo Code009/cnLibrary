@@ -6,7 +6,7 @@ cnSystem_INTERFACE_ID_DEFINE(iObservedReference)
 
 cnSystem_INTERFACE_ID_DEFINE(iThread)
 
-cnSystem_INTERFACE_ID_DEFINE(iDataCache)
+//cnSystem_INTERFACE_ID_DEFINE(iDataCache)
 
 //cnSystem_INTERFACE_ID_DEFINE(iFile)
 cnSystem_INTERFACE_ID_DEFINE(iFileName)

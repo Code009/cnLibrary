@@ -57,9 +57,9 @@ cnLib_INTENUM_BEGIN(ufInt8,GATTCharacteristicProperties){
 }cnLib_INTENUM_END(GATTCharacteristicProperties);
 
 cnLib_ENUM_BEGIN(ufInt8,GATTCharacteristicNotification){
-	None,
-	Notify,
-	Indicate,
+	None		=0,
+	Notify		=1,
+	Indicate	=2,
 }cnLib_ENUM_END(GATTCharacteristicNotification);
 
 cnLib_ENUM_BEGIN(ufInt8,GATTAvailability){
@@ -80,6 +80,25 @@ public:
 	virtual void cnLib_FUNC GATTDescriptorAvailabilityChanged(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
+cnLib_ENUM_BEGIN(ufInt8,GATTTaskStatus){
+	Success,
+	Failure,
+	Retry,
+	Cancelled,
+}cnLib_ENUM_END(GATTTaskStatus);
+//---------------------------------------------------------------------------
+class iGATTAsyncTask : public iAsyncFunction<eGATTTaskStatus>
+{
+public:
+	virtual void cnLib_FUNC Cancel(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class iGATTDataAsyncTask : public iGATTAsyncTask
+{
+public:
+	virtual cConstMemory cnLib_FUNC GetResultData(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTDescriptor : public iReference
 {
 public:
@@ -90,6 +109,8 @@ public:
 
 	virtual eGATTAvailability cnLib_FUNC GetAvailability(void)noexcept(true)=0;
 	virtual iGATTCharacteristic* cnLib_FUNC GetCharacterist(void)noexcept(true)=0;
+	virtual iPtr<iGATTDataAsyncTask> cnLib_FUNC Read(void)noexcept(true)=0;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTDescriptorObserver: public iAsyncNotification
@@ -126,13 +147,13 @@ public:
 	virtual rPtr<iGATTDescriptor> cnLib_FUNC AccessDescriptor(const cUUID &ID)noexcept(true)=0;
 	virtual rPtr<iGATTDescriptorObserver> cnLib_FUNC CreateDescriptorObserver(void)noexcept(true)=0;
 
-	virtual iPtr< iAsyncFunction<cConstMemory> > cnLib_FUNC Read(void)noexcept(true)=0;
-	virtual iPtr<iAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
+	virtual iPtr<iGATTDataAsyncTask> cnLib_FUNC Read(void)noexcept(true)=0;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC Write(const void *Data,uIntn DataSize)noexcept(true)=0;
 	virtual bool cnLib_FUNC WriteWithoutResponse(const void *Data,uIntn DataSize)noexcept(true)=0;
 
 	virtual eGATTCharacteristicNotification cnLib_FUNC EffectiveValueNotification(void)noexcept(true)=0;
-	virtual eGATTCharacteristicNotification cnLib_FUNC GetValueNotification(void)noexcept(true)=0;
-	virtual void cnLib_FUNC SetValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)=0;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC ReadValueNotification(void)noexcept(true)=0;
+	virtual iPtr<iGATTAsyncTask> cnLib_FUNC WriteValueNotification(eGATTCharacteristicNotification Notification)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iGATTCharacteristicObserver: public iAsyncNotification

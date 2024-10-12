@@ -61,7 +61,7 @@ template<class TResult>
 class cnLib_INTERFACE iAsyncFunction : public iAsyncTask
 {
 public:
-	virtual TResult& cnLib_FUNC Result(void)noexcept(true)=0;
+	virtual TResult cnLib_FUNC Result(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iMutex : public iReference
@@ -249,16 +249,16 @@ extern iThreadPool*const DefaultThreadPool;
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iDataCache : public iInterface
-{
-public:
-	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
-
-	virtual bool cnLib_FUNC IsCached(void)noexcept(true)=0;
-	virtual void cnLib_FUNC Cache(void)noexcept(true)=0;
-	virtual iPtr<iAsyncTask> cnLib_FUNC CacheAsync(void)noexcept(true)=0;
-};
+//class cnLib_INTERFACE iDataCache : public iInterface
+//{
+//public:
+//	struct tInterfaceID{	static iTypeID Value;	};
+//	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+//
+//	virtual bool cnLib_FUNC IsCached(void)noexcept(true)=0;
+//	virtual void cnLib_FUNC Cache(void)noexcept(true)=0;
+//	virtual iPtr<iAsyncTask> cnLib_FUNC CacheAsync(void)noexcept(true)=0;
+//};
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
