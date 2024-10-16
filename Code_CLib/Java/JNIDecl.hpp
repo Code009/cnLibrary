@@ -542,6 +542,10 @@ namespace jInterface
 	inline void			DeleteLocalRef(JNIEnv *env,T *localRef)noexcept
 	{	JCPP_INTERFACECALLCHECK(env,localRef);	return env->DeleteLocalRef(reinterpret_cast<jobject>(localRef)); }
 
+
+	inline jboolean IsSameObject(JNIEnv *env,jcObject *ref1, jcObject *ref2)noexcept
+	{ return env->IsSameObject(reinterpret_cast<jobject>(ref1), reinterpret_cast<jobject>(ref2)); }
+
 	inline jbMethod*	GetMethodID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
 	{	JCPP_INTERFACECALLCHECK(env,clazz,name,sig);	return reinterpret_cast<jbMethod*>(env->GetMethodID(reinterpret_cast<jclass>(clazz),name,sig)); }
 	inline jbField*	GetFieldID(JNIEnv *env,jcClass *clazz,const char* name,const char* sig)noexcept
