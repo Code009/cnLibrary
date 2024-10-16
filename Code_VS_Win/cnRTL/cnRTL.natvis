@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="cnLibrary::cnRTL::aCls&lt;*&gt;">
+		<DisplayString>{*($T1*)this,nd}</DisplayString>
+		<Expand>
+			<Item Name="[aCls]">($T1*)this,ndnvo!</Item>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnRTL::impReferenceLifeCycleObject&lt;*&gt;">
+		<DisplayString>{*($T1*)this,nd}</DisplayString>
+		<Expand>
+			<Item Name="[impRefernce.ReferenceCount]">fRefCount</Item>
+			<Item Name="[impRefernce.LifeCycle]">*($T2*)this,nd</Item>
+			<Item Name="[impRefernce]">*($T1*)this,nvond!</Item>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnRTL::impObservedReferenceLifeCycleObject&lt;*&gt;">
+		<DisplayString>{*($T1*)this,nd}</DisplayString>
+		<Expand>
+			<Item Name="[impRefernce.ReferenceCount]">fRefCount</Item>
+			<Item Name="[impRefernce.LifeCycle]">*($T2*)this,nd</Item>
+			<Item Name="[impRefernce]">*($T1*)this,nvond!</Item>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnRTL::impRefInterface&lt;*&gt;">
+		<DisplayString>{*(($T1*)this),nd}</DisplayString>
+		<Expand>
+			<Item Name="[impRefInterface]">*($T1*)this,nvond!</Item>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnRTL::impMutex&lt;*&gt;">
+		<DisplayString>{(*($T1*)this),nd}</DisplayString>
+		<Expand>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnRTL::cDualReference">
+		<DisplayString>InnerRefCount={fInnerReference.Ref}</DisplayString>
+	</Type>
+</AutoVisualizer>

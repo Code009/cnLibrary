@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<!--Pointer.hpp-->
+	<Type Name="cnLibrary::cnVar::cPtrReference&lt;*&gt;">
+		<DisplayString>{fRefToken}</DisplayString>
+		<Expand>
+			<Item Name="[PtrReference]">fRefToken,ndnvo</Item>
+			<ExpandedItem>fRefToken</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--Interface.hpp-->
+	<Type Name="cnLibrary::cArray&lt;*&gt;">
+		<DisplayString>[{Length}]{Pointer,[Length]}</DisplayString>
+		<Expand>
+			<Item Name="[Length]">Length</Item>
+			<Item Name="[Pointer]">Pointer</Item>
+			<ArrayItems>
+				<Size>Length</Size>
+				<ValuePointer>Pointer</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::rPtr&lt;*&gt;">
+		<DisplayString>{fRefToken.Pointer}</DisplayString>
+		<Expand>
+			<Item Name="[rPtr.Pointer]">fRefToken.Pointer,nvo</Item>
+			<ExpandedItem Condition="fRefToken.Pointer!=0">fRefToken.Pointer</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::iPtr&lt;*&gt;">
+		<DisplayString>{fRefToken.Pointer}</DisplayString>
+		<Expand>
+			<Item Name="[iPtr.Reference]">fRefToken.Reference,ndnvo</Item>
+			<Item Name="[iPtr.Pointer]">fRefToken.Pointer,nvo</Item>
+			<ExpandedItem Condition="fRefToken.Pointer!=0">fRefToken.Pointer</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--Memory.hpp-->
+	<Type Name="cnLibrary::cnVar::cStaticVariable&lt;*&gt;">
+		<DisplayString>{*($T1*)this}</DisplayString>
+		<Expand>
+			<ExpandedItem>($T1*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--Atomic.hpp-->
+	<Type Name="cnLibrary::cnAsync::cAtomicVariable&lt;*&gt;">
+		<DisplayString>{_atomic_}</DisplayString>
+	</Type>
+	<!--Variant.hpp-->
+	<Type Name="cnLibrary::cnVar::cVarPack&lt;*&gt;">
+		<Expand>
+			<Item Name="&lt;0&gt;" Optional="1">
+				((cnLibrary::cnVar::cVarPackVariable&lt;0,$T1&gt;*)this)->Value
+			</Item>
+			<Item Name="&lt;1&gt;" Optional="1">
+				((cnLibrary::cnVar::cVarPackVariable&lt;1,$T2&gt;*)this)->Value
+			</Item>
+			<Item Name="&lt;2&gt;" Optional="1">
+				((cnLibrary::cnVar::cVarPackVariable&lt;1,$T3&gt;*)this)->Value
+			</Item>
+			<Item Name="&lt;3&gt;" Optional="1">
+				((cnLibrary::cnVar::cVarPackVariable&lt;1,$T4&gt;*)this)->Value
+			</Item>
+			<Synthetic Name="..." Condition="(($T5 *)0)==0" Optional="1">
+				<DisplayString>More variable cannot be displayed</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+	<!--Array.hpp-->
+	<Type Name="cnLibrary::cnDataStruct::cArrayAllocation&lt;*&gt;">
+		<DisplayString>[{Length}/{Capacity}]{Pointer,[Length]}</DisplayString>
+		<Expand>
+			<Item Name="[Capacity]">Capacity</Item>
+			<ExpandedItem>*(cnLibrary::cArray&lt;$T2&gt;*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cMultiArray&lt;*&gt;">
+		<DisplayString>[{Length}]{Pointer}</DisplayString>
+		<Expand>
+			<Item Name="[Length]">Length</Item>
+			<Item Name="[Pointer]">Pointer</Item>
+			<ArrayItems Condition="(PointerCount)==1" Optional="1">
+				<Size>Length</Size>
+				<ValuePointer>((cnLibrary::cnVar::cVarPackVariable&lt;0,$T1 *&gt;*)&amp;Pointer)->Value[i]</ValuePointer>
+			</ArrayItems>
+			<CustomListItems MaxItemsPerView="50" Condition="(PointerCount)==2" Optional="1">
+				<Variable Name="i" InitialValue="0" />
+
+				<Size>2*Length</Size>
+				<Loop>
+					<Item Name="[{i}]&lt;0&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;0,$T1 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;1&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;1,$T2 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Exec>i++</Exec>
+				</Loop>
+			</CustomListItems>
+			<CustomListItems MaxItemsPerView="50" Condition="(PointerCount)==3" Optional="1">
+				<Variable Name="i" InitialValue="0" />
+
+				<Size>3*Length</Size>
+				<Loop>
+					<Item Name="[{i}]&lt;0&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;0,$T1 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;1&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;1,$T2 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;2&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;2,$T3 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Exec>i++</Exec>
+				</Loop>
+			</CustomListItems>
+			<CustomListItems MaxItemsPerView="50" Condition="(PointerCount)==4" Optional="1">
+				<Variable Name="i" InitialValue="0" />
+
+				<Size>4*Length</Size>
+				<Loop>
+					<Item Name="[{i}]&lt;0&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;0,$T1 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;1&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;1,$T2 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;2&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;2,$T3 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Item Name="[{i}]&lt;3&gt;">((cnLibrary::cnVar::cVarPackVariable&lt;3,$T4 *&gt;*)&amp;Pointer)->Value[i]</Item>
+					<Exec>i++</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cMultiArrayAllocation&lt;*&gt;">
+		<DisplayString>[{Length}/{Capacity}]{Pointer}</DisplayString>
+		<Expand>
+			<Item Name="[Capacity]">Capacity</Item>
+			<ExpandedItem>*(tMultiArray*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--Vector.hpp-->
+	<!--Stream.hpp-->
+	<!--String.hpp-->
+	<Type Name="cnLibrary::cnString::cStringBuffer&lt;*&gt;">
+		<DisplayString>{fString}</DisplayString>
+		<Expand>
+			<ExpandedItem>fString</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnString::cConstString&lt;*&gt;">
+		<DisplayString>{*fStringToken}</DisplayString>
+	</Type>
+	<Type Name="cnLibrary::cnString::cString&lt;*&gt;">
+		<DisplayString>{*fStringToken}</DisplayString>
+		<Expand>
+			<Item Name="[StringToken]">fStringToken</Item>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnString::cRefStringArray&lt;*&gt;">
+		<Intrinsic Name="ToArray" Expression="(cnLibrary::cArray&lt;$T1 const &gt;*)this" />
+		<DisplayString>[{ToArray()->Length}]{ToArray()->Pointer,na}</DisplayString>
+		<StringView>ToArray()->Pointer</StringView>
+		<Expand>
+			<Item Name="[Text]">ToArray()->Pointer</Item>
+			<Item Name="[Length]">ToArray()->Length</Item>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnString::cRefStringArrayConstant&lt;*&gt;">
+		<DisplayString>&lt;{fRefCount}&gt;[{ToArray()->Length}]{ToArray()->Pointer,na}</DisplayString>
+		<StringView>ToArray()->Pointer</StringView>
+		<Expand>
+			<Item Name="[RefCount]">fRefCount</Item>
+			<ExpandedItem>(cnLibrary::cnString::cRefStringArray&lt;$T1&gt;*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnString::cRefStringArrayStorage&lt;*&gt;">
+		<DisplayString>&lt;{fRefCount}&gt;[{ToArray()->Length}]{ToArray()->Pointer,na}</DisplayString>
+		<StringView>ToArray()->Pointer</StringView>
+		<Expand>
+			<Item Name="[RefCount]">fRefCount</Item>
+			<ExpandedItem>(cnLibrary::cnString::cRefStringArray&lt;$T2&gt;*)this,nd</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--SeqStruct.hpp-->
+	<Type Name="cnLibrary::cnDataStruct::cSeqList&lt;*&gt;">
+		<DisplayString>{fArray}</DisplayString>
+		<Expand>
+			<ExpandedItem>fArray</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSeqSet&lt;*&gt;">
+		<DisplayString>{fArray}</DisplayString>
+		<Expand>
+			<ExpandedItem>fArray</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSeqMap&lt;*&gt;">
+		<DisplayString>[{fArray.Length}/{fArray.Capacity}]</DisplayString>
+		<Expand>
+			<Item Name="[Capacity]">fArray.Capacity</Item>
+			<Item Name="[Length]">fArray.Length</Item>
+			<CustomListItems MaxItemsPerView="50" Optional="1">
+				<Variable Name="i" InitialValue="0" />
+
+				<Size>2*fArray.Length</Size>
+				<Loop>
+					<Item Name="[{i}].Key">((cnLibrary::cnVar::cVarPackVariable&lt;0,$T2 *&gt;*)&amp;fArray.Pointer)->Value[i]</Item>
+					<Item Name="[{i}].Value">((cnLibrary::cnVar::cVarPackVariable&lt;1,$T4 *&gt;*)&amp;fArray.Pointer)->Value[i]</Item>
+					<Exec>i++</Exec>
+				</Loop>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSeqMapIterator&lt;*&gt;">
+		<DisplayString>{{{*fKeyPtr} : {*fValuePtr}}}</DisplayString>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSeqMultiList&lt;*&gt;">
+		<DisplayString>{fArray}</DisplayString>
+		<Expand>
+			<ExpandedItem>fArray</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSeqMultiListIterator&lt;*&gt;">
+		<DisplayString>{Pointer}</DisplayString>
+		<Expand>
+			<ExpandedItem>Pointer</ExpandedItem>
+		</Expand>
+	</Type>
+	<!--LinkStruct.hpp-->
+	<Type Name="cnLibrary::cnDataStruct::cSingleLinkedItemIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>*ItemPtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkItemStack&lt;*&gt;">
+		<Expand>
+			<Item Name="[Top]">fTop</Item>
+			<CustomListItems MaxItemsPerView="50" Optional="1">
+				<Variable Name="i" InitialValue="1" />
+				<Variable Name="n" InitialValue="($T1::tItem*)fTop"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Break Condition="n==0"/>
+					<Item Name="[{i}]">n</Item>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkItemQueue&lt;*&gt;">
+		<Expand>
+			<Item Name="[Head]">$T1::GetNext($T1::LinkNode(fCenterLink))</Item>
+			<CustomListItems MaxItemsPerView="50" Optional="1">
+				<Variable Name="i" InitialValue="1" />
+				<Variable Name="n" InitialValue="($T1::tItem*)($T1::LinkInstanceOffset+(char*)&amp;fCenterLink)"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Item Name="[{i}]">n</Item>
+					<Break Condition="n==fTailItem"/>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+			<Item Name="[Tail]">fTailItem</Item>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cSingleLinkedItemContentIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>*ItemPtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkStack&lt;*&gt;">
+		<Expand>
+			<Item Name="[Top]">fTop</Item>
+			<CustomListItems MaxItemsPerView="50" Optional="1">
+				<Variable Name="i" InitialValue="1" />
+				<Variable Name="n" InitialValue="($T1::tItem*)fTop"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Break Condition="n==0"/>
+					<Item Name="[{i}]">n</Item>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkQueue&lt;*&gt;">
+		<Expand>
+			<Item Name="[Head]">$T1::GetNext($T1::LinkNode(fCenterLink))</Item>
+			<CustomListItems MaxItemsPerView="50" Optional="1">
+				<Variable Name="i" InitialValue="1" />
+				<Variable Name="n" InitialValue="($T1::tItem*)($T1::LinkInstanceOffset+(char*)&amp;fCenterLink)"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Item Name="[{i}]">n</Item>
+					<Break Condition="n==fTailItem"/>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+			<Item Name="[Tail]">fTailItem</Item>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cDualLinkedItemIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>ItemPtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkItemList&lt;*&gt;">
+		<Expand>
+			<Item Name="[Head]" Optional="1">$T1::GetNext($T1::LinkNode(fCenterLink))</Item>
+			<Item Name="[Tail]" Optional="1">$T1::GetPrev($T1::LinkNode(fCenterLink))</Item>
+			<CustomListItems MaxItemsPerView="50">
+				<Variable Name="i" InitialValue="0" />
+				<Variable Name="c" InitialValue="($T1::tItem*)($T1::LinkInstanceOffset+(char*)&amp;fCenterLink)" />
+				<Variable Name="n" InitialValue="c"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Break Condition="n==c"/>
+					<Item Name="[{i}]">n</Item>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cDualLinkedIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>ItemPtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkList&lt;*&gt;">
+		<Expand>
+			<Item Name="[Head]" Optional="1">$T1::GetNext($T1::LinkNode(fCenterLink))</Item>
+			<Item Name="[Tail]" Optional="1">$T1::GetPrev($T1::LinkNode(fCenterLink))</Item>
+			<CustomListItems MaxItemsPerView="50">
+				<Variable Name="i" InitialValue="0" />
+				<Variable Name="c" InitialValue="($T1::tItem*)($T1::LinkInstanceOffset+(char*)&amp;fCenterLink)" />
+				<Variable Name="n" InitialValue="c"/>
+				<Loop>
+					<Exec>n=($T1::tItem*)(n->Next)</Exec>
+					<Break Condition="n==c"/>
+					<Item Name="[{i}]">n</Item>
+					<Exec>i++</Exec>
+				</Loop>
+				<Break/>
+			</CustomListItems>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cRBTree&lt;*&gt;">
+		<Intrinsic Name="GetRoot" Expression="(($T1::tNode*)($T1::LinkInstanceOffset+(char*)&amp;fRootLink))->Child[0]" />
+		<DisplayString>{GetRoot(),nvo}</DisplayString>
+		<Expand>
+			<Item Name="[Left]" Optional="1">GetRoot()->Child[0]</Item>
+			<Item Name="[Right]" Optional="1">GetRoot()->Child[1]</Item>
+			<Synthetic Name="[Color]">
+				<DisplayString Optional="1" Condition="GetRoot()->Color==0">black|black</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==1">red|black</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==2">black|red</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==3">red|red</DisplayString>
+			</Synthetic>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cBinaryTreeNodeIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>NodePtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cBinaryTreeNodeContentIterator&lt;*&gt;">
+		<Expand>
+			<ExpandedItem>NodePtr</ExpandedItem>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkSet&lt;*&gt;">
+		<Expand>
+			<Item Name="[NodeCount]">fNodeCount</Item>
+			<ExpandedItem>(cRBTree&lt;$T1&gt;*)this,nd</ExpandedItem>
+			<Item Name="[Content]">fTree.GetRoot()->Content</Item>
+		</Expand>
+	</Type>
+	<Type Name="cnLibrary::cnDataStruct::cLinkMap&lt;*&gt;">
+		<Expand>
+			<Item Name="[NodeCount]">fNodeCount</Item>
+			<ExpandedItem>(cRBTree&lt;$T1&gt;*)this,nd</ExpandedItem>
+			<Item Name="[Content]">fTree.GetRoot()->Content</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>
