@@ -1166,14 +1166,14 @@ struct cSeqMultiListIterator : cSeqMultiListItemRef<TElements...>
 	cSeqMultiListIterator& operator ++(void)noexcept(true){
 		cnVar::VarPackForEach([](auto* &Ptr){
 			Ptr++;
-		},this->Pointer);
+		},this->Pointer.All());
 		return *this;
 	}
 	void operator ++(int)noexcept(true){	operator ++();	}
 	cSeqMultiListIterator& operator --(void)noexcept(true){
 		cnVar::VarPackForEach([](auto* &Ptr){
 			Ptr--;
-		},this->Pointer);
+		},this->Pointer.All());
 		return *this;
 	}
 	void operator --(int)noexcept(true){	operator --();	}
@@ -1182,7 +1182,7 @@ struct cSeqMultiListIterator : cSeqMultiListItemRef<TElements...>
 		tElementRef Ret;
 		cnVar::VarPackForEach([Index](auto* &RetPtr,auto* &SrcPtr){
 			RetPtr=SrcPtr+Index;
-		},Ret.Pointer,this->Pointer);
+		},Ret.Pointer.All(),this->Pointer).All();
 		return Ret;
 	}
 
@@ -1190,26 +1190,26 @@ struct cSeqMultiListIterator : cSeqMultiListItemRef<TElements...>
 		cSeqMultiListIterator Ret;
 		cnVar::VarPackForEach([Offset](auto* &RetPtr,auto* &SrcPtr){
 			RetPtr=SrcPtr+Offset;
-		},Ret.Pointer,this->Pointer);
+		},Ret.Pointer.All(),this->Pointer.All());
 		return Ret;
 	}
 	cSeqMultiListIterator& operator +=(sIntn Offset)noexcept(true){
 		cnVar::VarPackForEach([Offset](auto* &Ptr){
 			Ptr+=Offset;
-		},this->Pointer);
+		},this->Pointer.All());
 		return *this;
 	}
 	cSeqMultiListIterator operator -(sIntn Offset)noexcept(true){
 		cSeqMultiListIterator Ret;
 		cnVar::VarPackForEach([Offset](auto* &RetPtr,auto* &SrcPtr){
 			RetPtr=SrcPtr-Offset;
-		},Ret.Pointer,this->Pointer);
+		},Ret.Pointer.All(),this->Pointer.All());
 		return Ret;
 	}
 	cSeqMultiListIterator& operator -=(uIntn Offset)noexcept(true){
 		cnVar::VarPackForEach([Offset](auto* &Ptr){
 			Ptr-=Offset;
-		},this->Pointer);
+		},this->Pointer.All());
 		return *this;
 	}
 
@@ -1337,7 +1337,7 @@ public:
 		Iterator.Pointer=fArray.Pointer;
 		cnVar::VarPackForEach([Index](auto *&Ptr){
 			Ptr+=Index;
-		},Iterator.Pointer);
+		},Iterator.Pointer.All());
 
 		return Iterator;
 	}
@@ -1381,7 +1381,7 @@ public:
 		cSeqMultiListItemRef<typename VTArrayAllocation::tElement...> RetRef;
 		cnVar::VarPackForEach([Index](auto *&RetPtr,auto *&SrcPtr){
 			RetPtr=SrcPtr+Index;
-		},RetRef.Pointer,fArray.Pointer);
+		},RetRef.Pointer.All(),fArray.Pointer.All());
 		return RetRef;
 	}
 
@@ -1474,7 +1474,7 @@ public:
 	// Args			data construct parameters
 	// return iterator of item where appended
 	template<class...VT>
-	tPointer AppendMake(VT cnLib_UREF...Args)noexcept(true){
+	tIterator AppendMake(VT cnLib_UREF...Args)noexcept(true){
 		auto AppendIndex=AppendUninitialized(1);
 		// default construct
 		TMAMFunc::ConstructElement(fArray.Pointer.All(),AppendIndex,cnLib_UREFCAST(VT)(Args)...);
@@ -1586,7 +1586,7 @@ protected:
 
 	static tIterator NullIterator(void)noexcept(true){
 		tIterator NullIterator;
-		cnVar::VarPackForEach([](auto *&Ptr){	Ptr=nullptr;	},NullIterator.Pointer);
+		cnVar::VarPackForEach([](auto *&Ptr){	Ptr=nullptr;	},NullIterator.Pointer.All());
 		return NullIterator;
 	}
 

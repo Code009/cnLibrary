@@ -7,9 +7,9 @@
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
 #include <cnTK/TypeTraits.hpp>
+#include <cnTK/Interface.hpp>
 #include <cnTK/Memory.hpp>
 #include <cnTK/Variant.hpp>
-#include <cnTK/Interface.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -231,6 +231,7 @@ static cnLib_CONSTVAR cNullArray NullArray;
 template<class...T>
 struct cMultiArray
 {
+	static cnLib_CONSTVAR uIntn PointerCount=sizeof...(T);
 	cnVar::cVarPack<T*...> Pointer;
 	uIntn Length;
 };
@@ -1423,6 +1424,7 @@ protected:
 template<class...VTArrayAllocation>
 struct cMultiArrayAllocation : cMultiArray<typename VTArrayAllocation::tElement...>
 {
+	typedef cMultiArray<typename VTArrayAllocation::tElement...> tMultiArray;
 	uIntn Capacity;
 };
 

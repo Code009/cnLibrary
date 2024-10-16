@@ -247,7 +247,7 @@ struct FunctionIsNoexcept;
 	
 template<class TFunc,class TVarPackAccessor,class...VTVarPackAccessor>
 struct FunctionIsNoexcept<TFunc,TVarPackAccessor,VTVarPackAccessor...>
-	: cnVar::TSelect<noexcept(cnVar::DeclVal<TFunc>()(cnVar::DeclVal<typename TVarPackAccessor::tVariable>(),cnVar::DeclVal<typename VTVarPackAccessor::tVariable>()...))
+	: cnVar::TSelect<noexcept(cnVar::DeclVal<TFunc>()(cnVar::DeclVal<typename TVarPackAccessor::tVariable&>(),cnVar::DeclVal<typename VTVarPackAccessor::tVariable&>()...))
 		, cnVar::TConstantValueFalse
 		, FunctionIsNoexcept<TFunc,VTVarPackAccessor...>
 	>::Type{};
@@ -450,7 +450,7 @@ struct cVarPack
 
 #endif // cnLibrary_CPPFEATURE_AGGREGATE_BASE < 201603L
 
-		typedef cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
+	typedef cVarPackStruct<typename TMakeIndexSequence<TValueSequence<uIntn>,sizeof...(T)>::Type,T...> tPackStruct;
 	typedef cVarPackAccessor<0,0,sizeof...(T)-1,tPackStruct> tAllAccessor;
 	typedef cVarPackAccessor<0,0,sizeof...(T)-1,const tPackStruct> tAllConstAccessor;
 

@@ -238,7 +238,7 @@ public:
 
 	// for range
 	tIterator	begin(void)const noexcept(true){
-		tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
+		const tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
 		return tIterator(TSingleLinkedItemOperator::GetNext(CenterNode));
 
 	}
@@ -246,7 +246,7 @@ public:
 		return tIterator(TSingleLinkedItemOperator::LinkNode(fCenterLink));
 	}
 	tConstIterator	cbegin(void)const noexcept(true){
-		tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
+		const tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
 		return tConstIterator(TSingleLinkedItemOperator::GetNext(CenterNode));
 
 	}
@@ -581,7 +581,7 @@ public:
 
 	// for range
 	tIterator	begin(void)const noexcept(true){
-		tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
+		const tItem *CenterNode=TSingleLinkedItemOperator::LinkNode(fCenterLink);
 		return TSingleLinkedItemOperator::GetNext(CenterNode);
 
 	}
