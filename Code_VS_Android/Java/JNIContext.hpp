@@ -70,6 +70,10 @@ struct jcPackageManager : jcObject
 //---------------------------------------------------------------------------
 }	// namespace pm
 //---------------------------------------------------------------------------
+struct jcIntent;
+struct jcIntentFilter;
+struct jcBroadcastReceiver;
+//---------------------------------------------------------------------------
 struct jcContentProvider : jcObject
 {
 };
@@ -116,6 +120,11 @@ struct jcContext : jcObject
 	jrLocal<java::io::jcFile> getFileStreamPath(JNIEnv *env,jcString *name)noexcept{
 		return jMethodCall<jname_getFileStreamPath,&jcContext::getFileStreamPath>::Call(env,this,name);
 	}
+
+	static constexpr const char jname_registerReceiver[]="registerReceiver";
+	jrLocal<jcIntent> registerReceiver(JNIEnv *env,jcBroadcastReceiver *receiver,jcIntentFilter *filter)noexcept{
+		return jMethodCall<jname_registerReceiver,&jcContext::registerReceiver>::Call(env,this,receiver,filter);
+	}
 };
 //---------------------------------------------------------------------------
 struct jcIntent : jcObject
@@ -140,6 +149,16 @@ struct jcIntent : jcObject
 	jrLocal<jcIntent> addFlags(JNIEnv *env,jint flags)noexcept{
 		return jMethodCall<jname_addFlags,&jcIntent::addFlags>::Call(env,this,flags);
 	}
+};
+//---------------------------------------------------------------------------
+struct jcIntentFilter : jcObject
+{
+	static constexpr const char jClassName[]="android/content/IntentFilter";
+};
+//---------------------------------------------------------------------------
+struct jcBroadcastReceiver : jcObject
+{
+	static constexpr const char jClassName[]="android/content/BroadcastReceiver";
 };
 //---------------------------------------------------------------------------
 }	// namespace content

@@ -371,6 +371,15 @@ struct jcBluetoothLeScanResult : jcObject
 	}
 };
 //---------------------------------------------------------------------------
+struct jcBluetoothLeScanSettings : jcObject
+{
+	static constexpr const char jClassName[]="android/bluetooth/le/ScanSettings";
+
+	static constexpr jint CALLBACK_TYPE_ALL_MATCHES	=1;
+	static constexpr jint CALLBACK_TYPE_FIRST_MATCH	=2;
+	static constexpr jint CALLBACK_TYPE_MATCH_LOST	=3;
+};
+//---------------------------------------------------------------------------
 struct jcBluetoothLeScannerCallback : jcObject
 {
 	static constexpr const char jClassName[]="android/bluetooth/le/ScanCallback";
@@ -394,6 +403,13 @@ struct jcBluetoothLeScanner : jcObject
 struct jcBluetoothAdapter : jcObject
 {
 	static constexpr const char jClassName[]="android/bluetooth/BluetoothAdapter";
+
+	static constexpr const char jname_ACTION_STATE_CHANGED[]="ACTION_STATE_CHANGED";
+	static jStaticFieldAccess<jcString*> ACTION_STATE_CHANGED(void)noexcept{
+		return jStaticFieldAccessMaker<jcBluetoothAdapter,jname_ACTION_STATE_CHANGED>();
+	}
+
+	
 
 	static constexpr const char jname_getBluetoothLeScanner[]="getBluetoothLeScanner";
 	jrLocal<jcBluetoothLeScanner> getBluetoothLeScanner(JNIEnv *env)noexcept{
