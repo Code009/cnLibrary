@@ -456,6 +456,9 @@
     <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\cnRTLCore.h">
       <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -664,5 +667,16 @@
     <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosDeclare.inc">
       <Filter>Code\cnTK</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\Code_VS_Win\cnTK\cnTK.natvis">
+      <Filter>Code - Windows\cnTK</Filter>
+    </Natvis>
+    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTL.natvis">
+      <Filter>Code - Windows\cnRTL</Filter>
+    </Natvis>
+    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTLCore.natvis">
+      <Filter>Code - Windows\cnRTL</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>

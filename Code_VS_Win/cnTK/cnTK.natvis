@@ -338,15 +338,15 @@
 	</Type>
 	<Type Name="cnLibrary::cnDataStruct::cRBTree&lt;*&gt;">
 		<Intrinsic Name="GetRoot" Expression="(($T1::tNode*)($T1::LinkInstanceOffset+(char*)&amp;fRootLink))->Child[0]" />
-		<DisplayString>{GetRoot(),nvo}</DisplayString>
+		<DisplayString>Root={GetRoot(),nvo}</DisplayString>
 		<Expand>
 			<Item Name="[Left]" Optional="1">GetRoot()->Child[0]</Item>
 			<Item Name="[Right]" Optional="1">GetRoot()->Child[1]</Item>
 			<Synthetic Name="[Color]">
-				<DisplayString Optional="1" Condition="GetRoot()->Color==0">black|black</DisplayString>
-				<DisplayString Optional="1" Condition="GetRoot()->Color==1">red|black</DisplayString>
-				<DisplayString Optional="1" Condition="GetRoot()->Color==2">black|red</DisplayString>
-				<DisplayString Optional="1" Condition="GetRoot()->Color==3">red|red</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==0">b|b</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==1">r|b</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==2">b|r</DisplayString>
+				<DisplayString Optional="1" Condition="GetRoot()->Color==3">r|r</DisplayString>
 			</Synthetic>
 		</Expand>
 	</Type>

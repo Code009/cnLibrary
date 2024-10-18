@@ -167,6 +167,7 @@
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinUI.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h" />
+    <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp" />
@@ -367,6 +368,11 @@
   <ItemGroup>
     <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosCleanup.inc" />
     <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosDeclare.inc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTL.natvis" />
+    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTLCore.natvis" />
+    <Natvis Include="..\..\Code_VS_Win\cnTK\cnTK.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
