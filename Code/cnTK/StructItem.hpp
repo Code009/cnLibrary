@@ -18,9 +18,7 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnDataStruct{
-
 //---------------------------------------------------------------------------
-
 
 //struct TItemOrderOperator
 //{
@@ -625,7 +623,7 @@ struct cBinaryTreeNodeOperator
 		Node->Child[1]=nullptr;
 	}
 
-	static tNode* GetChild(tNode *Node,bool ChildBranch)noexcept(true){
+	static tNode* GetChild(const tNode *Node,bool ChildBranch)noexcept(true){
 		return Node->Child[ChildBranch];
 	}
 
@@ -638,7 +636,7 @@ struct cBinaryTreeNodeOperator
 		Child->Branch=ChildBranch;
 	}
 
-	static tNode* GetParent(tNode *Node)noexcept(true){
+	static tNode* GetParent(const tNode *Node)noexcept(true){
 		return Node->Parent;
 	}
 
@@ -646,7 +644,7 @@ struct cBinaryTreeNodeOperator
 		Node->Parent=nullptr;
 	}
 
-	static bool GetParentBranch(tNode *Node)noexcept(true){
+	static bool GetParentBranch(const tNode *Node)noexcept(true){
 		return Node->Branch;
 	}
 	static bool GetParentBranch(tNode *,tNode *Node)noexcept(true){
@@ -705,7 +703,7 @@ struct cColorBinaryTreeNodeOperator : cBinaryTreeNodeOperator<TColorBinaryTreeNo
 		);
 	}
 	static const tNode* LinkNode(const tLinkInstance &Link)noexcept(true){
-		return reinterpret_cast<tNode*>(
+		return reinterpret_cast<const tNode*>(
 			reinterpret_cast<uIntn>(&Link)-LinkInstanceOffset
 		);
 	}
