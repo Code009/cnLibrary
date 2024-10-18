@@ -12,6 +12,59 @@
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
+namespace cnLib_THelper{
+//---------------------------------------------------------------------------
+namespace Memory_TH{
+//---------------------------------------------------------------------------
+
+template<class TEnable,class T>
+struct TAddressOf
+{
+	static cnLib_CONSTEXPR_FUNC T* Call(T &Object)noexcept(true)
+	{
+		return &Object;
+	}
+};
+
+
+#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+
+template<class T>
+struct TAddressOf<decltype(UnusedParameter(&T::operator &)),T>
+{
+	static cnLib_CONSTEXPR_FUNC T* Call(T &Object)noexcept(true)
+	{
+		typedef typename cnVar::TCopyCV<char,T>::Type TInterpret;
+		return reinterpret_cast<T*>(&reinterpret_cast<TInterpret&>(Object));
+	}
+};
+
+// !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
+#else
+// defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+#ifndef cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+template<class T>
+struct TAddressOf<typename cnVar::TTypeConditional<void,sizeof(&T::operator &)>::Type,T>
+{
+	static cnLib_CONSTEXPR_FUNC T* Call(T &Object)noexcept(true)
+	{
+		typedef typename cnVar::TCopyCV<char,T>::Type TInterpret;
+		return reinterpret_cast<T*>(&reinterpret_cast<TInterpret&>(Object));
+	}
+};
+
+#endif	// !cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION
+
+#endif // defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) || cnLibrary_CPPFEATURE_DECLTYPE < 200707L
+
+
+//---------------------------------------------------------------------------
+}	// namespace Memory_TH{
+//---------------------------------------------------------------------------
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnMemory{
@@ -55,10 +108,9 @@ inline TRet* CastPointerAddByteOffset(TPtr *Pointer,sIntn OffsetByte)noexcept(tr
 // Object		reference to the object
 // return address of the object
 template<class T>
-inline T* AddressOf(T &Object)noexcept(true)
+inline cnLib_CONSTEXPR_FUNC T* AddressOf(T &Object)noexcept(true)
 {
-	typedef typename cnVar::TCopyCV<char,T>::Type TInterpret;
-	return reinterpret_cast<T*>(&reinterpret_cast<TInterpret&>(Object));
+	return cnLib_THelper::Memory_TH::TAddressOf<void,T>::Call(Object);
 }
 
 // MemberOffset
@@ -66,7 +118,7 @@ inline T* AddressOf(T &Object)noexcept(true)
 // MemberPointer		pointer to class member
 // return offset of the member
 template<class TMemberClass,class TMember>
-uIntn MemberOffset(TMember TMemberClass::* MemberPointer)noexcept(true)
+inline uIntn MemberOffset(TMember TMemberClass::* MemberPointer)noexcept(true)
 {
 	return reinterpret_cast<uIntn>( AddressOf(static_cast<TMemberClass*>(nullptr)->*MemberPointer) );
 }
