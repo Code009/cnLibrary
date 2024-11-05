@@ -47,16 +47,16 @@ struct jcBluetoothGattDescriptor : jcObject
 	static constexpr const char jClassName[]="android/bluetooth/BluetoothGattDescriptor";
 
 	static constexpr const char jname_DISABLE_NOTIFICATION_VALUE[]="DISABLE_NOTIFICATION_VALUE";
-	static jStaticFieldAccess<jcArray<jbyte>*> DISABLE_NOTIFICATION_VALUE(void)noexcept{
-		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_DISABLE_NOTIFICATION_VALUE>();
+	static jStaticFieldAccess<jcArray<jbyte>*> DISABLE_NOTIFICATION_VALUE(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_DISABLE_NOTIFICATION_VALUE>(env);
 	}
 	static constexpr const char jname_ENABLE_INDICATION_VALUE[]="ENABLE_INDICATION_VALUE";
-	static jStaticFieldAccess<jcArray<jbyte>*> ENABLE_INDICATION_VALUE(void)noexcept{
-		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_ENABLE_INDICATION_VALUE>();
+	static jStaticFieldAccess<jcArray<jbyte>*> ENABLE_INDICATION_VALUE(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_ENABLE_INDICATION_VALUE>(env);
 	}
 	static constexpr const char jname_ENABLE_NOTIFICATION_VALUE[]="ENABLE_NOTIFICATION_VALUE";
-	static jStaticFieldAccess<jcArray<jbyte>*> ENABLE_NOTIFICATION_VALUE(void)noexcept{
-		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_ENABLE_NOTIFICATION_VALUE>();
+	static jStaticFieldAccess<jcArray<jbyte>*> ENABLE_NOTIFICATION_VALUE(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcBluetoothGattDescriptor,jname_ENABLE_NOTIFICATION_VALUE>(env);
 	}
 	
 
@@ -405,8 +405,8 @@ struct jcBluetoothAdapter : jcObject
 	static constexpr const char jClassName[]="android/bluetooth/BluetoothAdapter";
 
 	static constexpr const char jname_ACTION_STATE_CHANGED[]="ACTION_STATE_CHANGED";
-	static jStaticFieldAccess<jcString*> ACTION_STATE_CHANGED(void)noexcept{
-		return jStaticFieldAccessMaker<jcBluetoothAdapter,jname_ACTION_STATE_CHANGED>();
+	static jStaticFieldAccess<jcString*> ACTION_STATE_CHANGED(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcBluetoothAdapter,jname_ACTION_STATE_CHANGED>(env);
 	}
 
 	

@@ -486,8 +486,9 @@ typedef jEnv JNIEnv;
 #endif // !JCPP_JNIHEADER
 
 
+template<class TJavaContext,class TStreamWriteBuffer>
+void jWriteExceptionDescription(TStreamWriteBuffer&& WriteBuffer,JNIEnv *env,jcThrowable *Exception)noexcept;	// define in JNICPP.hpp
 template<class TJavaContext>
-bool jLogExceptionT(JNIEnv *env)noexcept;	// define in JNICPP.hpp
 bool jLogException(JNIEnv *env)noexcept;	// define in JNICPP.hpp
 
 void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept;	// define in JNICPP.hpp
@@ -529,6 +530,8 @@ namespace jInterface
 	inline jcClass* FindClass(JNIEnv *env,const char *name)noexcept
 	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcClass*>(env->FindClass(name)); }
 
+	inline jcClass* FindClassNoCheck(JNIEnv *env,const char *name)noexcept
+	{	return reinterpret_cast<jcClass*>(env->FindClass(name)); }
 
 	template<class T>
 	inline T*			NewGlobalRef(JNIEnv *env,T *obj)noexcept

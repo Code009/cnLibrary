@@ -232,7 +232,9 @@ protected:
 template<class TClass>
 inline jrLocal<TClass> jNew(JNIEnv *env)noexcept
 {
-	TClass *Ret=jInterface::NewObjectA<TClass>(env,TClassRef<jJavaContext,TClass>::Value,TConstructorMethod<jJavaContext,TClass,&jNew<TClass> >::Value,nullptr);
+	auto cls=jRegistration<jJavaContext>::Class<TClass>(env);
+	auto mid=jRegistration<jJavaContext>::ConstructorMethod<TClass>(env);
+	TClass *Ret=jInterface::NewObjectA<TClass>(env,cls,mid,nullptr);
 	if(Ret==nullptr){
 		jLogException(env);
 	}
@@ -242,8 +244,10 @@ inline jrLocal<TClass> jNew(JNIEnv *env)noexcept
 template<class TClass,class...TArgs>
 inline jrLocal<TClass> jNew(JNIEnv *env,TArgs...Args)noexcept
 {
+	auto cls=jRegistration<jJavaContext>::Class<TClass>(env);
+	auto mid=jRegistration<jJavaContext>::ConstructorMethod<TClass,TArgs...>(env);
 	jvalue args[sizeof...(TArgs)]={MakeJValue(Args)...};
-	TClass *Ret=jInterface::NewObjectA<TClass>(env,TClassRef<jJavaContext,TClass>::Value,TConstructorMethod<jJavaContext,TClass,&jNew<TClass,TArgs...> >::Value,args);
+	TClass *Ret=jInterface::NewObjectA<TClass>(env,cls,mid,args);
 	if(Ret==nullptr){
 		jLogException(env);
 	}
@@ -253,22 +257,24 @@ inline jrLocal<TClass> jNew(JNIEnv *env,TArgs...Args)noexcept
 template<class TField>
 struct jFieldAccess
 {
-	jFieldAccess(jcObject *JavaRef,jField<TField> *FieldID)noexcept
-		: JavaRef(JavaRef)
+	jFieldAccess(JNIEnv *env,jcObject *JavaRef,jField<TField> *FieldID)noexcept
+		: JavaEnv(env)
+		, JavaRef(JavaRef)
 		, FieldID(FieldID)
 	{}
 
-	TField Get(JNIEnv *env)noexcept{
-		TField Ret=jInterface::GetField<TField>(env,JavaRef,FieldID);
-		jLogException(env);
+	TField Get(void)noexcept{
+		TField Ret=jInterface::GetField<TField>(JavaEnv,JavaRef,FieldID);
+		jLogException(JavaEnv);
 		return Ret;
 	}
 
-	void Set(JNIEnv *env,TField Value)noexcept{
-		jInterface::SetField<TField>(env,JavaRef,FieldID,Value);
-		jLogException(env);
+	void Set(TField Value)noexcept{
+		jInterface::SetField<TField>(JavaEnv,JavaRef,FieldID,Value);
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcObject *JavaRef;
 	jField<TField> *FieldID;
 };
@@ -276,23 +282,25 @@ struct jFieldAccess
 template<class TFieldClass>
 struct jFieldAccess<TFieldClass*>
 {
-	jFieldAccess(jcObject *JavaRef,jField<TFieldClass*> *FieldID)noexcept
-		: JavaRef(JavaRef)
+	jFieldAccess(JNIEnv *env,jcObject *JavaRef,jField<TFieldClass*> *FieldID)noexcept
+		: JavaEnv(env)
+		, JavaRef(JavaRef)
 		, FieldID(FieldID)
 	{}
 
-	jrLocal<TFieldClass> Get(JNIEnv *env)noexcept{
-		TFieldClass* Ret=jInterface::GetField<TFieldClass*>(env,JavaRef,FieldID);
+	jrLocal<TFieldClass> Get(void)noexcept{
+		TFieldClass* Ret=jInterface::GetField<TFieldClass*>(JavaEnv,JavaRef,FieldID);
 		if(Ret==nullptr)
-			jLogException(env);
-		return jrLocal<TFieldClass>(env,Ret);
+			jLogException(JavaEnv);
+		return jrLocal<TFieldClass>(JavaEnv,Ret);
 	}
 
-	void Set(JNIEnv *env,TFieldClass *Value)noexcept{
-		jInterface::SetField<TFieldClass*>(env,JavaRef,FieldID,Value);
-		jLogException(env);
+	void Set(TFieldClass *Value)noexcept{
+		jInterface::SetField<TFieldClass*>(JavaEnv,JavaRef,FieldID,Value);
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcObject *JavaRef;
 	jField<TFieldClass*> *FieldID;
 };
@@ -300,22 +308,24 @@ struct jFieldAccess<TFieldClass*>
 template<class T>
 struct jPointerFieldAccess
 {
-	jPointerFieldAccess(jcObject *JavaRef,jField<jlong> *FieldID)noexcept
-		: JavaRef(JavaRef)
+	jPointerFieldAccess(JNIEnv *env,jcObject *JavaRef,jField<jlong> *FieldID)noexcept
+		: JavaEnv(env)
+		, JavaRef(JavaRef)
 		, FieldID(FieldID)
 	{}
 
-	T* Get(JNIEnv *env)noexcept{
-		jlong Ret=jInterface::GetField<jlong>(env,JavaRef,FieldID);
-		jLogException(env);
+	T* Get(void)noexcept{
+		jlong Ret=jInterface::GetField<jlong>(JavaEnv,JavaRef,FieldID);
+		jLogException(JavaEnv);
 		return reinterpret_cast<T*>(static_cast<uIntn>(Ret));
 	}
 
-	void Set(JNIEnv *env,T *Value)noexcept{
-		jInterface::SetField<jlong>(env,JavaRef,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
-		jLogException(env);
+	void Set(T *Value)noexcept{
+		jInterface::SetField<jlong>(JavaEnv,JavaRef,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcObject *JavaRef;
 	jField<jlong> *FieldID;
 };
@@ -323,22 +333,25 @@ struct jPointerFieldAccess
 template<class TClass,const char *FieldName>
 struct cFieldAccessMaker
 {
+	JNIEnv *env;
 	TClass *obj;
 
 	template<class TField>
 	operator jFieldAccess<TField>()const noexcept{
-		return {obj,TInstanceField<jJavaContext,FieldName,TClass,TField>::Value};
+		auto fid=jRegistration<jJavaContext>::InstanceField<FieldName,TClass,TField>(env);
+		return {env,obj,fid};
 	}
 
 	template<class TPointer>
 	operator jPointerFieldAccess<TPointer>()const noexcept{
-		return {obj,TInstanceField<jJavaContext,FieldName,TClass,jlong>::Value};
+		auto fid=jRegistration<jJavaContext>::InstanceField<FieldName,TClass,jlong>(env);
+		return {env,obj,fid};
 	}
 };
 template<const char *FieldName,class TClass>
-cFieldAccessMaker<TClass,FieldName> jFieldAccessMaker(TClass *obj)noexcept
+cFieldAccessMaker<TClass,FieldName> jFieldAccessMaker(JNIEnv *env,TClass *obj)noexcept
 {
-	cFieldAccessMaker<TClass,FieldName> r={obj};
+	cFieldAccessMaker<TClass,FieldName> r={env,obj};
 	return r;
 }
 
@@ -346,22 +359,24 @@ cFieldAccessMaker<TClass,FieldName> jFieldAccessMaker(TClass *obj)noexcept
 template<class TField>
 struct jStaticFieldAccess
 {
-	jStaticFieldAccess(jcClass *cls,jField<TField> *FieldID)noexcept
-		: Class(cls)
+	jStaticFieldAccess(JNIEnv *env,jcClass *cls,jField<TField> *FieldID)noexcept
+		: JavaEnv(env)
+		, Class(cls)
 		, FieldID(FieldID)
 	{}
 
-	TField Get(JNIEnv *env)noexcept{
-		TField Ret=jInterface::GetStaticField<TField>(env,Class,FieldID);
-		jLogException(env);
+	TField Get(void)noexcept{
+		TField Ret=jInterface::GetStaticField<TField>(JavaEnv,Class,FieldID);
+		jLogException(JavaEnv);
 		return Ret;
 	}
 
-	void Set(JNIEnv *env,TField Value)noexcept{
-		jInterface::SetStaticField<TField>(env,Class,FieldID,Value);
-		jLogException(env);
+	void Set(TField Value)noexcept{
+		jInterface::SetStaticField<TField>(JavaEnv,Class,FieldID,Value);
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcClass *Class;
 	jField<TField> *FieldID;
 };
@@ -369,23 +384,25 @@ struct jStaticFieldAccess
 template<class TFieldClass>
 struct jStaticFieldAccess<TFieldClass*>
 {
-	jStaticFieldAccess(jcClass *cls,jField<TFieldClass*> *FieldID)noexcept
-		: Class(cls)
+	jStaticFieldAccess(JNIEnv *env,jcClass *cls,jField<TFieldClass*> *FieldID)noexcept
+		: JavaEnv(env)
+		, Class(cls)
 		, FieldID(FieldID)
 	{}
 
-	jrLocal<TFieldClass> Get(JNIEnv *env)noexcept{
-		TFieldClass* Ret=jInterface::GetStaticField<TFieldClass*>(env,Class,FieldID);
+	jrLocal<TFieldClass> Get(void)noexcept{
+		TFieldClass* Ret=jInterface::GetStaticField<TFieldClass*>(JavaEnv,Class,FieldID);
 		if(Ret==nullptr)
-			jLogException(env);
-		return jrLocal<TFieldClass>(env,Ret);
+			jLogException(JavaEnv);
+		return jrLocal<TFieldClass>(JavaEnv,Ret);
 	}
 
-	void Set(JNIEnv *env,TFieldClass *Value)noexcept{
-		jInterface::SetStaticField<TFieldClass*>(env,Class,FieldID,Value);
-		jLogException(env);
+	void Set(TFieldClass *Value)noexcept{
+		jInterface::SetStaticField<TFieldClass*>(JavaEnv,Class,FieldID,Value);
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcClass *Class;
 	jField<TFieldClass*> *FieldID;
 };
@@ -393,39 +410,53 @@ struct jStaticFieldAccess<TFieldClass*>
 template<class T>
 struct jPointerStaticFieldAccess
 {
-	jPointerStaticFieldAccess(jcClass *cls,jField<jlong> *FieldID)noexcept
-		: Class(cls)
+	jPointerStaticFieldAccess(JNIEnv *env,jcClass *cls,jField<jlong> *FieldID)noexcept
+		: JavaEnv(env)
+		, Class(cls)
 		, FieldID(FieldID)
 	{}
 
-	T* Get(JNIEnv *env)noexcept{
-		jlong Ret=jInterface::GetStaticField<jlong>(env,Class,FieldID);
-		jLogException(env);
+	T* Get(void)noexcept{
+		jlong Ret=jInterface::GetStaticField<jlong>(JavaEnv,Class,FieldID);
+		jLogException(JavaEnv);
 		return reinterpret_cast<T*>(static_cast<uIntn>(Ret));
 	}
 
-	void Set(JNIEnv *env,T *Value)noexcept{
-		jInterface::SetStaticField<jlong>(env,Class,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
-		jLogException(env);
+	void Set(T *Value)noexcept{
+		jInterface::SetStaticField<jlong>(JavaEnv,Class,FieldID,static_cast<jlong>(reinterpret_cast<uIntn>(Value)));
+		jLogException(JavaEnv);
 	}
 
+	JNIEnv *JavaEnv;
 	jcClass *Class;
 	jField<jlong> *FieldID;
 };
 //---------------------------------------------------------------------------
 template<class TClass,const char *FieldName>
-struct jStaticFieldAccessMaker
+struct cStaticFieldAccessMaker
 {
+	JNIEnv *env;
+
 	template<class TField>
 	operator jStaticFieldAccess<TField>()const noexcept{
-		return {TClassRef<jJavaContext,TClass>::Value,TStaticField<jJavaContext,TClass,FieldName,TField>::Value};
+		auto fid=jRegistration<jJavaContext>::StaticField<TClass,FieldName,TField>(env);
+		return {env,jRegistration<jJavaContext>::Class<TClass>(env),fid};
 	}
 
 	template<class TPointer>
 	operator jPointerStaticFieldAccess<TPointer>()const noexcept{
-		return {TClassRef<jJavaContext,TClass>::Value,TStaticField<jJavaContext,TClass,FieldName,jlong>::Value};
+		auto fid=jRegistration<jJavaContext>::StaticField<TClass,FieldName,jlong>(env);
+		return {env,jRegistration<jJavaContext>::Class<TClass>(env),fid};
 	}
 };
+
+template<class TClass,const char *FieldName>
+cStaticFieldAccessMaker<TClass,FieldName> jStaticFieldAccessMaker(JNIEnv *env)noexcept
+{
+	cStaticFieldAccessMaker<TClass,FieldName> r={env};
+	return r;
+}
+
 //---------------------------------------------------------------------------
 template<const char *FunctionName,auto pFunction>
 struct jMethodCall;
@@ -434,7 +465,8 @@ template<const char *FunctionName,class TClass,class TRet,TRet (TClass::*pFuncti
 struct jMethodCall<FunctionName,pFunction>
 {
 	static TRet Call(JNIEnv *env,TClass *obj)noexcept{
-		return jInterface::CallMethodA<TRet>(env,obj,TInstanceMethod<jJavaContext,FunctionName,TClass,TRet>::Value,nullptr);
+		auto mid=jRegistration<jJavaContext>::InstanceMethod<FunctionName,TClass,TRet>(env);
+		return jInterface::CallMethodA<TRet>(env,obj,mid,nullptr);
 	}
 };
 //---------------------------------------------------------------------------
@@ -442,8 +474,9 @@ template<const char *FunctionName,class TClass,class TRet,class TArg,class...TAr
 struct jMethodCall<FunctionName,pFunction>
 {
 	static TRet Call(JNIEnv *env,TClass *obj,TArg Arg,TArgs...Args)noexcept{
+		auto mid=jRegistration<jJavaContext>::InstanceMethod<FunctionName,TClass,TRet,TArg,TArgs...>(env);
 		jvalue args[1+sizeof...(TArgs)]={MakeJValue(Arg),MakeJValue(Args)...};
-		return jInterface::CallMethodA<TRet>(env,obj,TInstanceMethod<jJavaContext,FunctionName,TClass,TRet,TArg,TArgs...>::Value,args);
+		return jInterface::CallMethodA<TRet>(env,obj,mid,args);
 	}
 };
 //---------------------------------------------------------------------------
@@ -451,7 +484,8 @@ template<const char *FunctionName,class TClass,class TRetClass,jrLocal<TRetClass
 struct jMethodCall<FunctionName,pFunction>
 {
 	static jrLocal<TRetClass> Call(JNIEnv *env,TClass *obj)noexcept{
-		return RefLocal(env,jInterface::CallMethodA<TRetClass*>(env,obj,TInstanceMethod<jJavaContext,FunctionName,TClass,TRetClass*>::Value,nullptr));
+		auto mid=jRegistration<jJavaContext>::InstanceMethod<FunctionName,TClass,TRetClass*>(env);
+		return RefLocal(env,jInterface::CallMethodA<TRetClass*>(env,obj,mid,nullptr));
 	}
 };
 //---------------------------------------------------------------------------
@@ -459,8 +493,9 @@ template<const char *FunctionName,class TClass,class TRetClass,class TArg,class.
 struct jMethodCall<FunctionName,pFunction>
 {
 	static jrLocal<TRetClass> Call(JNIEnv *env,TClass *obj,TArg Arg,TArgs...Args)noexcept{
+		auto mid=jRegistration<jJavaContext>::InstanceMethod<FunctionName,TClass,TRetClass*,TArg,TArgs...>(env);
 		jvalue args[1+sizeof...(TArgs)]={MakeJValue(Arg),MakeJValue(Args)...};
-		return RefLocal(env,jInterface::CallMethodA<TRetClass*>(env,obj,TInstanceMethod<jJavaContext,FunctionName,TClass,TRetClass*,TArg,TArgs...>::Value,args));
+		return RefLocal(env,jInterface::CallMethodA<TRetClass*>(env,obj,mid,args));
 	}
 };
 //---------------------------------------------------------------------------
@@ -471,7 +506,9 @@ template<class TJavaClass,const char *FunctionName,class TRet,TRet (*pFunction)(
 struct jStaticMethodCall<TJavaClass,FunctionName,pFunction>
 {
 	static TRet Call(JNIEnv *env)noexcept{
-		return jInterface::CallStaticMethodA<TRet>(env,TClassRef<jJavaContext,TJavaClass>::Value,TStaticMethod<jJavaContext,TJavaClass,FunctionName,TRet>::Value,nullptr);
+		auto cls=jRegistration<jJavaContext>::Class<TJavaClass>(env);
+		auto mid=jRegistration<jJavaContext>::StaticMethod<TJavaClass,FunctionName,TRet>(env);
+		return jInterface::CallStaticMethodA<TRet>(env,cls,mid,nullptr);
 	}
 };
 //---------------------------------------------------------------------------
@@ -479,8 +516,10 @@ template<class TJavaClass,const char *FunctionName,class TRet,class TArg,class..
 struct jStaticMethodCall<TJavaClass,FunctionName,pFunction>
 {
 	static TRet Call(JNIEnv *env,TArg Arg,TArgs...Args)noexcept{
+		auto cls=jRegistration<jJavaContext>::Class<TJavaClass>(env);
+		auto mid=jRegistration<jJavaContext>::StaticMethod<TJavaClass,FunctionName,TRet,TArg,TArgs...>(env);
 		jvalue args[1+sizeof...(TArgs)]={MakeJValue(Arg),MakeJValue(Args)...};
-		return jInterface::CallStaticMethodA<TRet>(env,TClassRef<jJavaContext,TJavaClass>::Value,TStaticMethod<jJavaContext,TJavaClass,FunctionName,TRet,TArg,TArgs...>::Value,args);
+		return jInterface::CallStaticMethodA<TRet>(env,cls,mid,args);
 	}
 };
 //---------------------------------------------------------------------------
@@ -488,7 +527,9 @@ template<class TJavaClass,const char *FunctionName,class TRetClass,jrLocal<TRetC
 struct jStaticMethodCall<TJavaClass,FunctionName,pFunction>
 {
 	static jrLocal<TRetClass> Call(JNIEnv *env)noexcept{
-		return RefLocal(env,jInterface::CallStaticMethodA<TRetClass*>(env,TClassRef<jJavaContext,TJavaClass>::Value,TStaticMethod<jJavaContext,TJavaClass,FunctionName,TRetClass*>::Value,nullptr));
+		auto cls=jRegistration<jJavaContext>::Class<TJavaClass>(env);
+		auto mid=jRegistration<jJavaContext>::StaticMethod<TJavaClass,FunctionName,TRetClass*>(env);
+		return RefLocal(env,jInterface::CallStaticMethodA<TRetClass*>(env,cls,mid,nullptr));
 	}
 };
 //---------------------------------------------------------------------------
@@ -496,8 +537,10 @@ template<class TJavaClass,const char *FunctionName,class TRetClass,class TArg,cl
 struct jStaticMethodCall<TJavaClass,FunctionName,pFunction>
 {
 	static jrLocal<TRetClass> Call(JNIEnv *env,TArg Arg,TArgs...Args)noexcept{
+		auto cls=jRegistration<jJavaContext>::Class<TJavaClass>(env);
+		auto mid=jRegistration<jJavaContext>::StaticMethod<TJavaClass,FunctionName,TRetClass*,TArg,TArgs...>(env);
 		jvalue args[1+sizeof...(TArgs)]={MakeJValue(Arg),MakeJValue(Args)...};
-		return RefLocal(env,jInterface::CallStaticMethodA<TRetClass*>(env,TClassRef<jJavaContext,TJavaClass>::Value,TStaticMethod<jJavaContext,TJavaClass,FunctionName,TRetClass*,TArg,TArgs...>::Value,args));
+		return RefLocal(env,jInterface::CallStaticMethodA<TRetClass*>(env,cls,mid,args));
 	}
 };
 //---------------------------------------------------------------------------
@@ -633,43 +676,152 @@ struct jcThrowable : jcObject
 };
 //---------------------------------------------------------------------------
 template<class TJavaContext>
-inline jrLocal<jcString> jMakeExceptionDescription(JNIEnv *env,jcThrowable *Exception)noexcept
+class cJNIExceptionDescription : private cJNIInitialization::cCallback, private cJNIFinalization::cCallback
 {
-	if(TInstanceMethod<TJavaContext,jcThrowable::jname_printStackTrace,jcThrowable,void,java::io::jcPrintWriter*>::Value==nullptr){
-		return nullptr;
-	}
-	auto Writer=jNew<java::io::jcStringWriter>(env);
-	if(Writer==nullptr){
-		return nullptr;
-	}
-	auto Printer=jNew<java::io::jcPrintWriter,java::io::jcWriter*>(env,Writer);
-	if(Printer==nullptr){
-		return nullptr;
-	}
-	Exception->printStackTrace(env,Printer);
-	if(jInterface::ExceptionCheck(env)){
-		return nullptr;
+public:
+	cJNIExceptionDescription()noexcept{
+		jRegistration<TJavaContext>::Initialization+=this;
 	}
 
-	auto CauseException=Exception->getCause(env);
-	while(CauseException!=nullptr){
-		CauseException->printStackTrace(env,Printer);
+	bool IsInitialized(void)const noexcept{
+		return midThrowableGetCause!=nullptr;
+	}
+
+	virtual void Initialize(JNIEnv *env)noexcept override{
+		clsObject=jRegistration<TJavaContext>::template Class<jcObject>(env);
+		if(clsObject!=nullptr){
+			midObjectToString=jRegistration<TJavaContext>::template InstanceMethod<jcObject::jname_toString,jcObject,jcString*>(env);
+		}
+		clsStringWriter=jRegistration<TJavaContext>::template Class<java::io::jcStringWriter>(env);
+		if(clsStringWriter!=nullptr){
+			midConstructorStringWriter=jRegistration<TJavaContext>::template ConstructorMethod<java::io::jcStringWriter>(env);
+
+		}
+		clsPrintWriter=jRegistration<TJavaContext>::template Class<java::io::jcPrintWriter>(env);
+		if(clsPrintWriter!=nullptr){
+			midConstructorPrintWriter=jRegistration<TJavaContext>::template ConstructorMethod<java::io::jcPrintWriter,java::io::jcWriter*>(env);
+
+		}
+		clsThrowable=jRegistration<TJavaContext>::template Class<jcThrowable>(env);
+		if(clsThrowable!=nullptr){
+			midThrowablePrintStackTrace=jRegistration<TJavaContext>::template InstanceMethod<jcThrowable::jname_printStackTrace,jcThrowable,void,java::io::jcPrintWriter*>(env);
+			midThrowableGetCause=jRegistration<TJavaContext>::template InstanceMethod<jcThrowable::jname_getCause,jcThrowable,jcThrowable*>(env);
+		}
+
+		{
+			auto AutoLock=!jRegistration<TJavaContext>::Finalization;
+			jRegistration<TJavaContext>::Finalization+=this;
+		}
+
+	}
+	virtual void Finalize(JNIEnv *env)noexcept override{
+		clsObject=nullptr;
+		midObjectToString=nullptr;
+		clsStringWriter=nullptr;
+		midConstructorStringWriter=nullptr;
+		clsPrintWriter=nullptr;
+		midConstructorPrintWriter=nullptr;
+		clsThrowable=nullptr;
+		midThrowablePrintStackTrace=nullptr;
+		midThrowableGetCause=nullptr;
+	}
+
+	jrLocal<jcString> Make(JNIEnv *env,jcThrowable *Exception)noexcept{
+		if(midThrowableGetCause==nullptr)
+			return nullptr;
+
+		jvalue args[3];
+		auto *Writer=jInterface::NewObjectA<java::io::jcStringWriter>(env,clsStringWriter,midConstructorStringWriter,nullptr);
+		if(Writer==nullptr){
+			return nullptr;
+		}
+		args[0]=MakeJValue(Writer);
+		auto *Printer=jInterface::NewObjectA<java::io::jcPrintWriter>(env,clsPrintWriter,midConstructorPrintWriter,args);
+		if(Printer==nullptr){
+			return nullptr;
+		}
+
+		args[0]=MakeJValue(Printer);
+		jInterface::CallMethodA<void>(env,Exception,midThrowablePrintStackTrace,args);
 		if(jInterface::ExceptionCheck(env)){
 			return nullptr;
 		}
 
-		CauseException=CauseException->getCause(env);
+		jcThrowable* CauseException=jInterface::CallMethodA<jcThrowable*>(env,Exception,midThrowableGetCause,nullptr);
+		while(CauseException!=nullptr){
+			//args[0]=MakeJValue(Printer);
+			jInterface::CallMethodA<void>(env,CauseException,midThrowablePrintStackTrace,args);
+			if(jInterface::ExceptionCheck(env)){
+				return nullptr;
+			}
+			auto CurException=CauseException;
+			CauseException=jInterface::CallMethodA<jcThrowable*>(env,CauseException,midThrowableGetCause,nullptr);
+
+			jInterface::DeleteLocalRef(env,CurException);
+			if(jInterface::ExceptionCheck(env)){
+				return nullptr;
+			}
+		}
+		if(jInterface::ExceptionCheck(env)){
+			return nullptr;
+		}
+		auto RetString=jInterface::CallMethodA<jcString*>(env,Writer,midObjectToString,nullptr);
+		if(RetString==nullptr){
+			return nullptr;
+		}
+
+		jInterface::DeleteLocalRef(env,Writer);
+		if(jInterface::ExceptionCheck(env)){
+			return nullptr;
+		}
+		jInterface::DeleteLocalRef(env,Printer);
+		if(jInterface::ExceptionCheck(env)){
+			return nullptr;
+		}
+		return RefLocal(env,RetString);
 	}
-	if(jInterface::ExceptionCheck(env)){
-		return nullptr;
+
+	static cJNIExceptionDescription Instance;
+private:
+
+	jcClass *clsObject;
+	jMethod<jcString* (jcObject::*)(void)> *midObjectToString;
+
+	jcClass *clsStringWriter;
+	jMethod<void (void)> *midConstructorStringWriter;
+	jcClass *clsPrintWriter;
+	jMethod<void (java::io::jcWriter*)> *midConstructorPrintWriter;
+	jcClass *clsThrowable;
+	jMethod<void (jcThrowable::*)(java::io::jcPrintWriter *PrintWriter)> *midThrowablePrintStackTrace;
+	jMethod<jcThrowable* (jcThrowable::*)(void)> *midThrowableGetCause;
+
+};
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+cJNIExceptionDescription<TJavaContext> cJNIExceptionDescription<TJavaContext>::Instance;
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+inline jrLocal<jcString> jMakeExceptionDescription(JNIEnv *env,jcThrowable *Exception)noexcept
+{
+	return cJNIExceptionDescription<TJavaContext>::Instance.Make(env,Exception);
+}
+//---------------------------------------------------------------------------
+template<class TJavaContext,class TStreamWriteBuffer>
+inline void jWriteExceptionDescription(TStreamWriteBuffer&& WriteBuffer,JNIEnv *env,jcThrowable *Exception)noexcept
+{
+	auto ExceptionString=cJNIExceptionDescription<TJavaContext>::Instance.Make(env,Exception);
+	if(ExceptionString!=nullptr){
+		// failed
+		auto StrLength=ExceptionString->length(env);
+		auto StrAccess=ExceptionString->AccessCritical(env);
+		WriteBuffer+=cnRTL::ArrayStreamArray(StrAccess.Pointer,StrLength);
 	}
-	return Writer->toString(env);
 }
 //---------------------------------------------------------------------------
 template<class TJavaContext>
-inline bool jLogExceptionT(JNIEnv *env)noexcept
+inline bool jLogException(JNIEnv *env)noexcept
 {
-	if(TClassRef<TJavaContext,jcThrowable>::Value==nullptr){
+	if(cJNIExceptionDescription<TJavaContext>::Instance.IsInitialized()==false){
 		if(jInterface::ExceptionCheck(env)){
 			jInterface::ExceptionDescribe(env);
 			jInterface::ExceptionClear(env);
@@ -684,7 +836,6 @@ inline bool jLogExceptionT(JNIEnv *env)noexcept
 	}
 	else{
 		// clear exception in order to read exception message
-		jInterface::ExceptionDescribe(env);
 		jInterface::ExceptionClear(env);
 
 		// read exception message
@@ -699,13 +850,10 @@ inline bool jLogExceptionT(JNIEnv *env)noexcept
 				Stream+=cnRTL::ArrayStreamArray(StrAccess.Pointer,StrLength);
 			}
 		}
+
+		jInterface::DeleteLocalRef(env,Exception);
 	}
 	return true;
-}
-//---------------------------------------------------------------------------
-inline bool jLogException(JNIEnv *env)noexcept
-{
-	return jLogExceptionT<jJavaContext>(env);
 }
 //---------------------------------------------------------------------------
 inline void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept
@@ -716,7 +864,7 @@ inline void jCPPInterfaceCallCheck(const char *Function,JNIEnv *env)noexcept
 		Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
 		return;
 	}
-	if(TClassRef<jJavaContext,jcThrowable>::Value==nullptr){
+	if(cJNIExceptionDescription<jJavaContext>::Instance.IsInitialized()==false){
 		if(jInterface::ExceptionCheck(env)){
 			jInterface::ExceptionDescribe(env);
 		}
@@ -783,7 +931,7 @@ inline void jCPPInterfaceCallCheckPointer(const char *Function,jbMethod *Method)
 	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
 	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
 	Stream+=cnRTL::ArrayStreamCString(u"passing null method id when calling jni interface ");
-	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,Function,cnString::FindLength(Function));
 }
 //---------------------------------------------------------------------------
 inline void jCPPInterfaceCallCheckPointer(const char *Function,jbField *Field)
@@ -794,7 +942,7 @@ inline void jCPPInterfaceCallCheckPointer(const char *Function,jbField *Field)
 	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
 	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
 	Stream+=cnRTL::ArrayStreamCString(u"passing null field id when calling jni interface ");
-	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,Function,cnString::FindLength(Function));
 }
 //---------------------------------------------------------------------------
 inline void jCPPInterfaceCallCheckPointer(const char *Function,const jvalue *args)
@@ -805,7 +953,7 @@ inline void jCPPInterfaceCallCheckPointer(const char *Function,const jvalue *arg
 	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
 	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
 	Stream+=cnRTL::ArrayStreamCString(u"passing null for <const jvalue *> when calling jni interface ");
-	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,Function,cnString::FindLength(Function));
 }
 //---------------------------------------------------------------------------
 inline void jCPPInterfaceCallCheckPointer(const char *Function,const char *string)
@@ -816,7 +964,7 @@ inline void jCPPInterfaceCallCheckPointer(const char *Function,const char *strin
 	auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
 	auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
 	Stream+=cnRTL::ArrayStreamCString(u"passing null for C string when calling jni interface ");
-	Stream+=cnRTL::StringStreamConvertEncoding(cnRTL::UnicodeTranscoder(2,1),Function,cnString::FindLength(Function));
+	Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,Function,cnString::FindLength(Function));
 }
 //---------------------------------------------------------------------------
 template<class TClass,class...TClasses>
@@ -918,7 +1066,8 @@ template<class TObjectElement>
 struct jcArray<TObjectElement*> : jbcArray
 {
 	static jrLocal< jcArray<TObjectElement*> > Make(JNIEnv *env,uIntn Length)noexcept{
-		return RefLocal(env,jInterface::NewObjectArray<TObjectElement>(env,Length,TClassRef<jJavaContext,TObjectElement>::Value,nullptr));
+		auto cls=jRegistration<jJavaContext>::Class<TObjectElement>(env);
+		return RefLocal(env,jInterface::NewObjectArray<TObjectElement>(env,Length,cls,nullptr));
 	}
 
 	jrLocal<TObjectElement> GetElement(JNIEnv *env,jint Index)noexcept{

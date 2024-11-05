@@ -5,6 +5,9 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 #include <Java/JNIDecl.hpp>
+#include <cnRTL/ThreadSynchronization.h>
+#include <cnRTL/TextProcess.h>
+#include <cnRTL/Logger.h>
 
 #ifdef __cplusplus
 
@@ -12,32 +15,6 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace jCPP{
-//---------------------------------------------------------------------------
-class cJNIInitializationRegistration
-{
-public:
-	class cInitialization
-	{
-	private:
-		friend cJNIInitializationRegistration;
-		cInitialization *Next;
-		cInitialization *Prev;
-
-		virtual void Initialize(JNIEnv *env)noexcept(true)=0;
-		virtual void Finalize(JNIEnv *env)noexcept(true)=0;
-	};
-
-
-	void Register(cInitialization *Initialization)noexcept(true);
-
-	void Initialize(JNIEnv *env)noexcept(true);
-	void Finalize(JNIEnv *env)noexcept(true);
-
-private:
-	cInitialization *fTail=nullptr;
-	cInitialization *fHead=nullptr;
-	cInitialization *fInitialized=nullptr;
-};
 //---------------------------------------------------------------------------
 #ifndef jCPP_JAVACONTEXTNAMESPACE
 #define	jCPP_JAVACONTEXTNAMESPACE	DefaultJavaContext
@@ -49,7 +26,6 @@ inline namespace jCPP_JAVACONTEXTNAMESPACE{
 struct jJavaContext
 {
 	static JavaVM* vm(void)noexcept;
-	static cJNIInitializationRegistration* reg(void)noexcept;
 };
 //---------------------------------------------------------------------------
 inline JNIEnv* jQueryEnv(jint Version=jVERSION_1_6)noexcept
@@ -63,211 +39,217 @@ inline JNIEnv* jQueryEnv(jint Version=jVERSION_1_6)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-class bcJNIInitialization : public cJNIInitializationRegistration::cInitialization
+}	// namespace jCPP_JAVACONTEXTNAMESPACE
+//---------------------------------------------------------------------------
+inline bool jLogException(JNIEnv *env)noexcept
 {
-protected:
-	bcJNIInitialization()noexcept{
-		cJNIInitializationRegistration *Registration=jJavaContext::reg();
-		Registration->Register(this);
+	return jLogException<jJavaContext>(env);
+}
+//---------------------------------------------------------------------------
+class cJNIInitialization
+{
+public:
+	class cCallback
+	{
+	private:
+		friend cJNIInitialization;
+		cCallback *Next;
+
+		virtual void Initialize(JNIEnv *env)noexcept=0;
+	};
+
+
+	void operator +=(cCallback *Initialization)noexcept(true);
+	void operator ()(JNIEnv *env)const noexcept;
+
+private:
+	cCallback *fTail=nullptr;
+	cCallback *fHead=nullptr;
+};
+//---------------------------------------------------------------------------
+class cJNIFinalization
+{
+public:
+	class cCallback
+	{
+	private:
+		friend cJNIFinalization;
+		cCallback *Next;
+
+		virtual void Finalize(JNIEnv *env)noexcept=0;
+	};
+
+	cJNIFinalization()noexcept;
+	~cJNIFinalization()noexcept;
+
+	void operator +=(cCallback *Finalization)noexcept(true);
+	void operator ()(JNIEnv *env)noexcept;
+	cnRTL::lockPtr<iMutex*> operator !(void)const noexcept;
+
+private:
+	cCallback *fTop=nullptr;
+	rPtr<iMutex> fMutex;
+};
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+struct jRegistration
+{
+	static cJNIInitialization Initialization;
+	static cJNIFinalization Finalization;
+
+	template<class T>
+	struct cClassFinalization : public cJNIFinalization::cCallback
+	{
+		jcClass *Value;
+		virtual void Finalize(JNIEnv *env)noexcept{
+			jInterface::DeleteGlobalRef(env,Value);
+			jLogException<TJavaContext>(env);
+		}
+		static cClassFinalization<T> gInstance;
+	};
+
+	template<class T>
+	static jcClass* Class(JNIEnv *env)noexcept{
+		if(cClassFinalization<T>::gInstance.Value==nullptr){
+			auto AutoLock=!Finalization;
+			if(cClassFinalization<T>::gInstance.Value==nullptr){
+				auto cls=jInterface::FindClassNoCheck(env,T::jClassName);
+				if(cls!=nullptr){
+					cClassFinalization<T>::gInstance.Value=jInterface::NewGlobalRef(env,cls);
+					if(cClassFinalization<T>::gInstance.Value!=nullptr){
+						Finalization+=&cClassFinalization<T>::gInstance;
+					}
+					else{
+						jLogException<TJavaContext>(env);
+					}
+					jInterface::DeleteLocalRef(env,cls);
+					jLogException<TJavaContext>(env);
+				}
+				else{
+					auto Exception=jInterface::ExceptionOccurred(env);
+					if(Exception!=nullptr){
+						jInterface::ExceptionClear(env);
+						auto Transcoder=cnRTL::UnicodeTranscoder(2,1);
+						auto Stream=cnRTL::gRTLLog.MakeLogBuffer<1>(u"cnLibrary/jCPP");
+
+						Stream+=cnRTL::ArrayStreamString(u"FindClass <");
+						Stream+=cnRTL::StringStreamConvertEncoding(Transcoder,T::jClassName,cnMemory::ArrayLength(T::jClassName)-1);
+						Stream+=cnRTL::ArrayStreamString(u"> Exception:");
+						jWriteExceptionDescription<TJavaContext>(Stream,env,Exception);
+
+						jInterface::DeleteLocalRef(env,Exception);
+					}
+				}
+			}
+		}
+		return cClassFinalization<T>::gInstance.Value;
+	}
+
+
+	template<const char *FieldName,class TClass,class TField>
+	static jField<TField>* InstanceField(JNIEnv *env)noexcept{
+		static jField<TField> *Value=nullptr;
+		if(Value==nullptr){
+			auto cls=Class<TClass>(env);
+			if(cls==nullptr)
+				return nullptr;
+			char TypeSignature[JNITypeSignatureWriter<TField>::Length+1];
+			auto *p=JNITypeSignatureWriter<TField>::Write(TypeSignature);
+			*p=0;
+			Value=static_cast<jField<TField>*>(
+				jInterface::GetFieldID(env,cls,FieldName,TypeSignature));
+			if(Value==nullptr){
+				jLogException<TJavaContext>(env);
+			}
+		}
+		return Value;
+	}
+	
+	template<class TClass,const char *FieldName,class TField>
+	static jField<TField>* StaticField(JNIEnv *env)noexcept{
+		static jField<TField> *Value=nullptr;
+		if(Value==nullptr){
+			auto cls=Class<TClass>(env);
+			if(cls==nullptr)
+				return nullptr;
+			char TypeSignature[JNITypeSignatureWriter<TField>::Length+1];
+			auto *p=JNITypeSignatureWriter<TField>::Write(TypeSignature);
+			*p=0;
+
+			Value=static_cast<jField<TField>*>(
+				jInterface::GetStaticFieldID(env,cls,FieldName,TypeSignature));
+			if(Value==nullptr){
+				jLogException<TJavaContext>(env);
+			}
+		}
+		return Value;
+	}
+
+	template<const char *FunctionName,class TClass,class TRet,class...TArgs>
+	static jMethod<TRet (TClass::*)(TArgs...)>* InstanceMethod(JNIEnv *env)noexcept{
+		static jMethod<TRet (TClass::*)(TArgs...)> *Value=nullptr;
+		if(Value==nullptr){
+			auto cls=Class<TClass>(env);
+			if(cls==nullptr)
+				return nullptr;
+			JNIMethodSignatureGenerator<TRet,TArgs...> SigGen;
+			Value=static_cast<jMethod<TRet (TClass::*)(TArgs...)>*>(
+				jInterface::GetMethodID(env,cls,FunctionName,SigGen.Value));
+			if(Value==nullptr){
+				jLogException<TJavaContext>(env);
+			}
+		}
+		return Value;
+	}
+
+	template<class TClass,const char *FunctionName,class TRet,class...TArgs>
+	static jStaticMethod<TClass,TRet (TArgs...)>* StaticMethod(JNIEnv *env)noexcept{
+		static jStaticMethod<TClass,TRet (TArgs...)> *Value=nullptr;
+		if(Value==nullptr){
+			auto cls=Class<TClass>(env);
+			if(cls==nullptr)
+				return nullptr;
+			JNIMethodSignatureGenerator<TRet,TArgs...> SigGen;
+			Value=static_cast<jStaticMethod<TClass,TRet (TArgs...)>*>(
+				jInterface::GetStaticMethodID(env,cls,FunctionName,SigGen.Value));
+			if(Value==nullptr){
+				jLogException<TJavaContext>(env);
+			}
+		}
+		return Value;
+	}
+
+	template<class TClass,class...TArgs>
+	static jMethod<void (TArgs...)>* ConstructorMethod(JNIEnv *env)noexcept{
+		static jMethod<void (TArgs...)> *Value=nullptr;
+		if(Value==nullptr){
+			auto cls=Class<TClass>(env);
+			if(cls==nullptr)
+				return nullptr;
+			JNIMethodSignatureGenerator<void,TArgs...> SigGen;
+			Value=static_cast<jMethod<void (TArgs...)>*>(
+				jInterface::GetMethodID(env,cls,"<init>",SigGen.Value));
+			if(Value==nullptr){
+				jLogException<TJavaContext>(env);
+			}
+		}
+		return Value;
 	}
 
 };
 //---------------------------------------------------------------------------
-}	// namespace jCPP_JAVACONTEXTNAMESPACE
-//---------------------------------------------------------------------------
+
 template<class TJavaContext>
-inline bool jLogExceptionT(JNIEnv *env)noexcept;
-//---------------------------------------------------------------------------
-template<class TJavaContext,class T>
-struct TClassRef
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jcClass *Value;
+cJNIInitialization jRegistration<TJavaContext>::Initialization;
 
-		virtual void Initialize(JNIEnv *env)noexcept{
-			auto cls=jInterface::FindClass(env,T::jClassName);
-			if(cls==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-			else{
-				Value=jInterface::NewGlobalRef(env,cls);
-				jLogExceptionT<TJavaContext>(env);
-				jInterface::DeleteLocalRef(env,cls);
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv *env)noexcept{
-			jInterface::DeleteGlobalRef(env,reinterpret_cast<jcObject*>(Value));
-			jLogExceptionT<TJavaContext>(env);
-		}
+template<class TJavaContext>
+cJNIFinalization jRegistration<TJavaContext>::Finalization;
 
-	};
-	static cInitialization Init;
-
-	static constexpr jcClass*const &Value=Init.Value;
-};
-template<class TJavaContext,class T>
-typename TClassRef<TJavaContext,T>::cInitialization TClassRef<TJavaContext,T>::Init;
-//---------------------------------------------------------------------------
-template<class TJavaContext,const char *FieldName,class TClass,class TField>
-struct TInstanceField
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jField<TField> *Value;
-
-		virtual void Initialize(JNIEnv *env)noexcept override{
-			if(TClassRef<TJavaContext,TClass>::Value==nullptr)
-				return;
-			char TypeSignature[JNITypeSignatureWriter<TField>::Length+1];
-			auto *p=JNITypeSignatureWriter<TField>::Write(TypeSignature);
-			*p=0;
-			Value=static_cast<jField<TField>*>(
-				jInterface::GetFieldID(env,TClassRef<TJavaContext,TClass>::Value,FieldName,TypeSignature));
-			if(Value==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv*)noexcept override{
-			Value=nullptr;
-		}
-	};
-	static cInitialization Init;
-	typedef TClass tClass;
-	typedef TField tField;
-
-	static constexpr jField<TField>*const &Value=Init.Value;
-};
-template<class TJavaContext,const char *FieldName,class TClass,class TField>
-typename TInstanceField<TJavaContext,FieldName,TClass,TField>::cInitialization TInstanceField<TJavaContext,FieldName,TClass,TField>::Init;
-//---------------------------------------------------------------------------
-template<class TJavaContext,class TClass,const char *FieldName,class TField>
-struct TStaticField
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jField<TField> *Value;
-
-		virtual void Initialize(JNIEnv *env)noexcept override{
-			if(TClassRef<TJavaContext,TClass>::Value==nullptr)
-				return;
-			char TypeSignature[JNITypeSignatureWriter<TField>::Length+1];
-			auto *p=JNITypeSignatureWriter<TField>::Write(TypeSignature);
-			*p=0;
-
-			Value=static_cast<jField<TField>*>(
-				jInterface::GetStaticFieldID(env,TClassRef<TJavaContext,TClass>::Value,FieldName,TypeSignature));
-			if(Value==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv*)noexcept override{
-			Value=nullptr;
-		}
-	};
-	static cInitialization Init;
-	typedef TField tField;
-
-	static constexpr jField<TField>*const &Value=Init.Value;
-};
-template<class TJavaContext,class TClass,const char *FieldName,class TField>
-typename TStaticField<TJavaContext,TClass,FieldName,TField>::cInitialization TStaticField<TJavaContext,TClass,FieldName,TField>::Init;
+template<class TJavaContext>
+template<class T>
+typename jRegistration<TJavaContext>::template cClassFinalization<T> jRegistration<TJavaContext>::cClassFinalization<T>::gInstance;
 
 //---------------------------------------------------------------------------
-template<class TJavaContext,const char *FunctionName,class TClass,class TRet,class...TArgs>
-struct TInstanceMethod
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jMethod<TRet (TClass::*)(TArgs...)> *Value;
-
-		virtual void Initialize(JNIEnv *env)noexcept override{
-			if(TClassRef<TJavaContext,TClass>::Value==nullptr)
-				return;
-			JNIMethodSignatureGenerator<TRet,TArgs...> SigGen;
-			Value=static_cast<jMethod<TRet (TClass::*)(TArgs...)>*>(
-				jInterface::GetMethodID(env,TClassRef<TJavaContext,TClass>::Value,FunctionName,SigGen.Value));
-			if(Value==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv*)noexcept override{
-			Value=nullptr;
-		}
-	};
-	static cInitialization Init;
-
-	static constexpr jMethod<TRet (TClass::*)(TArgs...)>*const &Value=Init.Value;
-};
-template<class TJavaContext,const char *FunctionName,class TClass,class TRet,class...TArgs>
-typename TInstanceMethod<TJavaContext,FunctionName,TClass,TRet,TArgs...>::cInitialization TInstanceMethod<TJavaContext,FunctionName,TClass,TRet,TArgs...>::Init;
-//---------------------------------------------------------------------------
-template<class TJavaContext,class TClass,const char *FunctionName,class TRet,class...TArgs>
-struct TStaticMethod
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jStaticMethod<TClass,TRet (TArgs...)> *Value;
-
-		virtual void Initialize(JNIEnv *env)noexcept override{
-			if(TClassRef<TJavaContext,TClass>::Value==nullptr)
-				return;
-			JNIMethodSignatureGenerator<TRet,TArgs...> SigGen;
-			Value=static_cast<jStaticMethod<TClass,TRet (TArgs...)>*>(
-				jInterface::GetStaticMethodID(env,TClassRef<TJavaContext,TClass>::Value,FunctionName,SigGen.Value));
-			if(Value==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv*)noexcept override{
-			Value=nullptr;
-		}
-	};
-	static cInitialization Init;
-
-	static constexpr jStaticMethod<TClass,TRet (TArgs...)>*const &Value=Init.Value;
-};
-template<class TJavaContext,class TClass,const char *FunctionName,class TRet,class...TArgs>
-typename TStaticMethod<TJavaContext,TClass,FunctionName,TRet,TArgs...>::cInitialization TStaticMethod<TJavaContext,TClass,FunctionName,TRet,TArgs...>::Init;
-//---------------------------------------------------------------------------
-template<class TJavaContext,class TClass,auto pFunction>
-struct TConstructorMethod;
-
-template<class TJavaContext,class TClass,class...TArgs,jrLocal<TClass> (*pFunction)(JNIEnv*,TArgs...)noexcept>
-struct TConstructorMethod<TJavaContext,TClass,pFunction>
-{
-	class cInitialization : public bcJNIInitialization
-	{
-	public:
-		jMethod<void (TArgs...)> *Value;
-
-		virtual void Initialize(JNIEnv *env)noexcept override{
-			if(TClassRef<TJavaContext,TClass>::Value==nullptr)
-				return;
-			JNIMethodSignatureGenerator<void,TArgs...> SigGen;
-			Value=static_cast<jMethod<void (TArgs...)>*>(
-				jInterface::GetMethodID(env,TClassRef<TJavaContext,TClass>::Value,"<init>",SigGen.Value));
-			if(Value==nullptr){
-				jLogExceptionT<TJavaContext>(env);
-			}
-		}
-		virtual void Finalize(JNIEnv*)noexcept override{
-			Value=nullptr;
-		}
-	};
-	static cInitialization Init;
-
-	static constexpr jMethod<void (TArgs...)>*const &Value=Init.Value;
-};
-template<class TJavaContext,class TClass,class...TArgs,jrLocal<TClass> (*pFunction)(JNIEnv*,TArgs...)noexcept>
-typename TConstructorMethod<TJavaContext,TClass,pFunction>::cInitialization TConstructorMethod<TJavaContext,TClass,pFunction>::Init;
-
 
 template<auto FunctionMember>
 struct JNINativeMethodName;
@@ -330,21 +312,31 @@ namespace cnLibrary{
 namespace jCPP{
 //---------------------------------------------------------------------------
 template<class T,auto...Func>
-class JNINativeMethodRegister : public bcJNIInitialization
+class JNINativeMethodRegister : private cJNIInitialization::cCallback, private cJNIFinalization::cCallback
 {
 public:
+	JNINativeMethodRegister()noexcept{
+		jRegistration<jJavaContext>::Initialization+=this;
+	}
 	virtual void Initialize(JNIEnv *env)noexcept override{
-		if(TClassRef<jJavaContext,T>::Value==nullptr)
+		auto cls=jRegistration<jJavaContext>::Class<T>(env);
+		if(cls==nullptr)
 			return;
 		cnLib_THelper::JNI::JNINativeMethodGenerator<Func...> ms;
-		jInterface::RegisterNatives(env,TClassRef<jJavaContext,T>::Value,ms.Value,ms.Length);
-		jLogExceptionT<jJavaContext>(env);
+		jInterface::RegisterNatives(env,cls,ms.Value,ms.Length);
+		jLogException<jJavaContext>(env);
+
+		{
+			auto AutoLock=!jRegistration<jJavaContext>::Finalization;
+			jRegistration<jJavaContext>::Finalization+=this;
+		}
 	}
 	virtual void Finalize(JNIEnv *env)noexcept override{
-		if(TClassRef<jJavaContext,T>::Value==nullptr)
+		auto cls=jRegistration<jJavaContext>::Class<T>(env);
+		if(cls==nullptr)
 			return;
-		jInterface::UnregisterNatives(env,TClassRef<jJavaContext,T>::Value);
-		jLogExceptionT<jJavaContext>(env);
+		jInterface::UnregisterNatives(env,cls);
+		jLogException<jJavaContext>(env);
 	}
 };
 //---------------------------------------------------------------------------

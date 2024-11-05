@@ -10,45 +10,64 @@ using namespace jCPP;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cJNIInitializationRegistration::Register(cInitialization *Component)noexcept
+void cJNIInitialization::operator +=(cCallback *Initialization)noexcept
 {
-	if(Component==nullptr)
+	if(Initialization==nullptr)
 		return;
 
 	if(fTail!=nullptr){
-		fTail->Next=Component;
+		fTail->Next=Initialization;
 	}
 	else{
-		fHead=Component;
+		fHead=Initialization;
 	}
-	Component->Prev=fTail;
-	Component->Next=nullptr;
-	fTail=Component;
+	Initialization->Next=nullptr;
+	fTail=Initialization;
 }
 //---------------------------------------------------------------------------
-void cJNIInitializationRegistration::Initialize(JNIEnv *env)noexcept
+void cJNIInitialization::operator ()(JNIEnv *env)const noexcept
 {
-	cInitialization *Component=fHead;
-	if(Component==nullptr)
+	cCallback *Callback=fHead;
+	while(Callback!=nullptr){
+		auto Current=Callback;
+		Callback=Callback->Next;
+		Current->Initialize(env);
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+cJNIFinalization::cJNIFinalization()noexcept
+	: fMutex(cnSystem::CreateRecursiveLock())
+{
+}
+//---------------------------------------------------------------------------
+cJNIFinalization::~cJNIFinalization()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cJNIFinalization::operator +=(cCallback *Finalization)noexcept
+{
+	if(Finalization==nullptr)
 		return;
 
-	fInitialized=fTail;
-	while(Component!=fInitialized){
-		Component->Initialize(env);
-		Component=Component->Next;
-	}
-	fInitialized->Initialize(env);
+	Finalization->Next=fTop;
+	fTop=Finalization;
 }
 //---------------------------------------------------------------------------
-void cJNIInitializationRegistration::Finalize(JNIEnv *env)noexcept
+void cJNIFinalization::operator ()(JNIEnv *env)noexcept
 {
-	auto Components=fInitialized;
-	fInitialized=nullptr;
-	while(Components!=nullptr){
-		auto CurComponent=Components;
-		Components=Components->Prev;
-		
-		CurComponent->Finalize(env);
+	cCallback *Callback=fTop;
+	fTop=nullptr;
+
+	while(Callback!=nullptr){
+		auto Current=Callback;
+		Callback=Callback->Next;
+		Current->Finalize(env);
 	}
+}
+//---------------------------------------------------------------------------
+lockPtr<iMutex*> cJNIFinalization::operator !(void)const noexcept
+{
+	return fMutex;
 }
 //---------------------------------------------------------------------------

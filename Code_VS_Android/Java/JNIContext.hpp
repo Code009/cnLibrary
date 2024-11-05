@@ -42,13 +42,13 @@ struct jcPackageInfo : jcObject
 	static constexpr const char jClassName[]="android/content/pm/PackageInfo";
 	
 	static constexpr const char jname_versionName[]="versionName";
-	jFieldAccess<jcString*> versionName(void)noexcept{
-		return jFieldAccessMaker<jname_versionName>(this);
+	jFieldAccess<jcString*> versionName(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_versionName>(env,this);
 	}
 
 	static constexpr const char jname_versionCode[]="versionCode";
-	jFieldAccess<jint> versionCode(void)noexcept{
-		return jFieldAccessMaker<jname_versionCode>(this);
+	jFieldAccess<jint> versionCode(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_versionCode>(env,this);
 	}
 	
 	static constexpr const char jname_getLongVersionCode[]="getLongVersionCode";
@@ -83,8 +83,8 @@ struct jcContext : jcObject
 	static constexpr const char jClassName[]="android/content/Context";
 
 	static constexpr const char jname_BLUETOOTH_SERVICE[]="BLUETOOTH_SERVICE";
-	static jStaticFieldAccess<jcString*> BLUETOOTH_SERVICE(void)noexcept{
-		return jStaticFieldAccessMaker<jcContext,jname_BLUETOOTH_SERVICE>();
+	static jStaticFieldAccess<jcString*> BLUETOOTH_SERVICE(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcContext,jname_BLUETOOTH_SERVICE>(env);
 	}
 
 	static constexpr const char jname_getSystemService[]="getSystemService";
@@ -135,8 +135,8 @@ struct jcIntent : jcObject
 	static constexpr jint FLAG_GRANT_WRITE_URI_PERMISSION		=2;	
 
 	static constexpr const char jname_ACTION_VIEW[]="ACTION_VIEW";
-	static jStaticFieldAccess<jcString*> ACTION_VIEW(void)noexcept{
-		return jStaticFieldAccessMaker<jcIntent,jname_ACTION_VIEW>();
+	static jStaticFieldAccess<jcString*> ACTION_VIEW(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcIntent,jname_ACTION_VIEW>(env);
 	}
 
 	static constexpr const char jname_setDataAndType[]="setDataAndType";

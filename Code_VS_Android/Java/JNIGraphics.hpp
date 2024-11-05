@@ -20,23 +20,23 @@ struct jcRect : jcObject
 	static constexpr const char jClassName[]="android/graphics/Rect";
 	
 	static constexpr const char jname_left[]="left";
-	jFieldAccess<jint> left(void)noexcept{
-		return jFieldAccessMaker<jname_left>(this);
+	jFieldAccess<jint> left(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_left>(env,this);
 	}
 
 	static constexpr const char jname_right[]="right";
-	jFieldAccess<jint> right(void)noexcept{
-		return jFieldAccessMaker<jname_right>(this);
+	jFieldAccess<jint> right(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_right>(env,this);
 	}
 	
 	static constexpr const char jname_top[]="top";
-	jFieldAccess<jint> top(void)noexcept{
-		return jFieldAccessMaker<jname_top>(this);
+	jFieldAccess<jint> top(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_top>(env,this);
 	}
 
 	static constexpr const char jname_bottom[]="bottom";
-	jFieldAccess<jint> bottom(void)noexcept{
-		return jFieldAccessMaker<jname_bottom>(this);
+	jFieldAccess<jint> bottom(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_bottom>(env,this);
 	}
 	
 
@@ -56,8 +56,8 @@ struct jcBitmapConfig : jcObject
 	static constexpr const char jClassName[]="android/graphics/Bitmap$Config";
 	
 	static constexpr const char jname_ALPHA_8[]="ALPHA_8";
-	static jStaticFieldAccess<jcBitmapConfig*> ALPHA_8(void)noexcept{
-		return jStaticFieldAccessMaker<jcBitmapConfig,jname_ALPHA_8>();
+	static jStaticFieldAccess<jcBitmapConfig*> ALPHA_8(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcBitmapConfig,jname_ALPHA_8>(env);
 	}
 };
 //---------------------------------------------------------------------------
@@ -83,8 +83,8 @@ struct jcPaintAlign : jcObject
 	
 	
 	static constexpr const char jname_CENTER[]="CENTER";
-	static jStaticFieldAccess<jcPaintAlign> CENTER(void)noexcept{
-		return jStaticFieldAccessMaker<jcPaintAlign,jname_CENTER>();
+	static jStaticFieldAccess<jcPaintAlign> CENTER(JNIEnv *env)noexcept{
+		return jStaticFieldAccessMaker<jcPaintAlign,jname_CENTER>(env);
 	}
 };
 //---------------------------------------------------------------------------
