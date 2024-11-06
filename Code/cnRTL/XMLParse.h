@@ -355,21 +355,20 @@ struct cXMLStatement
 {
 	eXMLStatementType Type;
 	union{
-		struct cTextFlags{
+		struct{
 			eXMLTextStatementType Type;
 			bool InvalidText		:1;	// invalid character in Text
 		}TextFlags;
-		struct cTagStartFlags{
+		struct{
 			bool InvalidName		:1;	// invalid Tag name
 		}TagStartFlags;
-		struct cAttributeFlags{
+		struct{
 			bool InvalidName		:1;	// invalid character in attribute name
 			bool MissingEqualSign	:1;	// missing =
 			bool InvalidValue		:1;	// invalid character in attribute value
 			bool UnfinishedString	:1;	// unfinished attribute value string
-		}AttributeFlags;
-		cAttributeFlags TagNamespaceFlags;
-		struct cTagCloseFlags{
+		}AttributeFlags,TagNamespaceFlags;
+		struct{
 			bool InvalidTagFinish	:1;	// close finish at close tag  </.../>
 			bool UnfinishedNode		:1;	// flag is set in TagClose, means the node is unclosed
 		}TagCloseFlags;
