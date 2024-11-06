@@ -485,6 +485,8 @@ using ::JNIEnv;
 typedef jEnv JNIEnv;
 #endif // !JCPP_JNIHEADER
 
+template<class TJavaContext>
+jcClass* jFindClass(JNIEnv *env,const char *ClassName)noexcept;	// define in JNICPP.hpp
 
 template<class TJavaContext,class TStreamWriteBuffer>
 void jWriteExceptionDescription(TStreamWriteBuffer&& WriteBuffer,JNIEnv *env,jcThrowable *Exception)noexcept;	// define in JNICPP.hpp
@@ -566,10 +568,10 @@ namespace jInterface
 	{	JCPP_INTERFACECALLCHECK(env,string);	return env->GetStringChars(reinterpret_cast<jstring>(string),isCopy); }
 	inline void			ReleaseStringChars(JNIEnv *env,jcString *string,const jchar* chars)noexcept
 	{	JCPP_INTERFACECALLCHECK(env,string);	return env->ReleaseStringChars(reinterpret_cast<jstring>(string),chars); }
-	//inline jcString*	NewStringUTF(JNIEnv *env,const char* bytes)noexcept
-	//{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcString*>(env->NewStringUTF(bytes)); }
-	//inline jsize		GetStringUTFLength(JNIEnv *env,jcString *string)noexcept
-	//{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringUTFLength(reinterpret_cast<jstring>(string)); }
+	inline jcString*	NewStringUTF(JNIEnv *env,const char* bytes)noexcept
+	{	JCPP_INTERFACECALLCHECK(env);	return reinterpret_cast<jcString*>(env->NewStringUTF(bytes)); }
+	inline jsize		GetStringUTFLength(JNIEnv *env,jcString *string)noexcept
+	{	JCPP_INTERFACECALLCHECK(env);	return env->GetStringUTFLength(reinterpret_cast<jstring>(string)); }
 
 	inline jsize	GetArrayLength(JNIEnv *env,jbcArray *array)noexcept
 	{	JCPP_INTERFACECALLCHECK(env,array);	return env->GetArrayLength(reinterpret_cast<jarray>(array)); }
@@ -1135,11 +1137,251 @@ struct JNIMethodSignatureGenerator
 		*p=0;
 	}
 };
+//---------------------------------------------------------------------------
+#ifndef jCPP_JAVACONTEXTNAMESPACE
+#define	jCPP_JAVACONTEXTNAMESPACE	DefaultJavaContext
+#endif
 
-
+//---------------------------------------------------------------------------
+inline namespace jCPP_JAVACONTEXTNAMESPACE{
+//---------------------------------------------------------------------------
+struct jJavaContext
+{
+	static JavaVM* vm(void)noexcept;
+	static jcObject* classLoader(void)noexcept;
+};
+//---------------------------------------------------------------------------
+inline JNIEnv* jQueryEnv(jint Version=jVERSION_1_6)noexcept
+{
+	JavaVM *vm=jJavaContext::vm();
+	JNIEnv *env;
+	auto ret=jInterface::GetEnv(vm,env,Version);
+	if(ret==jRet_OK){
+		return env;
+	}
+	return nullptr;
+}
+//---------------------------------------------------------------------------
+}	// namespace jCPP_JAVACONTEXTNAMESPACE
+//---------------------------------------------------------------------------
+inline bool jLogException(JNIEnv *env)noexcept
+{
+	return jLogException<jJavaContext>(env);
+}
+//---------------------------------------------------------------------------
 template<class TJavaClass>
-class jrLocal;
+class jrLocal
+{
+public:
+	jrLocal(JNIEnv *env)noexcept
+		: fEnv(env)
+		, fJavaRef(nullptr)
+	{}
 
+	jrLocal(JNIEnv *env,TJavaClass *Object)noexcept
+		: fEnv(env)
+		, fJavaRef(Object)
+	{}
+
+	~jrLocal()noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+	}
+
+	jrLocal(const jrLocal&)=delete;
+	jrLocal(jrLocal &&Src)noexcept{
+		fEnv=Src.fEnv;
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+	}
+
+	jrLocal& operator=(const jrLocal &Src)=delete;
+	jrLocal& operator=(jrLocal &&Src){
+		cnLib_ASSERT(fEnv==Src.fEnv);
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+		return *this;
+	}
+
+	TJavaClass* Get(void)const noexcept{ return fJavaRef; }
+	void Set(TJavaClass *Ref)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+		}
+		fJavaRef=Ref;
+	}
+	void Clear(void)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteLocalRef(fEnv,fJavaRef);
+			jLogException(fEnv);
+			fJavaRef=nullptr;
+		}
+	}
+
+	template<class TDest>
+	typename cnVar::TTypeConditional<jrLocal<TDest>&&,cnVar::TIsConvertible<TJavaClass*,TDest*>::Value>
+		::Type Transfer(void)noexcept
+	{
+		return reinterpret_cast<jrLocal<TDest>&&>(*this);
+	}
+
+
+#ifdef JNI_OK
+	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
+#endif // JNI_OK
+
+	operator TJavaClass*()const noexcept{	return fJavaRef; }
+	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
+
+	JNIEnv* env()const noexcept{ return fEnv; }
+
+	TJavaClass* Return(void)noexcept{ auto Ret=fJavaRef;	fJavaRef=nullptr;	return Ret; }
+protected:
+	JNIEnv *fEnv;
+	TJavaClass *fJavaRef;
+};
+template<class T>
+inline jrLocal<T> RefLocal(JNIEnv *env,T *Object)noexcept
+{
+	return jrLocal<T>(env,Object);
+}
+
+template<class T,class TSrc>
+inline typename cnVar::TTypeConditional<jrLocal<T>,
+	cnVar::TIsConvertible<TSrc*,T*>::Value
+>::Type jRefCast(jrLocal<TSrc> &&Object)noexcept(true)
+{
+	return Object.template Transfer<T>();
+}
+//---------------------------------------------------------------------------
+template<class TJavaClass>
+class jrGlobal
+{
+public:
+	jrGlobal()noexcept : fJavaRef(nullptr){}
+	~jrGlobal()noexcept{
+		if(fJavaRef!=nullptr){
+			JNIEnv *env=jQueryEnv();
+			jInterface::DeleteGlobalRef(env,fJavaRef);
+			jLogException(env);
+		}
+	}
+
+
+	jrGlobal(JNIEnv *env,TJavaClass *Ref)noexcept{
+		if(Ref!=nullptr){
+			fJavaRef=jInterface::NewGlobalRef(env,Ref);
+			if(fJavaRef==nullptr)
+				jLogException(env);
+		}
+		else{
+			fJavaRef=nullptr;
+		}
+	}
+
+
+	jrGlobal(const jrGlobal&)=delete;
+	jrGlobal(jrGlobal &&Src)noexcept{
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+	}
+
+	jrGlobal& operator=(const jrGlobal &Src)=delete;
+	jrGlobal& operator=(jrGlobal &&Src){
+		if(fJavaRef!=nullptr){
+			JNIEnv *env=jQueryEnv();
+			jInterface::DeleteGlobalRef(env,fJavaRef);
+			jLogException(env);
+		}
+		fJavaRef=Src.fJavaRef;
+		Src.fJavaRef=nullptr;
+		return *this;
+	}
+
+	template<class TSrc>
+	jrGlobal(const jrLocal<TSrc> &Src)noexcept{
+		static_assert(cnVar::TIsConvertible<TSrc*,TJavaClass*>::Value,"incompatible source reference");
+		if(Src!=nullptr){
+			JNIEnv *env=jQueryEnv();
+			if(env==Src.env()){
+				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
+				if(fJavaRef==nullptr)
+					jLogException(env);
+			}
+		}
+		else{
+			fJavaRef=nullptr;
+		}
+	}
+	template<class TSrc>
+	jrGlobal& operator=(const jrLocal<TSrc> &Src){
+		static_assert(cnVar::TIsConvertible<TSrc*,TJavaClass*>::Value,"incompatible source reference");
+		if(Src!=nullptr){
+			JNIEnv *env=jQueryEnv();
+			if(fJavaRef!=nullptr){
+				jInterface::DeleteGlobalRef(env,fJavaRef);
+				jLogException(env);
+			}
+			if(env==Src.env()){
+				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
+				if(fJavaRef==nullptr)
+					jLogException(env);
+			}
+			else{
+				fJavaRef=nullptr;
+			}
+		}
+		else{
+			if(fJavaRef!=nullptr){
+				JNIEnv *env=jQueryEnv();
+				jInterface::DeleteGlobalRef(env,fJavaRef);
+				jLogException(env);
+				fJavaRef=nullptr;
+			}
+		}
+		return *this;
+	}
+
+
+	TJavaClass* Get(void)const noexcept{ return fJavaRef; }
+	void Set(JNIEnv *env,TJavaClass* Ref)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteGlobalRef(env,fJavaRef);
+			jLogException(env);
+		}
+		if(Ref!=nullptr){
+			fJavaRef=jInterface::NewGlobalRef(env,Ref);
+			if(fJavaRef==nullptr)
+				jLogException(env);
+		}
+		else{
+			fJavaRef=nullptr;
+		}
+	}
+
+	void Clear(JNIEnv *env)noexcept{
+		if(fJavaRef!=nullptr){
+			jInterface::DeleteGlobalRef(env,fJavaRef);
+			jLogException(env);
+			fJavaRef=nullptr;
+		}
+	}
+
+	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
+
+	operator TJavaClass*()const noexcept{ return fJavaRef; }
+	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
+
+protected:
+	TJavaClass *fJavaRef;
+};
 //---------------------------------------------------------------------------
 }	// namespace jCPP
 //---------------------------------------------------------------------------

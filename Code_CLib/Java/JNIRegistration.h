@@ -16,36 +16,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace jCPP{
 //---------------------------------------------------------------------------
-#ifndef jCPP_JAVACONTEXTNAMESPACE
-#define	jCPP_JAVACONTEXTNAMESPACE	DefaultJavaContext
-#endif
-
-//---------------------------------------------------------------------------
-inline namespace jCPP_JAVACONTEXTNAMESPACE{
-//---------------------------------------------------------------------------
-struct jJavaContext
-{
-	static JavaVM* vm(void)noexcept;
-};
-//---------------------------------------------------------------------------
-inline JNIEnv* jQueryEnv(jint Version=jVERSION_1_6)noexcept
-{
-	JavaVM *vm=jJavaContext::vm();
-	JNIEnv *env;
-	auto ret=jInterface::GetEnv(vm,env,Version);
-	if(ret==jRet_OK){
-		return env;
-	}
-	return nullptr;
-}
-//---------------------------------------------------------------------------
-}	// namespace jCPP_JAVACONTEXTNAMESPACE
-//---------------------------------------------------------------------------
-inline bool jLogException(JNIEnv *env)noexcept
-{
-	return jLogException<jJavaContext>(env);
-}
-//---------------------------------------------------------------------------
 class cJNIInitialization
 {
 public:
@@ -113,7 +83,7 @@ struct jRegistration
 		if(cClassFinalization<T>::gInstance.Value==nullptr){
 			auto AutoLock=!Finalization;
 			if(cClassFinalization<T>::gInstance.Value==nullptr){
-				auto cls=jInterface::FindClassNoCheck(env,T::jClassName);
+				auto *cls=jFindClass<TJavaContext>(env,T::jClassName);
 				if(cls!=nullptr){
 					cClassFinalization<T>::gInstance.Value=jInterface::NewGlobalRef(env,cls);
 					if(cClassFinalization<T>::gInstance.Value!=nullptr){

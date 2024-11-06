@@ -15,220 +15,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace jCPP{
 //---------------------------------------------------------------------------
-template<class TJavaClass>
-class jrLocal
-{
-public:
-	jrLocal(JNIEnv *env)noexcept
-		: fEnv(env)
-		, fJavaRef(nullptr)
-	{}
-
-	jrLocal(JNIEnv *env,TJavaClass *Object)noexcept
-		: fEnv(env)
-		, fJavaRef(Object)
-	{}
-
-	~jrLocal()noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			jLogException(fEnv);
-		}
-	}
-
-	jrLocal(const jrLocal&)=delete;
-	jrLocal(jrLocal &&Src)noexcept{
-		fEnv=Src.fEnv;
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-	}
-
-	jrLocal& operator=(const jrLocal &Src)=delete;
-	jrLocal& operator=(jrLocal &&Src){
-		cnLib_ASSERT(fEnv==Src.fEnv);
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			jLogException(fEnv);
-		}
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-		return *this;
-	}
-
-	TJavaClass* Get(void)const noexcept{ return fJavaRef; }
-	void Set(TJavaClass *Ref)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			jLogException(fEnv);
-		}
-		fJavaRef=Ref;
-	}
-	void Clear(void)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteLocalRef(fEnv,fJavaRef);
-			jLogException(fEnv);
-			fJavaRef=nullptr;
-		}
-	}
-
-	template<class TDest>
-	typename cnVar::TTypeConditional<jrLocal<TDest>&&,cnVar::TIsConvertible<TJavaClass*,TDest*>::Value>
-		::Type Transfer(void)noexcept
-	{
-		return reinterpret_cast<jrLocal<TDest>&&>(*this);
-	}
-
-
-#ifdef JNI_OK
-	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
-#endif // JNI_OK
-
-	operator TJavaClass*()const noexcept{	return fJavaRef; }
-	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
-
-	JNIEnv* env()const noexcept{ return fEnv; }
-
-	TJavaClass* Return(void)noexcept{ auto Ret=fJavaRef;	fJavaRef=nullptr;	return Ret; }
-protected:
-	JNIEnv *fEnv;
-	TJavaClass *fJavaRef;
-};
-template<class T>
-inline jrLocal<T> RefLocal(JNIEnv *env,T *Object)noexcept
-{
-	return jrLocal<T>(env,Object);
-}
-
-template<class T,class TSrc>
-inline typename cnVar::TTypeConditional<jrLocal<T>,
-	cnVar::TIsConvertible<TSrc*,T*>::Value
->::Type jRefCast(jrLocal<TSrc> &&Object)noexcept(true)
-{
-	return Object.template Transfer<T>();
-}
-//---------------------------------------------------------------------------
-template<class TJavaClass>
-class jrGlobal
-{
-public:
-	jrGlobal()noexcept : fJavaRef(nullptr){}
-	~jrGlobal()noexcept{
-		if(fJavaRef!=nullptr){
-			JNIEnv *env=jQueryEnv();
-			jInterface::DeleteGlobalRef(env,fJavaRef);
-			jLogException(env);
-		}
-	}
-
-
-	jrGlobal(JNIEnv *env,TJavaClass *Ref)noexcept{
-		if(Ref!=nullptr){
-			fJavaRef=jInterface::NewGlobalRef(env,Ref);
-			if(fJavaRef==nullptr)
-				jLogException(env);
-		}
-		else{
-			fJavaRef=nullptr;
-		}
-	}
-
-
-	jrGlobal(const jrGlobal&)=delete;
-	jrGlobal(jrGlobal &&Src)noexcept{
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-	}
-
-	jrGlobal& operator=(const jrGlobal &Src)=delete;
-	jrGlobal& operator=(jrGlobal &&Src){
-		if(fJavaRef!=nullptr){
-			JNIEnv *env=jQueryEnv();
-			jInterface::DeleteGlobalRef(env,fJavaRef);
-			jLogException(env);
-		}
-		fJavaRef=Src.fJavaRef;
-		Src.fJavaRef=nullptr;
-		return *this;
-	}
-
-	template<class TSrc>
-	jrGlobal(const jrLocal<TSrc> &Src)noexcept{
-		static_assert(cnVar::TIsConvertible<TSrc*,TJavaClass*>::Value,"incompatible source reference");
-		if(Src!=nullptr){
-			JNIEnv *env=jQueryEnv();
-			if(env==Src.env()){
-				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
-				if(fJavaRef==nullptr)
-					jLogException(env);
-			}
-		}
-		else{
-			fJavaRef=nullptr;
-		}
-	}
-	template<class TSrc>
-	jrGlobal& operator=(const jrLocal<TSrc> &Src){
-		static_assert(cnVar::TIsConvertible<TSrc*,TJavaClass*>::Value,"incompatible source reference");
-		if(Src!=nullptr){
-			JNIEnv *env=jQueryEnv();
-			if(fJavaRef!=nullptr){
-				jInterface::DeleteGlobalRef(env,fJavaRef);
-				jLogException(env);
-			}
-			if(env==Src.env()){
-				fJavaRef=jInterface::NewGlobalRef<TSrc>(env,Src);
-				if(fJavaRef==nullptr)
-					jLogException(env);
-			}
-			else{
-				fJavaRef=nullptr;
-			}
-		}
-		else{
-			if(fJavaRef!=nullptr){
-				JNIEnv *env=jQueryEnv();
-				jInterface::DeleteGlobalRef(env,fJavaRef);
-				jLogException(env);
-				fJavaRef=nullptr;
-			}
-		}
-		return *this;
-	}
-
-
-	TJavaClass* Get(void)const noexcept{ return fJavaRef; }
-	void Set(JNIEnv *env,TJavaClass* Ref)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteGlobalRef(env,fJavaRef);
-			jLogException(env);
-		}
-		if(Ref!=nullptr){
-			fJavaRef=jInterface::NewGlobalRef(env,Ref);
-			if(fJavaRef==nullptr)
-				jLogException(env);
-		}
-		else{
-			fJavaRef=nullptr;
-		}
-	}
-
-	void Clear(JNIEnv *env)noexcept{
-		if(fJavaRef!=nullptr){
-			jInterface::DeleteGlobalRef(env,fJavaRef);
-			jLogException(env);
-			fJavaRef=nullptr;
-		}
-	}
-
-	jobject obj()const noexcept{ return reinterpret_cast<jobject>(fJavaRef); }
-
-	operator TJavaClass*()const noexcept{ return fJavaRef; }
-	TJavaClass* operator ->()const noexcept{ return fJavaRef; }
-
-protected:
-	TJavaClass *fJavaRef;
-};
-//---------------------------------------------------------------------------
 template<class TClass>
 inline jrLocal<TClass> jNew(JNIEnv *env)noexcept
 {
@@ -548,6 +334,7 @@ struct jcObject
 {
 	static constexpr const char jClassName[]="java/lang/Object";
 
+
 	static constexpr const char jname_getClass[]="getClass";
 	jrLocal<jcClass> getClass(JNIEnv *env)noexcept{
 		return jMethodCall<jname_getClass,&jcObject::getClass>::Call(env,this);
@@ -559,9 +346,17 @@ struct jcObject
 	} 
 };
 //---------------------------------------------------------------------------
+struct jcClassLoader;
+//---------------------------------------------------------------------------
 struct jcClass : jcObject
 {
 	static constexpr const char jClassName[]="java/lang/Class";
+
+
+	static constexpr const char jname_getClassLoader[]="getClassLoader";
+	jrLocal<jcClassLoader> getClassLoader(JNIEnv *env)noexcept{
+		return jMethodCall<jname_getClassLoader,&jcClass::getClassLoader>::Call(env,this);
+	} 
 };
 //---------------------------------------------------------------------------
 struct jStringAccess
@@ -635,7 +430,19 @@ struct jcString : jcObject
 
 };
 //---------------------------------------------------------------------------
+struct jcClassLoader : jcObject
+{
+	static constexpr const char jClassName[]="java/lang/ClassLoader";
+
+
+};
+//---------------------------------------------------------------------------
 namespace java{
+//---------------------------------------------------------------------------
+namespace lang{
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+}	// namespace lang
 //---------------------------------------------------------------------------
 namespace io{
 //---------------------------------------------------------------------------
@@ -688,6 +495,11 @@ public:
 	}
 
 	virtual void Initialize(JNIEnv *env)noexcept override{
+		clsClassLoader=jInterface::FindClass(env,"java/lang/ClassLoader");
+		if(clsClassLoader!=nullptr){
+			midLoadClass=jInterface::GetMethodID(env,clsClassLoader,"loadClass","(Ljava/lang/String;)Ljava/lang/Class;");
+		}
+
 		clsObject=jRegistration<TJavaContext>::template Class<jcObject>(env);
 		if(clsObject!=nullptr){
 			midObjectToString=jRegistration<TJavaContext>::template InstanceMethod<jcObject::jname_toString,jcObject,jcString*>(env);
@@ -715,6 +527,8 @@ public:
 
 	}
 	virtual void Finalize(JNIEnv *env)noexcept override{
+		clsClassLoader=nullptr;
+
 		clsObject=nullptr;
 		midObjectToString=nullptr;
 		clsStringWriter=nullptr;
@@ -726,11 +540,32 @@ public:
 		midThrowableGetCause=nullptr;
 	}
 
+	jcClass* FindClass(JNIEnv *env,const char *ClassName)noexcept{
+		auto clsLoader=TJavaContext::classLoader();
+		if(clsLoader==nullptr || midLoadClass==nullptr){
+			return jInterface::FindClassNoCheck(env,ClassName);
+		}
+
+		auto *ClassNameString=jInterface::NewStringUTF(env,ClassName);
+		if(ClassNameString==nullptr){
+			return nullptr;
+		}
+		jvalue args[1];
+		args[0]=MakeJValue(ClassNameString);
+		auto cls=jInterface::CallMethodA<jcClass*>(env,clsLoader,midLoadClass,args);
+		if(cls==nullptr){
+			return nullptr;
+		}
+		jInterface::DeleteLocalRef(env,ClassNameString);
+		jInterface::ExceptionClear(env);
+		return cls;
+	}
+
 	jrLocal<jcString> Make(JNIEnv *env,jcThrowable *Exception)noexcept{
 		if(midThrowableGetCause==nullptr)
 			return nullptr;
 
-		jvalue args[3];
+		jvalue args[1];
 		auto *Writer=jInterface::NewObjectA<java::io::jcStringWriter>(env,clsStringWriter,midConstructorStringWriter,nullptr);
 		if(Writer==nullptr){
 			return nullptr;
@@ -784,6 +619,9 @@ public:
 	static cJNIExceptionDescription Instance;
 private:
 
+	jcClass *clsClassLoader;
+	jbMethod *midLoadClass;	// jcClass* (jcString*)
+
 	jcClass *clsObject;
 	jMethod<jcString* (jcObject::*)(void)> *midObjectToString;
 
@@ -799,6 +637,12 @@ private:
 //---------------------------------------------------------------------------
 template<class TJavaContext>
 cJNIExceptionDescription<TJavaContext> cJNIExceptionDescription<TJavaContext>::Instance;
+//---------------------------------------------------------------------------
+template<class TJavaContext>
+inline jcClass* jFindClass(JNIEnv *env,const char *ClassName)noexcept
+{
+	return cJNIExceptionDescription<TJavaContext>::Instance.FindClass(env,ClassName);
+}
 //---------------------------------------------------------------------------
 template<class TJavaContext>
 inline jrLocal<jcString> jMakeExceptionDescription(JNIEnv *env,jcThrowable *Exception)noexcept
