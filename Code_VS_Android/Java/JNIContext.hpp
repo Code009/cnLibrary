@@ -24,6 +24,64 @@ struct jcUri : jcObject
 //---------------------------------------------------------------------------
 }	// namespace net
 //---------------------------------------------------------------------------
+namespace util{
+//---------------------------------------------------------------------------
+struct jcDisplayMetrics : jcObject
+{
+	static constexpr const char jClassName[]="android/util/DisplayMetrics";
+
+
+	static constexpr const char jname_density[]="density";
+	jFieldAccess<jfloat> density(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_density>(env,this);
+	}
+
+	static constexpr const char jname_densityDpi[]="densityDpi";
+	jFieldAccess<jint> densityDpi(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_densityDpi>(env,this);
+	}
+
+	static constexpr const char jname_heightPixels[]="heightPixels";
+	jFieldAccess<jint> heightPixels(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_heightPixels>(env,this);
+	}
+	static constexpr const char jname_widthPixels[]="widthPixels";
+	jFieldAccess<jint> widthPixels(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_widthPixels>(env,this);
+	}
+
+
+	static constexpr const char jname_scaledDensity[]="scaledDensity";
+	jFieldAccess<jfloat> scaledDensity(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_scaledDensity>(env,this);
+	}
+
+	static constexpr const char jname_xdpi[]="xdpi";
+	jFieldAccess<jfloat> xdpi(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_xdpi>(env,this);
+	}
+
+	static constexpr const char jname_ydpi[]="ydpi";
+	jFieldAccess<jfloat> ydpi(JNIEnv *env)noexcept{
+		return jFieldAccessMaker<jname_ydpi>(env,this);
+	}
+
+};
+//---------------------------------------------------------------------------
+struct jcTypedValue : jcObject
+{
+	static constexpr const char jClassName[]="android/util/TypedValue";
+
+	static constexpr jint COMPLEX_UNIT_DIP=1;
+
+	static constexpr const char jname_applyDimension[]="applyDimension";
+	static jfloat applyDimension(JNIEnv *env,jint unit,jfloat value,jcDisplayMetrics *metrics)noexcept{
+		return jStaticMethodCall<jcTypedValue,jname_applyDimension,&jcTypedValue::applyDimension>::Call(env,unit,value,metrics);
+	}
+};
+//---------------------------------------------------------------------------
+}	// namespace util
+//---------------------------------------------------------------------------
 namespace content{
 //---------------------------------------------------------------------------
 namespace res{
@@ -32,6 +90,19 @@ struct jcAssetManager : jcObject
 {
 	static constexpr const char jClassName[]="android/content/res/AssetManager";
 };
+//---------------------------------------------------------------------------
+struct jcResources : jcObject
+{
+	static constexpr const char jClassName[]="android/content/res/Resources";
+
+	static constexpr const char jname_getDisplayMetrics[]="getDisplayMetrics";
+	jrLocal<util::jcDisplayMetrics> getDisplayMetrics(JNIEnv *env)noexcept{
+		return jMethodCall<jname_getDisplayMetrics,&jcResources::getDisplayMetrics>::Call(env,this);
+	}
+};
+
+
+
 //---------------------------------------------------------------------------
 }	// namespace res
 //---------------------------------------------------------------------------
@@ -104,6 +175,11 @@ struct jcContext : jcObject
 	static constexpr const char jname_getAssets[]="getAssets";
 	jrLocal<res::jcAssetManager> getAssets(JNIEnv *env)noexcept{
 		return jMethodCall<jname_getAssets,&jcContext::getAssets>::Call(env,this);
+	}
+
+	static constexpr const char jname_getResources[]="getResources";
+	jrLocal<res::jcResources> getResources(JNIEnv *env)noexcept{
+		return jMethodCall<jname_getResources,&jcContext::getResources>::Call(env,this);
 	}
 
 	static constexpr const char jname_getPackageName[]="getPackageName";
