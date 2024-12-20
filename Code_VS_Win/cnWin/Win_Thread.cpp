@@ -57,7 +57,7 @@ DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept
 		auto CurThread=gTLS->Get();
 		// make sure no other object attached
 		if(CurThread==nullptr){
-			gTLS->Set(iGetReference(ThreadParam->Thread),ThreadParam->Thread);
+			gTLS->Set(ThreadParam->Thread.Reference(),ThreadParam->Thread);
 			TLSSetExitNotify();
 			Thread=cnVar::MoveCast(ThreadParam->Thread);
 		}
@@ -94,7 +94,7 @@ cThread* cThread::QueryCurrent(void)noexcept
 	NewThread->fThreadHandle=ThreadHandle;
 	NewThread->fThreadID=::GetCurrentThreadId();
 
-	gTLS->Set(iGetReference(NewThread),NewThread);
+	gTLS->Set(NewThread.Reference(),NewThread);
 	TLSSetExitNotify();
 	CurrentThreadObject=NewThread;
 	return NewThread;

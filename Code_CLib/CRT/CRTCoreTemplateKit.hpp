@@ -221,10 +221,10 @@ using cAtomicVar=cnAsync::cAtomicVariable<T>;
 
 //---------------------------------------------------------------------------
 template<class T>
-using iAtomicPtr = cnVar::cAtomicPtrReference<cnVar::iRefTokenOperator<T>>;
+using iAtomicPtr = cnVar::cAtomicPtrReference<T,cnVar::iPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 template<class T>
-using rAtomicPtr = cnVar::cAtomicPtrReference<cnVar::rRefTokenOperator<T>>;
+using rAtomicPtr = cnVar::cAtomicPtrReference<T,cnVar::rPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 // Atomic Linked Structure

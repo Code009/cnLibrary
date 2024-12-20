@@ -872,7 +872,7 @@ void cEndpointFromStream::WriteQueueTerminated(void)noexcept
 //---------------------------------------------------------------------------
 iPtr<iEndpoint> cnRTL::CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBufferSize,iThreadPool *ThreadPool)noexcept
 {
-	iReference *StreamRef=iGetReference(Stream);
+	iReference *StreamRef=Stream.Reference();
 	iStream *StreamPtr=Stream.ExtractToManual();
 	return iCreate<cEndpointFromStream>(rPtr<iReference>::TakeFromManual(StreamRef),StreamPtr,ReadBufferSize,ThreadPool);
 }

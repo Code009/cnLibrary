@@ -8,10 +8,9 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cBSTROwnerTokenOperator::Release(const BSTR &Token)noexcept
+void cBSTROwnerOperator::Release(BSTR Token)noexcept
 {
-	if(Token!=nullptr)
-		::SysFreeString(Token);
+	::SysFreeString(Token);
 }
 //---------------------------------------------------------------------------
 apBSTR cnRTL::MakeBSTR(const wchar_t *Text)noexcept
@@ -26,7 +25,7 @@ apBSTR cnRTL::MakeBSTR(const wchar_t *Text)noexcept
 BSTR* cnRTL::apBSTRRetPtr(apBSTR &Ptr)noexcept
 {
 	Ptr=nullptr;
-	return &Ptr.Token();
+	return &Ptr.Pointer();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

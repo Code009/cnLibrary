@@ -61,14 +61,14 @@ void bcObservedReference::RefInvalidate(iObservedReference *ObservedReference)no
 	}
 }
 //---------------------------------------------------------------------------
-void bcObservedReference::WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept
-{
-	return WeakRegister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
-}
-void bcObservedReference::WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept
-{
-	return WeakUnregister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
-}
+//void bcObservedReference::WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept
+//{
+//	return WeakRegister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
+//}
+//void bcObservedReference::WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept
+//{
+//	return WeakUnregister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
+//}
 //---------------------------------------------------------------------------
 void bcObservedReference::WeakRegister(bcNotifyToken *NotifyToken)noexcept
 {

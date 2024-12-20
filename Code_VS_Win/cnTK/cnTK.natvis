@@ -2,10 +2,10 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
 	<!--Pointer.hpp-->
 	<Type Name="cnLibrary::cnVar::cPtrReference&lt;*&gt;">
-		<DisplayString>{fRefToken}</DisplayString>
+		<DisplayString>{fPointer}</DisplayString>
 		<Expand>
-			<Item Name="[PtrReference]">fRefToken,ndnvo</Item>
-			<ExpandedItem>fRefToken</ExpandedItem>
+			<Item Name="[Pointer]">fPointer,ndnvo</Item>
+			<ExpandedItem>fPointer</ExpandedItem>
 		</Expand>
 	</Type>
 	<!--Interface.hpp-->
@@ -21,18 +21,18 @@
 		</Expand>
 	</Type>
 	<Type Name="cnLibrary::rPtr&lt;*&gt;">
-		<DisplayString>{fRefToken.Pointer}</DisplayString>
+		<DisplayString>{fPointer}</DisplayString>
 		<Expand>
-			<Item Name="[rPtr.Pointer]">fRefToken.Pointer,nvo</Item>
-			<ExpandedItem Condition="fRefToken.Pointer!=0">fRefToken.Pointer</ExpandedItem>
+			<Item Name="[rPtr.Pointer]">fPointer,nvo</Item>
+			<ExpandedItem Condition="fRefToken.Pointer!=0">fPointer</ExpandedItem>
 		</Expand>
 	</Type>
 	<Type Name="cnLibrary::iPtr&lt;*&gt;">
-		<DisplayString>{fRefToken.Pointer}</DisplayString>
+		<DisplayString>{fPointer}</DisplayString>
 		<Expand>
-			<Item Name="[iPtr.Reference]">fRefToken.Reference,ndnvo</Item>
-			<Item Name="[iPtr.Pointer]">fRefToken.Pointer,nvo</Item>
-			<ExpandedItem Condition="fRefToken.Pointer!=0">fRefToken.Pointer</ExpandedItem>
+			<Item Name="[iPtr.Reference]">fReference,ndnvo</Item>
+			<Item Name="[iPtr.Pointer]">fPointer,nvo</Item>
+			<ExpandedItem Condition="fPointer!=0">fPointer</ExpandedItem>
 		</Expand>
 	</Type>
 	<!--Memory.hpp-->
@@ -43,8 +43,17 @@
 		</Expand>
 	</Type>
 	<!--Atomic.hpp-->
+	<Type Name="cnLibrary::cnAsync::TAtomicVariableOperatorByInteger&lt;*&gt;">
+		<DisplayString>{*((tDebugDisplay&lt;&gt;*)&amp;_atomic_)}</DisplayString>
+		<Expand>
+			<ExpandedItem>*((tAtomicOperator*)&amp;_atomic_)</ExpandedItem>
+		</Expand>
+	</Type>
 	<Type Name="cnLibrary::cnAsync::cAtomicVariable&lt;*&gt;">
-		<DisplayString>{_atomic_}</DisplayString>
+		<DisplayString>{*((tAtomicOperator::tDebugDisplay*)&amp;_atomic_)}</DisplayString>
+		<Expand>
+			<ExpandedItem>*((tAtomicOperator::tDebugDisplay*)&amp;_atomic_)</ExpandedItem>
+		</Expand>
 	</Type>
 	<!--Variant.hpp-->
 	<Type Name="cnLibrary::cnVar::cVarPack&lt;*&gt;">

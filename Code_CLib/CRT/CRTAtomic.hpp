@@ -20,6 +20,13 @@ struct TKRuntime::TAtomicInteger
 	typedef volatile std::atomic<tInteger> tAtomic;
 	typedef tInteger tNonAtomic;
 
+	template<class T>
+	struct tDebugCast
+	{
+		typedef std::atomic<T> Type;
+	};
+	typedef std::atomic<tInteger> tDebugDisplay;
+
 	static tInteger Get(const tAtomic &a){
 		return a;
 	}

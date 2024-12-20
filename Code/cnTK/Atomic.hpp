@@ -101,6 +101,8 @@ struct TAtomicVariableOperatorByInteger
 	typedef typename TIntegerAtomicOperator::tAtomic tAtomic;
 	typedef typename TIntegerAtomicOperator::tInteger tInteger;
 
+	typedef typename TIntegerAtomicOperator::template tDebugCast<TVariable>::Type tDebugDisplay;
+
 	static TVariable Get(const tAtomic &av)noexcept(true){
 		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::Get(av) );
 	}
@@ -651,38 +653,36 @@ namespace cnLibrary{
 namespace cnVar{
 
 //---------------------------------------------------------------------------
-template<class TRefTokenOperator>
+template<class T,class TPointerReferenceOperator>
 class cAtomicPtrReference
 {
 public:
-	typedef typename TRefTokenOperator::tPtr tPtr;
-	typedef typename TRefTokenOperator::tRefToken tRefToken;
-
 	cAtomicPtrReference()noexcept(true):fAtomicPtr(nullptr){}
 	~cAtomicPtrReference()noexcept(true){
-		tRefToken RefToken=TRefTokenOperator::TokenFrom(fAtomicPtr.Get());
-		TRefTokenOperator::Release(RefToken);
+		T *Pointer=fAtomicPtr.Get();
+		if(Pointer!=nullptr){
+			TPointerReferenceOperator::Release(Pointer);
+		}
 	}
 
-	tPtr Peek(void)const noexcept(true){	return fAtomicPtr.Get();	}
+	T* Peek(void)const noexcept(true){	return fAtomicPtr.Get();	}
 
 	// <<= xchg
 
-	cPtrReference<TRefTokenOperator> operator <<=(tPtr Pointer)noexcept(true){
-		tRefToken RefToken=TRefTokenOperator::TokenFrom(Pointer);
-		TRefTokenOperator::Acquire(RefToken);
+	cPtrReference<T,TPointerReferenceOperator> operator <<=(T *Pointer)noexcept(true){
+		if(Pointer!=nullptr)
+			TPointerReferenceOperator::Acquire(Pointer);
 		// swap
-		tPtr PrevPointer=fAtomicPtr.Barrier.Xchg(Pointer);
-		return cPtrReference<TRefTokenOperator>::TakeFromManual(PrevPointer);
+		T *PrevPointer=fAtomicPtr.Barrier.Xchg(Pointer);
+		return cPtrReference<T,TPointerReferenceOperator>::TakeFromManual(PrevPointer);
 	}
 
-	struct CmpOp{	cnAsync::cAtomicVariable<tPtr> &fAtomicPtr;	tPtr ComparePointer;
-		bool operator <<=(tPtr Pointer)noexcept(true){
+	struct CmpOp{	cnAsync::cAtomicVariable<T*> &fAtomicPtr;	T *ComparePointer;
+		bool operator <<=(T *Pointer)noexcept(true){
 			if(Pointer!=nullptr){
-				tRefToken RefToken=TRefTokenOperator::TokenFrom(Pointer);
-				TRefTokenOperator::Acquire(RefToken);
+				TPointerReferenceOperator::Acquire(Pointer);
 				if(fAtomicPtr.Barrier.CmpStore(ComparePointer,Pointer)==false){
-					TRefTokenOperator::Release(RefToken);
+					TPointerReferenceOperator::Release(Pointer);
 					return false;
 				}
 			}
@@ -691,26 +691,25 @@ public:
 					return false;
 				}
 			}
-			tRefToken OldRefToken=TRefTokenOperator::TokenFrom(ComparePointer);
-			TRefTokenOperator::Release(OldRefToken);
+			if(ComparePointer!=nullptr)
+				TPointerReferenceOperator::Release(ComparePointer);
 			return true;
 		}
 	};
-	CmpOp operator[](tPtr Compare)noexcept(true){		return CmpOp{fAtomicPtr,Compare};	}
+	CmpOp operator[](T *Compare)noexcept(true){		return CmpOp{fAtomicPtr,Compare};	}
 
 	// ^=  set if nullptr
 
-	bool operator ^=(tPtr Pointer)noexcept(true){
+	bool operator ^=(T *Pointer)noexcept(true){
 		if(Pointer==nullptr){
 			return fAtomicPtr==nullptr;
 		}
 
-		tRefToken RefToken=TRefTokenOperator::TokenFrom(Pointer);
-		TRefTokenOperator::Acquire(RefToken);
+		TPointerReferenceOperator::Acquire(Pointer);
 		if(fAtomicPtr.Barrier.CmpStore(nullptr,Pointer)){
 			return true;
 		}
-		TRefTokenOperator::Release(RefToken);
+		TPointerReferenceOperator::Release(Pointer);
 		return false;
 	}
 #ifndef cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DELETE
@@ -739,8 +738,9 @@ private:
 
 #endif // cnLibrary_CPPEXCLUDE_CLASS_MEMBER_DELETE
 protected:
-	cnAsync::cAtomicVariable<tPtr> fAtomicPtr;
+	cnAsync::cAtomicVariable<T*> fAtomicPtr;
 };
+#if 0
 //---------------------------------------------------------------------------
 //TRegTokenOperator
 //{
@@ -863,6 +863,7 @@ protected:
 	}
 
 };
+#endif // 0
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------

@@ -29,20 +29,17 @@ namespace cnRTL{
 class cDualReference : public bcVirtualLifeCycle
 {
 public:
-	template<class T>
-	struct cRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
+	struct cPointerReferenceOperator
 	{
-		static void Acquire(T *Token)noexcept(true){
-			if(Token!=nullptr){
-				cnLib_ASSERT(Token->cDualReference::fInnerReference.Ref!=0);
-				Token->fInnerReference.Inc();
-			}
+		template<class T>
+		static void Acquire(T *Pointer)noexcept(true){
+			cnLib_ASSERT(Pointer->cDualReference::fInnerReference.Ref!=0);
+			Pointer->fInnerReference.Inc();
 		}
-		static void Release(T *Token)noexcept(true){
-			if(Token!=nullptr){
-				cnLib_ASSERT(Token->cDualReference::fInnerReference.Ref!=0);
-				Token->fInnerReference.Dec();
-			}
+		template<class T>
+		static void Release(T *Pointer)noexcept(true){
+			cnLib_ASSERT(Pointer->cDualReference::fInnerReference.Ref!=0);
+			Pointer->fInnerReference.Dec();
 		}
 	};
 protected:
@@ -93,38 +90,35 @@ protected:
 };
 //---------------------------------------------------------------------------
 template<class T>
-using rInnerPtr = cnVar::cPtrReference< cDualReference::cRefTokenOperator<T> >;
+using rInnerPtr = cnVar::cPtrReference<T,cDualReference::cPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 
 // Automatic Object Pointer
 
 //---------------------------------------------------------------------------
-template<class T>
-struct aTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
+struct aPointerOwnerOperator
 {
-	static void Manage(T* const &Token)noexcept(true){
+	template<class T>
+	static void Manage(T *Pointer)noexcept(true){
 		typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 			cCPPLifeCycleSharedManager<T>,
 			cVirtualLifeCycleSharedManager<T>
 		>::Type tManager;
-		if(Token!=nullptr){
-			tManager::ManageShared(Token);
-			tManager::tLifeCycleActivation::Start(Token);
-		}
+		tManager::ManageShared(Pointer);
+		tManager::tLifeCycleActivation::Start(Pointer);
 	}
 
-	static void Release(T* const &Token)noexcept(true){
-		if(Token!=nullptr){
-			cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
-				cCPPLifeCycleSharedManager<T>,
-				cVirtualLifeCycleSharedManager<T>
-			>::Type::tLifeCycleActivation::Stop(Token);
-		}
+	template<class T>
+	static void Release(T *Pointer)noexcept(true){
+		cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
+			cCPPLifeCycleSharedManager<T>,
+			cVirtualLifeCycleSharedManager<T>
+		>::Type::tLifeCycleActivation::Stop(Pointer);
 	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-using aPtr = cnVar::cPtrOwner< aTokenOperator<T> >;
+using aPtr = cnVar::cPtrOwner<T,aPointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline aPtr<T> aTake(T *Object)noexcept(true)
@@ -139,7 +133,7 @@ template<class T>
 inline aPtr<T> aCreate(void)noexcept(true)
 {
 	auto Object=new T;
-	aTokenOperator<T>::ManageShared(Object);
+	aPointerOwnerOperator::Manage(Object);
 	return aPtr<T>::TakeFromManual(Object);
 }
 template<class T,class...TArgs>
@@ -149,7 +143,7 @@ template<class T,class...TArgs>
 inline aPtr<T> aCreate(TArgs&&...Args)noexcept(true)
 {
 	auto Object=new T(static_cast<TArgs&&>(Args)...);
-	aTokenOperator<T>::ManageShared(Object);
+	aPointerOwnerOperator::Manage(Object);
 	return aPtr<T>::TakeFromManual(Object);
 }
 //---------------------------------------------------------------------------
@@ -204,7 +198,7 @@ public:
 		ufInt8 Branch;
 		ufInt8 Color;
 	};
-	static_assert(sizeof(bcNotifyToken)<=sizeof(iReferenceInvalidationNotify),"incompatiable iReferenceInvalidationNotify");
+	//static_assert(sizeof(bcNotifyToken)<=sizeof(iReferenceInvalidationNotify),"incompatiable iReferenceInvalidationNotify");
 
 	void RefReset(void)noexcept(true);
 	void RefInvalidate(iObservedReference *ObservedReference)noexcept(true);
@@ -212,8 +206,8 @@ public:
 	void RefInc(void)noexcept(true);
 	bool RefDec(void)noexcept(true);
 
-	void WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
-	void WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
+	//void WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
+	//void WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept(true);
 
 	void WeakRegister(bcNotifyToken *NotifyToken)noexcept(true);
 	void WeakUnregister(bcNotifyToken *NotifyToken)noexcept(true);
@@ -256,15 +250,19 @@ public:
 		}
 	}
 
-	virtual	void cnLib_FUNC InvalidationRegisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
-		return bcObservedReference::WeakRegister(Notify);
+	virtual iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true)override{
+		return nullptr;
 	}
-	virtual	void cnLib_FUNC InvalidationUnregisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
-		return bcObservedReference::WeakUnregister(Notify);
-	}
-	virtual	bool cnLib_FUNC Reference(void)noexcept(true)override{
-		return bcObservedReference::WeakToStrong();
-	}
+
+	//virtual	void cnLib_FUNC InvalidationRegisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
+	//	return bcObservedReference::WeakRegister(Notify);
+	//}
+	//virtual	void cnLib_FUNC InvalidationUnregisterNotification(iReferenceInvalidationNotify *Notify)noexcept(true)override{
+	//	return bcObservedReference::WeakUnregister(Notify);
+	//}
+	//virtual	bool cnLib_FUNC Reference(void)noexcept(true)override{
+	//	return bcObservedReference::WeakToStrong();
+	//}
 
 };
 //---------------------------------------------------------------------------
@@ -441,18 +439,16 @@ class cAutoRecyclableObject
 {
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct arPointerOwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
+struct arPointerOwnerOperator
 {
-	static void Release(T* const &Token)noexcept(true){
-		if(Token!=nullptr){
-			cAutoRecyclableObject<T>::template tActivation< cAutoRecyclableObject<T> >::Stop(static_cast<cAutoRecyclableObject<T>*>(Token));
-		}
+	template<class T>
+	static void Release(T *Pointer)noexcept(true){
+		cAutoRecyclableObject<T>::template tActivation< cAutoRecyclableObject<T> >::Stop(static_cast<cAutoRecyclableObject<T>*>(Pointer));
 	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-using arPtr = cnVar::cPtrOwner< arPointerOwnerTokenOperator<T> >;
+using arPtr = cnVar::cPtrOwner<T,arPointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline arPtr<T> arCreateUnrecyclable(void)noexcept(true){
@@ -746,16 +742,16 @@ protected:
 	cLinkItemSet<bcNotifyToken,cnDataStruct::cItemAddressOrderOperator<bcNotifyToken> > fRefSet;
 
 };
-template<class T>	struct cAutoClassWeakRefTokenOperator;
 //---------------------------------------------------------------------------
-template<class T>	struct cAutoClassRefTokenOperator;
+struct cAutoClassWeakRefTokenOperator;
+//---------------------------------------------------------------------------
+struct cAutoClassPointerReferenceOperator;
 template<class T>
 class aCls : public T, protected cClassReferenceWithWeakSet, public cRTLAllocator
 {
-	friend cAutoClassRefTokenOperator<T>;
-	friend cAutoClassRefTokenOperator<const T>;
+	friend cAutoClassPointerReferenceOperator;
 
-	friend cAutoClassWeakRefTokenOperator<aCls>;
+	friend cAutoClassWeakRefTokenOperator;
 
 
 public:
@@ -805,29 +801,23 @@ struct TAutoClassLifeCycleTypes
 
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct cAutoClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< aCls<T>* >
+struct cAutoClassPointerReferenceOperator
 {
-	static void Acquire(aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
-	static void Release(aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
+	template<class T>	static void Acquire(aCls<T> *Pointer)noexcept(true){	Pointer->RefClassAcquireReference();	}
+	template<class T>	static void Release(aCls<T> *Pointer)noexcept(true){	Pointer->RefClassReleaseReference();	}
+	template<class T>	static void Acquire(const aCls<T> *Pointer)noexcept(true){	const_cast<aCls<T>*>(Pointer)->RefClassAcquireReference();	}
+	template<class T>	static void Release(const aCls<T> *Pointer)noexcept(true){	const_cast<aCls<T>*>(Pointer)->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-struct cAutoClassRefTokenOperator<const T> : cnVar::bcPointerRefTokenOperator< const aCls<T>* >
-{
-	static void Acquire(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
-	static void Release(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
-};
-//---------------------------------------------------------------------------
+using aClsRef = cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
 template<class T>
-using aClsRef = cnVar::cPtrReference< cAutoClassRefTokenOperator<T> >;
+using aClsConstRef = cnVar::cPtrReference<const aCls<T>,cAutoClassPointerReferenceOperator>;
 template<class T>
-using aClsConstRef = cnVar::cPtrReference< cAutoClassRefTokenOperator<const T> >;
-template<class T>
-using aClsAtomicRef = cnVar::cAtomicPtrReference< cAutoClassRefTokenOperator<T> >;
+using aClsAtomicRef = cnVar::cAtomicPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
-template<class T>	struct cAutoRecyclableClassRefTokenOperator;
+struct cAutoRecyclableClassPointerReferenceOperator;
 template<class T>	struct TAutoRecyclableClassCPPLifeCycleManagerSelect;
 template<class T>	struct TAutoRecyclableClassVirtualLifeCycleManagerSelect;
 //---------------------------------------------------------------------------
@@ -838,9 +828,8 @@ class arCls : public T
 	>::Type
 	, protected cClassReferenceWithWeakSet, protected cRTLAllocator
 {
-	friend cAutoRecyclableClassRefTokenOperator<T>;
-	friend cAutoRecyclableClassRefTokenOperator<const T>;
-	friend cAutoClassWeakRefTokenOperator<arCls>;
+	friend cAutoRecyclableClassPointerReferenceOperator;
+	friend cAutoClassWeakRefTokenOperator;
 
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value,
 		cCPPLifeCycleRecyclableInstance,cVirtualLifeCycleRecyclableInstance
@@ -890,60 +879,53 @@ protected:
 
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct cAutoRecyclableClassRefTokenOperator : cnVar::bcPointerRefTokenOperator< arCls<T>* >
+struct cAutoRecyclableClassPointerReferenceOperator
 {
-	static void Acquire(arCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassAcquireReference();	}
-	static void Release(arCls<T> *Token)noexcept(true){	if(Token!=nullptr)	Token->RefClassReleaseReference();	}
+	template<class T>	static void Acquire(arCls<T> *Pointer)noexcept(true){		Pointer->RefClassAcquireReference();	}
+	template<class T>	static void Release(arCls<T> *Pointer)noexcept(true){		Pointer->RefClassReleaseReference();	}
+	template<class T>	static void Acquire(const arCls<T> *Pointer)noexcept(true){	const_cast<arCls<T>*>(Pointer)->RefClassAcquireReference();	}
+	template<class T>	static void Release(const arCls<T> *Pointer)noexcept(true){	const_cast<arCls<T>*>(Pointer)->RefClassReleaseReference();	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-struct cAutoRecyclableClassRefTokenOperator<const T> : cnVar::bcPointerRefTokenOperator< const arCls<T>* >
-{
-	static void Acquire(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassAcquireReference();	}
-	static void Release(const aCls<T> *Token)noexcept(true){	if(Token!=nullptr)	const_cast<aCls<T>*>(Token)->RefClassReleaseReference();	}
-};
-//---------------------------------------------------------------------------
+using arClsRef = cnVar::cPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 template<class T>
-using arClsRef = cnVar::cPtrReference< cAutoRecyclableClassRefTokenOperator<T> >;
+using arClsConstRef = cnVar::cPtrReference<const arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 template<class T>
-using arClsConstRef = cnVar::cPtrReference< cAutoRecyclableClassRefTokenOperator<const T> >;
-template<class T>
-using arClsAtomicRef = cnVar::cAtomicPtrReference< cAutoRecyclableClassRefTokenOperator<T> >;
+using arClsAtomicRef = cnVar::cAtomicPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
-template<class TAutoClass>
 struct cAutoClassWeakRefTokenOperator
 {
-	typedef TAutoClass* tPtr;
-	typedef cnVar::cPtrReference< cAutoClassRefTokenOperator<typename TAutoClass::tClass> > tRef;
-	typedef cClassReferenceWithWeakSet* tRegToken;
-	typedef cClassReferenceWithWeakSet::bcNotifyToken tNotifyToken;
+	typedef cClassReferenceWithWeakSet tToken;
 
-	static tRegToken Register(tRef Ref,tNotifyToken *NotifyToken)noexcept(true){
-		if(Ref==nullptr)
-			return nullptr;
-		Ref->WeakRegister(NotifyToken);
-		return Ref;
-	}
-	static tRegToken Register(tPtr Pointer,tNotifyToken *NotifyToken)noexcept(true){
+	template<class TAutoClass>
+	static tToken* Register(TAutoClass *Pointer)noexcept(true){
 		if(Pointer==nullptr)
 			return nullptr;
-		Pointer->WeakRegister(NotifyToken);
-		return Pointer;
+		//Pointer->WeakRegister(NotifyToken);
+		//return Pointer;
+		return nullptr;
 	}
-	static void Unregister(tRegToken RegToken,tNotifyToken *NotifyToken)noexcept(true){
-		return RegToken->WeakUnregister(NotifyToken);
+	static void Unregister(tToken *Token)noexcept(true){
+		//return Token->WeakUnregister(0);
 	}
-	static tRef Reference(tRegToken RegToken)noexcept(true){
-		return RegToken->WeakToStrong()?tRef::TakeFromManual(static_cast<tPtr>(RegToken)):nullptr;
+
+	template<class TAutoClass>
+	struct tReference
+		: cnVar::TTypeDef< cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> >{};
+
+	template<class TAutoClass>
+	static cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> Reference(tToken *Token)noexcept(true){
+		return Token->WeakToStrong()?cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator>::TakeFromManual(Token):nullptr;
 	}
+
 };
 //---------------------------------------------------------------------------
 template<class T>
-using aClsWeakRef=cnVar::cPtrWeakReference< cAutoClassWeakRefTokenOperator< aCls<T> > >;
+using aClsWeakRef=cnVar::cPtrWeakReference<aCls<T>,cAutoClassWeakRefTokenOperator>;
 template<class T>
-using arClsWeakRef=cnVar::cPtrWeakReference< cAutoClassWeakRefTokenOperator< arCls<T> > >;
+using arClsWeakRef=cnVar::cPtrWeakReference<arCls<T>,cAutoClassWeakRefTokenOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline aCls<T>* aClsFromPtr(T *Src)noexcept(true)
@@ -974,7 +956,7 @@ inline aClsRef<T> aClsCreate(void)noexcept(true)
 	auto NewObject=new aCls<T>;
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);
 	aCls<T>::tLifeCycleManager::tLifeCycleActivation::Start(NewObject);
-	return cnVar::cPtrReference< cAutoClassRefTokenOperator<T> >::TakeFromManual(NewObject);
+	return cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
 }
 
 template<class T,class...TArgs>
@@ -986,7 +968,7 @@ inline aClsRef<T> aClsCreate(TArgs&&...Args)noexcept(true)
 	auto NewObject=new aCls<T>(cnVar::Forward<TArgs>(Args)...);
 	aCls<T>::tLifeCycleManager::ManageShared(NewObject);
 	aCls<T>::tLifeCycleManager::tLifeCycleActivation::Start(NewObject);
-	return cnVar::cPtrReference<cAutoClassRefTokenOperator<T> >::TakeFromManual(NewObject);
+	return cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
 }
 //---------------------------------------------------------------------------
 template<class T>

@@ -154,17 +154,16 @@ public:
 	virtual void AggregableRelease(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct cAggregableOwnerToken : cnVar::bcPointerOwnerTokenOperator<T*>
+struct cAggregablePointerOwnerOperator
 {
-	static void Release(T *Token)noexcept(true){
-		if(Token!=nullptr)
-			Token->AggregableRelease();
+	template<class T>
+	static void Release(T *Pointer)noexcept(true){
+		Pointer->AggregableRelease();
 	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-using cAggregablePtr = cnVar::cPtrOwner< cAggregableOwnerToken<T> >;
+using cAggregablePtr = cnVar::cPtrOwner<T,cAggregablePointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class TInterfaceImplementation>
 class impInterfaceAggregable : public TInterfaceImplementation, public bcAggregable

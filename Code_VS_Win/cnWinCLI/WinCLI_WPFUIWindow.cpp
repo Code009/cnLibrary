@@ -31,7 +31,7 @@ rPtr<iPopupWindowControl> cnWin::WPFCreatePopupWindowControl(void)noexcept
 
 	cGCRef WPFViewRootHandle;
 	mMakeWPFViewRoot(WPFViewRootHandle);
-	return iCreate<cWPFPopupWindowControl>(UIThread,WPFViewRootHandle);
+	return rCreate<cWPFPopupWindowControl>(UIThread,WPFViewRootHandle);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

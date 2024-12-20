@@ -794,134 +794,46 @@ public:
 	ufInt16 SpinCount=16384;
 };
 //---------------------------------------------------------------------------
-template<class TPtr>
-struct cLockRefTokenOperator : cnVar::bcPointerRefTokenOperator<TPtr>
+struct cLockPointerReferenceOperator
 {
-	static void Acquire(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->Acquire();	}
-	static void Release(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
+	template<class T>	static void Acquire(T *Pointer)noexcept(true){	Pointer->Acquire();	}
+	template<class T>	static void Release(T *Pointer)noexcept(true){	Pointer->Release();	}
 };
 //---------------------------------------------------------------------------
-template<class TPtr>
-struct cSharedLockRefTokenOperator : cnVar::bcPointerRefTokenOperator<TPtr>
+struct cSharedLockPointerReferenceOperator
 {
-	static void Acquire(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->AcquireShared();	}
-	static void Release(TPtr Token)noexcept(true){	if(Token!=nullptr)	Token->ReleaseShared();	}
+	template<class T>	static void Acquire(T *Pointer)noexcept(true){	Pointer->AcquireShared();	}
+	template<class T>	static void Release(T *Pointer)noexcept(true){	Pointer->ReleaseShared();	}
 };
 //---------------------------------------------------------------------------
-template<class TPtr>
-using lockPtr = cnVar::cPtrReference< cLockRefTokenOperator<TPtr> >;
-template<class TPtr>
-using lockSharedPtr = cnVar::cPtrReference< cSharedLockRefTokenOperator<TPtr> >;
+template<class T>
+using lockPtr = cnVar::cPtrReference<T,cLockPointerReferenceOperator>;
+template<class T>
+using lockSharedPtr = cnVar::cPtrReference<T,cSharedLockPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 template<class TLock>
-inline lockPtr<TLock*> TakeLock(TLock *Lock)noexcept(true)
+inline lockPtr<TLock> TakeLock(TLock *Lock)noexcept(true)
 {
 	return Lock;
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline auto TakeLock(TLock &Lock)noexcept(true) -> lockPtr<decltype(Lock.operator ->())>
+inline auto TakeLock(TLock &Lock)noexcept(true) -> lockPtr<typename cnVar::TRemovePointer<decltype(Lock.operator ->())>::Type>
 {
 	return Lock.operator ->();
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline lockSharedPtr<TLock*> TakeSharedLock(TLock *Lock)noexcept(true)
+inline lockSharedPtr<TLock> TakeSharedLock(TLock *Lock)noexcept(true)
 {
 	return Lock;
 }
 //---------------------------------------------------------------------------
 template<class TLock>
-inline auto TakeSharedLock(TLock &Lock)noexcept(true) -> lockSharedPtr<decltype(Lock.operator ->())>
+inline auto TakeSharedLock(TLock &Lock)noexcept(true) -> lockSharedPtr<typename cnVar::TRemovePointer<decltype(Lock.operator ->())>::Type>
 {
 	return Lock.operator ->();
 }
-//---------------------------------------------------------------------------
-
-// Weak Reference
-
-//---------------------------------------------------------------------------
-template<class T>
-struct rRefWeakTokenOperator
-{
-	typedef T* TPtr;
-	typedef rPtr<T> TRef;
-	typedef iObservedReference* TRegToken;
-	typedef iReferenceInvalidationNotify TNotifyToken;
-
-	static TRegToken Register(TRef Ref,TNotifyToken *NotifyToken)noexcept(true){
-		if(Ref==nullptr)
-			return nullptr;
-		Ref->InvalidationRegisterNotification(NotifyToken);
-		return Ref;
-	}
-	static TRegToken Register(TPtr Pointer,TNotifyToken *NotifyToken)noexcept(true){
-		if(Pointer==nullptr)
-			return nullptr;
-		Pointer->InvalidationRegisterNotification(NotifyToken);
-		return Pointer;
-	}
-	static void Unregister(TRegToken RegToken,TNotifyToken *NotifyToken)noexcept(true){
-		return RegToken->InvalidationUnregisterNotification(NotifyToken);
-	}
-	static TRef Reference(TRegToken RegToken)noexcept(true){
-		return RegToken->Reference()?TRef::TakeFromManual(RegToken):nullptr;
-	}
-};
-//---------------------------------------------------------------------------
-template<class T>
-using rwPtr=cnVar::cPtrWeakReference< rRefWeakTokenOperator<T> >;
-//---------------------------------------------------------------------------
-class bcInterfaceWeakPointer : protected iReferenceInvalidationNotify
-{
-public:
-	bcInterfaceWeakPointer()noexcept(true);
-	~bcInterfaceWeakPointer()noexcept(true);
-
-	bcInterfaceWeakPointer(bcInterfaceWeakPointer &Src)noexcept(true);
-
-	bcInterfaceWeakPointer(iInterface *Src)noexcept(true);
-
-
-
-protected:
-	cSpinLock fTokenLock;
-	iObservedReference *fWeakRef;
-	iInterface *fInterface;
-
-	void Assign(iInterface *Src)noexcept(true);
-	bool ToStrong(void)noexcept(true);
-	virtual bool cnLib_FUNC InvalidationNotify(iObservedReference *InvalidatedReference)noexcept(true) override;
-};
-//---------------------------------------------------------------------------
-template<class T>
-class iwPtr : protected bcInterfaceWeakPointer
-{
-public:
-	iwPtr()noexcept(true){}
-	~iwPtr()noexcept(true){}
-
-	iwPtr(iwPtr &Src)noexcept(true) : bcInterfaceWeakPointer(Src){}
-
-	iwPtr(T *Src)noexcept(true) : bcInterfaceWeakPointer(Src){}
-
-	iwPtr& operator =(T *Src)noexcept(true){
-		Assign(Src);
-		return *this;
-	}
-
-
-	iPtr<T> Ref(void)noexcept(true){
-		if(bcInterfaceWeakPointer::ToStrong()){
-			return iPtr<T>::TakeFromManual(static_cast<T*>(this->fInterface));
-		}
-
-		return nullptr;
-	}
-	iPtr<T> operator + (void)noexcept(true){
-		return Ref();
-	}
-};
 //---------------------------------------------------------------------------
 
 // AsyncFlag

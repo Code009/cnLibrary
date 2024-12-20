@@ -109,9 +109,9 @@ public:
 	TRet Result(void)noexcept(true){}
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct cPromiseOwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<T*>
+struct cPromisePointerOwnerOperator
 {
+	template<class T>
 	static void Release(T* const &Token)noexcept(true){
 		if(Token!=nullptr)
 			Token->OnFinish();
@@ -179,7 +179,7 @@ private:
 	cAtomicVariable<typename cnVar::TSelect<0,bool,TCoroutineHandleOperator>::Type> fFinishFlag;
 	typename TCoroutineHandleOperator::tHandle fFinalHandle;
 
-	template<class T> friend struct cnAsync::cPromiseOwnerTokenOperator;
+	friend cnAsync::cPromisePointerOwnerOperator;
 	void OnFinish(void)noexcept(true){
 		// will be called once by owner and once by final suspension
 		if(fFinishFlag.Free.Xchg(true)){
@@ -198,8 +198,8 @@ class cCoroutinePromise
 	, public bcPromiseReturnValue<TRet,typename cnVar::TRemoveCV<TRet>::Type>
 {
 public:
-	cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cCoroutinePromise> > get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cCoroutinePromise> >::TakeFromManual(this);	}
+	cnVar::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnVar::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 };
 //---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ class cCoroutine
 {
 public:
 	typedef cCoroutinePromise<TCoroutineHandleOperator,TRet> promise_type;
-	typedef cnVar::cPtrOwner< cPromiseOwnerTokenOperator<promise_type> > pPtr;
+	typedef cnVar::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
 	
 	cCoroutine()noexcept(true){}
 	cCoroutine(pPtr cnLib_MOVEREF Promise)noexcept(true):fPromise(cnLib_UREFCAST(pPtr)(Promise)){}
@@ -387,7 +387,7 @@ private:
 		}
 	}
 
-	template<class T> friend struct cnAsync::cPromiseOwnerTokenOperator;
+	friend cnAsync::cPromisePointerOwnerOperator;
 	void OnFinish(void)noexcept(true){
 		// will be called once by owner and once by final suspension
 		if(fFinishFlag.Free.Xchg(true)){
@@ -406,8 +406,8 @@ class cResumablePromise
 	, public bcPromiseReturnValue<TRet,TDistinct>
 {
 public:
-	cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cResumablePromise> > get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cResumablePromise> >::TakeFromManual(this);	}
+	cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 	template<class T>
 	typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(T cnLib_UREF Value)
@@ -424,8 +424,8 @@ class cResumablePromise<TCoroutineHandleOperator,TRet,void>
 	, public bcPromiseReturnValue<TRet,void>
 {
 public:
-	cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cResumablePromise> > get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner< cPromiseOwnerTokenOperator<cResumablePromise> >::TakeFromManual(this);	}
+	cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 	typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(void)noexcept(true)
 	{
@@ -444,7 +444,7 @@ class cResumable
 {
 public:
 	typedef cResumablePromise<TCoroutineHandleOperator,TRet,typename cnVar::TRemoveCV<TRet>::Type> promise_type;
-	typedef cnVar::cPtrOwner< cPromiseOwnerTokenOperator<promise_type> > pPtr;
+	typedef cnVar::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
 
 	cResumable()noexcept(true){}
 	// construct by promise
@@ -519,7 +519,7 @@ public:
 	cGenerator()noexcept(true){}
 	~cGenerator()noexcept(true){}
 
-	typedef cnVar::cPtrOwner< cPromiseOwnerTokenOperator< typename cResumable<TCoroutineHandleOperator,TRet>::promise_type > > pPtr;
+	typedef cnVar::cPtrOwner<typename cResumable<TCoroutineHandleOperator,TRet>::promise_type,cPromisePointerOwnerOperator> pPtr;
 
 
 	// construct by promise

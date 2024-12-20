@@ -1294,7 +1294,7 @@ iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeStreamConnection(rPtr<cNT6Thr
 iPtr<iConnection> cnWinRTL::NT6ThreadPoolSocketMakeEndpointConnection(rPtr<cNT6ThreadPoolSocketIOHandle> SocketIO,iPtr<iSocketAddress> LocalAddress,iPtr<iSocketAddress> RemoteAddress)noexcept
 {
 	auto Stream=iCreate<cNTSocketOverlappedIOHandleStream>(cnVar::MoveCast(SocketIO));
-	auto AggregableEndpoint=iAggregableCreate<cEndpointFromStream>(iGetReference(Stream),Stream);
+	auto AggregableEndpoint=iAggregableCreate<cEndpointFromStream>(Stream.Reference(),Stream);
 	auto AggregableConnection=iAggregableCreate<cConnection>();
 	AggregableConnection->LocalAddress=cnVar::MoveCast(LocalAddress);
 	AggregableConnection->RemoteAddress=cnVar::MoveCast(RemoteAddress);

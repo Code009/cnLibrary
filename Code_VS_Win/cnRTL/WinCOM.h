@@ -139,11 +139,11 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-struct cBSTROwnerTokenOperator : cnVar::bcPointerOwnerTokenOperator<BSTR>
+struct cBSTROwnerOperator
 {
-	static void Release(const BSTR &Token)noexcept(true);
+	static void Release(BSTR Token)noexcept(true);
 };
-typedef cnVar::cPtrOwner<cBSTROwnerTokenOperator> apBSTR;
+typedef cnVar::cPtrOwner<cnVar::TRemovePointer<BSTR>::Type,cBSTROwnerOperator> apBSTR;
 //---------------------------------------------------------------------------
 apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
 BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
@@ -166,15 +166,14 @@ struct TCOMFunctionInfo<TRet (STDMETHODCALLTYPE TClass::*)(TArgs...)>
 	typedef TClass ClassArgumentType;
 };
 //---------------------------------------------------------------------------
-template<class T>
-struct cCOMRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
+struct cCOMPointerReferenceOperator
 {
-	//static void Acquire(T *Token)noexcept(true){	if(Token!=nullptr)	Token->AddRef();	}
-	//static void Release(T *Token)noexcept(true){	if(Token!=nullptr)	Token->Release();	}
+	template<class T>
 	static void Acquire(T *Token)noexcept(true){
 		if(Token!=nullptr)	
 			static_cast<typename cnLib_THelper::RTL_TH::COMFindPrimaryInterface<void,T>::Type*>(Token)->AddRef();
 	}
+	template<class T>
 	static void Release(T *Token)noexcept(true){
 		if(Token!=nullptr)
 			static_cast<typename cnLib_THelper::RTL_TH::COMFindPrimaryInterface<void,T>::Type*>(Token)->Release();
@@ -182,7 +181,7 @@ struct cCOMRefTokenOperator : cnVar::bcPointerRefTokenOperator<T*>
 };
 
 template<class T>
-using COMPtr=cnVar::cPtrReference< cCOMRefTokenOperator<T> >;
+using COMPtr=cnVar::cPtrReference<T,cCOMPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 template<class T>
@@ -232,7 +231,7 @@ inline void** COMRetPtr(T* &Ptr)noexcept(true){
 template<class T>
 inline void** COMRetPtr(COMPtr<T> &Ptr)noexcept(true){
 	Ptr=nullptr;
-	return reinterpret_cast<void**>(&Ptr.Token());
+	return reinterpret_cast<void**>(&Ptr.Pointer());
 }
 //---------------------------------------------------------------------------
 template<class T>
@@ -243,7 +242,7 @@ inline T** COMRetPtrT(T* &Ptr)noexcept(true){
 template<class T>
 inline T** COMRetPtrT(COMPtr<T> &Ptr)noexcept(true){
 	Ptr=nullptr;
-	return &Ptr.Token();
+	return &Ptr.Pointer();
 }
 //---------------------------------------------------------------------------
 template<class T>
@@ -395,13 +394,6 @@ public:
 	}
 };
 //---------------------------------------------------------------------------
-class iCOMInnerReference
-{
-public:
-	virtual void COMInnerDelete(void)noexcept(true)=0;
-	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
@@ -410,7 +402,7 @@ namespace cnLib_THelper{
 namespace RTL_TH{
 //---------------------------------------------------------------------------
 template<class TCOMImplementation>
-class cCOMInnerImplementation : public cnRTL::COMInnerObject<TCOMImplementation>, public cnRTL::iCOMInnerReference, public cnRTL::cRTLAllocator
+class cCOMInnerImplementation : public cnRTL::COMInnerObject<TCOMImplementation>, public cnRTL::cRTLAllocator
 {
 private:
 	cnRTL::cAtomicVar<uIntn> fRefCount=1;
@@ -418,10 +410,10 @@ public:
 	using cnRTL::COMInnerObject<TCOMImplementation>::COMInnerObject;
 	~cCOMInnerImplementation()=default;
 
-	virtual void COMInnerDelete(void)noexcept(true)override{
+	void COMInnerDelete(void)noexcept(true){
 		delete this;
 	}
-	virtual bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true)override{
+	bool COMInnerQueryInterface(REFIID riid,void **ppvObject)noexcept(true){
 		return cnLib_THelper::RTL_TH::cCOMQueryInterface<typename TCOMImplementation::tCOMInterfacePack>::template FindInterface<TCOMImplementation>(this,riid,ppvObject);
 	}
 };
@@ -433,49 +425,16 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-template<class T>
-struct cCOMInnerOwnerToken
+struct cCOMInnerPoiterOwnerOperator
 {
-	T *Pointer;
-	iCOMInnerReference *Reference;
-};
-
-template<class T>
-struct cCOMInnerOwnerTokenOperator
-{
-	typedef T *TPtr;
-	typedef cCOMInnerOwnerToken<T> TOwnerToken;
-
-	static T* Pointer(const TOwnerToken &Token)noexcept(true){	return Token.Pointer;	}
-
-	static TOwnerToken TokenNull(void)noexcept(true){
-		TOwnerToken RetToke={nullptr,nullptr};
-		return RetToke;
-	}
 	template<class TImp>
-	static TOwnerToken TokenFrom(cnLib_THelper::RTL_TH::cCOMInnerImplementation<TImp> *p)noexcept(true){
-		TOwnerToken RetToke={p,p};
-		return RetToke;
-	}
-
-	template<class TSrc>
-	static typename cnVar::TTypeConditional<TOwnerToken,
-		cnVar::TIsAssignableFrom<T*&,TSrc*>::Value
-	>::Type TokenFrom(cCOMInnerOwnerToken<TSrc> SrcToken)noexcept(true){
-		TOwnerToken RetToken;
-		RetToken.Pointer=SrcToken.Pointer;
-		RetToken.Reference=SrcToken.Reference;
-		return RetToken;
-	}
-
-	static void Release(const TOwnerToken &Token)noexcept(true){
-		if(Token.Reference!=nullptr)
-			Token.Reference->COMInnerDelete();
+	static void Release(cnLib_THelper::RTL_TH::cCOMInnerImplementation<TImp> *Pointer)noexcept(true){
+		Pointer->COMInnerDelete();
 	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-using COMInnerPtr = cnVar::cPtrOwner< cCOMInnerOwnerTokenOperator<T> >;
+using COMInnerPtr = cnVar::cPtrOwner<cnLib_THelper::RTL_TH::cCOMInnerImplementation<T>,cCOMInnerPoiterOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline COMInnerPtr<T> COMInnerPtrCreate(IUnknown *Outter)noexcept(true){

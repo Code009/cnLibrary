@@ -204,43 +204,33 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
 //---------------------------------------------------------------------------
-//TOwnerTokenOperator
+//TPointerOwnerOperator
 //{
-//	typedef tPtr;
-//	typedef tOwnerToken; 	// assignable
-//
-//	static tPtr Pointer(const tOwnerToken &Token)const noexcpt;
-//	static tOwnerToken TokenNull(void)noexcept;
-//	template<class T>	static tOwnerToken TokenFrom(T&& Src)noexcept;
-//	static void Release(tOwnerToken &Token)noexcept;
+//	static void Release(T* &Pointer)noexcept;
 //};
 //---------------------------------------------------------------------------
-template<class TOwnerTokenOperator>
+template<class T,class TPointerOwnerOperator>
 class cPtrOwner
 {
 public:
-	typedef typename TOwnerTokenOperator::tPtr tPtr;
-	typedef typename TOwnerTokenOperator::tOwnerToken tOwnerToken;
+	T* Pointer(void)const noexcept(true){	return fPointer;	}
+	T*& Pointer(void)noexcept(true){		return fPointer;	}
 
-	tPtr Pointer(void)const noexcept(true){	return TOwnerTokenOperator::Pointer(fOwnerToken);	}
-
-	operator tPtr ()const noexcept(true){		return Pointer();	}
-	tPtr operator ->()const noexcept(true){		return Pointer();	}
-
-	tOwnerToken &Token(void)noexcept(true)			{	return fOwnerToken;	}
-	const tOwnerToken &Token(void)const	noexcept(true){	return fOwnerToken;	}
+	operator T* ()const noexcept(true){		return fPointer;	}
+	T* operator ->()const noexcept(true){	return fPointer;	}
 
 	cPtrOwner()noexcept(true)
-		: fOwnerToken(TOwnerTokenOperator::TokenNull())
+		: fPointer(nullptr)
 	{}
 	~cPtrOwner()noexcept(true){
-		TOwnerTokenOperator::Release(fOwnerToken);
+		if(fPointer!=nullptr)
+			TPointerOwnerOperator::Release(fPointer);
 	}
 
 #ifndef cnLibrary_CPPEXCLUDE_NULLPTR
 	// construct with null
 	cPtrOwner(tNullptr)noexcept(true)
-		: fOwnerToken(TOwnerTokenOperator::TokenNull())
+		: fPointer(nullptr)
 	{}
 	// assign with null
 
@@ -252,77 +242,54 @@ public:
 
 
 	void Clear(void)noexcept(true){
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=TOwnerTokenOperator::TokenNull();
-	}
-
-
-	template<class TSrcPtr>
-	static typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner,TOwnerTokenOperator,TSrcPtr*>::Type
-		TakeFromManual(TSrcPtr *Pointer)noexcept(true)
-	{
-		return cPtrOwner(TOwnerTokenOperator::TokenFrom(Pointer));
-	}
-
-	
-	tPtr ExtractToManual(void)noexcept(true){
-		tPtr Ptr=Pointer();
-		fOwnerToken=TOwnerTokenOperator::TokenNull();
-		return Ptr;
+		if(fPointer!=nullptr){
+			TPointerOwnerOperator::Release(fPointer);
+			fPointer=nullptr;
+		}
 	}
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	// move construct
 	cPtrOwner(cPtrOwner &&Src)noexcept(true)
-		: fOwnerToken(static_cast<tOwnerToken&&>(Src.fOwnerToken))
+		: fPointer(Src.fPointer)
 	{
-		Src.fOwnerToken=TOwnerTokenOperator::TokenNull();
+		Src.fPointer=nullptr;
 	}
 
 	// move
 	cPtrOwner& operator =(cPtrOwner &&Src)noexcept(true){
-		tOwnerToken SwapToken(static_cast<tOwnerToken&&>(Src.fOwnerToken));
-		Src.fOwnerToken=TOwnerTokenOperator::TokenNull();
+		if(fPointer!=nullptr)
+			TPointerOwnerOperator::Release(fPointer);
 
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=static_cast<tOwnerToken&&>(SwapToken);
+		fPointer=Src.fPointer;
+		Src.fPointer=nullptr;
 		return *this;
-	}
-
-	// move construct by token
-
-	explicit cPtrOwner(tOwnerToken &&SrcToken)noexcept(true)
-		: fOwnerToken(static_cast<tOwnerToken&&>(SrcToken))
-	{
-		SrcToken=TOwnerTokenOperator::TokenNull();
 	}
 
 
 	// move construct with token from cPtrOwner
 	
-	template<class TSrcOwnerTokenOperator
+	template<class TSrc
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::Type
+		, class=typename TTypeConditional<void,
+			TIsConvertible<TSrc*,T*>::Value
+		>::Type
 #endif
 	>
-	cPtrOwner(cPtrOwner<TSrcOwnerTokenOperator> &&Src)noexcept(true)
-		: fOwnerToken(TOwnerTokenOperator::TokenFrom(Src.Token()))
-	{
-		Src.Token()=TSrcOwnerTokenOperator::TokenNull();
-	}
+	cPtrOwner(cPtrOwner<TSrc,TPointerOwnerOperator> &&Src)noexcept(true)
+		: fPointer(Src.ExtractToManual()){}
 
 	// move assign with token from cPtrOwner
 	
-	template<class TSrcOwnerTokenOperator>
-	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner&,
-		TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&
-	>::Type operator =(cPtrOwner<TSrcOwnerTokenOperator> &&Src)noexcept(true){
-		tOwnerToken SwapToken(static_cast<tOwnerToken&&>(Src.Token()));
-		Src.Token()=TSrcOwnerTokenOperator::TokenNull();
+	template<class TSrc>
+	typename typename TTypeConditional<cPtrOwner&,
+		TIsConvertible<TSrc*,T*>::Value
+	>::Type operator =(cPtrOwner<TSrc,TPointerOwnerOperator> &&Src)noexcept(true){
+		if(fPointer!=nullptr)
+			TPointerOwnerOperator::Release(fPointer);
 
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=static_cast<tOwnerToken&&>(SwapToken);
+		fPointer=Src.ExtractToManual();
 		return *this;
 	}
 
@@ -332,147 +299,113 @@ public:
 
 	// move construct
 	cPtrOwner(cPtrOwner &Src)noexcept(true)
-		: fOwnerToken(Src.fOwnerToken)
+		: fPointer(Src.fPointer)
 	{
-		Src.fOwnerToken=TOwnerTokenOperator::TokenNull();
+		Src.fPointer=nullptr;
 	}
 
 	// move assignment
 	cPtrOwner& operator =(cPtrOwner &Src)noexcept(true){
-		tOwnerToken SwapToken(Src.fOwnerToken);
-		Src.fOwnerToken=TOwnerTokenOperator::TokenNull();
+		if(fPointer!=nullptr)
+			TPointerOwnerOperator::Release(fPointer);
 
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=SwapToken;
-		return *this;
-	}
-	
-	// move construct by token
-	
-	cPtrOwner(tOwnerToken &SrcToken)noexcept(true)
-		: fOwnerToken(SrcToken)
-	{
-		SrcToken=TOwnerTokenOperator::TokenNull();
-	}
-	// move assign by token
-
-	cPtrOwner& operator =(tOwnerToken &SrcToken)noexcept(true)
-	{
-		tOwnerToken SwapToken(SrcToken);
-		SrcToken=TOwnerTokenOperator::TokenNull();
-
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=SwapToken;
+		fPointer=Src.fPointer;
+		Src.fPoionter=nullptr;
 		return *this;
 	}
 
+	// move construct with token from cPtrOwner
 
-
-	
-	// construct with token from cPtrOwner
-
-	
-	template<class TSrcOwnerTokenOperator
+	template<class TSrc
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&>::Type
+		, class=typename TTypeConditional<void,
+		TIsConvertible<TSrc*,T*>::Value
+		>::Type
 #endif
 	>
-	cPtrOwner(cPtrOwner<TSrcOwnerTokenOperator> &Src)noexcept(true)
-		: fOwnerToken(TOwnerTokenOperator::TokenFrom(Src.Token()))
-	{
-		Src.Token()=TSrcOwnerTokenOperator::TokenNull();
-	}
+	cPtrOwner(cPtrOwner<TSrc,TPointerOwnerOperator> &Src)noexcept(true)
+		: fPointer(Src.ExtractToManual()){}
 
 	// move assign with token from cPtrOwner
-	
-	template<class TSrcOwnerTokenOperator>
-	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrOwner&,
-		TOwnerTokenOperator,typename TSrcOwnerTokenOperator::tOwnerToken&
-	>::Type operator =(cPtrOwner<TSrcOwnerTokenOperator> &Src)noexcept(true){
-		tOwnerToken SwapToken(Src.Token);
-		Src.Token()=TOwnerTokenOperator::TokenNull();
 
-		TOwnerTokenOperator::Release(fOwnerToken);
-		fOwnerToken=SwapToken;
+	template<class TSrc>
+	typename typename TTypeConditional<cPtrOwner&,
+		TIsConvertible<TSrc*,T*>::Value
+	>::Type operator =(cPtrOwner<TSrc,TPointerOwnerOperator> &Src)noexcept(true){
+		if(fPointer!=nullptr)
+			TPointerOwnerOperator::Release(fPointer);
+
+		fPointer=Src.ExtractToManual();
 		return *this;
 	}
 
 #endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 
 protected:
-	tOwnerToken fOwnerToken;
-	
-	template<class TToken>
-	struct ConstructByToken
+	T *fPointer;
+
+	struct ConstructReferenced
 	{
-		TToken Value;
+		T* Pointer;
 	};
+	// construct with referenced
+	explicit cPtrOwner(ConstructReferenced Referenced)noexcept(true)
+		: fPointer(Referenced.Pointer){}
 
-	static ConstructByToken<const tOwnerToken &> MakeConstructByToken(const tOwnerToken &Token){
-		ConstructByToken<const tOwnerToken &> Ret={Token};
-		return Ret;
-	}
-	// construct with token
-	explicit cPtrOwner(ConstructByToken<const tOwnerToken &> ByToken)noexcept(true)
-		: fOwnerToken(ByToken.Value)
+public:
+
+
+	template<class TSrcPtr>
+	static typename TTypeConditional<cPtrOwner,
+		TIsConvertible<TSrcPtr,T*>::Value
+	>::Type TakeFromManual(TSrcPtr Pointer)noexcept(true)
 	{
-		TOwnerTokenOperator::Acquire(fOwnerToken);
+		ConstructReferenced Referenced;
+		Referenced.Pointer=Pointer;
+		return cPtrOwner(Referenced);
+	}
+
+
+	T* ExtractToManual(void)noexcept(true){
+		T *SwapPointer=fPointer;
+		fPointer=nullptr;
+		return SwapPointer;
 	}
 
 };
 //---------------------------------------------------------------------------
-template<class TPointer>
-struct bcPointerOwnerTokenOperator
-{
-	typedef TPointer tPtr;
-	typedef TPointer tOwnerToken;
-
-	static tPtr Pointer(const tOwnerToken &OwnerToken)noexcept(true){	return OwnerToken;	}
-	static tOwnerToken TokenNull(void)noexcept(true){		return nullptr;	}
-	static tOwnerToken TokenFrom(tOwnerToken Ptr)noexcept(true){	return Ptr;	}
-};
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//TRefTokenOperator
+//TPointerReferenceOperator
 //{
-//	typedef tPtr;
-//	typedef tRefToken; 	// assignable
-//
-//	static tPtr Pointer(const tRefToken &Token)const noexcept;
-//	static tRefToken TokenNull(void)noexcept;
-//	template<class T>	tRefToken TokenFrom(T&& Src)noexcept;
-//	static void Acquire(tRefToken &Token)noexcept;
-//	static void Release(tRefToken &Token)noexcept;
+//	static void Acquire(T* &Pointer)noexcept;
+//	static void Release(T* &Pointer)noexcept;
 //};
 //---------------------------------------------------------------------------
-template<class TRefTokenOperator>
+template<class T,class TPointerReferenceOperator>
 class cPtrReference
 {
 public:
-	typedef typename TRefTokenOperator::tPtr tPtr;
-	typedef typename TRefTokenOperator::tRefToken tRefToken;
 
-	tPtr Pointer(void)const noexcept(true){	return TRefTokenOperator::Pointer(fRefToken);	}
+	T* Pointer(void)const noexcept(true){	return fPointer;	}
+	T*& Pointer(void)noexcept(true){		return fPointer;	}
 
-	operator tPtr ()const noexcept(true){	return Pointer();	}
-	tPtr operator ->()const noexcept(true){	return Pointer();	}
+	operator T* ()const noexcept(true){		return fPointer;	}
+	T* operator ->()const noexcept(true){	return fPointer;	}
 
-
-	tRefToken &Token(void)noexcept(true)			{	return fRefToken;	}
-	const tRefToken &Token(void)const noexcept(true){	return fRefToken;	}
 
 	cPtrReference()noexcept(true)
-		:fRefToken(TRefTokenOperator::TokenNull())
+		: fPointer(nullptr)
 	{}
 	~cPtrReference()noexcept(true){
-		TRefTokenOperator::Release(fRefToken);
+		if(fPointer!=nullptr){
+			TPointerReferenceOperator::Release(fPointer);
+		}
 	}
 
 #ifndef cnLibrary_CPPEXCLUDE_NULLPTR
 
 	// construct with null
 	cPtrReference(tNullptr)noexcept(true)
-		:fRefToken(TRefTokenOperator::TokenNull())
+		: fPointer(nullptr)
 	{}
 	// assign with null
 	cPtrReference& operator =(tNullptr)noexcept(true){
@@ -480,83 +413,93 @@ public:
 		return *this;
 	}
 #endif
-	
+
+	cPtrReference(T *Pointer)noexcept(true)
+		: fPointer(Pointer)
+	{
+		if(fPointer!=nullptr){
+			TPointerReferenceOperator::Acquire(Pointer);
+		}
+	}
+
+	cPtrReference& operator =(T *Src)noexcept(true){
+		T* SwapPointer=fPointer;
+
+		fPointer=Src;
+		if(fPointer!=nullptr)
+			TPointerReferenceOperator::Acquire(fPointer);
+
+		if(SwapPointer!=nullptr)
+			TPointerReferenceOperator::Release(SwapPointer);
+		return *this;
+	}
+
 	void Clear(void)noexcept(true){
-		TRefTokenOperator::Release(fRefToken);
-		fRefToken=TRefTokenOperator::TokenNull();
+		if(fPointer!=nullptr){
+			TPointerReferenceOperator::Release(fPointer);
+			fPointer=nullptr;
+		}
 	}
 
 	
 protected:
-	template<class TToken>
-	struct ConstructByToken
+	struct ConstructReferenced
 	{
-		TToken Value;
+		T* Pointer;
 	};
 
-	static ConstructByToken<const tRefToken &> MakeConstructByToken(const tRefToken &Token){
-		ConstructByToken<const tRefToken &> Ret={Token};
-		return Ret;
-	}
-	// construct with token
-	explicit cPtrReference(ConstructByToken<const tRefToken &> ByToken)noexcept(true)
-		: fRefToken(ByToken.Value)
-	{
-		TRefTokenOperator::Acquire(fRefToken);
-	}
+	// construct with referenced
+	explicit cPtrReference(ConstructReferenced Referenced)noexcept(true)
+		: fPointer(Referenced.Pointer){}
 
-#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-	static ConstructByToken<tRefToken &&> MakeConstructByToken(tRefToken &&Token){
-		ConstructByToken<tRefToken &&> Ret={static_cast<tRefToken&&>(Token)};
-		return Ret;
-	}
-	// move construct with token
-	explicit cPtrReference(ConstructByToken<tRefToken &&> ByToken)noexcept(true)
-		: fRefToken(static_cast<tRefToken&&>(ByToken.Value))
-	{
-	}
-
-#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 public:
 
 	template<class TSrcPtr>
-	
-	static typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrReference,TRefTokenOperator,TSrcPtr*>::Type
-		TakeFromManual(TSrcPtr *Pointer)noexcept(true)
+	static typename TTypeConditional<cPtrReference,
+		TIsConvertible<TSrcPtr,T*>::Value
+	>::Type TakeFromManual(TSrcPtr Pointer)noexcept(true)
 	{
-		return cPtrReference(MakeConstructByToken(TRefTokenOperator::TokenFrom(Pointer)));
+		ConstructReferenced Referenced={static_cast<T*>(Pointer)};
+		return cPtrReference(Referenced);
 	}
 
-	tPtr ExtractToManual(void)noexcept(true){
-		tPtr Ptr=Pointer();
-		fRefToken=TRefTokenOperator::TokenNull();
+	T* ExtractToManual(void)noexcept(true){
+		T* Ptr=fPointer;
+		fPointer=nullptr;
 		return Ptr;
 	}
 
 
-	void ManualIncReference(void)const noexcept(true){	TRefTokenOperator::Acquire(fRefToken);	}
-	void ManualDecReference(void)const noexcept(true){	TRefTokenOperator::Release(fRefToken);	}
+	void ManualIncReference(void)const noexcept(true){
+		if(fPointer!=nullptr)
+			TPointerReferenceOperator::Acquire(fPointer);
+	}
+	void ManualDecReference(void)const noexcept(true){
+		if(fPointer!=nullptr)
+			TPointerReferenceOperator::Release(fPointer);
+	}
 
 
 	// copy constructor
 
 	cPtrReference(const cPtrReference &Src)noexcept(true)
-		: fRefToken(Src.fRefToken)
+		: fPointer(Src.fPointer)
 	{
-		TRefTokenOperator::Acquire(fRefToken);
+		TPointerReferenceOperator::Acquire(fPointer);
 	}
 
 	// assign
 
 	cPtrReference& operator =(const cPtrReference &Src)noexcept(true){
 		if(this!=&Src){
-			tRefToken SwapToken(cnLib_UREFCAST(tRefToken)(fRefToken));
+			T* SwapPointer=fPointer;
 
-			fRefToken=Src.fRefToken;
+			fPointer=Src.fPointer;
+			if(fPointer!=nullptr)
+				TPointerReferenceOperator::Acquire(fPointer);
 
-			TRefTokenOperator::Acquire(fRefToken);
-			TRefTokenOperator::Release(SwapToken);
+			if(SwapPointer!=nullptr)
+				TPointerReferenceOperator::Release(SwapPointer);
 		}
 		return *this;
 	}
@@ -565,101 +508,309 @@ public:
 	// move constructor
 
 	cPtrReference(cPtrReference &&Src)noexcept(true)
-		: fRefToken(static_cast<tRefToken&&>(Src.fRefToken))
+		: fPointer(Src.fPointer)
 	{
-		Src.fRefToken=TRefTokenOperator::TokenNull();
+		Src.fPointer=nullptr;
 	}
 
 	// move
 
 	cPtrReference& operator =(cPtrReference &&Src)noexcept(true){
-		tRefToken SwapToken(static_cast<tRefToken&&>(Src.fRefToken));
-		Src.fRefToken=TRefTokenOperator::TokenNull();
+		T *SwapPointer=fPointer;
 
-		TRefTokenOperator::Release(fRefToken);
-		fRefToken=static_cast<tRefToken&&>(SwapToken);
+		fPointer=Src.fPointer;
+		Src.fPointer=nullptr;
+
+		if(SwapPointer!=nullptr)
+			TPointerReferenceOperator::Release(SwapPointer);
 		return *this;
 	}
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 
-	// construct with token from cPtrReference
+	// construct from cPtrReference
 
-
-	template<class TSrcRefTokenOperator
+	template<class TSrc,class TSrcPointerReferenceOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,void,TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&>::Type
+		, class=typename cnVar::TTypeConditional<void,
+			cnVar::TIsConvertible<TSrc*,T*>::Value
+		>::Type
 #endif
 	>
-	cPtrReference(const cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true)
-		: fRefToken(TRefTokenOperator::TokenFrom(Src.Token()))
+	cPtrReference(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
+		: fPointer(Src.Pointer())
 	{
-		TRefTokenOperator::Acquire(fRefToken);
+		if(fPointer!=nullptr)
+			TPointerReferenceOperator::Acquire(fPointer);
 	}
 
 
-	// assign with token from cPtrReference
+	// assign from cPtrReference
 	
-	template<class TSrcRefTokenOperator>
-	typename cnLib_THelper::Var_TH::TypeIfPointerTokenFrom<void,cPtrReference&,
-		TRefTokenOperator,typename TSrcRefTokenOperator::tRefToken&
-	>::Type operator =(const cPtrReference<TSrcRefTokenOperator> &Src)noexcept(true){
-		tRefToken SwapToken(fRefToken);
+	template<class TSrc,class TSrcPointerReferenceOperator>
+	typename cnVar::TTypeConditional<cPtrReference&,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
+	>::Type operator =(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
+		T* SwapPointer=fPointer;
 
-		fRefToken=TRefTokenOperator::TokenFrom(Src.Token());
-
-		TRefTokenOperator::Acquire(fRefToken);
-		TRefTokenOperator::Release(SwapToken);
+		fPointer=Src.Pointer();
+		if(fPointer!=nullptr)
+			TPointerReferenceOperator::Acquire(fPointer);
+		if(SwapPointer!=nullptr)
+			TPointerReferenceOperator::Release(SwapPointer);
 		return *this;
+	}
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+	// move construct from cPtrReference
+
+	template<class TSrc
+#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+		, class=typename cnVar::TTypeConditional<void,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
+		>::Type
+#endif
+	>
+	cPtrReference(cPtrReference<TSrc,TPointerReferenceOperator> &&Src)noexcept(true)
+		: fPointer(Src.ExtractToManual()){}
+
+
+	// move assign from cPtrReference
+
+	template<class TSrc>
+	typename cnVar::TTypeConditional<cPtrReference&,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
+	>::Type operator =(cPtrReference<TSrc,TPointerReferenceOperator> &&Src)noexcept(true){
+		T* SwapPointer=fPointer;
+
+		fPointer=Src.ExtractToManual();
+		if(SwapPointer!=nullptr)
+			TPointerReferenceOperator::Release(SwapPointer);
+		return *this;
+	}
+
+#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+protected:
+	T* fPointer;
+};
+//---------------------------------------------------------------------------
+//TPointerWeakReferenceOperator
+//{
+//	typedef tToken;
+//	static tToken* Register(T *Pointer)noexcept;
+//	static void Unregister(tToken *RegToken)noexcept;
+//
+//	tReference<T>{
+//		typedef Type;
+//	};
+//	static tReference<T>::Type Reference(tRegToken RegToken,T *Pointer)noexcept;
+//};
+//---------------------------------------------------------------------------
+template<class T,class TPointerWeakReferenceOperator>
+class cPtrWeakReference
+{
+public:
+	cPtrWeakReference()noexcept(true)
+		: fToken(nullptr)
+		, fPointer(nullptr)
+	{}
+	~cPtrWeakReference()noexcept(true){
+		if(fToken!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(fToken);
+		}
+	}
+
+#ifndef cnLibrary_CPPEXCLUDE_NULLPTR
+
+	// construct with null
+	cPtrWeakReference(tNullptr)noexcept(true)
+		: fToken(nullptr)
+		, fPointer(nullptr)
+	{}
+	// assign with null
+	cPtrWeakReference& operator =(tNullptr)noexcept(true){
+		Clear();
+		return *this;
+	}
+#endif
+
+	cPtrWeakReference(T *Pointer)noexcept(true){
+		if(Pointer!=nullptr){
+			fToken=TPointerWeakReferenceOperator::Register(Pointer);
+			if(fToken!=nullptr){
+				fPointer=Pointer;
+			}
+			else{
+				fPointer=nullptr;
+			}
+		}
+		else{
+			fToken=nullptr;
+			fPointer=nullptr;
+		}
+	}
+
+	cPtrWeakReference& operator = (T *Pointer)noexcept(true){
+		if(fPointer!=Pointer){
+			Clear();
+			if(Pointer!=nullptr){
+				fToken=TPointerWeakReferenceOperator::Register(Pointer);
+				if(fToken!=nullptr){
+					fPointer=Pointer;
+				}
+			}
+		}
+		return *this;
+	}
+
+	void Clear(void)noexcept(true){
+		if(fToken!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(fToken);
+			fToken=nullptr;
+			fPointer=nullptr;
+		}
+	}
+
+
+	typename TPointerWeakReferenceOperator::template tReference<T>::Type Ref(void)noexcept(true){
+		if(fToken==nullptr)
+			return nullptr;
+
+		typename TPointerWeakReferenceOperator::template tReference<T>::Type RetReference=TPointerWeakReferenceOperator::Reference(fToken,fPointer);
+		if(RetReference){
+			return RetReference;
+		}
+		TPointerWeakReferenceOperator::Unregister(fToken);
+		fToken=nullptr;
+		fPointer=nullptr;
+		return nullptr;
+	}
+	typename TPointerWeakReferenceOperator::template tReference<T>::Type operator + (void)noexcept(true){
+		return Ref();
+	}
+
+	operator bool ()const noexcept(true){	return fToken!=nullptr;	}
+
+
+	// copy constructor
+
+	cPtrWeakReference(const cPtrWeakReference &Src)noexcept(true){
+		if(Src.fToken!=nullptr){
+			typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
+			if(SrcReference!=nullptr){
+				fToken=TPointerWeakReferenceOperator::Register(static_cast<T*>(SrcReference));
+				if(fToken!=nullptr){
+					fPointer=SrcReference;
+				}
+				else{
+					fPointer=nullptr;
+				}
+			}
+			else{
+				fToken=nullptr;
+				fPointer=nullptr;
+			}
+		}
+		else{
+			fToken=nullptr;
+			fPointer=nullptr;
+		}
+	}
+
+	// assign
+
+	cPtrWeakReference& operator =(const cPtrWeakReference &Src)noexcept(true){
+		if(this!=&Src){
+			Clear();
+			typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
+			if(SrcReference!=nullptr){
+				fToken=TPointerWeakReferenceOperator::Register(static_cast<T*>(SrcReference));
+				if(fToken!=nullptr){
+					fPointer=SrcReference;
+				}
+			}
+		}
+		return *this;
+	}
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+	// move constructor
+
+	cPtrWeakReference(cPtrWeakReference &&Src)noexcept(true)
+		: fToken(Src.fToken)
+		, fPointer(Src.fPointer)
+	{
+		Src.fToken=nullptr;
+	}
+
+	// move
+
+	cPtrWeakReference& operator =(cPtrWeakReference &&Src)noexcept(true){
+		if(fToken!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(fToken);
+		}
+
+		fToken=Src.fToken;
+		fPointer=Src.fPointer;
+
+		Src.fToken=nullptr;
+		Src.fPointer=nullptr;
+		return *this;
+	}
+
+#endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+
+	// construct from cPtrReference
+
+	template<class TSrc,class TSrcPointerReferenceOperator
+#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+		, class=typename cnVar::TTypeConditional<void,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
+		>::Type
+#endif
+	>
+	cPtrWeakReference(const cnVar::cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
+	{
+		auto Pointer=Src.Pointer();
+		if(Pointer!=nullptr){
+			fToken=TPointerWeakReferenceOperator::Register(Pointer);
+			if(fToken!=nullptr){
+				fPointer=Pointer;
+			}
+			else{
+				fPointer=nullptr;
+			}
+		}
+		else{
+			fToken=nullptr;
+			fPointer=nullptr;
+		}
+	}
+
+
+	// assign from cPtrReference
+
+	template<class TSrc,class TSrcPointerReferenceOperator>
+	typename cnVar::TTypeConditional<cPtrWeakReference&,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
+	>::Type operator =(const cnVar::cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
+		Clear();
+		auto Pointer=Src.Pointer();
+		if(Pointer!=nullptr){
+			fToken=TPointerWeakReferenceOperator::Register(Pointer);
+			if(fToken!=nullptr){
+				fPointer=Pointer;
+			}
+		}
 	}
 
 protected:
-	tRefToken fRefToken;
-
-public:
-
-	// construct by making token
-
-	template<class T
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L && !defined(cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT)
-		, class=decltype(TRefTokenOperator::TokenFrom(DeclVal<T cnLib_UREF>()))
-#endif
-	>
-	cPtrReference(T cnLib_UREF Src)noexcept(true)
-		: fRefToken(TRefTokenOperator::TokenFrom(cnLib_UREFCAST(T)(Src)))
-	{
-		TRefTokenOperator::Acquire(fRefToken);
-	}
-
-	// assign by making token
-	template<class T>
-	typename TSelect<0,cPtrReference&
-#if cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-		, decltype(TRefTokenOperator::TokenFrom(DeclVal<T cnLib_UREF>()))
-#endif
-	>::Type operator =(T cnLib_UREF Src)noexcept(true)
-	{
-		tRefToken SwapToken(fRefToken);
-
-		fRefToken=TRefTokenOperator::TokenFrom(cnLib_UREFCAST(T)(Src));
-
-		TRefTokenOperator::Acquire(fRefToken);
-		TRefTokenOperator::Release(SwapToken);
-		return *this;
-	}
-};
-//---------------------------------------------------------------------------
-template<class TPointer>
-struct bcPointerRefTokenOperator
-{
-	typedef TPointer tPtr;
-	typedef TPointer tRefToken;
-
-	static tPtr Pointer(const tRefToken &RefToken)noexcept(true){	return RefToken;	}
-
-	static tRefToken TokenNull(void)noexcept(true){		return nullptr;	}
-	static tRefToken TokenFrom(tRefToken Ptr)noexcept(true){	return Ptr;	}
+	typename TPointerWeakReferenceOperator::tToken *fToken;
+	T *fPointer;
 };
 //---------------------------------------------------------------------------
 }   // namespace cnVar
