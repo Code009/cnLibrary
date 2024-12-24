@@ -268,8 +268,10 @@ void cWPFWindow::WindowClientExit(iWindowClient *Client)noexcept
 	if(fWPFClient!=WPFClient)
 		return;
 
-	fWPFClient->WPFClientClearWindow(this);
 	mClearVisualRoot();
+
+	// may be destroyed by last reference in the client
+	fWPFClient->WPFClientClearWindow(this);
 }
 //---------------------------------------------------------------------------
 iWindowFrame* cWPFWindow::GetFrame(void)noexcept
