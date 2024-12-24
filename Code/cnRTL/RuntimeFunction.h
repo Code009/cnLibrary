@@ -1035,6 +1035,230 @@ inline T* rExtract(rPtr<T> &Src,uInt32 Tag)noexcept(true)
 	return Src.ExtractToManual();
 }
 //---------------------------------------------------------------------------
+namespace cnRTL{
+//---------------------------------------------------------------------------
+template<class TNotifyParameter>
+class cAsyncNotifyToken
+{
+private:
+	template<class TNotifyParameter> friend class cAsyncNotifySet;
+	friend cnDataStruct::cBinaryTreeNodeOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cColorBinaryTreeNodeOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cSingleLinkItemOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cDefaultItemOrderOperator<cAsyncNotifyToken>;
+
+	cAsyncNotifyToken *Next;
+	cAsyncNotifyToken *Parent;
+	cAsyncNotifyToken *Child[2];
+	ufInt8 Branch;
+	ufInt8 Color;
+	ufInt8 SetActive;
+	cExclusiveFlag ActionFlag;
+public:
+	virtual void NotifyInsert(void)noexcept(true)=0;
+	virtual void NotifyRemove(void)noexcept(true)=0;
+	virtual void NotifyExecute(TNotifyParameter /*Parameter*/)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+template<class TNotifyParameter>
+class cAsyncNotifySet
+{
+public:
+	typedef cAsyncNotifyToken<TNotifyParameter> tNotifyToken;
+
+	~cAsyncNotifySet()noexcept(true){
+		auto AllNotify=fNotifyQueue.DequeueAll();
+		while(AllNotify!=nullptr){
+			auto NotifyItem=AllNotify;
+			AllNotify=AllNotify->Next;
+
+			delete NotifyItem;
+		}
+	}
+
+	void Notify(TNotifyParameter &Parameter)noexcept(true){
+		auto ParameterItem=new cNotifyParameter(Parameter);
+		fNotifyQueue.Enqueue(ParameterItem);
+
+		StateProcess();
+	}
+
+	void Insert(tNotifyToken *Token)noexcept(true){
+		Token->SetActive=1;
+		EnqueueQueue(Token);
+
+		StateProcess();
+	}
+	void Remove(tNotifyToken *Token)noexcept(true){
+		Token->SetActive=0;
+		EnqueueQueue(Token);
+
+		StateProcess();
+	}
+protected:
+	cLinkItemSet< tNotifyToken,cnDataStruct::cItemAddressOrderOperator<tNotifyToken> > fFunctionSet;
+	cAtomicQueueSO<tNotifyToken> fProcessQueue;
+
+	struct cNotifyParameter : cRTLAllocator
+	{
+		cNotifyParameter *Next;
+		TNotifyParameter Parameter;
+
+		cNotifyParameter(TNotifyParameter &Parameter):Parameter(Parameter){}
+	};
+
+	cAtomicQueueSO<cNotifyParameter> fNotifyQueue;
+	cExclusiveFlag fStateProcessFlag;
+
+	void EnqueueQueue(tNotifyToken *Token)noexcept(true){
+		if(Token->ActionFlag.Acquire()==false)
+			return;
+
+		fProcessQueue.Enqueue(Token);
+	}
+
+	void ProcessQueue(tNotifyToken *Token)noexcept(true){
+		do{
+			Token->ActionFlag.Continue();
+
+
+			if(Token->SetActive){
+				if(Token->Parent==nullptr){
+					fFunctionSet.Insert(Token);
+					Token->NotifyInsert();
+				}
+			}
+			else{
+				// remove
+				if(Token->Parent!=nullptr){
+					fFunctionSet.Remove(Token);
+					Token->NotifyRemove();
+				}
+			}
+
+		}while(Token->ActionFlag.Release()==false);
+	}
+
+	void StateProcess(void)noexcept(true){
+		if(fStateProcessFlag.Acquire()==false)
+			return;
+
+
+		do{
+			fStateProcessFlag.Continue();
+
+			auto AllToken=fProcessQueue.DequeueAll();
+			while(AllToken!=nullptr){
+				auto ProcessToken=AllToken;
+				AllToken=AllToken->Next;
+
+				ProcessQueue(ProcessToken);
+			}
+
+
+			auto AllNotify=fNotifyQueue.DequeueAll();
+			while(AllNotify!=nullptr){
+				auto NotifyItem=AllNotify;
+				AllNotify=AllNotify->Next;
+
+				for(auto *Item : fFunctionSet){
+					Item->NotifyExecute(NotifyItem->Parameter);
+				}
+				delete NotifyItem;
+			}
+		}while(fStateProcessFlag.Release()==false);
+	}
+};
+//---------------------------------------------------------------------------
+template<>
+class cAsyncNotifySet<void>
+{
+public:
+	typedef cAsyncNotifyToken<void> tNotifyToken;
+
+	void Notify(void)noexcept(true){
+		++fNotifyCount.Free;
+		StateProcess();
+	}
+
+	void Insert(cAsyncNotifyToken<void> *Token)noexcept(true){
+		Token->SetActive=1;
+		EnqueueQueue(Token);
+
+		StateProcess();
+	}
+	void Remove(cAsyncNotifyToken<void> *Token)noexcept(true){
+		Token->SetActive=0;
+		EnqueueQueue(Token);
+
+		StateProcess();
+	}
+protected:
+	cLinkItemSet< tNotifyToken,cnDataStruct::cItemAddressOrderOperator<tNotifyToken> > fFunctionSet;
+	cAtomicQueueSO<tNotifyToken> fProcessQueue;
+	cExclusiveFlag fStateProcessFlag;
+	cAtomicVar<ufInt8> fNotifyCount=0;
+
+	void EnqueueQueue(tNotifyToken *Token)noexcept(true){
+		if(Token->ActionFlag.Acquire()==false)
+			return;
+
+		fProcessQueue.Enqueue(Token);
+	}
+
+	void ProcessQueue(tNotifyToken *Token)noexcept(true){
+		do{
+			Token->ActionFlag.Continue();
+
+
+			if(Token->SetActive){
+				if(Token->Parent==nullptr){
+					fFunctionSet.Insert(Token);
+					Token->NotifyInsert();
+				}
+			}
+			else{
+				// remove
+				if(Token->Parent!=nullptr){
+					fFunctionSet.Remove(Token);
+					Token->NotifyRemove();
+				}
+			}
+
+		}while(Token->ActionFlag.Release()==false);
+	}
+
+	void StateProcess(void)noexcept(true){
+		if(fStateProcessFlag.Acquire()==false)
+			return;
+
+
+		do{
+			fStateProcessFlag.Continue();
+
+			auto AllToken=fProcessQueue.DequeueAll();
+			while(AllToken!=nullptr){
+				auto ProcessToken=AllToken;
+				AllToken=AllToken->Next;
+
+				ProcessQueue(ProcessToken);
+			}
+
+			auto NotifCount=fNotifyCount.Free.Xchg(0);
+			while(NotifCount!=0){
+				for(auto *Item : fFunctionSet){
+					Item->NotifyExecute();
+				}
+
+				NotifCount--;
+			}
+
+		}while(fStateProcessFlag.Release()==false);
+	}
+};
+//---------------------------------------------------------------------------
+}   // namespace cnRTL
+//---------------------------------------------------------------------------
 }   // namespace cnLibrary
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosCleanup.inc>
