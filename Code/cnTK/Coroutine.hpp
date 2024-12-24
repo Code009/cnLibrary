@@ -179,7 +179,7 @@ private:
 	cAtomicVariable<typename cnVar::TSelect<0,bool,TCoroutineHandleOperator>::Type> fFinishFlag;
 	typename TCoroutineHandleOperator::tHandle fFinalHandle;
 
-	friend cnAsync::cPromisePointerOwnerOperator;
+	friend struct cnAsync::cPromisePointerOwnerOperator;
 	void OnFinish(void)noexcept(true){
 		// will be called once by owner and once by final suspension
 		if(fFinishFlag.Free.Xchg(true)){
@@ -387,7 +387,7 @@ private:
 		}
 	}
 
-	friend cnAsync::cPromisePointerOwnerOperator;
+	friend struct cnAsync::cPromisePointerOwnerOperator;
 	void OnFinish(void)noexcept(true){
 		// will be called once by owner and once by final suspension
 		if(fFinishFlag.Free.Xchg(true)){
