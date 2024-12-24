@@ -20,6 +20,34 @@ bcWindowClass::operator LPCWSTR ()noexcept{
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+cWindowClass::cWindowClass(const WNDCLASSEXW *ClassInfo)
+{
+	fModuleHandle=ClassInfo->hInstance;
+	fAtom=RegisterClassExW(ClassInfo);
+}
+//---------------------------------------------------------------------------
+cWindowClass::cWindowClass(HINSTANCE ModuleHandle,const wchar_t *ClassName,WNDPROC WndClassProc,UINT style)
+{
+	fModuleHandle=ModuleHandle;
+	// register window class for UIObject
+	WNDCLASSEXW WindowClassInfo;
+	cnMemory::ZeroFill(&WindowClassInfo.cbClsExtra,sizeof(WNDCLASSEXW)-cnMemory::MemberOffset(&WNDCLASSEXW::cbClsExtra));
+	WindowClassInfo.cbSize=sizeof(WNDCLASSEXW);
+	WindowClassInfo.style=style;
+	WindowClassInfo.lpfnWndProc=WndClassProc;
+	WindowClassInfo.hInstance=ModuleHandle;
+	WindowClassInfo.lpszClassName=ClassName;
+
+	fAtom=RegisterClassExW(&WindowClassInfo);
+}
+//---------------------------------------------------------------------------
+cWindowClass::~cWindowClass()
+{
+	if(fAtom!=0)
+		UnregisterClassW(reinterpret_cast<LPCWSTR>(fAtom),fModuleHandle);	
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WINXP
 //---------------------------------------------------------------------------
 LRESULT NTXPWindowSubclass::cDefaultProcedureCaller::Execute(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept

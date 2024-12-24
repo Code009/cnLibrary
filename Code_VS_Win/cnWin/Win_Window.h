@@ -12,15 +12,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-class cWindowClass : public cnRTL::cnWinRTL::bcWindowClass
-{
-public:
-
-	cWindowClass(const WNDCLASSEXW *ClassInfo);
-	cWindowClass(const wchar_t *ClassName,WNDPROC WndClassProc,UINT style=0);
-	~cWindowClass();
-};
-//---------------------------------------------------------------------------
 struct cDialogEmptyTemplateData{
 	DWORD		style;
 	DWORD		exStyle;
@@ -56,7 +47,7 @@ struct cModalDialogInitParameter
 //	modal dialog box
 INT_PTR ModalDialog(const cModalDialogInitParameter &InitParameter,HWND Parent,DWORD Style,DWORD ExStyle);
 //---------------------------------------------------------------------------
-class cMessageThreadWindowClass : public cWindowClass
+class cMessageThreadWindowClass : public cnRTL::cnWinRTL::cWindowClass
 {
 public:
 	static cMessageThreadWindowClass gMessageThreadWindowClass;

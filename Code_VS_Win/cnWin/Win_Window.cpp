@@ -6,34 +6,8 @@ using namespace cnWin;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWindowClass::cWindowClass(const WNDCLASSEXW *ClassInfo)
-{
-	fAtom=RegisterClassExW(ClassInfo);
-}
-//---------------------------------------------------------------------------
-cWindowClass::cWindowClass(const wchar_t *ClassName,WNDPROC WndClassProc,UINT style)
-{
-	// register window class for UIObject
-	WNDCLASSEXW WindowClassInfo;
-	cnMemory::ZeroFill(&WindowClassInfo.cbClsExtra,sizeof(WNDCLASSEXW)-cnMemory::MemberOffset(&WNDCLASSEXW::cbClsExtra));
-	WindowClassInfo.cbSize=sizeof(WNDCLASSEXW);
-	WindowClassInfo.style=style;
-	WindowClassInfo.lpfnWndProc=WndClassProc;
-	WindowClassInfo.hInstance=gModuleHandle;
-	WindowClassInfo.lpszClassName=ClassName;
-		
-	fAtom=RegisterClassExW(&WindowClassInfo);
-}
-//---------------------------------------------------------------------------
-cWindowClass::~cWindowClass()
-{
-	if(fAtom!=0)
-		UnregisterClassW(reinterpret_cast<LPCWSTR>(fAtom),gModuleHandle);	
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 INT_PTR CALLBACK cnWin::ModalDialogSubclassEmptyDlgProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)
-{wParam;lParam;
+{hWnd,Message,wParam;lParam;
 	return FALSE;
 }
 //---------------------------------------------------------------------------
@@ -101,7 +75,7 @@ INT_PTR cnWin::ModalDialog(const cModalDialogInitParameter &InitParameter,HWND P
 }
 //---------------------------------------------------------------------------
 cMessageThreadWindowClass::cMessageThreadWindowClass(const wchar_t *ClassName)
-	: cWindowClass(ClassName,MessageWindowProc,0)
+	: cWindowClass(gModuleHandle,ClassName,MessageWindowProc,0)
 {
 }
 //---------------------------------------------------------------------------
