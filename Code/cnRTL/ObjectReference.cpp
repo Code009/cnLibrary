@@ -76,6 +76,7 @@ bcWeakReference::cWeakObserver::cWeakObserver(bcWeakReference *Owner,iReference 
 	, fProcedure(Procedure)
 	, fRefCount(2)
 	, fActiveFlag(cnVar::TIntegerValue<uIntn>::MSB+1)
+	, fTokenDisposed(false)
 	, fOwnerReleased(false)
 {
 }

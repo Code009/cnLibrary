@@ -197,8 +197,6 @@ private:
 class bcWeakReference
 {
 public:
-	bcWeakReference()noexcept(true);
-	~bcWeakReference()noexcept(true);
 
 	void ObjectResetReference(void)noexcept(true);
 	void ObjectIncreaseReference(void)noexcept(true);
@@ -259,7 +257,7 @@ public:
 	}
 
 	virtual iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true)override{
-		return bcWeakReference::RegisterObserver(Reference,Procedure);
+		return bcWeakReference::CreateReferenceObserver(Reference,Procedure);
 	}
 
 protected:
@@ -582,7 +580,7 @@ public:
 	}
 
 	virtual iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true)override{
-		return bcWeakReference::RegisterObserver(Reference,Procedure);
+		return bcWeakReference::CreateReferenceObserver(Reference,Procedure);
 	}
 
 protected:

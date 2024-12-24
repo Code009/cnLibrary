@@ -525,6 +525,7 @@ public:
 				iReference *SwapReference=fReference;
 				fReference=iCast<iReference>(Pointer);
 				fReference->IncreaseReference();
+				fPointer=Pointer;
 
 				if(SwapReference!=nullptr)
 					SwapReference->DecreaseReference();

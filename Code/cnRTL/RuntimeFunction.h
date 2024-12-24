@@ -1048,7 +1048,7 @@ private:
 	friend cnDataStruct::cDefaultItemOrderOperator<cAsyncNotifyToken>;
 
 	cAsyncNotifyToken *Next;
-	cAsyncNotifyToken *Parent;
+	cAsyncNotifyToken *Parent=nullptr;
 	cAsyncNotifyToken *Child[2];
 	ufInt8 Branch;
 	ufInt8 Color;
