@@ -611,7 +611,7 @@ void cDCPaintDevice::cBitmap::ThreadDelete(void)noexcept
 	// delete
 	fOwner->fBitmapCache.Remove(fSource);
 
-	VirtualDelete();
+	Dispose();
 }
 //---------------------------------------------------------------------------
 void cDCPaintDevice::cBitmap::cThreadDeleteProcedure::Execute(void)noexcept

@@ -386,7 +386,7 @@ void cWPFUIView::Cleanup(void)noexcept
 		fParent->RemoveSubview(this);
 	}
 
-	VirtualDelete();
+	Dispose();
 }
 //---------------------------------------------------------------------------
 const cGCHandle& cWPFUIView::WPFGetTargetElementHandle(void)noexcept

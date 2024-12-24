@@ -7,7 +7,7 @@ using namespace cnRTL::UWP;
 //---------------------------------------------------------------------------
 namespace cnLibrary::cnRTL::UWP{
 //---------------------------------------------------------------------------
-class cCOMReleaseProcedure : public iProcedure,public cCPPLifeCycleRecyclableInstance,public cRTLAllocator
+class cCOMReleaseProcedure : public iProcedure,public bcRecyclableDisposable,public cRTLAllocator
 {
 public:
 	COMPtr<IUnknown> Interface;
@@ -15,7 +15,7 @@ public:
 	virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 		Interface=nullptr;
 	
-		cCPPLifeCycleRecyclableInstance::tActivation<cCOMReleaseProcedure>::Stop(this);
+		Dispose();
 	}
 };
 //---------------------------------------------------------------------------
@@ -23,12 +23,11 @@ public:
 //---------------------------------------------------------------------------
 void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept
 {
-	typedef cCPPLifeCycleRecyclableSharedManager< cCOMReleaseProcedure,cRecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
+	typedef cRecyclableLifeCycleSharedManager< cCOMReleaseProcedure,cRecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
 
 	auto *Manager=tLifeCycleManager::GetSharedManager();
 	auto ReleaseProc=Manager->Query();
 
-	cCPPLifeCycleRecyclableInstance::tActivation<cCOMReleaseProcedure>::Start(ReleaseProc);
 	ReleaseProc->Interface=cnVar::MoveCast(Interface);
 
 	cnSystem::DefaultThreadPool->Execute(nullptr,ReleaseProc);

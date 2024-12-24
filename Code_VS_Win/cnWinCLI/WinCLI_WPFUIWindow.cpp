@@ -73,7 +73,7 @@ void cWPFWindow::Cleanup(void)noexcept
 {
 	mDestroy();
 
-	VirtualDelete();
+	Dispose();
 }
 //---------------------------------------------------------------------------
 void* cWPFWindow::CastInterface(iTypeID IID)noexcept
@@ -338,7 +338,7 @@ void cWPFWindowClient::Cleanup(void)noexcept
 		fWindowHost->WindowClientExit(this);
 	}
 
-	VirtualDelete();
+	Dispose();
 }
 //---------------------------------------------------------------------------
 void* cWPFWindowClient::CastInterface(iTypeID IID)noexcept

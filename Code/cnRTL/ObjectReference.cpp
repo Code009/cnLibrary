@@ -13,85 +13,54 @@ void cDualReference::cInner::Dec(void)noexcept(true)
 {
 	if(Ref.Free--==1){
 		auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDualReference::fInnerReference);
-		Host->VirtualDelete();
+		Host->Dispose();
 	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void bcObservedReference::RefReset(void)noexcept
+void bcWeakReference::ObjectResetReference(void)noexcept(true)
 {
 	fRefCount=1;
-	fRegisterCount=0;
+	fWeakCount=1;
 }
 //---------------------------------------------------------------------------
-void bcObservedReference::RefInc(void)noexcept
+void bcWeakReference::ObjectIncreaseReference(void)noexcept(true)
 {
-	cnLib_ASSERT(fRefCount!=cnVar::TIntegerValue<uIntn>::Max);
-	cnLib_ASSERT(fRefCount!=0);
-	fRefCount.Free++;
+	++fRefCount.Free;
 }
 //---------------------------------------------------------------------------
-bool bcObservedReference::RefDec(void)noexcept
+void bcWeakReference::ObjectDecreaseReference(void)noexcept(true)
 {
-	cnLib_ASSERT(fRefCount!=0);
-	return fRefCount.Free--==1;
-}
-//---------------------------------------------------------------------------
-void bcObservedReference::RefInvalidate(iObservedReference *ObservedReference)noexcept
-{
-	{
-		auto AutoLock=TakeLock(&fRefSetLock);
-		auto RefIterator=fRefSet.begin();
-		auto RefIteratorEnd=fRefSet.end();
-		while(RefIterator!=RefIteratorEnd){
-			bool Remove=RefIterator->InvalidationNotify(ObservedReference);
-			auto DelIterator=RefIterator;
-			RefIterator++;
-			if(Remove){
-				fRegisterCount.Free--;
-				fRefSet.Remove(DelIterator);
-			}
-		}
-	}
-	// wait for all unregistered
-	while(fRegisterCount.Acquire.Load()!=0){
-		if(fRegisterCount.WatchEqual(0,16384)==false){
-			cnSystem::CurrentThread::SwitchThread();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-//void bcObservedReference::WeakRegister(iReferenceInvalidationNotify *NotifyToken)noexcept
-//{
-//	return WeakRegister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
-//}
-//void bcObservedReference::WeakUnregister(iReferenceInvalidationNotify *NotifyToken)noexcept
-//{
-//	return WeakUnregister(reinterpret_cast<bcNotifyToken*>(NotifyToken));
-//}
-//---------------------------------------------------------------------------
-void bcObservedReference::WeakRegister(bcNotifyToken *NotifyToken)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
+	if(--fRefCount.Free==0){
 
-	if(fRefSet.Insert(NotifyToken)){
-		fRegisterCount.Free++;
-	}
-}
-//---------------------------------------------------------------------------
-void bcObservedReference::WeakUnregister(bcNotifyToken *NotifyToken)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
-	
-	if(fRefSet.Remove(NotifyToken)){
-		fRegisterCount.Free--;
-	}
-}
-//---------------------------------------------------------------------------
-bool bcObservedReference::WeakToStrong(void)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
+		fNotifySet.Notify();
 
+		if(--fWeakCount.Free==0){
+			ObjectDeleted();
+		};
+	}
+}
+//---------------------------------------------------------------------------
+iReferenceObserver* bcWeakReference::CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true)
+{
+	++fWeakCount.Free;
+
+	auto Observer=new cWeakObserver(this,Reference,Procedure);
+	fNotifySet.Insert(Observer);
+	return Observer;
+}
+//---------------------------------------------------------------------------
+void bcWeakReference::WeakUnregister(cWeakObserver *Observer)noexcept(true)
+{
+	fNotifySet.Remove(Observer);
+
+	if(--fWeakCount.Free==0){
+		ObjectDeleted();
+	}
+}
+//---------------------------------------------------------------------------
+bool bcWeakReference::WeakToStrong(void)noexcept(true)
+{
 	uIntn CurRefCount=fRefCount;
 	while(CurRefCount!=0){
 		if(fRefCount.Barrier.CmpXchg(CurRefCount,CurRefCount+1)){
@@ -101,89 +70,73 @@ bool bcObservedReference::WeakToStrong(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cClassReferenceWithWeakSet::cClassReferenceWithWeakSet()noexcept
+bcWeakReference::cWeakObserver::cWeakObserver(bcWeakReference *Owner,iReference *Reference,iProcedure *Procedure)noexcept(true)
+	: fOwner(Owner)
+	, fProcReference(Reference)
+	, fProcedure(Procedure)
+	, fRefCount(2)
+	, fActiveFlag(cnVar::TIntegerValue<uIntn>::MSB+1)
+	, fOwnerReleased(false)
 {
 }
 //---------------------------------------------------------------------------
-cClassReferenceWithWeakSet::~cClassReferenceWithWeakSet()noexcept
+void bcWeakReference::cWeakObserver::Close(void)noexcept(true)
 {
+	Invalidated();
+	Release();
 }
 //---------------------------------------------------------------------------
-void cClassReferenceWithWeakSet::RefInc(void)noexcept
+bool bcWeakReference::cWeakObserver::Reference(void)noexcept(true)
 {
-	cnLib_ASSERT(fRefCount!=0);
-	fRefCount.Free++;
-}
-//---------------------------------------------------------------------------
-bool cClassReferenceWithWeakSet::RefDec(void)noexcept
-{
-	cnLib_ASSERT(fRefCount!=0);
-	if(fRefCount.Free--==1){
-		RefInvalidate();
-		return true;
+	uIntn Flag=++fActiveFlag.Free;
+	if(Flag&cnVar::TIntegerValue<uIntn>::MSB){
+		// token still active
+		bool Referenced=fOwner->WeakToStrong();
+		if(--fActiveFlag.Free==0){
+			Invalidated();
+		}
+		return Referenced;
 	}
+
+	--fActiveFlag.Free;
 	return false;
 }
 //---------------------------------------------------------------------------
-void cClassReferenceWithWeakSet::RefReset(void)noexcept
+void bcWeakReference::cWeakObserver::NotifyInsert(void)noexcept(true)
 {
-	fRefCount=1;
-	fRegisterCount=0;
 }
 //---------------------------------------------------------------------------
-void cClassReferenceWithWeakSet::RefInvalidate(void)noexcept
+void bcWeakReference::cWeakObserver::NotifyRemove(void)noexcept(true)
 {
-	{
-		auto AutoLock=TakeLock(&fRefSetLock);
-		auto RefIterator=fRefSet.begin();
-		auto RefIteratorEnd=fRefSet.end();
-		while(RefIterator!=RefIteratorEnd){
-			bool Remove=RefIterator->InvalidationNotify(this);
-			auto DelIterator=RefIterator;
-			RefIterator++;
-			if(Remove){
-				fRegisterCount.Free--;
-				fRefSet.Remove(DelIterator);
+	Release();
+}
+//---------------------------------------------------------------------------
+void bcWeakReference::cWeakObserver::NotifyExecute(void)noexcept(true)
+{
+	fOwnerReleased=true;
+	if(fActiveFlag.Free.XchgSub(cnVar::TIntegerValue<uIntn>::MSB+1)==cnVar::TIntegerValue<uIntn>::MSB+1){
+		Invalidated();
+	}
+}
+//---------------------------------------------------------------------------
+void bcWeakReference::cWeakObserver::Release(void)noexcept(true)
+{
+	if(--fRefCount.Free==0){
+		delete this;
+	}
+}
+//---------------------------------------------------------------------------
+void bcWeakReference::cWeakObserver::Invalidated(void)noexcept(true)
+{
+	if(fTokenDisposed.Free.Xchg(true)==false){
+		if(fOwnerReleased){
+			if(fProcedure!=nullptr){
+				fProcedure->Execute();
 			}
 		}
+		fProcReference=nullptr;
+		fOwner->WeakUnregister(this);
+		fOwner=nullptr;
 	}
-	// wait for all unregistered
-	while(fRegisterCount.Acquire.Load()!=0){
-		if(fRegisterCount.WatchEqual(0,16384)==false){
-			cnSystem::CurrentThread::SwitchThread();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-void cClassReferenceWithWeakSet::WeakRegister(bcNotifyToken *NotifyToken)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
-
-	if(fRefSet.Insert(NotifyToken)){
-		fRegisterCount.Free++;
-	}
-}
-//---------------------------------------------------------------------------
-void cClassReferenceWithWeakSet::WeakUnregister(bcNotifyToken *NotifyToken)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
-	
-	if(fRefSet.Remove(NotifyToken)){
-		fRegisterCount.Free--;
-	}
-}
-//---------------------------------------------------------------------------
-bool cClassReferenceWithWeakSet::WeakToStrong(void)noexcept
-{
-	auto AutoLock=TakeLock(&fRefSetLock);
-
-	uIntn CurRefCount=fRefCount;
-	while(CurRefCount!=0){
-		if(fRefCount.Barrier.CmpXchg(CurRefCount,CurRefCount+1)){
-			return true;
-		}
-	}
-	return false;
 }
 //---------------------------------------------------------------------------

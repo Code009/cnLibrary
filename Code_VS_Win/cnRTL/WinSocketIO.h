@@ -490,11 +490,11 @@ public:
 template<class TSocketIOHandle>
 class cNT6ThreadPoolRecyclableIOHandleManager
 	: public bcNTSocketOverlappedIORecyclableHandleManager
-	, public bcCPPLifeCycleRecyclableManager< impReferenceLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> >
+	, public bcRecyclableLifeCycleManager< impReferenceRecyclableLifeCycleObject<TSocketIOHandle> >
 {
 public:
-	typedef impReferenceLifeCycleObject<TSocketIOHandle,cCPPLifeCycleRecyclableInstance> tLifeCycleObject;
-	typedef typename tLifeCycleObject::template tActivation<tLifeCycleObject> tLifeCycleActivation;
+	typedef impReferenceRecyclableLifeCycleObject<TSocketIOHandle> tLifeCycleObject;
+	typedef TReferenceObjectLifeCycleActivation<tLifeCycleObject> tLifeCycleActivation;
 
 	cNT6ThreadPoolRecyclableIOHandleManager()noexcept(true){}
 	~cNT6ThreadPoolRecyclableIOHandleManager()noexcept(true){
@@ -505,7 +505,7 @@ public:
 	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
 		rIncReference(this,'lcle');
 	}
-	virtual void Dispose(cCPPLifeCycleRecyclableInstance *Object)noexcept(true) override{
+	virtual void Dispose(bcDisposable *Object)noexcept(true) override{
 		DisconnectAndRecycleSocket(static_cast<tLifeCycleObject*>(Object));
 	}
 	void DisconnectAndRecycleSocket(tLifeCycleObject *SocketIO)noexcept(true){
@@ -521,7 +521,7 @@ public:
 		}
 		else{
 			// recycle socket now
-			bcCPPLifeCycleRecyclableManager<tLifeCycleObject>::Dispose(SocketIO);
+			bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(SocketIO);
 			rDecReference(this,'lcle');
 		}
 	}
@@ -529,7 +529,7 @@ public:
 	virtual void SocketDisconnected(bcNTSocketOverlappedIOHandle *Object)noexcept(true)override{
 		auto LCObject=static_cast<tLifeCycleObject*>(Object);
 		LCObject->Connected=false;
-		bcCPPLifeCycleRecyclableManager<tLifeCycleObject>::Dispose(LCObject);
+		bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(LCObject);
 		rDecReference(this,'lcle');
 	}
 	virtual void SocketDisconnectError(bcNTSocketOverlappedIOHandle *SocketIO)noexcept(true)override{

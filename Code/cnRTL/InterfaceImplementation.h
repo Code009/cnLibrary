@@ -183,31 +183,11 @@ public:
 		return this->HostAggregate->DecreaseReference();
 	}
 
-	template<class TLifeCycleObject>
-	struct tActivation
-	{
-		static void Start(TLifeCycleObject *Object)noexcept(true){
-			cnVar::TSelect<cnVar::TClassIsInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
-				, typename TSelectActivation< TInterfaceImplementation,cCPPLifeCycleInstance::tActivation< impInterfaceAggregable<TInterfaceImplementation> > >::Type
-				, typename TSelectActivation< TInterfaceImplementation,bcVirtualLifeCycle::cActivation< impInterfaceAggregable<TInterfaceImplementation> > >::Type
-			>::Type::Start(Object);
-		}
-		static void Stop(TLifeCycleObject *Object)noexcept(true){
-			cnVar::TSelect<cnVar::TClassIsInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
-				, typename TSelectActivation< TInterfaceImplementation,cCPPLifeCycleInstance::tActivation< impInterfaceAggregable<TInterfaceImplementation> > >::Type
-				, typename TSelectActivation< TInterfaceImplementation,bcVirtualLifeCycle::cActivation< impInterfaceAggregable<TInterfaceImplementation> > >::Type
-			>::Type::Stop(Object);
-		}
-	};
-	friend bcVirtualLifeCycle::cActivation<impInterfaceAggregable>;
-
-	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<TInterfaceImplementation,bcVirtualLifeCycle>::Value
-		, cCPPLifeCycleSharedManager< impInterfaceAggregable<TInterfaceImplementation> >
-		, cVirtualLifeCycleSharedManager< impInterfaceAggregable<TInterfaceImplementation> >
-	>::Type tLifeCycleManager;
+	typedef TReferenceObjectLifeCycleActivation<TInterfaceImplementation> tLifeCycleActivation;
+	friend bcVirtualLifeCycle::cLifeCycleActivation;
 
 	virtual void* AggregableCastInterface(iTypeID InterfaceID)noexcept(true) override{	return TInterfaceImplementation::CastInterface(InterfaceID);	}
-	virtual void AggregableRelease(void)noexcept(true) override{	return tLifeCycleManager::tLifeCycleActivation::Stop(this);		}
+	virtual void AggregableRelease(void)noexcept(true) override{	return tLifeCycleActivation::Stop(this);		}
 
 };
 //---------------------------------------------------------------------------
@@ -255,10 +235,9 @@ template<class TInterfaceImplementation>
 inline cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(void)noexcept(true)
 {
 	typedef impInterfaceAggregable<TInterfaceImplementation> tAggregable;
-	typedef typename tAggregable::tLifeCycleManager tLifeCycleManager;
 	auto Aggregable=new tAggregable;
-	tLifeCycleManager::ManageShared(Aggregable);
-	tLifeCycleManager::tLifeCycleActivation::Start(Aggregable);
+	TReferenceObjectLifeCycleSharedManager<tAggregable>::ManageShared(Aggregable);
+	tAggregable::tLifeCycleActivation::Start(Aggregable);
 	return cAggregablePtr<tAggregable>::TakeFromManual(Aggregable);
 }
 //---------------------------------------------------------------------------
@@ -266,10 +245,9 @@ template<class TInterfaceImplementation,class...TArgs>
 inline cAggregablePtr< impInterfaceAggregable<TInterfaceImplementation> > iAggregableCreate(TArgs&&...Args)noexcept(true)
 {
 	typedef impInterfaceAggregable<TInterfaceImplementation> tAggregable;
-	typedef typename tAggregable::tLifeCycleManager tLifeCycleManager;
 	auto Aggregable=new tAggregable(cnVar::Forward<TArgs>(Args)...);
-	tLifeCycleManager::ManageShared(Aggregable);
-	tLifeCycleManager::tLifeCycleActivation::Start(Aggregable);
+	TReferenceObjectLifeCycleSharedManager<tAggregable>::ManageShared(Aggregable);
+	tAggregable::tLifeCycleActivation::Start(Aggregable);
 	return cAggregablePtr<tAggregable>::TakeFromManual(Aggregable);
 }
 //---------------------------------------------------------------------------
