@@ -70,7 +70,7 @@ struct jcURLConnection : jcObject
 	static constexpr const char jClassName[]="java/net/URLConnection";
 	
 	static constexpr const char jname_setIfModifiedSince[]="setIfModifiedSince";
-	void setIfModifiedSince(JNIEnv *env,long ifmodifiedsince)noexcept{
+	void setIfModifiedSince(JNIEnv *env,jlong ifmodifiedsince)noexcept{
 		return jMethodCall<jname_setIfModifiedSince,&jcURLConnection::setIfModifiedSince>::Call(env,this,ifmodifiedsince);
 	}
 
