@@ -1041,7 +1041,7 @@ template<class TNotifyParameter>
 class cAsyncNotifyToken
 {
 private:
-	template<class TNotifyParameter> friend class cAsyncNotifySet;
+	template<class> friend class cAsyncNotifySet;
 	friend cnDataStruct::cBinaryTreeNodeOperator<cAsyncNotifyToken>;
 	friend cnDataStruct::cColorBinaryTreeNodeOperator<cAsyncNotifyToken>;
 	friend cnDataStruct::cSingleLinkItemOperator<cAsyncNotifyToken>;
@@ -1057,7 +1057,30 @@ private:
 public:
 	virtual void NotifyInsert(void)noexcept(true)=0;
 	virtual void NotifyRemove(void)noexcept(true)=0;
-	virtual void NotifyExecute(TNotifyParameter /*Parameter*/)noexcept(true)=0;
+	virtual void NotifyExecute(TNotifyParameter Parameter)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+template<>
+class cAsyncNotifyToken<void>
+{
+private:
+	template<class> friend class cAsyncNotifySet;
+	friend cnDataStruct::cBinaryTreeNodeOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cColorBinaryTreeNodeOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cSingleLinkItemOperator<cAsyncNotifyToken>;
+	friend cnDataStruct::cDefaultItemOrderOperator<cAsyncNotifyToken>;
+
+	cAsyncNotifyToken *Next;
+	cAsyncNotifyToken *Parent=nullptr;
+	cAsyncNotifyToken *Child[2];
+	ufInt8 Branch;
+	ufInt8 Color;
+	ufInt8 SetActive;
+	cExclusiveFlag ActionFlag;
+public:
+	virtual void NotifyInsert(void)noexcept(true)=0;
+	virtual void NotifyRemove(void)noexcept(true)=0;
+	virtual void NotifyExecute(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<class TNotifyParameter>

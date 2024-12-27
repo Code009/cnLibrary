@@ -283,7 +283,7 @@ public:
 	// move assign with token from cPtrOwner
 	
 	template<class TSrc>
-	typename typename TTypeConditional<cPtrOwner&,
+	typename TTypeConditional<cPtrOwner&,
 		TIsConvertible<TSrc*,T*>::Value
 	>::Type operator =(cPtrOwner<TSrc,TPointerOwnerOperator> &&Src)noexcept(true){
 		if(fPointer!=nullptr)

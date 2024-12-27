@@ -54,7 +54,7 @@ public:
 
 	void operator +=(cCallback *Finalization)noexcept(true);
 	void operator ()(JNIEnv *env)noexcept;
-	cnRTL::lockPtr<iMutex*> operator !(void)const noexcept;
+	cnRTL::lockPtr<iMutex> operator !(void)const noexcept;
 
 private:
 	cCallback *fTop=nullptr;

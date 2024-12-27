@@ -8,8 +8,8 @@ using namespace cnRTL;
 bcReadQueue::bcReadQueue()noexcept
 	: fReadCallback(nullptr)
 	, fReadQueueEnded(false)
-	, fReadQueueTerminated(false)
 	, fReadQueueBufferAvailable(false)
+	, fReadQueueTerminated(false)
 	, fReadQueueCloseWhenIdle(false)
 {
 }
@@ -138,8 +138,8 @@ void bcReadQueue::ReadQueueReportTerminated(void)noexcept
 //---------------------------------------------------------------------------
 bcWriteQueue::bcWriteQueue()noexcept
 	: fWriteCallback(nullptr)
-	, fWriteQueueCloseWhenIdle(false)
 	, fWriteQueueTerminated(false)
+	, fWriteQueueCloseWhenIdle(false)
 {
 }
 //---------------------------------------------------------------------------

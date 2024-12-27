@@ -674,7 +674,7 @@ public:
 	// assign from other iPtr
 
 	template<class TSrcInterface>
-	typename typename cnVar::TTypeConditional<iPtr&,
+	typename cnVar::TTypeConditional<iPtr&,
 		cnVar::TIsConvertible<TSrcInterface*,TInterface*>::Value
 	>::Type operator =(const iPtr<TSrcInterface> &Src)noexcept(true){
 		ManualDecReference();
@@ -700,7 +700,7 @@ public:
 		: fPointer(Src.Pointer())
 	{
 		if(fPointer!=nullptr){
-			fReference=iCast<iReference>(Pointer);
+			fReference=iCast<iReference>(fPointer);
 			if(fReference!=nullptr)
 				fReference->IncreaseReference();
 		}
@@ -748,7 +748,7 @@ public:
 		: fPointer(Src.ExtractToManual())
 	{
 		if(fPointer!=nullptr){
-			fReference=iCast<iReference>(Pointer);
+			fReference=iCast<iReference>(fPointer);
 		}
 	}
 
@@ -763,7 +763,7 @@ public:
 
 		fPointer=Src.ExtractToManual();
 		if(fPointer!=nullptr){
-			fReference=iCast<iReference>(Pointer);
+			fReference=iCast<iReference>(fPointer);
 		}
 		if(SwapReference!=nullptr)
 			SwapReference->DecreaseReference();
@@ -1195,7 +1195,7 @@ public:
 		Clear();
 		if(Pointer!=nullptr){
 			iObservedReference *Reference=iCast<iObservedReference>(Pointer);
-			fObserver=Reference->ObserverRegister(nullptr,nullptr);
+			fObserver=Reference->CreateReferenceObserver(nullptr,nullptr);
 			if(fObserver!=nullptr){
 				fPointer=Pointer;
 				fReference=Reference;
@@ -1205,7 +1205,7 @@ public:
 
 	void Clear(void)noexcept(true){
 		if(fObserver!=nullptr){
-			fObserver->ObserverUnregister();
+			fObserver->Close();
 			fObserver=nullptr;
 			fPointer=nullptr;
 			fReference=nullptr;
@@ -1216,7 +1216,7 @@ public:
 		if(fObserver==nullptr)
 			return nullptr;
 
-		if(fObserver->ObserverReference()){
+		if(fObserver->Reference()){
 			return iPtr<TInterface>::TakeFromManual(fPointer,fReference);
 		}
 
@@ -1326,7 +1326,7 @@ public:
 	template<class TSrcInterface,class TSrcPointerReferenceOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 		, class=typename cnVar::TTypeConditional<void,
-		cnVar::TIsAssignableFrom<T*&,TSrcInterface*>::Value
+		cnVar::TIsAssignableFrom<TSrcInterface*&,TSrcInterface*>::Value
 		>::Type
 #endif
 	>

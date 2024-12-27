@@ -66,7 +66,7 @@ void cJNIFinalization::operator ()(JNIEnv *env)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-lockPtr<iMutex*> cJNIFinalization::operator !(void)const noexcept
+lockPtr<iMutex> cJNIFinalization::operator !(void)const noexcept
 {
 	return fMutex;
 }
