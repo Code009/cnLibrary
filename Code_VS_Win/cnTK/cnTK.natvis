@@ -43,16 +43,11 @@
 		</Expand>
 	</Type>
 	<!--Atomic.hpp-->
-	<Type Name="cnLibrary::cnAsync::TAtomicVariableOperatorByInteger&lt;*&gt;">
-		<DisplayString>{*((tDebugDisplay&lt;&gt;*)&amp;_atomic_)}</DisplayString>
-		<Expand>
-			<ExpandedItem>*((tAtomicOperator*)&amp;_atomic_)</ExpandedItem>
-		</Expand>
-	</Type>
 	<Type Name="cnLibrary::cnAsync::cAtomicVariable&lt;*&gt;">
-		<DisplayString>{*((tAtomicOperator::tDebugDisplay*)&amp;_atomic_)}</DisplayString>
+		<DisplayString>{*((tDebugDisplay*)&amp;_atomic_)}</DisplayString>
 		<Expand>
-			<ExpandedItem>*((tAtomicOperator::tDebugDisplay*)&amp;_atomic_)</ExpandedItem>
+			<Item Name="[mem]">_atomic_,h</Item>
+			<ExpandedItem>*((tDebugDisplay*)&amp;_atomic_)</ExpandedItem>
 		</Expand>
 	</Type>
 	<!--Variant.hpp-->

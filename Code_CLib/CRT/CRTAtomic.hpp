@@ -23,9 +23,8 @@ struct TKRuntime::TAtomicInteger
 	template<class T>
 	struct tDebugCast
 	{
-		typedef std::atomic<T> Type;
+		typedef volatile std::atomic<T> Type;
 	};
-	typedef std::atomic<tInteger> tDebugDisplay;
 
 	static tInteger Get(const tAtomic &a){
 		return a;

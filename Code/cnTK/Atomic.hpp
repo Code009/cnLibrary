@@ -13,6 +13,26 @@
 //---------------------------------------------------------------------------
 #include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
+namespace cnLib_THelper{
+//---------------------------------------------------------------------------
+namespace Async_TH{
+//---------------------------------------------------------------------------
+
+template<class TEnable,class TVariable,class TIntegerAtomicOperator>
+struct TAtomicIntegerSelectDebugDisplay
+	: cnVar::TTypeDef<TVariable>
+{};
+
+template<class TVariable,class TIntegerAtomicOperator>
+struct TAtomicIntegerSelectDebugDisplay<typename cnVar::TSelect<0,void,typename TIntegerAtomicOperator::template tDebugCast<TVariable>::Type>::Type,TVariable,TIntegerAtomicOperator>
+	: TIntegerAtomicOperator::template tDebugCast<TVariable>
+{};
+
+//---------------------------------------------------------------------------
+}	// namesapce Async_TH
+//---------------------------------------------------------------------------
+}	// namespace cnLib_THelper
+//---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace TKRuntime{
@@ -100,8 +120,6 @@ struct TAtomicVariableOperatorByInteger
 {
 	typedef typename TIntegerAtomicOperator::tAtomic tAtomic;
 	typedef typename TIntegerAtomicOperator::tInteger tInteger;
-
-	typedef typename TIntegerAtomicOperator::template tDebugCast<TVariable>::Type tDebugDisplay;
 
 	static TVariable Get(const tAtomic &av)noexcept(true){
 		return cnVar::ReturnCast<TVariable>( TIntegerAtomicOperator::Get(av) );
@@ -232,7 +250,8 @@ union cAtomicVariable
 		, TAtomicVariableOperatorByInteger<TVariable,tAtomicInteger>
 		, tAtomicInteger
 	>::Type tAtomicOperator;
-	
+
+	typedef typename cnLib_THelper::Async_TH::TAtomicIntegerSelectDebugDisplay<void,TVariable,tAtomicInteger>::Type tDebugDisplay;
 
 	tAtomic _atomic_;
 
