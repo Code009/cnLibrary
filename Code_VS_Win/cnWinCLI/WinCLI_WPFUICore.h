@@ -15,12 +15,12 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-struct cWPFModule : iDependentInfo
+struct cWPFModule// : iDependentInfo
 {
 	cWPFModule()noexcept(true);
 	~cWPFModule()noexcept(true);
 	
-	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
+	//virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 
 	cnRTL::cWaitObjectRegistration ObjectRegistration;
 };

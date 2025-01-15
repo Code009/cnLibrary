@@ -5,7 +5,6 @@
 #pragma once
 /*-------------------------------------------------------------------------*/
 #include "cnWinSystemHeader.h"
-#include "cnWinSystem\cnWinSystem.h"
 
 #ifdef __cplusplus
 
@@ -21,8 +20,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-void CPPInitialize(void)noexcept(true);
-void CPPFinalize(void)noexcept(true);
 int Initialization_AtExit(void (__cdecl *Proc)(void));
 //---------------------------------------------------------------------------
 extern cnRTL::cnWinRTL::cCOMApartmentThreadingModule gCOMApartmentThreadingModule;

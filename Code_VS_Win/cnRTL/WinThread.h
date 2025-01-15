@@ -84,43 +84,28 @@ public:
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
 //---------------------------------------------------------------------------
-class cDependentRegistration : public iDependentRegistration
+class bcModuleReference : public bcRegisteredReference
 {
 public:
-	cDependentRegistration()noexcept(true);
-	~cDependentRegistration()noexcept(true);
+	bcModuleReference()noexcept(true);
+	~bcModuleReference()noexcept(true);
 
-	void Shutdown(void)noexcept(true);
+	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer,bool NoLoad)noexcept(true);
 
-	virtual void cnLib_FUNC Register(iDependentInfo *Dependent)noexcept(true)override;
-	virtual void cnLib_FUNC Unregister(iDependentInfo *Dependent)noexcept(true)override;
 protected:
-	cCriticalSection fCS;
-	cWinWaitObject fWaitObject;
-	class cnLib_INTERFACE bcNotifyToken
-	{
-	public:
-		virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)=0;
-		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)=0;
+	virtual void ReferenceUpdate(void)noexcept(true)override final;
+	virtual void ReferenceShutdown(void)noexcept(true)override final;
 
-		bcNotifyToken *Parent;
-		bcNotifyToken *Child[2];
-		ufInt8 Branch;
-		ufInt8 Color;
-	};
-	static_assert(sizeof(bcNotifyToken)<=sizeof(iDependentInfo),"incompatiable iDependentInfo");
+	virtual void ModuleInitialize(void)noexcept(true)=0;
+	virtual void ModuleFinialize(void)noexcept(true)=0;
+private:
 
-	void Register(bcNotifyToken *Token)noexcept(true);
-	void Unregister(bcNotifyToken *Token)noexcept(true);
+	cnWinRTL::cCriticalSection fCS;
+	bool fModuleActive;
+	bool fModuleShutdown;
+	cExclusiveFlag fReferenceProcessFlag;
 
-	struct cRemovingItem
-	{
-		bcNotifyToken *Token;
-		bool Removed;
-	};
-	cLinkItemSet<bcNotifyToken,cnDataStruct::cItemAddressOrderOperator<bcNotifyToken> > fDependentSet;
-	cArrayBlock<cRemovingItem> *fShutdowningItems=nullptr;
-	bool fShutDown=false;
+	void ReferenceProcess(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7
@@ -145,7 +130,7 @@ protected:
 //---------------------------------------------------------------------------
 VOID CALLBACK EmptyAPCFunction(ULONG_PTR dwParam)noexcept(true);
 //---------------------------------------------------------------------------
-class cThreadHandle : public iThread, private iDependentInfo
+class cThreadHandle : public iThread
 {
 public:
 	cThreadHandle()noexcept(true);
@@ -173,9 +158,6 @@ protected:
 	DWORD fThreadID;
 
 	static VOID CALLBACK WakeAPCFunction(ULONG_PTR dwParam)noexcept(true);
-
-	virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
-	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
 bool CurrentThreadSleepUntil(uInt64 SystemTime)noexcept(true);

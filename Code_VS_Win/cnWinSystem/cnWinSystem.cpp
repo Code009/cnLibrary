@@ -17,9 +17,16 @@ static const ufInt8 cnWinExitFunctionCapacity=64;
 static CPPInitProc cnWin_ExitFunctions[cnWinExitFunctionCapacity];
 
 static ufInt8 cnWin_ExitFunctionCount=0;
-	
+
 //---------------------------------------------------------------------------
-void cnWin::CPPInitialize(void)noexcept
+
+// windows interface definitions
+
+//---------------------------------------------------------------------------
+//- Initialization ----------------------------------------------------------
+//---------------------------------------------------------------------------
+
+void	WindowsInterface::SystemInitialize(void)noexcept(true)
 {
 	const CPPInitProc* Proc=&cnWin_InitSegS+1;
 	while(Proc<&cnWin_InitSegE){
@@ -29,15 +36,14 @@ void cnWin::CPPInitialize(void)noexcept
 		Proc++;
 	}
 }
-//---------------------------------------------------------------------------
-void cnWin::CPPFinalize(void)noexcept
+void	WindowsInterface::SystemFinalize(void)noexcept(true)
 {
 	while(cnWin_ExitFunctionCount!=0){
 		cnWin_ExitFunctionCount--;
 		(*cnWin_ExitFunctions[cnWin_ExitFunctionCount])();
 	}
 }
-//---------------------------------------------------------------------------
+
 int cnWin::Initialization_AtExit(void (__cdecl *Proc)(void))
 {
 	if(cnWin_ExitFunctionCount>=cnWinExitFunctionCapacity){
@@ -50,10 +56,6 @@ int cnWin::Initialization_AtExit(void (__cdecl *Proc)(void))
 	return 0;
 
 }
-//---------------------------------------------------------------------------
-
-// windows interface definitions
-
 //---------------------------------------------------------------------------
 //- File System -------------------------------------------------------------
 //---------------------------------------------------------------------------

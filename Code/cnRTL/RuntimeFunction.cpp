@@ -378,7 +378,7 @@ void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept
 //---------------------------------------------------------------------------
 void cReferenceCountLogger::cContext::Execute(void)noexcept
 {
-	auto Host=reinterpret_cast<cReferenceCountLogger*>(this);
+	auto Host=cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<cContext>*>(this),&cReferenceCountLogger::fContext);
 	Host->ThreadProcess();
 }
 //---------------------------------------------------------------------------
@@ -412,8 +412,8 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-const uChar16 cReferenceCountLogger::cContext::DependentName[]=u"cReferenceCountLogger";
-rPtr<iStringReference> cReferenceCountLogger::cContext::DependentCreateDescription(void)noexcept
+const uChar16 cReferenceCountLogger::cReferrer::DependentName[]=u"cReferenceCountLogger";
+rPtr<iStringReference> cReferenceCountLogger::cReferrer::CreateDescription(void)noexcept
 {
 	cArrayConstant<uChar16> Array;
 	Array.Pointer=DependentName;
@@ -422,7 +422,7 @@ rPtr<iStringReference> cReferenceCountLogger::cContext::DependentCreateDescripti
 	return Desc.Token();
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::DependentShutdownNotification(void)noexcept
+void cReferenceCountLogger::cReferrer::Execute(void)noexcept
 {
 	auto Host=reinterpret_cast<cReferenceCountLogger*>(this);
 	Host->fSystemShutdown=1;
@@ -469,7 +469,13 @@ void cReferenceCountLogger::Process(void)noexcept
 				delete CurItem;
 			}
 
-			cnSystem::SystemDependentRegistration->Unregister(&fContext);
+			fContext.Destruct();
+			fContextInitialized=false;
+
+			auto Observer=fReferrer->Observer;
+			if(Observer!=nullptr){
+				Observer->Close();
+			}
 		
 		}
 	}
@@ -491,19 +497,25 @@ void cReferenceCountLogger::NotifyProcess(void)noexcept
 		return;
 
 	fExclusiveFlag.Continue();
+	if(fReferrerInitialized==false){
+		fReferrer.Construct();
+		fReferrerInitialized=true;
+	}
+	if(fContextInitialized==false){
 
-	if(fInitialized==false){
-
-		while(cnSystem::SystemDependentRegistration==nullptr){
+		auto SysReference=cnSystem::SystemQueryReference(&fReferrer);
+		while(SysReference==nullptr){
 			// system not started? delay process
 			if(fExclusiveFlag.Release()){
 				return;
 			}
+			SysReference=cnSystem::SystemQueryReference(&fReferrer);
 		}
 
-		fInitialized=true;
-		cnSystem::SystemDependentRegistration->Register(&fContext);
+		fContextInitialized=true;
 		fContext.Construct();
+
+		fReferrer->Observer=SysReference->CreateReferenceObserver(nullptr,&fReferrer);
 	}
 
 	Process();

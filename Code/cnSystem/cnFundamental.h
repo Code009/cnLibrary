@@ -13,28 +13,21 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 typedef iFunction<void (void)noexcept(true)> iProcedure;
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iDependentInfo
+class cnLib_INTERFACE iLibraryReferrer
 {
-private:
-	uIntn SystemReserved[4];	// used by iDependentRegistration
 public:
-	virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true){
-		UnusedParameter(SystemReserved);	// compiler may complain SystemReserved will never be used
-		return nullptr;
-	}
-	virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)=0;
+	virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iDependentRegistration
+class cnLib_INTERFACE iLibraryReference : public iObservedReference
 {
 public:
-	virtual void cnLib_FUNC Register(iDependentInfo *Dependent)noexcept(true)=0;
-	virtual void cnLib_FUNC Unregister(iDependentInfo *Dependent)noexcept(true)=0;
+	virtual void cnLib_FUNC UpdateDescription(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
-extern iDependentRegistration*const SystemDependentRegistration;
+rPtr<iLibraryReference> cnLib_FUNC SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------

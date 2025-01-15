@@ -24,7 +24,6 @@ cnLib_GlobalVar const HMODULE cnWin::gModuleHandle=reinterpret_cast<HMODULE>(&__
 //---------------------------------------------------------------------------
 cnLib_GlobalVar const cSysInfo cnWin::gSysInfo;
 //cnLib_GlobalVar const cStartupInfo cnWin::gStartupInfo;
-cnLib_GlobalVar cDependentRegistration cnWin::gSystemDependentRegistration;
 //- Memory Heap -------------------------------------------------------------
 // memory heap should be the first object to be initialized
 cnLib_GlobalVar cReferenceStaticImplementT<tDefaultMemoryHeap> cnWin::gDefaultMemoryHeap;
@@ -94,8 +93,6 @@ cnLib_GlobalVar cMessageThreadWindowClass cMessageThreadWindowClass::gMessageThr
 
 
 //- cnSystem - Pointer ------------------------------------------------------
-
-cnLib_GlobalVar iDependentRegistration*const cnSystem::SystemDependentRegistration=&gSystemDependentRegistration;
 
 cnLib_GlobalVar iMemoryHeap*const		cnSystem::DefaultMemoryHeap		=&gDefaultMemoryHeap;
 

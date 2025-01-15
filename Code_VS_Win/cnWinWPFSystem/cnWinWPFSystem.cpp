@@ -9,6 +9,11 @@ using namespace cnWin;
 //	cnSystem
 //---------------------------------------------------------------------------
 
+rPtr<iLibraryReference> cnSystem::SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true)
+{
+	return gWindowsSystemReference->QueryReference(Referrer,true);
+}
+
 void cnSystem::AssertionMessage(const char *Message)noexcept
 {
 	if(::MessageBoxA(nullptr,Message,"assert",MB_ICONERROR|MB_YESNO)==IDYES){
@@ -284,26 +289,16 @@ iPtr<iAudioDevice>			cnSystem::QueryAudioMainDevice(void)noexcept
 //---------------------------------------------------------------------------
 //	cnWindows
 //---------------------------------------------------------------------------
-static LONG cnWindowsInitializeCount=0;
+
 //---------------------------------------------------------------------------
-ufInt8 cnLib_FUNC cnWindows::Initialize(void)noexcept
+rPtr<iLibraryReference> cnWindows::SystemStartup(iLibraryReferrer *Referrer)noexcept(true)
 {
-	if(::_InterlockedExchangeAdd(&cnWindowsInitializeCount,1)==0){
-		// initialize
-		cnWin::CPPInitialize();
-	}
-	// always success
-	return static_cast<uIntn>(LibLoadResult::Success);
+	return gWindowsSystemReference->QueryReference(Referrer,false);
 }
 //---------------------------------------------------------------------------
-void cnLib_FUNC cnWindows::Finalize(void)noexcept
+void cnWindows::SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true)
 {
-	if(cnWindowsInitializeCount==0)
-		return;
-	if(::_InterlockedExchangeAdd(&cnWindowsInitializeCount,-1)!=1)
-		return;
-	gSystemDependentRegistration.Shutdown();
-	cnWin::CPPFinalize();
+	return gWindowsSystemReference->WaitShutdown(cnVar::MoveCast(Reference));
 }
 //---------------------------------------------------------------------------
 rPtr<iTextEncodingConverter> cnWindows::CodePageToUTF16(UINT SrcCodePage)noexcept

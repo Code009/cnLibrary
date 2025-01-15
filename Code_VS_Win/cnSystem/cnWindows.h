@@ -63,7 +63,7 @@ public:
 namespace cnWindows{
 //---------------------------------------------------------------------------
 extern const wchar_t *DLLFileName_cnPLWindows;
-//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------s
 struct LibLoadResult
 {
 	static const ufInt8	Success					=0;
@@ -72,8 +72,9 @@ struct LibLoadResult
 	static const ufInt8	MissingLibFile			=3;
 	static const ufInt8	FileVersionNotMatch		=4;
 };
-ufInt8 cnLib_FUNC Initialize(void)noexcept(true);
-void cnLib_FUNC Finalize(void)noexcept(true);
+//---------------------------------------------------------------------------
+rPtr<iLibraryReference> cnLib_FUNC SystemStartup(iLibraryReferrer *Referrer)noexcept(true);
+void cnLib_FUNC SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true);
 //---------------------------------------------------------------------------
 extern iTextStreamOutput*const DebugLogStream;
 //---------------------------------------------------------------------------

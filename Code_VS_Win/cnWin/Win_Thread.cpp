@@ -14,6 +14,7 @@ static constexpr DWORD CurrentThreadExitCode=0;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cThread::cThread()noexcept
+	: fSystemObserver(nullptr)
 {
 }
 //---------------------------------------------------------------------------
@@ -27,24 +28,29 @@ void cThread::TLSSetExitNotify(void)noexcept
 	gTLS->SetThreadExitNotify(cnVar::StaticInitializedSinglton<cThreadExitNotifyProc>());
 }
 //---------------------------------------------------------------------------
-void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *Thread)noexcept
+void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *pThread)noexcept
 {
-	static_cast<cThread*>(Thread)->fThreadRunning=false;
+	auto Thread=static_cast<cThread*>(pThread);
+	Thread->fThreadRunning=false;
+	if(Thread->fSystemObserver)
+		Thread->fSystemObserver->Close();
 }
 //---------------------------------------------------------------------------
 iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)noexcept
 {
 	auto NewThread=iCreate<cThread>();
+	NewThread->fThreadRunning=true;
 	auto Param=new cThreadCreateParameter;
 	Param->Procedure=ThreadProcedure;
 	Param->Thread=NewThread;
+	NewThread->RegisterSystemObserver();
 
 	NewThread->fThreadHandle=::CreateThread(nullptr,0,ThreadEntry,Param,0,&NewThread->fThreadID);
 	if(NewThread->fThreadHandle==nullptr){
 		// failed to create thread
+		NewThread->fThreadRunning=false;
 		return nullptr;
 	}
-
 	return NewThread;
 }
 //---------------------------------------------------------------------------
@@ -72,6 +78,9 @@ DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept
 	Procedure->Execute();
 
 	Thread->fThreadRunning=false;
+	if(Thread->fSystemObserver!=nullptr){
+		Thread->fSystemObserver->Close();
+	}
 	// detach thread object
 	gTLS->Set(nullptr,nullptr);
 	gTLS->SetThreadExitNotify(nullptr);
@@ -93,6 +102,8 @@ cThread* cThread::QueryCurrent(void)noexcept
 	auto NewThread=iCreate<cThread>();
 	NewThread->fThreadHandle=ThreadHandle;
 	NewThread->fThreadID=::GetCurrentThreadId();
+	NewThread->fThreadRunning=true;
+	NewThread->RegisterSystemObserver();
 
 	gTLS->Set(NewThread.Reference(),NewThread);
 	TLSSetExitNotify();
@@ -105,9 +116,30 @@ bool cThread::IsRunning(void)noexcept
 	return fThreadRunning;
 }
 //---------------------------------------------------------------------------
-void cThread::DependentShutdownNotification(void)noexcept
+rPtr<iLibraryReference> cThread::RegisterSystemObserver(void)noexcept(true)
 {
-	cThreadHandle::DependentShutdownNotification();
+	auto Reference=cnSystem::SystemQueryReference(this);
+	if(Reference!=nullptr){
+		auto ThisReference=iCast<iReference>(this);
+		fSystemObserver=Reference->CreateReferenceObserver(ThisReference,&fSystemShutdownNotifyProcedure);
+	}
+	return Reference;
+}
+//---------------------------------------------------------------------------
+rPtr<iStringReference> cThread::CreateDescription(void)noexcept
+{
+	cString<uChar16> Temp=cnRTL::CreateStringFormat(u"cThreadHandle - ThreadID = %d(0x%x), Handle=%x",fThreadID,fThreadID,(uIntn)fThreadHandle);
+	return cnVar::MoveCast(Temp.Token());
+}
+//---------------------------------------------------------------------------
+void cThread::cSystemShutdownNotifyProcedure::Execute(void)noexcept(true)
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cThread::fSystemShutdownNotifyProcedure);
+	Host->ShutdownNotify();
+}
+//---------------------------------------------------------------------------
+void cThread::ShutdownNotify(void)noexcept
+{
 	auto CurrentThreadObject=gTLS->Get();
 	if(CurrentThreadObject!=nullptr){
 		gTLS->Clear();

@@ -164,116 +164,72 @@ void cWinWaitReference::DecreaseReference(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDependentRegistration::cDependentRegistration()noexcept
+bcModuleReference::bcModuleReference()noexcept(true)
+	: bcRegisteredReference(false)
+	, fModuleActive(false)
 {
 }
 //---------------------------------------------------------------------------
-cDependentRegistration::~cDependentRegistration()noexcept
+bcModuleReference::~bcModuleReference()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Register(iDependentInfo *Dependent)noexcept
+rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Referrer,bool NoLoad)noexcept(true)
 {
-	return Register(reinterpret_cast<bcNotifyToken*>(Dependent));
-}
-//---------------------------------------------------------------------------
-void cDependentRegistration::Unregister(iDependentInfo *Dependent)noexcept
-{
-	return Unregister(reinterpret_cast<bcNotifyToken*>(Dependent));
-}
-//---------------------------------------------------------------------------
-void cDependentRegistration::Register(bcNotifyToken *NotifyToken)noexcept
-{
+	bool Referenced=MakeStrongReference();
+
 	auto AutoLock=TakeLock(&fCS);
 
-	if(fShutDown==false){
-		if(fDependentSet.Insert(NotifyToken)){
-			fWaitObject.Acquire();
+	if(Referenced==false){
+		// RefCount==0
+
+		if(fModuleActive || NoLoad){
+			// is shutting down, or did not load
+			return nullptr;
 		}
+		fModuleShutdown=false;
+		fModuleActive=true;
+		ModuleInitialize();
+		IncRef();
 	}
+
+	return CreateReference(Referrer);
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Unregister(bcNotifyToken *NotifyToken)noexcept
+void bcModuleReference::ReferenceUpdate(void)noexcept(true)
 {
-	auto AutoLock=TakeLock(&fCS);
-	if(fDependentSet.Remove(NotifyToken)){
-		fWaitObject.Release();
-
-
-		if(fShutdowningItems!=nullptr){
-			uIntn ItemIndex;
-			if(cnMemory::ViewBinarySearch(ItemIndex,fShutdowningItems->Pointer,fShutdowningItems->Length,[NotifyToken](const cRemovingItem &Item)->sfInt8{
-				if(Item.Token==NotifyToken){
-					return 0;
-				}
-				if(Item.Token<NotifyToken){
-					return -1;
-				}
-				return 1;
-			})){
-				fShutdowningItems->Pointer[ItemIndex].Removed=true;
-			}
-		}
-	}
+	ReferenceProcess();
 }
 //---------------------------------------------------------------------------
-void cDependentRegistration::Shutdown(void)noexcept
+void bcModuleReference::ReferenceShutdown(void)noexcept(true)
 {
-	if(fShutDown)
+	fModuleShutdown=true;
+	ReferenceProcess();
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::ReferenceProcess(void)noexcept(true)
+{
+	if(fReferenceProcessFlag.Acquire()==false)
 		return;
-	
 
-	fShutDown=true;
-	{
-		cArrayBlock<cRemovingItem> ShutdowningItems;
+
+	do{
+		fReferenceProcessFlag.Continue();
 
 		auto AutoLock=TakeLock(&fCS);
 
-		ShutdowningItems.SetLength(fDependentSet.GetCount());
-		fShutdowningItems=&ShutdowningItems;
-		uIntn ShutingDownItemIndex=0;
-		for(auto Dependent : fDependentSet){
-			auto &Item=ShutdowningItems.Pointer[ShutingDownItemIndex++];
-			Item.Token=Dependent;
-			Item.Removed=false;
-		}
+		auto IsEmptySet=UpdateReferenceSet();
+		if(fModuleShutdown){
 
-		for(ShutingDownItemIndex=0;ShutingDownItemIndex<ShutdowningItems.Length;ShutingDownItemIndex++){
-			auto &Item=ShutdowningItems.Pointer[ShutingDownItemIndex];
-			if(Item.Removed==false){
-				Item.Token->DependentShutdownNotification();
+			if(IsEmptySet){
+				// all reference deleted
+				ModuleFinialize();
+
+				fModuleActive=false;
 			}
 		}
-		fShutdowningItems=nullptr;
-	}
-	fWaitObject.Wait(3000);
 
-#if 1 && defined(cnLib_DEBUG)
-	// report remaining dependent
-	{
-		auto AutoLock=TakeLock(&fCS);
-		if(fDependentSet.GetCount()!=0){
-			cStringBuffer<uChar16> ReportText;
-			ReportText.Append(u"Remaining Dependent Object :\n");
-			for(auto NotifyToken : fDependentSet){
-				auto Dependent=reinterpret_cast<iDependentInfo*>(NotifyToken);
-				auto Description=Dependent->DependentCreateDescription();
-				cArray<const uChar16> DescArray;
-				if(Description!=nullptr){
-					DescArray=Description->Get();
-				}
-				else{
-					DescArray.Pointer=u"Unknown Object";
-					DescArray.Length=14;
-				}
-				StringStream::WriteFormatString(ReportText.StreamWriteBuffer(),u"%.*s\n",DescArray.Length,DescArray.Pointer);
-			}
-			ReportText.Append(u"End of Dependent Object List\n");
-			OutputDebugStringW(utow(ReportText.GetString()));
-		}
-	}
-	fWaitObject.Wait(INFINITE);
-#endif
+	}while(fReferenceProcessFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7
@@ -328,12 +284,10 @@ VOID CALLBACK cnWinRTL::EmptyAPCFunction(ULONG_PTR)noexcept
 //---------------------------------------------------------------------------
 cThreadHandle::cThreadHandle()noexcept
 {
-	cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
 cThreadHandle::~cThreadHandle()noexcept
 {
-	cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
 HANDLE cThreadHandle::GetThreadHandle(void)noexcept
@@ -439,17 +393,6 @@ bool cThreadHandle::SetPriority(sfInt8 Priority)noexcept
 bool cThreadHandle::GetPriority(sfInt8 &Priority)noexcept
 {
 	return GetPriority(fThreadHandle,Priority);
-}
-//---------------------------------------------------------------------------
-rPtr<iStringReference> cThreadHandle::DependentCreateDescription(void)noexcept
-{
-	cString<uChar16> Temp=cnRTL::CreateStringFormat(u"cThreadHandle - ThreadID = %d(0x%x), Handle=%x",fThreadID,fThreadID,(uIntn)fThreadHandle);
-	return cnVar::MoveCast(Temp.Token());
-	//return u"cThreadHandle"_cArray;
-}
-//---------------------------------------------------------------------------
-void cThreadHandle::DependentShutdownNotification(void)noexcept
-{
 }
 //---------------------------------------------------------------------------
 bool cnWinRTL::CurrentThreadSleepUntil(uInt64 SystemTime)noexcept

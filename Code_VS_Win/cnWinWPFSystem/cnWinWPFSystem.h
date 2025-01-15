@@ -13,8 +13,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnWin{
 //---------------------------------------------------------------------------
-extern cnRTL::cnWinRTL::cDependentRegistration gSystemDependentRegistration;
-
 extern cnRTL::cReferenceStaticImplementT<cnRTL::cnWinRTL::cWin32DebugTextOutput> DebugTextOutput;
 //---------------------------------------------------------------------------
 extern cnRTL::cInterfaceStaticImplementT<vSocketStreamProtocol> TCP;

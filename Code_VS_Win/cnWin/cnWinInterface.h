@@ -34,6 +34,13 @@ namespace cnWin{
 namespace WindowsInterface{
 //---------------------------------------------------------------------------
 
+// Initiailization
+
+void	SystemInitialize(void)noexcept(true);
+void	SystemFinalize(void)noexcept(true);
+
+//---------------------------------------------------------------------------
+
 // FileSystem
 
 //---------------------------------------------------------------------------

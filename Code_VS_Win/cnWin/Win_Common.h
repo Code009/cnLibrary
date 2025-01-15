@@ -43,6 +43,45 @@ BOOL DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHan
 BOOL DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle=FALSE);
 
 //---------------------------------------------------------------------------
+class cWindowsSystemReference
+{
+public:
+	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer,bool NoLoad)noexcept(true);
+	void WaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true);
+
+protected:
+
+private:
+	class cContext : public cnRTL::bcRegisteredReference
+	{
+	public:
+		cContext(void)noexcept(true);
+
+		cnRTL::cnWinRTL::cCriticalSection CS;
+
+		cWindowsSystemReference* GetHost(void)noexcept(true);
+		
+		virtual void ReferenceUpdate(void)noexcept(true)override;
+		virtual void ReferenceShutdown(void)noexcept(true)override;
+	};
+	cnVar::cStaticVariable<cContext> fContext;
+	static constexpr ufInt8 sIdle=0;
+	static constexpr ufInt8 sLoading=1;
+	static constexpr ufInt8 sActive=2;
+	static constexpr ufInt8 sNotifyWait=3;
+	static constexpr ufInt8 sUnloading=4;
+	cnRTL::cAtomicVar<ufInt8> fState=0;
+	cnRTL::cExclusiveFlag fReferenceProcessFlag;
+	cnRTL::cAtomicVar<bool> fShutdownWaiting=0;
+	bool fModuleShutdown;
+	HANDLE fShutdownWaitThreadHandle;
+
+	void ReferenceProcess(void)noexcept(true);
+
+	static VOID NTAPI NotifyShutdownAPC(_In_ ULONG_PTR Parameter);
+};
+extern cnVar::cStaticVariable<cWindowsSystemReference> gWindowsSystemReference;
+//---------------------------------------------------------------------------
 
 #if 0
 

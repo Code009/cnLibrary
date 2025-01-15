@@ -9,19 +9,19 @@ using namespace cnWin;
 //---------------------------------------------------------------------------
 cWPFModule::cWPFModule()noexcept
 {
-	cnSystem::SystemDependentRegistration->Register(this);
+	//cnSystem::SystemDependentRegistration->Register(this);
 }
 //---------------------------------------------------------------------------
 cWPFModule::~cWPFModule()noexcept
 {
-	cnSystem::SystemDependentRegistration->Unregister(this);
+	//cnSystem::SystemDependentRegistration->Unregister(this);
 }
 //---------------------------------------------------------------------------
-void cWPFModule::DependentShutdownNotification(void)noexcept
-{
-	ObjectRegistration.Wait();
-	cnSystem::SystemDependentRegistration->Unregister(this);
-}
+//void cWPFModule::DependentShutdownNotification(void)noexcept
+//{
+//	ObjectRegistration.Wait();
+//	cnSystem::SystemDependentRegistration->Unregister(this);
+//}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bool cWPFKeyboard::EventIsKeyDown(eKeyCode KeyCode)noexcept

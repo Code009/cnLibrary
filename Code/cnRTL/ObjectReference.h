@@ -25,6 +25,115 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
+
+//---------------------------------------------------------------------------
+class bcWeakReference
+{
+public:
+
+	void ObjectResetReference(void)noexcept(true);
+	void ObjectIncreaseReference(void)noexcept(true);
+	void ObjectDecreaseReference(void)noexcept(true);
+
+	iReferenceObserver* CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true);
+
+protected:
+	virtual void cnLib_FUNC ObjectDeleted(void)noexcept(true)=0;
+
+private:
+	cAtomicVar<uIntn> fRefCount;
+	cAtomicVar<uIntn> fWeakCount;
+	cAsyncNotifySet<void> fNotifySet;
+
+	class cWeakObserver : public bcReferenceObserver<cWeakObserver>, public cRTLAllocator
+	{
+	public:
+		cWeakObserver(bcWeakReference *Owner,iReference *Reference,iProcedure *Procedure)noexcept(true);
+
+		bool ObserverMakeStrongReference(void)noexcept(true);
+		void ObserverInvalidate(bool Notify)noexcept(true);
+		void ObserverDelete(void)noexcept(true);
+
+	protected:
+		bcWeakReference *fOwner;
+		rPtr<iReference> fProcReference;
+		iProcedure *fProcedure;
+	};
+	void WeakUnregister(cWeakObserver *Observer)noexcept(true);
+	bool WeakToStrong(void)noexcept(true);
+};
+//---------------------------------------------------------------------------
+class bcRegisteredReference
+{
+public:
+	bcRegisteredReference(bool InitialReference)noexcept(true);
+
+	void IncRef(void)noexcept(true);
+	void DecRef(void)noexcept(true);
+	bool MakeStrongReference(void)noexcept(true);
+
+	rPtr<iLibraryReference> CreateReference(iLibraryReferrer *Referrer)noexcept(true);
+	bool UpdateReferenceSet(void)noexcept(true);
+	void ReportReferenceSet(cStringBuffer<uChar16> &Buffer)noexcept(true);
+protected:
+
+	virtual void ReferenceUpdate(void)noexcept(true)=0;
+	virtual void ReferenceShutdown(void)noexcept(true)=0;
+
+private:
+	cAtomicVar<uIntn> fRefCount;
+
+	class cReference : public iLibraryReference, public cRTLAllocator
+	{
+	public:
+		cReference *Next;
+		cReference *Prev;
+		bool Released;
+		bool DescriptionUpdated;
+
+		cReference(bcRegisteredReference *Owner,iLibraryReferrer *Referrer)noexcept(true);
+		~cReference()noexcept(true);
+
+		void WeakIncRef(void)noexcept(true);
+		void WeakDecRef(void)noexcept(true);
+		bool MakeStrongReference(void)noexcept(true);
+		bcRegisteredReference *GetOwner(void)const noexcept(true);
+		iLibraryReferrer *GetReferrer(void)const noexcept(true);
+
+		virtual	void cnLib_FUNC IncreaseReference(void)noexcept(true)override;
+		virtual	void cnLib_FUNC DecreaseReference(void)noexcept(true)override;
+
+		virtual	iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)override;
+
+		virtual void cnLib_FUNC UpdateDescription(void)noexcept(true)override;
+
+	private:
+		bcRegisteredReference *fOwner;
+		iLibraryReferrer *fReferrer;
+		cAtomicVar<uIntn> fWeakRefCount;
+
+	};
+	cLinkItemList<cReference> fReferenceList;
+
+
+	class cObserver : public bcReferenceObserver<cObserver>, public cRTLAllocator
+	{
+	public:
+		cObserver(cReference *Reference,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true);
+		~cObserver()noexcept(true);
+
+		bool ObserverMakeStrongReference(void)noexcept(true);
+		void ObserverInvalidate(bool Notify)noexcept(true);
+		void ObserverDelete(void)noexcept(true);
+
+	private:
+		cReference *fReference;
+		rPtr<iReference> fNotifyReference;
+		iProcedure *fNotifyProcedure;
+	};
+
+	cAsyncNotifySet<void> fShutdownNotifySet;
+};
 //---------------------------------------------------------------------------
 class cDualReference : public bcVirtualLifeCycle
 {
@@ -192,54 +301,6 @@ private:
 	}
 	void LifeCycleClear(void)noexcept(true){
 	}
-};
-//---------------------------------------------------------------------------
-class bcWeakReference
-{
-public:
-
-	void ObjectResetReference(void)noexcept(true);
-	void ObjectIncreaseReference(void)noexcept(true);
-	void ObjectDecreaseReference(void)noexcept(true);
-
-	iReferenceObserver* CreateReferenceObserver(iReference *Reference,iProcedure *Procedure)noexcept(true);
-
-protected:
-	virtual void cnLib_FUNC ObjectDeleted(void)noexcept(true)=0;
-
-private:
-	cAtomicVar<uIntn> fRefCount;
-	cAtomicVar<uIntn> fWeakCount;
-	cAsyncNotifySet<void> fNotifySet;
-
-	class cWeakObserver : public cAsyncNotifyToken<void>, public iReferenceObserver, public cRTLAllocator
-	{
-	public:
-		cWeakObserver(bcWeakReference *Owner,iReference *Reference,iProcedure *Procedure)noexcept(true);
-
-		virtual void cnLib_FUNC Close(void)noexcept(true)override;
-		virtual bool cnLib_FUNC Reference(void)noexcept(true)override;
-
-	protected:
-		bcWeakReference *fOwner;
-		rPtr<iReference> fProcReference;
-		iProcedure *fProcedure;
-
-		virtual void NotifyInsert(void)noexcept(true)override;
-		virtual void NotifyRemove(void)noexcept(true)override;
-		virtual void NotifyExecute(void)noexcept(true)override;
-
-		cAtomicVar<uIntn> fActiveFlag;
-		cAtomicVar<ufInt8> fRefCount;
-		cAtomicVar<bool> fTokenDisposed;
-		bool fOwnerReleased;
-
-		void Release(void)noexcept(true);
-		void Invalidated(void)noexcept(true);
-
-	};
-	void WeakUnregister(cWeakObserver *Observer)noexcept(true);
-	bool WeakToStrong(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 template<class T>

@@ -1,21 +1,9 @@
 #include "ObjectReference.h"
+#include "String.h"
 
 using namespace cnLibrary;
 using namespace cnRTL;
 
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cDualReference::cInner::Inc(void)noexcept(true)
-{
-	Ref.Free++;
-}
-void cDualReference::cInner::Dec(void)noexcept(true)
-{
-	if(Ref.Free--==1){
-		auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDualReference::fInnerReference);
-		Host->Dispose();
-	}
-}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 void bcWeakReference::ObjectResetReference(void)noexcept(true)
@@ -74,73 +62,228 @@ bcWeakReference::cWeakObserver::cWeakObserver(bcWeakReference *Owner,iReference 
 	: fOwner(Owner)
 	, fProcReference(Reference)
 	, fProcedure(Procedure)
-	, fActiveFlag(cnVar::TIntegerValue<uIntn>::MSB+1)
-	, fRefCount(2)	// acquire owner,invalidation
-	, fTokenDisposed(false)
-	, fOwnerReleased(false)
 {
 }
 //---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::Close(void)noexcept(true)
+bool bcWeakReference::cWeakObserver::ObserverMakeStrongReference(void)noexcept(true)
 {
-	Invalidated();
-	Release();	// release owner
+	return fOwner->WeakToStrong();
 }
 //---------------------------------------------------------------------------
-bool bcWeakReference::cWeakObserver::Reference(void)noexcept(true)
+void bcWeakReference::cWeakObserver::ObserverDelete(void)noexcept(true)
 {
-	uIntn Flag=++fActiveFlag.Free;
-	if(Flag&cnVar::TIntegerValue<uIntn>::MSB){
-		// token still active
-		bool Referenced=fOwner->WeakToStrong();
-		if(--fActiveFlag.Free==0){
-			Invalidated();
+	delete this;
+}
+//---------------------------------------------------------------------------
+void bcWeakReference::cWeakObserver::ObserverInvalidate(bool Notify)noexcept(true)
+{
+	if(Notify){
+		if(fProcedure!=nullptr){
+			fProcedure->Execute();
 		}
-		return Referenced;
 	}
-
-	--fActiveFlag.Free;
+	fProcReference=nullptr;
+	fOwner->WeakUnregister(this);
+	fOwner=nullptr;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bcRegisteredReference::bcRegisteredReference(bool InitialReference)noexcept(true)
+	: fRefCount(InitialReference)
+{
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::IncRef(void)noexcept(true)
+{
+	++fRefCount.Barrier;
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::DecRef(void)noexcept(true)
+{
+	if(--fRefCount.Barrier==0){
+		fShutdownNotifySet.Notify();
+		ReferenceShutdown();
+	}
+}
+//---------------------------------------------------------------------------
+bool bcRegisteredReference::MakeStrongReference(void)noexcept(true)
+{
+	uIntn RefCount=fRefCount;
+	while(RefCount){
+		if(fRefCount.Barrier.CmpXchg(RefCount,RefCount+1)){
+			return true;
+		}
+	}
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::NotifyInsert(void)noexcept(true)
+rPtr<iLibraryReference> bcRegisteredReference::CreateReference(iLibraryReferrer *Referrer)noexcept(true)
 {
-	++fRefCount.Free;	// acquire notifyset
+	auto Reference=new cReference(this,Referrer);
+	fReferenceList.InsertTail(Reference);
+	return rPtr<iLibraryReference>::TakeFromManual(Reference);
 }
 //---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::NotifyRemove(void)noexcept(true)
+bool bcRegisteredReference::UpdateReferenceSet(void)noexcept(true)
 {
-	Release();	// release notifyset
-}
-//---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::NotifyExecute(void)noexcept(true)
-{
-	fOwnerReleased=true;
-	if(fActiveFlag.Free.XchgSub(cnVar::TIntegerValue<uIntn>::MSB+1)==cnVar::TIntegerValue<uIntn>::MSB+1){
-		Invalidated();
-	}
-}
-//---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::Release(void)noexcept(true)
-{
-	if(--fRefCount.Free==0){
-		delete this;
-	}
-}
-//---------------------------------------------------------------------------
-void bcWeakReference::cWeakObserver::Invalidated(void)noexcept(true)
-{
-	if(fTokenDisposed.Free.Xchg(true)==false){
-		if(fOwnerReleased){
-			if(fProcedure!=nullptr){
-				fProcedure->Execute();
-			}
+	for(auto p=fReferenceList.begin();p!=fReferenceList.end();){
+		auto RemoveItem=*p;
+		p++;
+		if(RemoveItem->Released){
+			fReferenceList.Remove(RemoveItem);
+			delete RemoveItem;
 		}
-		fProcReference=nullptr;
-		fOwner->WeakUnregister(this);
-		fOwner=nullptr;
-		
-		Release();	// release invalidation
+		else if(RemoveItem->DescriptionUpdated){
+			// update description
+		}
+	}
+
+	return fReferenceList.IsEmpty();
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportText)noexcept(true)
+{
+	if(fReferenceList.GetCount()!=0){
+		ReportText.Append(u"Remaining reference :\n");
+		for(auto Reference : fReferenceList){
+			auto Referrer=Reference->GetReferrer();
+			auto Description=Referrer->CreateDescription();
+			cArray<const uChar16> DescArray;
+			if(Description!=nullptr){
+				DescArray=Description->Get();
+			}
+			else{
+				DescArray.Pointer=u"Unknown Object";
+				DescArray.Length=14;
+			}
+			StringStream::WriteFormatString(ReportText.StreamWriteBuffer(),u"%.*s\n",DescArray.Length,DescArray.Pointer);
+		}
+		ReportText.Append(u"End of Referrer List\n");
+	}
+	else{
+		ReportText.Append(u"No remaining referrer\n");
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bcRegisteredReference::cReference::cReference(bcRegisteredReference *Owner,iLibraryReferrer *Referrer)noexcept(true)
+	: fOwner(Owner)
+	, fReferrer(Referrer)
+	, fWeakRefCount(1)
+	, Released(false)
+	, DescriptionUpdated(false)
+{
+}
+//---------------------------------------------------------------------------
+bcRegisteredReference::cReference::~cReference()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cReference::WeakIncRef(void)noexcept(true)
+{
+	++fWeakRefCount.Free;
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cReference::WeakDecRef(void)noexcept(true)
+{
+	if(--fWeakRefCount.Free==0){
+		Released=true;
+		fOwner->ReferenceUpdate();
+	}
+}
+//---------------------------------------------------------------------------
+bool bcRegisteredReference::cReference::MakeStrongReference(void)noexcept(true)
+{
+	if(fOwner->MakeStrongReference()==false)
+		return false;
+
+	WeakIncRef();
+	return true;
+}
+//---------------------------------------------------------------------------
+bcRegisteredReference *bcRegisteredReference::cReference::GetOwner(void)const noexcept(true)
+{
+	return fOwner;
+}
+//---------------------------------------------------------------------------
+iLibraryReferrer *bcRegisteredReference::cReference::GetReferrer(void)const noexcept(true)
+{
+	return fReferrer;
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cReference::IncreaseReference(void)noexcept(true)
+{
+	WeakIncRef();
+
+	fOwner->IncRef();
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cReference::DecreaseReference(void)noexcept(true)
+{
+	fOwner->DecRef();
+
+	WeakDecRef();
+}
+//---------------------------------------------------------------------------
+iReferenceObserver* bcRegisteredReference::cReference::CreateReferenceObserver(iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
+{
+	auto Observer=new cObserver(this,NotifyReference,NotifyProcedure);
+	fOwner->fShutdownNotifySet.Insert(Observer);
+	return Observer;
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cReference::UpdateDescription(void)noexcept(true)
+{
+	DescriptionUpdated=true;
+	fOwner->ReferenceUpdate();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bcRegisteredReference::cObserver::cObserver(cReference *Reference,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
+	: fReference(Reference)
+	, fNotifyReference(NotifyReference)
+	, fNotifyProcedure(NotifyProcedure)
+{
+	fReference->WeakIncRef();
+}
+//---------------------------------------------------------------------------
+bcRegisteredReference::cObserver::~cObserver()noexcept(true)
+{
+	fReference->WeakDecRef();
+}
+//---------------------------------------------------------------------------
+bool bcRegisteredReference::cObserver::ObserverMakeStrongReference(void)noexcept(true)
+{
+	return fReference->MakeStrongReference();
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cObserver::ObserverInvalidate(bool Notify)noexcept(true)
+{
+	if(Notify){
+		if(fNotifyProcedure!=nullptr){
+			fNotifyProcedure->Execute();
+		}
+	}
+	fNotifyReference=nullptr;
+	auto Owner=fReference->GetOwner();
+	Owner->fShutdownNotifySet.Remove(this);
+}
+//---------------------------------------------------------------------------
+void bcRegisteredReference::cObserver::ObserverDelete(void)noexcept(true)
+{
+	delete this;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void cDualReference::cInner::Inc(void)noexcept(true)
+{
+	Ref.Free++;
+}
+void cDualReference::cInner::Dec(void)noexcept(true)
+{
+	if(Ref.Free--==1){
+		auto Host=cnMemory::GetObjectFromMemberPointer(this,&cDualReference::fInnerReference);
+		Host->Dispose();
 	}
 }
 //---------------------------------------------------------------------------

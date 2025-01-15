@@ -906,7 +906,16 @@ public:
 
 	void Log(void *Object,uInt32 Tag,bool Inc)noexcept(true);
 private:
-	class cContext : public iProcedure, public iDependentInfo
+	class cReferrer : public iProcedure, public iLibraryReferrer
+	{
+	public:
+		virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)override;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+
+		iReferenceObserver *Observer=nullptr;
+		static const uChar16 DependentName[];
+	};
+	class cContext : public iProcedure
 	{
 	public:
 		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
@@ -916,17 +925,15 @@ private:
 		void Inc(void *Object,uInt32 Tag)noexcept(true);
 		void Dec(void *Object,uInt32 Tag)noexcept(true);
 
-		static const uChar16 DependentName[];
-
-		virtual rPtr<iStringReference> cnLib_FUNC DependentCreateDescription(void)noexcept(true)override;
-		virtual void cnLib_FUNC DependentShutdownNotification(void)noexcept(true)override;
 	};
+	cnVar::cStaticVariable<cReferrer> fReferrer;
 	cnVar::cStaticVariable<cContext> fContext;
 	cAtomicQueueSO<cItem> fItemQueue;
 	cAtomicStack<cItem> fRecycleStack;
 
 	cExclusiveFlag fExclusiveFlag;
-	bool fInitialized;
+	bool fReferrerInitialized;
+	bool fContextInitialized;
 	ufInt8 fSystemShutdown;
 
 	void Process(void)noexcept(true);
@@ -1278,6 +1285,71 @@ protected:
 
 		}while(fStateProcessFlag.Release()==false);
 	}
+};
+//---------------------------------------------------------------------------
+template<class TImplementation>
+class bcReferenceObserver : public cAsyncNotifyToken<void>, public iReferenceObserver
+{
+public:
+	bcReferenceObserver()noexcept(true)
+		: fActivationFlag(cnVar::TIntegerValue<uIntn>::MSB+1)
+		, fRefCount(2)	// acquire owner,invalidation
+		, fObserverInvalidated(false)
+		, fReferenceNotified(false)
+	{
+	}
+
+	virtual void cnLib_FUNC Close(void)noexcept(true)override{
+		Invalidated();
+		Release();	// release owner
+	}
+	virtual bool cnLib_FUNC Reference(void)noexcept(true)override{
+		uIntn Flag=++fActivationFlag.Free;
+		if(Flag&cnVar::TIntegerValue<uIntn>::MSB){
+			// observer still active
+			bool Referenced=static_cast<TImplementation*>(this)->ObserverMakeStrongReference();
+			if(--fActivationFlag.Free==0){
+				Invalidated();
+			}
+			return Referenced;
+		}
+
+		--fActivationFlag.Free;
+		return false;
+	}
+
+protected:
+	virtual void NotifyInsert(void)noexcept(true)override{
+		++fRefCount.Free;	// acquire notifyset
+	}
+	virtual void NotifyRemove(void)noexcept(true)override{
+		Release();	// release notifyset
+	}
+	virtual void NotifyExecute(void)noexcept(true)override{
+		fReferenceNotified=true;
+		if(fActivationFlag.Free.XchgSub(cnVar::TIntegerValue<uIntn>::MSB+1)==cnVar::TIntegerValue<uIntn>::MSB+1){
+			Invalidated();
+		}
+	}
+private:
+	cAtomicVar<uIntn> fActivationFlag;
+	cAtomicVar<ufInt8> fRefCount;
+	cAtomicVar<bool> fObserverInvalidated;
+	bool fReferenceNotified;
+
+	void Release(void)noexcept(true){
+		if(--fRefCount.Free==0){
+			static_cast<TImplementation*>(this)->ObserverDelete();
+		}
+	}
+	void Invalidated(void)noexcept(true){
+		if(fObserverInvalidated.Free.Xchg(true)==false){
+			static_cast<TImplementation*>(this)->ObserverInvalidate(fReferenceNotified);
+
+			Release();	// release invalidation
+		}
+	}
+
 };
 //---------------------------------------------------------------------------
 }   // namespace cnRTL
