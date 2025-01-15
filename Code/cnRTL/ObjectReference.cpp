@@ -75,7 +75,7 @@ bcWeakReference::cWeakObserver::cWeakObserver(bcWeakReference *Owner,iReference 
 	, fProcReference(Reference)
 	, fProcedure(Procedure)
 	, fActiveFlag(cnVar::TIntegerValue<uIntn>::MSB+1)
-	, fRefCount(2)
+	, fRefCount(2)	// acquire owner,invalidation
 	, fTokenDisposed(false)
 	, fOwnerReleased(false)
 {
@@ -84,7 +84,7 @@ bcWeakReference::cWeakObserver::cWeakObserver(bcWeakReference *Owner,iReference 
 void bcWeakReference::cWeakObserver::Close(void)noexcept(true)
 {
 	Invalidated();
-	Release();
+	Release();	// release owner
 }
 //---------------------------------------------------------------------------
 bool bcWeakReference::cWeakObserver::Reference(void)noexcept(true)
@@ -105,11 +105,12 @@ bool bcWeakReference::cWeakObserver::Reference(void)noexcept(true)
 //---------------------------------------------------------------------------
 void bcWeakReference::cWeakObserver::NotifyInsert(void)noexcept(true)
 {
+	++fRefCount.Free;	// acquire notifyset
 }
 //---------------------------------------------------------------------------
 void bcWeakReference::cWeakObserver::NotifyRemove(void)noexcept(true)
 {
-	Release();
+	Release();	// release notifyset
 }
 //---------------------------------------------------------------------------
 void bcWeakReference::cWeakObserver::NotifyExecute(void)noexcept(true)
@@ -138,6 +139,8 @@ void bcWeakReference::cWeakObserver::Invalidated(void)noexcept(true)
 		fProcReference=nullptr;
 		fOwner->WeakUnregister(this);
 		fOwner=nullptr;
+		
+		Release();	// release invalidation
 	}
 }
 //---------------------------------------------------------------------------

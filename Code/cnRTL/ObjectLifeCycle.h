@@ -24,21 +24,21 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 
-// 			CPP						VirutalLifeCycle
-//			new							new
-//			| <-------Reactive			|	<-----Reactive
-//			|			|				|			|
-//Start----------------	|	Start---------------	|
-//			|			|			VirtualStart	|
-//			|			|				|			|
-//Stop-----------------	|	Stop----------------	|
-//			|			|				|			|
-//			|			|			VirtualStop		|
-//			|			|				|			|
-//			|			|			VirtualDelete	|
-//			|------->Recycle			|-------->Recycle
-//			|							|
-//		  delete					  delete
+// 			CPP						Disposable					VirutalLifeCycle
+//new-------|				new---------|					new---------|
+//			|							|	<-----Reactive				|	<-----Reactive
+//			|							|			|					|			|
+//Start--------------		Start---------------	|		Start---------------	|
+//			|							|			|				VirtualStart	|
+//			|							|			|					|			|
+//Stop---------------		Stop----------------	|		Stop----------------	|
+//			|							|			|				VirtualStop		|
+//			|							|			|					|			|
+//			|						  Dispose		|				  Dispose		|
+//			|							|-------->Recycle				|-------->Recycle
+//			|							|								|
+//		  delete					  delete						  delete
+
 //---------------------------------------------------------------------------
 
 //TLifeCycleActivation
@@ -113,7 +113,7 @@ class cDisposableLifeCycleSharedManager
 public:
 	typedef T tLifeCycleObject;
 
-	static_assert(cnVar::TIsConvertible<T*,bcDisposable*>::Value,"Incorrect Instance");
+	static_assert(cnVar::TIsConvertible<T*,bcDisposable*>::Value,"Incorrect Type");
 
 	static void ManageShared(tLifeCycleObject *Object)noexcept(true){
 		auto Disposal=cnVar::StaticInitializedSinglton< bcDisposable::template cDefaultDisposal<T> >();
