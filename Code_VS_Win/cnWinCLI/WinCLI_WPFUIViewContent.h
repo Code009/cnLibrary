@@ -21,7 +21,7 @@ class cnLib_INTERFACE miWPFUISimpleGraph : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual void Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)=0;
 };

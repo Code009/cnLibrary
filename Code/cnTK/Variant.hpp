@@ -32,11 +32,11 @@ struct AssignOrReconstruct<false>
 	template<class T,class TSrc>
 	static void Call(T &Dest,TSrc cnLib_UREF Src)
 		noexcept(
-			noexcept(cnVar::ManualDestruct(Dest)) && noexcept(T(cnLib_UREFCAST(TSrc)(Src)))
+			noexcept(cnClass::ManualDestruct(Dest)) && noexcept(T(cnLib_UREFCAST(TSrc)(Src)))
 		)
 	{
-		cnVar::ManualDestruct(Dest);
-		cnVar::ManualConstruct(Dest,cnLib_UREFCAST(TSrc)(Src));
+		cnClass::ManualDestruct(Dest);
+		cnClass::ManualConstruct(Dest,cnLib_UREFCAST(TSrc)(Src));
 	}
 
 };
@@ -681,7 +681,7 @@ public:
 	cVariant()noexcept(TIsDefaultConstructNoexcept<typename TVariantTypeOperator::template tTypeByIndex<TVariantTypeOperator::DefaultTypeIndex>::Type>::Value)
 		: fTypeIndex(TVariantTypeOperator::DefaultTypeIndex)
 	{
-		ManualConstruct(reinterpret_cast<typename TVariantTypeOperator::template tTypeByIndex<TVariantTypeOperator::DefaultTypeIndex>::Type&>(fContent));
+		cnClass::ManualConstruct(reinterpret_cast<typename TVariantTypeOperator::template tTypeByIndex<TVariantTypeOperator::DefaultTypeIndex>::Type&>(fContent));
 	}
 	~cVariant()noexcept(TVariantTypeOperator::IsDestructNoexcept){
 		rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
@@ -832,7 +832,7 @@ public:
 			else{
 				TypeInfo->Operators->Destruct(&fContent);
 				fTypeIndex=NewTypeIndex;
-				ManualConstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArg)(Arg));
+				cnClass::ManualConstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArg)(Arg));
 			}
 		}
 	}
@@ -846,14 +846,14 @@ public:
 	){
 		typedef typename TVariantTypeOperator::template tTypeByIndex<NewTypeIndex>::Type TNewType;
 		if(NewTypeIndex==fTypeIndex){
-			ManualDestruct(reinterpret_cast<TNewType&>(fContent));
+			cnClass::ManualDestruct(reinterpret_cast<TNewType&>(fContent));
 		}
 		else{
 			rtTypeInfo TypeInfo=TVariantTypeOperator::GetTypeInfo(fTypeIndex);
 			TypeInfo->Operators->Destruct(&fContent);
 			fTypeIndex=NewTypeIndex;
 		}
-		ManualConstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArgs)(Args)...);
+		cnClass::ManualConstruct(reinterpret_cast<TNewType&>(fContent),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 #endif	//	cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
@@ -1035,8 +1035,8 @@ struct cAnyVariableContent_Pointer
 	// reconstruct
 	template<class T,class...TArgs>
 	void Reconstruct(TArgs cnLib_UREF...Args)noexcept(true){
-		cnVar::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
-		cnVar::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArgs)(Args)...);
+		cnClass::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
+		cnClass::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 #else
@@ -1050,8 +1050,8 @@ struct cAnyVariableContent_Pointer
 	// reconstruct
 	template<class T,class...TArg>
 	void Reconstruct(TArgs cnLib_UREF Arg){
-		cnVar::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
-		cnVar::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArg)(Arg));
+		cnClass::ManualDestruct<T>(*static_cast<T*>(this->Pointer));
+		cnClass::ManualConstruct<T>(*static_cast<T*>(this->Pointer),cnLib_UREFCAST(TArg)(Arg));
 	}
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 

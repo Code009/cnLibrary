@@ -115,7 +115,7 @@ class cnLib_INTERFACE iConnection : public iAddressBinding
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual iAddress*	cnLib_FUNC GetRemoteAddress(void)noexcept(true)=0;
 };

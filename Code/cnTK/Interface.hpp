@@ -137,7 +137,7 @@ public:
 //---------------------------------------------------------------------------
 namespace cnLib_THelper{
 //---------------------------------------------------------------------------
-namespace Var_TH{
+namespace Class_TH{
 //---------------------------------------------------------------------------
 
 template<class TEnbale,class T>
@@ -191,7 +191,7 @@ struct InterfaceID<void,T>
 
 #define	cnLib_INTERFACE_LOCALID_DEFINE(_interface_)	static const iTypeInfo LocalInterfaceInfo_##_interface_={};	iTypeID _interface_::tInterfaceID::Value=LocalInterfaceInfo_##_interface_;
 //---------------------------------------------------------------------------
-}	// namespace Var_TH
+}	// namespace Class_TH
 //---------------------------------------------------------------------------
 }	// namespace cnLib_THelper
 //---------------------------------------------------------------------------
@@ -200,7 +200,7 @@ namespace cnLibrary{
 
 template<class T>
 struct TInterfaceID
-	: cnLib_THelper::Var_TH::InterfaceID<void,T>{};
+	: cnLib_THelper::Class_TH::InterfaceID<void,T>{};
 
 //---------------------------------------------------------------------------
 template<class T>
@@ -238,7 +238,7 @@ template<> struct TInterfaceID<iReference>:iReference::tInterfaceID{	typedef iRe
 //---------------------------------------------------------------------------
 namespace cnLib_THelper{
 //---------------------------------------------------------------------------
-namespace Var_TH{
+namespace Class_TH{
 //---------------------------------------------------------------------------
 template<class TEnable,class T>
 struct ClassReferenceInterface
@@ -248,13 +248,13 @@ template<class T>
 struct ClassReferenceInterface<typename cnVar::TSelect<0,void,typename T::tReferenceInterface>::Type,T>
 	: cnVar::TTypeDef<typename T::tReferenceInterface>{};
 //---------------------------------------------------------------------------
-}	// namespace Var_TH
+}	// namespace Class_TH
 //---------------------------------------------------------------------------
 }	// namespace cnLib_THelper
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-namespace cnVar{
+namespace cnClass{
 //---------------------------------------------------------------------------
 template<class TImplementation>
 void* FindInterface(TImplementation*,iTypeID)noexcept(true)
@@ -286,7 +286,7 @@ void* ImplementCastInterface(TImplementation *Implementation,iTypeID ID)noexcept
 //---------------------------------------------------------------------------
 template<class T>
 struct TClassReferenceInterface
-	: TTypeDef<typename cnLib_THelper::Var_TH::ClassReferenceInterface<void,T>::Type>{};
+	: cnVar::TTypeDef<typename cnLib_THelper::Class_TH::ClassReferenceInterface<void,T>::Type>{};
 //---------------------------------------------------------------------------
 struct rPointerReferenceOperator
 {
@@ -300,11 +300,11 @@ struct rPointerReferenceOperator
 	}
 };
 //---------------------------------------------------------------------------
-}	// namespace cnVar
+}	// namespace cnClass
 //---------------------------------------------------------------------------
 
 template<class T>
-class rPtr : public cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>
+class rPtr : public cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>
 {
 public:
 
@@ -313,21 +313,21 @@ public:
 		cnVar::TIsConvertible<TSrc*,T*>::Value
 	>::Type TakeFromManual(TSrc *Pointer)noexcept(true)
 	{
-		typename cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::ConstructReferenced Referenced={static_cast<T*>(Pointer)};
+		typename cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::ConstructReferenced Referenced={static_cast<T*>(Pointer)};
 		return rPtr(Referenced);
 	}
 
 #if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
-	using cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::cPtrReference;
-	using cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =;
+	using cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::cPtrReference;
+	using cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =;
 
 #else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
 
 	rPtr()noexcept(true){}
 
-	rPtr(const rPtr &Src)noexcept(true) : cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>( static_cast< const cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>&>(Src)) {}
+	rPtr(const rPtr &Src)noexcept(true) : cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>( static_cast< const cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>&>(Src)) {}
 	rPtr& operator =(const rPtr &Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =(static_cast<const cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>&>(Src));
+		cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =(static_cast<const cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>&>(Src));
 		return *this;
 	}
 
@@ -337,24 +337,24 @@ public:
 	rPtr(tNullptr)noexcept(true){}
 
 	rPtr& operator =(tNullptr)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =(nullptr);
+		cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =(nullptr);
 		return *this;
 	}
 #endif
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	rPtr(rPtr &&Src)noexcept(true) : cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>(static_cast<cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>&&>(Src)) {}
+	rPtr(rPtr &&Src)noexcept(true) : cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>(static_cast<cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>&&>(Src)) {}
 
 	rPtr& operator =(rPtr &&Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =(static_cast<cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>&&>(Src));
+		cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =(static_cast<cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>&&>(Src));
 		return *this;
 	}
 
 	// make token with pointer
 
 	rPtr(T *Pointer)noexcept(true)
-		: cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>(Pointer){}
+		: cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>(Pointer){}
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	// construct with cPtrReference
@@ -367,7 +367,7 @@ public:
 #endif
 	>
 	rPtr(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
-		: cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>(Src){}
+		: cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>(Src){}
 
 
 	// assign with cPtrReference
@@ -376,7 +376,7 @@ public:
 	typename cnVar::TTypeConditional<cPtrReference&,
 		cnVar::TIsConvertible<TSrc*,T*>::Value
 	>::Type operator =(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =(Src);
+		cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =(Src);
 		return *this;
 	}
 
@@ -392,8 +392,8 @@ public:
 		>::Type
 #endif
 	>
-	rPtr(cPtrReference<TSrc,cnVar::rPointerReferenceOperator> &&Src)noexcept(true)
-		: cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>(static_cast<cPtrReference<TSrc,cnVar::rPointerReferenceOperator>&&>(Src)){}
+	rPtr(cPtrReference<TSrc,cnClass::rPointerReferenceOperator> &&Src)noexcept(true)
+		: cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>(static_cast<cPtrReference<TSrc,cnClass::rPointerReferenceOperator>&&>(Src)){}
 
 
 	// move assign from cPtrReference
@@ -401,8 +401,8 @@ public:
 	template<class TSrc>
 	typename cnVar::TTypeConditional<cPtrReference&,
 		cnVar::TIsConvertible<TSrc*,T*>::Value
-	>::Type operator =(cPtrReference<TSrc,cnVar::rPointerReferenceOperator> &&Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerReferenceOperator>::operator =(static_cast<cPtrReference<TSrc,cnVar::rPointerReferenceOperator>&&>(Src));
+	>::Type operator =(cPtrReference<TSrc,cnClass::rPointerReferenceOperator> &&Src)noexcept(true){
+		cnClass::cPtrReference<T,cnClass::rPointerReferenceOperator>::operator =(static_cast<cPtrReference<TSrc,cnClass::rPointerReferenceOperator>&&>(Src));
 		return *this;
 	}
 
@@ -416,12 +416,12 @@ public:
 template<class T>
 void rIncReference(T *Src)noexcept(true)
 {
-	static_cast<typename cnVar::TClassReferenceInterface<T>::Type*>(Src)->IncreaseReference();
+	static_cast<typename cnClass::TClassReferenceInterface<T>::Type*>(Src)->IncreaseReference();
 }
 template<class T>
 void rDecReference(T *Src)noexcept(true)
 {
-	static_cast<typename cnVar::TClassReferenceInterface<T>::Type*>(Src)->DecreaseReference();
+	static_cast<typename cnClass::TClassReferenceInterface<T>::Type*>(Src)->DecreaseReference();
 }
 //---------------------------------------------------------------------------
 template<class T>
@@ -438,7 +438,7 @@ inline void rDecReference(const rPtr<T> &Src)noexcept(true)
 template<class T>
 inline iReference* rGetReference(T *Src)noexcept(true)
 {
-	return static_cast<typename cnVar::TClassReferenceInterface<T>::Type*>(Src);
+	return static_cast<typename cnClass::TClassReferenceInterface<T>::Type*>(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
@@ -447,7 +447,7 @@ rPtr<T> rTakeFromManual(T *Src)noexcept(true)
 	return rPtr<T>::TakeFromManual(Src);
 }
 //---------------------------------------------------------------------------
-namespace cnVar{
+namespace cnClass{
 //---------------------------------------------------------------------------
 struct iPointerReferenceOperator
 {
@@ -467,7 +467,7 @@ struct iPointerReferenceOperator
 	}
 };
 //---------------------------------------------------------------------------
-}	// namespace cnVar
+}	// namespace cnClass
 //---------------------------------------------------------------------------
 
 
@@ -696,7 +696,7 @@ public:
 		>::Type
 #endif
 	>
-	iPtr(const cnVar::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true)
+	iPtr(const cnClass::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true)
 		: fPointer(Src.Pointer())
 	{
 		if(fPointer!=nullptr){
@@ -716,7 +716,7 @@ public:
 	template<class TSrcInterface,class TSrcPointerReferenceOperator>
 	typename cnVar::TTypeConditional<iPtr&,
 		cnVar::TIsConvertible<TSrcInterface*,TInterface*>::Value
-	>::Type operator =(const cnVar::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true){
+	>::Type operator =(const cnClass::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true){
 		iReference* SwapReference=fReference;
 
 		fPointer=Src.Pointer();
@@ -744,7 +744,7 @@ public:
 		>::Type
 #endif
 	>
-	iPtr(cnVar::cPtrReference<TSrcInterface,cnVar::iPointerReferenceOperator> &&Src)noexcept(true)
+	iPtr(cnClass::cPtrReference<TSrcInterface,cnClass::iPointerReferenceOperator> &&Src)noexcept(true)
 		: fPointer(Src.ExtractToManual())
 	{
 		if(fPointer!=nullptr){
@@ -758,7 +758,7 @@ public:
 	template<class TSrcInterface>
 	typename cnVar::TTypeConditional<iPtr&,
 		cnVar::TIsConvertible<TSrcInterface*,TInterface*>::Value
-	>::Type operator =(cnVar::cPtrReference<TSrcInterface,cnVar::iPointerReferenceOperator> &&Src)noexcept(true){
+	>::Type operator =(cnClass::cPtrReference<TSrcInterface,cnClass::iPointerReferenceOperator> &&Src)noexcept(true){
 		iReference* SwapReference=fReference;
 
 		fPointer=Src.ExtractToManual();
@@ -992,7 +992,7 @@ public:
 };
 template<> struct TInterfaceID<iObservedReference>:iObservedReference::tInterfaceID{	typedef iObservedReference Type;	};
 //---------------------------------------------------------------------------
-namespace cnVar{
+namespace cnClass{
 //---------------------------------------------------------------------------
 struct rPointerWeakReferenceOperator
 {
@@ -1040,24 +1040,24 @@ struct iPointerWeakReferenceOperator
 	}
 };
 //---------------------------------------------------------------------------
-}	// namespace cnVar
+}	// namespace cnClass
 //---------------------------------------------------------------------------
 template<class T>
-class rWeakPtr : public cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>
+class rWeakPtr : public cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>
 {
 public:
 
 #if cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS >= 200802L
-	using cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>::cPtrWeakReference;
-	using cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>::operator =;
+	using cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>::cPtrWeakReference;
+	using cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>::operator =;
 
 #else	// cnLibrary_CPPFEATURE_INHERIT_CONSTRUCTORS < 200802L
 
 	rWeakPtr()noexcept(true){}
 
-	rWeakPtr(const rWeakPtr &Src)noexcept(true) : cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>( static_cast< const cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>&>(Src)) {}
+	rWeakPtr(const rWeakPtr &Src)noexcept(true) : cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>( static_cast< const cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>&>(Src)) {}
 	rWeakPtr& operator =(const rWeakPtr &Src)noexcept(true){
-		cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>::operator =(static_cast<const cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>&>(Src));
+		cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>::operator =(static_cast<const cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>&>(Src));
 		return *this;
 	}
 
@@ -1067,24 +1067,24 @@ public:
 	rWeakPtr(tNullptr)noexcept(true){}
 
 	rWeakPtr& operator =(tNullptr)noexcept(true){
-		cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>::operator =(nullptr);
+		cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>::operator =(nullptr);
 		return *this;
 	}
 #endif
 
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
-	rWeakPtr(rWeakPtr &&Src)noexcept(true) : cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>(static_cast<cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>&&>(Src)) {}
+	rWeakPtr(rWeakPtr &&Src)noexcept(true) : cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>(static_cast<cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>&&>(Src)) {}
 
 	rWeakPtr& operator =(rWeakPtr &&Src)noexcept(true){
-		cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>::operator =(static_cast<cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>&&>(Src));
+		cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>::operator =(static_cast<cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>&&>(Src));
 		return *this;
 	}
 
 	// make token with pointer
 
 	rWeakPtr(T *Pointer)noexcept(true)
-		: cnVar::cPtrWeakReference<T,cnVar::rPointerWeakReferenceOperator>(Pointer){}
+		: cnClass::cPtrWeakReference<T,cnClass::rPointerWeakReferenceOperator>(Pointer){}
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 
 	// construct with cPtrReference
@@ -1097,7 +1097,7 @@ public:
 #endif
 	>
 	rWeakPtr(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
-		: cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>(Src){}
+		: cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>(Src){}
 
 
 	// assign with cPtrReference
@@ -1106,7 +1106,7 @@ public:
 	typename cnVar::TTypeConditional<cPtrReference&,
 		cnVar::TIsConvertible<TSrc*,T*>::Value
 	>::Type operator =(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>::operator =(Src);
+		cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>::operator =(Src);
 		return *this;
 	}
 
@@ -1122,8 +1122,8 @@ public:
 		>::Type
 #endif
 	>
-	rWeakPtr(cPtrReference<TSrc,cnVar::rPointerWeakReferenceOperator> &&Src)noexcept(true)
-		: cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>(static_cast<cPtrReference<TSrc,cnVar::rPointerWeakReferenceOperator>&&>(Src)){}
+	rWeakPtr(cPtrReference<TSrc,cnClass::rPointerWeakReferenceOperator> &&Src)noexcept(true)
+		: cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>(static_cast<cPtrReference<TSrc,cnClass::rPointerWeakReferenceOperator>&&>(Src)){}
 
 
 	// move assign from cPtrReference
@@ -1131,8 +1131,8 @@ public:
 	template<class TSrc>
 	typename cnVar::TTypeConditional<cPtrReference&,
 		cnVar::TIsConvertible<TSrc*,T*>::Value
-	>::Type operator =(cPtrReference<TSrc,cnVar::rPointerWeakReferenceOperator> &&Src)noexcept(true){
-		cnVar::cPtrReference<T,cnVar::rPointerWeakReferenceOperator>::operator =(static_cast<cPtrReference<TSrc,cnVar::rPointerWeakReferenceOperator>&&>(Src));
+	>::Type operator =(cnClass::cPtrReference<TSrc,cnClass::rPointerWeakReferenceOperator> &&Src)noexcept(true){
+		cnClass::cPtrReference<T,cnClass::rPointerWeakReferenceOperator>::operator =(static_cast<cPtrReference<TSrc,cnClass::rPointerWeakReferenceOperator>&&>(Src));
 		return *this;
 	}
 
@@ -1326,11 +1326,11 @@ public:
 	template<class TSrcInterface,class TSrcPointerReferenceOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 		, class=typename cnVar::TTypeConditional<void,
-		cnVar::TIsAssignableFrom<TSrcInterface*&,TSrcInterface*>::Value
+			cnVar::TIsAssignableFrom<TSrcInterface*&,TSrcInterface*>::Value
 		>::Type
 #endif
 	>
-	iWeakPtr(const cnVar::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true)
+	iWeakPtr(const cnClass::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true)
 	{
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){
@@ -1357,7 +1357,7 @@ public:
 	template<class TSrcInterface,class TSrcPointerReferenceOperator>
 	typename cnVar::TTypeConditional<iWeakPtr&,
 		cnVar::TIsAssignableFrom<TInterface*&,TSrcInterface*>::Value
-	>::Type operator =(const cnVar::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true){
+	>::Type operator =(const cnClass::cPtrReference<TSrcInterface,TSrcPointerReferenceOperator> &Src)noexcept(true){
 		Clear();
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){

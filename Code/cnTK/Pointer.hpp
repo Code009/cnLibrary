@@ -153,56 +153,7 @@ inline typename cnVar::TCopyCV<TMemberClass,TPointer>::Type* GetObjectFromArrayM
 //---------------------------------------------------------------------------
 }	// namespace cnMemory
 //---------------------------------------------------------------------------
-}	// namespace cnLibrary
-//---------------------------------------------------------------------------
-namespace cnLib_THelper{
-//---------------------------------------------------------------------------
-namespace Var_TH{
-//---------------------------------------------------------------------------
-
-template<class TEnable,class T,class TTokenOperator,class TSrc>
-struct TypeIfPointerTokenFrom
-{
-};
-
-#if !defined(cnLibrary_CPPEXCLUDE_SFINAE_DECLTYPE_EXPRESSION) && cnLibrary_CPPFEATURE_DECLTYPE >= 200707L
-
-template<class T,class TTokenOperator,class TSrc>
-struct TypeIfPointerTokenFrom<decltype(static_cast<void>(TTokenOperator::TokenFrom(cnVar::DeclVal<TSrc>()))),
-	T,TTokenOperator,TSrc>
-{
-	typedef T Type;
-};
-
-#elif !defined(cnLibrary_CPPEXCLUDE_SFINAE_SIZEOF_EXPRESSION)
-
-template<class T,class TTokenOperator,class TSrc>
-struct TypeIfPointerTokenFrom<typename cnVar::TSelect<!sizeof(TTokenOperator::TokenFrom(cnVar::DeclVal<TSrc>())),void>::Type,
-	T,TTokenOperator,TSrc>
-{
-	typedef T Type;
-};
-
-#else
-
-template<class T,class TTokenOperator,class TSrc>
-struct TypeIfPointerTokenFrom<void,
-	T,TTokenOperator,TSrc>
-{
-	typedef T Type;
-};
-
-
-#endif	// cnLibrary_CPPFEATURE_DECLTYPE < 200707L
-
-//---------------------------------------------------------------------------
-}	// namespace Var_TH
-//---------------------------------------------------------------------------
-}	// namespace cnLib_THelper
-//---------------------------------------------------------------------------
-namespace cnLibrary{
-//---------------------------------------------------------------------------
-namespace cnVar{
+namespace cnClass{
 //---------------------------------------------------------------------------
 //TPointerOwnerOperator
 //{
@@ -272,8 +223,8 @@ public:
 	
 	template<class TSrc
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=typename TTypeConditional<void,
-			TIsConvertible<TSrc*,T*>::Value
+		, class=typename cnVar::TTypeConditional<void,
+			cnVar::TIsConvertible<TSrc*,T*>::Value
 		>::Type
 #endif
 	>
@@ -283,8 +234,8 @@ public:
 	// move assign with token from cPtrOwner
 	
 	template<class TSrc>
-	typename TTypeConditional<cPtrOwner&,
-		TIsConvertible<TSrc*,T*>::Value
+	typename cnVar::TTypeConditional<cPtrOwner&,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
 	>::Type operator =(cPtrOwner<TSrc,TPointerOwnerOperator> &&Src)noexcept(true){
 		if(fPointer!=nullptr)
 			TPointerOwnerOperator::Release(fPointer);
@@ -318,8 +269,8 @@ public:
 
 	template<class TSrc
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
-		, class=typename TTypeConditional<void,
-		TIsConvertible<TSrc*,T*>::Value
+		, class=typename cnVar::TTypeConditional<void,
+			cnVar::TIsConvertible<TSrc*,T*>::Value
 		>::Type
 #endif
 	>
@@ -329,8 +280,8 @@ public:
 	// move assign with token from cPtrOwner
 
 	template<class TSrc>
-	typename typename TTypeConditional<cPtrOwner&,
-		TIsConvertible<TSrc*,T*>::Value
+	typename typename cnVar::TTypeConditional<cPtrOwner&,
+		cnVar::TIsConvertible<TSrc*,T*>::Value
 	>::Type operator =(cPtrOwner<TSrc,TPointerOwnerOperator> &Src)noexcept(true){
 		if(fPointer!=nullptr)
 			TPointerOwnerOperator::Release(fPointer);
@@ -356,8 +307,8 @@ public:
 
 
 	template<class TSrcPtr>
-	static typename TTypeConditional<cPtrOwner,
-		TIsConvertible<TSrcPtr,T*>::Value
+	static typename cnVar::TTypeConditional<cPtrOwner,
+		cnVar::TIsConvertible<TSrcPtr,T*>::Value
 	>::Type TakeFromManual(TSrcPtr Pointer)noexcept(true)
 	{
 		ConstructReferenced Referenced;
@@ -455,8 +406,8 @@ protected:
 public:
 
 	template<class TSrcPtr>
-	static typename TTypeConditional<cPtrReference,
-		TIsConvertible<TSrcPtr,T*>::Value
+	static typename cnVar::TTypeConditional<cPtrReference,
+		cnVar::TIsConvertible<TSrcPtr,T*>::Value
 	>::Type TakeFromManual(TSrcPtr Pointer)noexcept(true)
 	{
 		ConstructReferenced Referenced={static_cast<T*>(Pointer)};
@@ -773,7 +724,7 @@ public:
 		>::Type
 #endif
 	>
-	cPtrWeakReference(const cnVar::cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
+	cPtrWeakReference(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true)
 	{
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){
@@ -797,7 +748,7 @@ public:
 	template<class TSrc,class TSrcPointerReferenceOperator>
 	typename cnVar::TTypeConditional<cPtrWeakReference&,
 		cnVar::TIsConvertible<TSrc*,T*>::Value
-	>::Type operator =(const cnVar::cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
+	>::Type operator =(const cPtrReference<TSrc,TSrcPointerReferenceOperator> &Src)noexcept(true){
 		Clear();
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){
@@ -813,7 +764,7 @@ protected:
 	T *fPointer;
 };
 //---------------------------------------------------------------------------
-}   // namespace cnVar
+}   // namespace cnClass
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------

@@ -23,7 +23,7 @@ public:
 //---------------------------------------------------------------------------
 void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept
 {
-	typedef cRecyclableLifeCycleSharedManager< cCOMReleaseProcedure,cRecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
+	typedef cnClass::RecyclableLifeCycleSharedManager< cCOMReleaseProcedure,cnClass::RecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
 
 	auto *Manager=tLifeCycleManager::GetSharedManager();
 	auto ReleaseProc=Manager->Query();

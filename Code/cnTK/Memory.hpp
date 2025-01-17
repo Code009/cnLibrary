@@ -316,7 +316,7 @@ struct cPlainAlignedData<0,TAlignment>;
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-namespace cnVar{
+namespace cnClass{
 //---------------------------------------------------------------------------
 
 // ManualConstruct
@@ -326,14 +326,14 @@ template<class T>
 inline void ManualConstruct(T &Object)
 	noexcept(noexcept(T()))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T;
 }
 template<class T>
 inline void ManualConstructZero(T &Object)
 	noexcept(noexcept(T()))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T();
 }
 
@@ -347,7 +347,7 @@ template<class T,class TArg,class...TArgs>
 inline void ManualConstruct(T &Object,TArg cnLib_UREF Arg,TArgs cnLib_UREF...Args)
 	noexcept(noexcept(T(cnLib_UREFCAST(TArg)(Arg),cnLib_UREFCAST(TArgs)(Args)...)))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T(cnLib_UREFCAST(TArg)(Arg),cnLib_UREFCAST(TArgs)(Args)...);
 }
 
@@ -361,7 +361,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0)
 		cnLib_UREFCAST(T0)(P0)
 	)))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T(cnLib_UREFCAST(T0)(P0));
 }
 template<class T, class T0, class T1>
@@ -371,7 +371,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1)
 		cnLib_UREFCAST(T1)(P1)
 	)))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T(
 			cnLib_UREFCAST(T0)(P0),
 			cnLib_UREFCAST(T1)(P1)
@@ -385,7 +385,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cn
 		cnLib_UREFCAST(T1)(P2)
 	)))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T(
 			cnLib_UREFCAST(T0)(P0),
 			cnLib_UREFCAST(T1)(P1),
@@ -401,7 +401,7 @@ inline void ManualConstruct(T &Object, T0 cnLib_UREF P0, T1 cnLib_UREF P1, T2 cn
 		cnLib_UREFCAST(T1)(P3)
 	)))
 {
-	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename TRemoveCV<T>::Type&>(Object)) )
+	::new( &reinterpret_cast<cNoInitialization&>(const_cast<typename cnVar::TRemoveCV<T>::Type&>(Object)) )
 		T(
 			cnLib_UREFCAST(T0)(P0),
 			cnLib_UREFCAST(T1)(P1),
@@ -421,6 +421,11 @@ inline void ManualDestruct(T &Object)noexcept(noexcept(Object.~T()))
 	UnusedParameter(Object);	// prevent unused parameter warning on class do not have destructor
 	Object.~T();
 }
+
+//---------------------------------------------------------------------------
+}	// namespace cnClass
+//---------------------------------------------------------------------------
+namespace cnVar{
 //---------------------------------------------------------------------------
 
 template<class TObject>
@@ -441,7 +446,7 @@ public:
 	template<class...TArgs>
 	void Construct(TArgs cnLib_UREF...Args)noexcept(noexcept(TObject(cnLib_UREFCAST(TArgs)(Args)...)))
 	{
-		ManualConstruct(*reinterpret_cast<TObject*>(this),cnLib_UREFCAST(TArgs)(Args)...);
+		cnClass::ManualConstruct(*reinterpret_cast<TObject*>(this),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 #else
@@ -451,7 +456,7 @@ public:
 	template<class TArg0>
 	void Construct(TArg0 cnLib_UREF Arg0)noexcept(noexcept(TObject(cnLib_UREFCAST(TArg0)(Arg0))))
 	{
-		ManualConstruct(*reinterpret_cast<TObject*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TObject*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 		);
 	}
@@ -462,7 +467,7 @@ public:
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TObject*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TObject*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		);
@@ -475,7 +480,7 @@ public:
 			,cnLib_UREFCAST(TArg2)(Arg2)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TObject*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TObject*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -490,7 +495,7 @@ public:
 			,cnLib_UREFCAST(TArg3)(Arg3)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TObject*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TObject*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -501,7 +506,7 @@ public:
 #endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 	void Destruct(void)noexcept(noexcept(cnVar::DeclVal<TObject&>().~TObject()))
 	{
-		ManualDestruct(*reinterpret_cast<TObject*>(this));
+		cnClass::ManualDestruct(*reinterpret_cast<TObject*>(this));
 	}
 };
 
@@ -551,7 +556,7 @@ struct cStaticInitializedSinglton
 
 	static void Check(void){
 		if(!gInstance.Initialized){
-			ManualConstruct(reinterpret_cast<T&>(gInstance));
+			cnClass::ManualConstruct(reinterpret_cast<T&>(gInstance));
 			gInstance.Initialized=true;
 		}
 	}
@@ -657,7 +662,6 @@ const T* StaticInitializedConstSinglton(void)noexcept(true){
 
 #endif	// cnLibrary_CPPFEATURE_CONSTINIT < 201907L
 
-
 //---------------------------------------------------------------------------
 template<uIntn Size,class TAlignment>
 class cPolymorphicBlock : protected cnMemory::cPlainAlignedData<Size,TAlignment>
@@ -672,7 +676,7 @@ public:
 	void ConstructAs(TArgs cnLib_UREF...Args)noexcept(noexcept(TDest(cnLib_UREFCAST(TArgs)(Args)...)))
 	{
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
-		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 
 	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
@@ -680,12 +684,12 @@ public:
 	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 	template<class TDest>
 	void Construct(void)noexcept(noexcept(TDest()))
-	{	ManualConstruct(*reinterpret_cast<TDest*>(this));	}
+	{	cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this));	}
 	template<class TDest,class TArg0>
 	void Construct(TArg0 cnLib_UREF Arg0)
 		noexcept(noexcept(TDest(cnLib_UREFCAST(TArg0)(Arg0))))
 	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 		);
 	}
@@ -696,7 +700,7 @@ public:
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 		);
@@ -709,7 +713,7 @@ public:
 			,cnLib_UREFCAST(TArg2)(Arg2)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -724,7 +728,7 @@ public:
 			,cnLib_UREFCAST(TArg3)(Arg3)
 		)))
 	{
-		ManualConstruct(*reinterpret_cast<TDest*>(this)
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this)
 			,cnLib_UREFCAST(TArg0)(Arg0)
 			,cnLib_UREFCAST(TArg1)(Arg1)
 			,cnLib_UREFCAST(TArg2)(Arg2)
@@ -738,7 +742,7 @@ public:
 	void DestructAs(void)noexcept(noexcept(cnVar::DeclVal<TDest&>().~TDest()))
 	{
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
-		ManualDestruct(*reinterpret_cast<TDest*>(this));
+		cnClass::ManualDestruct(*reinterpret_cast<TDest*>(this));
 	}
 };
 //---------------------------------------------------------------------------
@@ -782,7 +786,7 @@ public:
 	TInterface* operator ->()noexcept(true){				return reinterpret_cast<TInterface*>		(this);	}
 	const TInterface* operator ->()const noexcept(true){	return reinterpret_cast<const TInterface*>	(this);	}
 
-	cPolymorphicClass(){	ManualConstruct(*reinterpret_cast<TInterface*>(this));	}
+	cPolymorphicClass(){	cnClass::ManualConstruct(*reinterpret_cast<TInterface*>(this));	}
 	~cPolymorphicClass(){	reinterpret_cast<TInterface*>(this)->~TInterface();	}
 
 	template<class TDest,class...TArgs>
@@ -790,7 +794,7 @@ public:
 	{
 		reinterpret_cast<TInterface*>(this)->~TInterface();
 		cnLib_STATIC_ASSERT(sizeof(TDest)<=Size,"not enough size");
-		ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
+		cnClass::ManualConstruct(*reinterpret_cast<TDest*>(this),cnLib_UREFCAST(TArgs)(Args)...);
 	}
 };
 //---------------------------------------------------------------------------

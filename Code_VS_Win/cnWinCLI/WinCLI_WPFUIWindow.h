@@ -24,7 +24,7 @@ class iWPFWindowClient : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual bool WPFClientSetupWindow(cWPFWindow *Window)noexcept(true)=0;
 	virtual void WPFClientClearWindow(cWPFWindow *Window)noexcept(true)=0;

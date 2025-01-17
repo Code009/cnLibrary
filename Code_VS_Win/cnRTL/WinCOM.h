@@ -143,7 +143,7 @@ struct cBSTROwnerOperator
 {
 	static void Release(BSTR Token)noexcept(true);
 };
-typedef cnVar::cPtrOwner<cnVar::TRemovePointer<BSTR>::Type,cBSTROwnerOperator> apBSTR;
+typedef cnClass::cPtrOwner<cnVar::TRemovePointer<BSTR>::Type,cBSTROwnerOperator> apBSTR;
 //---------------------------------------------------------------------------
 apBSTR MakeBSTR(const wchar_t *Text)noexcept(true);
 BSTR* apBSTRRetPtr(apBSTR &Ptr)noexcept(true);
@@ -181,7 +181,7 @@ struct cCOMPointerReferenceOperator
 };
 
 template<class T>
-using COMPtr=cnVar::cPtrReference<T,cCOMPointerReferenceOperator>;
+using COMPtr=cnClass::cPtrReference<T,cCOMPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 template<class T>
@@ -434,7 +434,7 @@ struct cCOMInnerPoiterOwnerOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using COMInnerPtr = cnVar::cPtrOwner<cnLib_THelper::RTL_TH::cCOMInnerImplementation<T>,cCOMInnerPoiterOwnerOperator>;
+using COMInnerPtr = cnClass::cPtrOwner<cnLib_THelper::RTL_TH::cCOMInnerImplementation<T>,cCOMInnerPoiterOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline COMInnerPtr<T> COMInnerPtrCreate(IUnknown *Outter)noexcept(true){

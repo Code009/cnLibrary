@@ -392,7 +392,7 @@ struct TypeOperator_Construct_Class
 {
 	static void Construct(void *p)
 		noexcept(noexcept(T(cnVar::DeclVal<T&>())))
-	{	return cnVar::ManualConstruct(*static_cast<T*>(p));	}
+	{	return cnClass::ManualConstruct(*static_cast<T*>(p));	}
 };
 
 template<class T,bool Available>
@@ -411,7 +411,7 @@ struct TypeOperator_Destruct_Class
 {
 	static void Destruct(void *p)
 		noexcept(noexcept(cnVar::DeclVal<T&>().~T()))
-	{	return cnVar::ManualDestruct(*static_cast<T*>(p));	}
+	{	return cnClass::ManualDestruct(*static_cast<T*>(p));	}
 };
 
 template<class T,bool Available>
@@ -431,7 +431,7 @@ struct TypeOperator_CopyConstruct_Class
 	static void CopyConstruct(void *d,const void *s)
 		noexcept(noexcept(T(cnVar::DeclVal<const T&>())))
 	{
-		cnVar::ManualConstruct(*static_cast<T*>(d),*static_cast<const T*>(s));
+		cnClass::ManualConstruct(*static_cast<T*>(d),*static_cast<const T*>(s));
 	}
 };
 template<uIntn Size>
@@ -456,7 +456,7 @@ struct TypeOperator_MoveConstruct_Class
 {
 	static void MoveConstruct(void *d,void *s)
 		noexcept(noexcept(T(cnVar::DeclVal<T&&>())))
-	{	cnVar::ManualConstruct(*static_cast<T*>(d),static_cast<T&&>(*static_cast<T*>(s)));	}
+	{	cnClass::ManualConstruct(*static_cast<T*>(d),static_cast<T&&>(*static_cast<T*>(s)));	}
 };
 template<uIntn Size>
 struct TypeOperator_MoveConstruct_Trivial
@@ -629,7 +629,7 @@ struct ArrayTypeOperator_Construct_Class
 		noexcept(noexcept(T(cnVar::DeclVal<T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
-			cnVar::ManualConstruct(static_cast<T*>(p)[i]);
+			cnClass::ManualConstruct(static_cast<T*>(p)[i]);
 		}
 	}
 };
@@ -652,7 +652,7 @@ struct ArrayTypeOperator_Destruct_Class
 		noexcept(noexcept(cnVar::DeclVal<T&>().~T()))
 	{
 		for(uIntn i=0;i<Length;i++){
-			cnVar::ManualDestruct(static_cast<T*>(p)[i]);
+			cnClass::ManualDestruct(static_cast<T*>(p)[i]);
 		}
 	}
 };
@@ -675,7 +675,7 @@ struct ArrayTypeOperator_CopyConstruct_Class
 		noexcept(noexcept(T(cnVar::DeclVal<const T&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
-			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<const T*>(s)[i]);
+			cnClass::ManualConstruct(static_cast<T*>(d)[i],static_cast<const T*>(s)[i]);
 		}
 	}
 };
@@ -698,7 +698,7 @@ struct ArrayTypeOperator_MoveConstruct_Class
 		noexcept(noexcept(T(cnVar::DeclVal<T&&>())))
 	{
 		for(uIntn i=0;i<Length;i++){
-			cnVar::ManualConstruct(static_cast<T*>(d)[i],static_cast<T&&>(static_cast<T*>(s)[i]));
+			cnClass::ManualConstruct(static_cast<T*>(d)[i],static_cast<T&&>(static_cast<T*>(s)[i]));
 		}
 	}
 };

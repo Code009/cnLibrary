@@ -103,7 +103,7 @@ class cnLib_INTERFACE iThread : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	// Wake
 	//	wake thread on sleep

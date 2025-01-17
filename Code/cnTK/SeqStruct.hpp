@@ -228,7 +228,7 @@ public:
 	template<class...VT>
 	tIterator AppendMake(VT cnLib_UREF...Args)noexcept(true){
 		auto AppendedItem=AppendUninitialized(1);
-		cnVar::ManualConstruct(*AppendedItem,cnLib_UREFCAST(VT)(Args)...);
+		cnClass::ManualConstruct(*AppendedItem,cnLib_UREFCAST(VT)(Args)...);
 		return AppendedItem;
 	}
 
@@ -294,7 +294,7 @@ public:
 		// insert space
 		tPointer InsertedItem=InsertUninitializedAt(Index,1);
 		// manually copy construct
-		cnVar::ManualConstruct(*InsertedItem,cnLib_UREFCAST(VT)(Args)...);
+		cnClass::ManualConstruct(*InsertedItem,cnLib_UREFCAST(VT)(Args)...);
 		return InsertedItem;
 	}
 
@@ -556,7 +556,7 @@ public:
 		// insert space
 		fArray.ReplaceWithUninitialized(Index,0,1);
 		// initialize key data and value
-		cnVar::ManualConstruct(fArray.Pointer[Index],cnLib_UREFCAST(T)(Item));
+		cnClass::ManualConstruct(fArray.Pointer[Index],cnLib_UREFCAST(T)(Item));
 		return true;
 	}
 
@@ -573,7 +573,7 @@ public:
 			// insert space
 			fArray.ReplaceWithUninitialized(Index,0,1);
 			// initialize key data and value
-			cnVar::ManualConstruct(fArray.Pointer[Index],cnLib_UREFCAST(T)(Item));
+			cnClass::ManualConstruct(fArray.Pointer[Index],cnLib_UREFCAST(T)(Item));
 		}
 		return GetItemAt(Index);
 	}
@@ -923,8 +923,8 @@ public:
 		if(SearchKey(Index,Key)==false){
 			// insert space
 			fArray.ReplaceWithUninitialized(Index,0,1);
-			cnVar::ManualConstructZero(GetValues()[Index]);
-			cnVar::ManualConstruct(GetKeys()[Index],Key);
+			cnClass::ManualConstructZero(GetValues()[Index]);
+			cnClass::ManualConstruct(GetKeys()[Index],Key);
 		}
 		return GetValues()[Index];
 	}

@@ -27,6 +27,8 @@
 #include <cnTK/SeqStruct.hpp>
 #include <cnTK/LinkStruct.hpp>
 
+#include <cnTK/ObjectLifeCycle.hpp>
+
 /*-------------------------------------------------------------------------*/
 #endif
 

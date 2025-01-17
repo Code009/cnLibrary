@@ -21,7 +21,7 @@ class cnLib_INTERFACE iWin32FileName : public iFileName
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface<iFileName>(this,ID);	}
 
 	virtual const wchar_t*	cnLib_FUNC GetFileName(void)noexcept(true)=0;
 	virtual uIntn			cnLib_FUNC GetFileNameLength(void)noexcept(true)=0;
@@ -32,7 +32,7 @@ class cnLib_INTERFACE iWinFileHandle : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual HANDLE cnLib_FUNC GetFileHandle(void)noexcept(true)=0;
 };

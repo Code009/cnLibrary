@@ -19,7 +19,7 @@ class cnLib_INTERFACE iFileTime : public iTimepoint
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual FILETIME cnLib_FUNC GetFileTime(void)noexcept(true)=0;
 	virtual LARGE_INTEGER cnLib_FUNC GetTimeValue(void)noexcept(true)=0;
@@ -36,7 +36,7 @@ class cnLib_INTERFACE iWinThread : public iWaitableObject
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual DWORD cnLib_FUNC GetThreadID(void)noexcept(true)=0;
 };
@@ -54,7 +54,7 @@ class cnLib_INTERFACE iWinThreadPool : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual rPtr<iThreadPoolHandleWaiter> CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept(true)> *Callback)noexcept(true)=0;
 };

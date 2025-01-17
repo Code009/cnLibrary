@@ -2399,7 +2399,7 @@ public:
 		auto NewString=static_cast<tCharacter*>(TAllocationOperator::Allocate(CapacitySize,cnMemory::TAlignmentOf<cRefStringArrayStorage>::Value));
 		
 		auto *NewToken=cnMemory::CastPointerAddByteOffset<cRefStringArrayStorage>(NewString,Offset);
-		cnVar::ManualConstruct(*NewToken);
+		cnClass::ManualConstruct(*NewToken);
 		NewToken->Pointer=NewString;
 		NewToken->Length=Length;
 
@@ -2433,7 +2433,7 @@ public:
 
 		auto *NewToken=cnMemory::CastPointerAddByteOffset<cRefStringArrayStorage>(NewPointer,Offset);
 
-		cnVar::ManualConstruct(*NewToken);
+		cnClass::ManualConstruct(*NewToken);
 		NewToken->Pointer=NewPointer;
 		NewToken->Length=Array.Length;
 

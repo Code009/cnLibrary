@@ -198,8 +198,8 @@ class cCoroutinePromise
 	, public bcPromiseReturnValue<TRet,typename cnVar::TRemoveCV<TRet>::Type>
 {
 public:
-	cnVar::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
+	cnClass::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnClass::cPtrOwner<cCoroutinePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 };
 //---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ class cCoroutine
 {
 public:
 	typedef cCoroutinePromise<TCoroutineHandleOperator,TRet> promise_type;
-	typedef cnVar::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
+	typedef cnClass::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
 	
 	cCoroutine()noexcept(true){}
 	cCoroutine(pPtr cnLib_MOVEREF Promise)noexcept(true):fPromise(cnLib_UREFCAST(pPtr)(Promise)){}
@@ -406,8 +406,8 @@ class cResumablePromise
 	, public bcPromiseReturnValue<TRet,TDistinct>
 {
 public:
-	cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
+	cnClass::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnClass::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 	template<class T>
 	typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(T cnLib_UREF Value)
@@ -424,8 +424,8 @@ class cResumablePromise<TCoroutineHandleOperator,TRet,void>
 	, public bcPromiseReturnValue<TRet,void>
 {
 public:
-	cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
-	{	return cnVar::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
+	cnClass::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator> get_return_object()noexcept(true)
+	{	return cnClass::cPtrOwner<cResumablePromise,cPromisePointerOwnerOperator>::TakeFromManual(this);	}
 
 	typename bcResumablePromise<TCoroutineHandleOperator>::cYieldSuspension yield_value(void)noexcept(true)
 	{
@@ -444,7 +444,7 @@ class cResumable
 {
 public:
 	typedef cResumablePromise<TCoroutineHandleOperator,TRet,typename cnVar::TRemoveCV<TRet>::Type> promise_type;
-	typedef cnVar::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
+	typedef cnClass::cPtrOwner<promise_type,cPromisePointerOwnerOperator> pPtr;
 
 	cResumable()noexcept(true){}
 	// construct by promise
@@ -519,7 +519,7 @@ public:
 	cGenerator()noexcept(true){}
 	~cGenerator()noexcept(true){}
 
-	typedef cnVar::cPtrOwner<typename cResumable<TCoroutineHandleOperator,TRet>::promise_type,cPromisePointerOwnerOperator> pPtr;
+	typedef cnClass::cPtrOwner<typename cResumable<TCoroutineHandleOperator,TRet>::promise_type,cPromisePointerOwnerOperator> pPtr;
 
 
 	// construct by promise

@@ -93,9 +93,6 @@
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.h">
       <Filter>Code\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.h">
-      <Filter>Code\cnRTL</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.h">
       <Filter>Code\cnRTL</Filter>
     </ClInclude>
@@ -459,6 +456,9 @@
     <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Code\cnTK\ObjectLifeCycle.hpp">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -480,9 +480,6 @@
       <Filter>Code\cnRTL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.cpp">
-      <Filter>Code\cnRTL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.cpp">
       <Filter>Code\cnRTL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.cpp">

@@ -110,11 +110,11 @@ struct cLinkNodeContentOperator
 	template<class...TArgs>
 	static tNode* CreateNode(TArgs&&...Args){
 		tNode *Node=static_cast<tNode*>(::malloc(sizeof(tNode)));
-		cnVar::ManualConstruct(Node->Content,static_cast<TArgs&&>(Args)...);
+		cnClass::ManualConstruct(Node->Content,static_cast<TArgs&&>(Args)...);
 		return Node;
 	}
 	static void DestroyNode(tNode *Node){
-		cnVar::ManualDestruct(Node->Content);
+		cnClass::ManualDestruct(Node->Content);
 		::free(Node);
 	}
 
@@ -221,10 +221,10 @@ using cAtomicVar=cnAsync::cAtomicVariable<T>;
 
 //---------------------------------------------------------------------------
 template<class T>
-using iAtomicPtr = cnVar::cAtomicPtrReference<T,cnVar::iPointerReferenceOperator>;
+using iAtomicPtr = cnClass::cAtomicPtrReference<T,cnClass::iPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 template<class T>
-using rAtomicPtr = cnVar::cAtomicPtrReference<T,cnVar::rPointerReferenceOperator>;
+using rAtomicPtr = cnClass::cAtomicPtrReference<T,cnClass::rPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 // Atomic Linked Structure

@@ -439,18 +439,18 @@ struct cClassArrayElementFunction
 {
 	static void Construct(TElement *Array,uIntn Index,uIntn EndIndex)noexcept(cnVar::TIsDefaultConstructNoexcept<TElement>::Value){
 		for(uIntn i=Index;i<EndIndex;i++)
-			cnVar::ManualConstruct(Array[i]);
+			cnClass::ManualConstruct(Array[i]);
 	}
 	static void Destruct(TElement *Array,uIntn Index,uIntn EndIndex)noexcept(cnVar::TIsDestructNoexcept<TElement>::Value){
 		for(uIntn i=Index;i<EndIndex;i++)
-			cnVar::ManualDestruct(Array[i]);
+			cnClass::ManualDestruct(Array[i]);
 	}
 
 	static void CopyConstruct(TElement *Array,uIntn ArrayIndex,const TElement *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(cnVar::TIsCopyConstructNoexcept<TElement>::Value){
 		Array+=ArrayIndex;
 		SrcArray+=SrcIndex;
 		for(uIntn i=0;i<Length;i++)
-			cnVar::ManualConstruct(Array[i],SrcArray[i]);
+			cnClass::ManualConstruct(Array[i],SrcArray[i]);
 	}
 	
 	static void Copy(TElement *Array,uIntn ArrayIndex,const TElement *SrcArray,uIntn SrcIndex,uIntn Length)noexcept(cnVar::TIsCopyAssignNoexcept<TElement>::Value){
@@ -471,7 +471,7 @@ struct cClassArrayElementFunction
 			Array[Index]=SrcArray[Index];
 		}
 		while(Index<TotalLength){
-			cnVar::ManualConstruct(Array[Index],SrcArray[Index]);
+			cnClass::ManualConstruct(Array[Index],SrcArray[Index]);
 			Index++;
 		}
 	}
@@ -489,7 +489,7 @@ struct cClassArrayElementFunction
 		Array+=ArrayIndex;
 		SrcArray+=SrcIndex;
 		for(uIntn i=0;i<Length;i++)
-			cnVar::ManualConstruct(Array[i],cnLib_UREFCAST(TElement)(SrcArray[i]));
+			cnClass::ManualConstruct(Array[i],cnLib_UREFCAST(TElement)(SrcArray[i]));
 	}
 
 	static void MoveInArray(TElement *Array,uIntn DestIndex,uIntn SrcIndex,uIntn Length)noexcept(cnVar::TIsMoveAssignNoexcept<TElement>::Value){
@@ -510,7 +510,7 @@ struct cClassArrayElementFunction
 			ArrayIndex--;
 			SrcArrayIndex--;
 			
-			cnVar::ManualConstruct(Array[ArrayIndex],cnLib_UREFCAST(TElement)(Array[SrcArrayIndex]));
+			cnClass::ManualConstruct(Array[ArrayIndex],cnLib_UREFCAST(TElement)(Array[SrcArrayIndex]));
 			
 		}while(ArrayIndex>ArrayLength);
 
@@ -1613,13 +1613,13 @@ struct cMultiArrayMemoryFunction
 	// helper function
 
 	static void ConstructElement(const TVarPackAccessor &Accessor,uIntn Index)noexcept(true){
-		cnVar::ManualConstruct((*Accessor)[Index]);
+		cnClass::ManualConstruct((*Accessor)[Index]);
 		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index);
 	}
 
 	template<class TArg,class...TArgs>
 	static void ConstructElement(const TVarPackAccessor &Accessor,uIntn Index,TArg cnLib_UREF Arg,TArgs cnLib_UREF...Args)noexcept(true){
-		cnVar::ManualConstruct((*Accessor)[Index],cnLib_UREFCAST(TArg)(Arg));
+		cnClass::ManualConstruct((*Accessor)[Index],cnLib_UREFCAST(TArg)(Arg));
 		return cMultiArrayMemoryFunction<typename TVarPackAccessor::tNext,typename TConstVarPackAccessor::tNext,VTArrayAllocation...>::ConstructElement(+Accessor,Index,cnLib_UREFCAST(TArgs)(Args)...);
 	}
 

@@ -1,28 +1,22 @@
-/*- cnRTL - Object Life Cycle ---------------------------------------------*/
+/*- cnTK - Object Life Cycle ----------------------------------------------*/
 /*         Developer : Code009                                             */
 /*         Create on : 2021-11-20                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLibrary_cnRTL_ObjectLifeCycle_H__
-#define __cnLibrary_cnRTL_ObjectLifeCycle_H__
+#ifndef __cnLibrary_cnTK_ObjectLifeCycle_HPP__
+#define	__cnLibrary_cnTK_ObjectLifeCycle_HPP__
 /*-------------------------------------------------------------------------*/
-#include <cnRTL/cnRTLHeader.h>
-#include <cnRTL/RuntimeFunction.h>
-#ifdef __cplusplus
+#include <cnTK/Common.hpp>
+#include <cnTK/TypeTraits.hpp>
+#include <cnTK/Atomic.hpp>
+/*-------------------------------------------------------------------------*/
+#if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
-#if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
-#define	cnRTL_CONSTEXPR_FUNC	constexpr
-#define	cnRTL_CONSTVAR	constexpr
-// cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
-#else
-// cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
-#define	cnRTL_CONSTEXPR_FUNC
-#define	cnRTL_CONSTVAR	const
-#endif // cnLibrary_CPPFEATURE_CONSTEXPR < 200704L
-
+#include <cnTK/TKMacrosDeclare.inc>
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-namespace cnRTL{
+namespace cnClass{
+//---------------------------------------------------------------------------
 
 // 			CPP						Disposable					VirutalLifeCycle
 //new-------|				new---------|					new---------|
@@ -39,8 +33,6 @@ namespace cnRTL{
 //			|							|								|
 //		  delete					  delete						  delete
 
-//---------------------------------------------------------------------------
-
 //TLifeCycleActivation
 //{
 //	// Start
@@ -53,7 +45,7 @@ namespace cnRTL{
 //	static void Stop(TLifeCycleObject *Object)noexcept;
 //};
 //---------------------------------------------------------------------------
-struct cCPPLifeCycleActivation
+struct CPPLifeCycleActivation
 {
 	template<class TLifeCycleObject>
 	static void Start(TLifeCycleObject*)noexcept(true){}
@@ -63,7 +55,7 @@ struct cCPPLifeCycleActivation
 };
 //---------------------------------------------------------------------------
 template<class T>
-class cCPPLifeCycleSharedManager
+class CPPLifeCycleSharedManager
 {
 public:
 	typedef T tLifeCycleObject;
@@ -74,7 +66,7 @@ public:
 class bcDisposable
 {
 protected:
-	void Dispose(void)noexcept(true);
+	void Dispose(void)noexcept(true){	LifeCycleDisposal->Dispose(this);	}
 
 public:
 	struct cLifeCycleActivation
@@ -88,7 +80,7 @@ public:
 	class iDisposal
 	{
 	public:
-		void Bind(bcDisposable *Object)noexcept(true);
+		void Bind(bcDisposable *Object)noexcept(true){		Object->LifeCycleDisposal=this;		}
 		virtual void Dispose(bcDisposable *Object)noexcept(true)=0;
 	};
 
@@ -105,10 +97,10 @@ private:
 	iDisposal *LifeCycleDisposal=nullptr;
 };
 //---------------------------------------------------------------------------
-typedef bcDisposable::cLifeCycleActivation cDisposableLifeCycleActivation;
+typedef bcDisposable::cLifeCycleActivation DisposableLifeCycleActivation;
 //---------------------------------------------------------------------------
 template<class T>
-class cDisposableLifeCycleSharedManager
+class DisposableLifeCycleSharedManager
 {
 public:
 	typedef T tLifeCycleObject;
@@ -145,7 +137,7 @@ public:
 	};
 };
 //---------------------------------------------------------------------------
-typedef bcVirtualLifeCycle::cLifeCycleActivation cVirtualLifeCycleActivation;
+typedef bcVirtualLifeCycle::cLifeCycleActivation VirtualLifeCycleActivation;
 //---------------------------------------------------------------------------
 class bcRecyclable
 {
@@ -155,13 +147,13 @@ private:
 };
 //---------------------------------------------------------------------------
 template<class T>
-struct cRecyclableObjectAllocator
+struct RecyclableObjectAllocator
 {
 	static T* New(void)noexcept(noexcept(new T)){	return new T;	}
 	static void Delete(T *p)noexcept(noexcept(delete p)){	delete p;	}
 };
 //---------------------------------------------------------------------------
-template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=RecyclableObjectAllocator<TLifeCycleObject> >
 class bcRecyclableLifeCycleManager : public bcDisposable::iDisposal, public TRecyclableObjectAllocator
 {
 public:
@@ -240,17 +232,17 @@ private:
 	cnAsync::cAtomicStack<cSingleLinkItemOperator> fRecycleStack;
 };
 //---------------------------------------------------------------------------
-template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
-class cRecyclableLifeCycleSharedManager : public bcRecyclableLifeCycleManager<TLifeCycleObject,TRecyclableObjectAllocator>
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=RecyclableObjectAllocator<TLifeCycleObject> >
+class RecyclableLifeCycleSharedManager : public bcRecyclableLifeCycleManager<TLifeCycleObject,TRecyclableObjectAllocator>
 {
 public:
 	typedef TLifeCycleObject tLifeCycleObject;
 
-	cnRTL_CONSTEXPR_FUNC cRecyclableLifeCycleSharedManager()noexcept(true)
+	cnLib_CONSTEXPR_FUNC RecyclableLifeCycleSharedManager()noexcept(true)
 		: fRefCount(0){}
 
-	static cRecyclableLifeCycleSharedManager* GetSharedManager(void)noexcept(true){
-		return cnVar::StaticInitializedSinglton<cRecyclableLifeCycleSharedManager>();
+	static RecyclableLifeCycleSharedManager* GetSharedManager(void)noexcept(true){
+		return cnVar::StaticInitializedSinglton<RecyclableLifeCycleSharedManager>();
 	}
 
 	static void ManageShared(tLifeCycleObject *Object)noexcept(true){
@@ -269,18 +261,17 @@ public:
 	}
 
 	virtual void Restore(tLifeCycleObject*)noexcept(true) override{
-		rIncReference(this,'lcle');
+		IncreaseReference();
 	}
 
-	virtual void Dispose(bcDisposable *Object)noexcept(true) override{
-		bcRecyclableLifeCycleManager<TLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
-		rDecReference(this,'lcle');
+	virtual void Dispose(bcDisposable*)noexcept(true) override{
+		DecreaseReference();
 	}
 private:
-	cAtomicVar<uIntn> fRefCount;
+	cnAsync::cAtomicVariable<typename cnVar::TSelect<0,uIntn,TLifeCycleObject>::Type> fRefCount;
 };
 //---------------------------------------------------------------------------
-template< class TLifeCycleObject,class TRecyclableObjectAllocator=cRecyclableObjectAllocator<TLifeCycleObject> >
+template< class TLifeCycleObject,class TRecyclableObjectAllocator=RecyclableObjectAllocator<TLifeCycleObject> >
 class cRecyclableLifeCycleManager : public iReference, public bcRecyclableLifeCycleManager<TLifeCycleObject,TRecyclableObjectAllocator>
 {
 public:
@@ -293,22 +284,21 @@ public:
 
 
 	virtual void Restore(TLifeCycleObject*)noexcept(true) override{
-		rIncReference(this,'lcle');
+		IncreaseReference();
 	}
 
 	virtual void Dispose(bcDisposable *Object)noexcept(true) override{
 		bcRecyclableLifeCycleManager<TLifeCycleObject,TRecyclableObjectAllocator>::Dispose(Object);
-		rDecReference(this,'lcle');
+		DecreaseReference();
 	}
 };
 //---------------------------------------------------------------------------
-}   // namespace cnRTL
+}	// namespace cnClass
 //---------------------------------------------------------------------------
-}   // namespace cnLibrary
+}	// namespace cnLibrary
 //---------------------------------------------------------------------------
-#undef	cnRTL_CONSTEXPR_FUNC
-#undef	cnRTL_CONSTVAR
+#include <cnTK/TKMacrosCleanup.inc>
 //---------------------------------------------------------------------------
-#endif  /* __cplusplus */
+#endif	/* cnLibrary_CPPFEATURELEVEL >= 1 */
 /*-------------------------------------------------------------------------*/
 #endif

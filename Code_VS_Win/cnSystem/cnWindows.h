@@ -40,7 +40,7 @@ class cnLib_INTERFACE iCOMInterface : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 	
 	virtual IUnknown* cnLib_FUNC GetCOMInterface(void)noexcept(true)=0;
 };
@@ -55,7 +55,7 @@ class cnLib_INTERFACE iWaveFormat : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual const WAVEFORMATEX*	cnLib_FUNC GetFormat(void)noexcept(true)=0;
 };

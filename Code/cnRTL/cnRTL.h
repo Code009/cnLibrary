@@ -6,7 +6,6 @@
 #include <cnRTL/cnRTLHeader.h>
 #include <cnRTL/RuntimeFunction.h>
 #include <cnRTL/String.h>
-#include <cnRTL/ObjectLifeCycle.h>
 #include <cnRTL/ObjectReference.h>
 #include <cnRTL/InterfaceWrapper.h>
 #include <cnRTL/InterfaceImplementation.h>

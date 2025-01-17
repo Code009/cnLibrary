@@ -7,7 +7,6 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL/cnRTLHeader.h>
 #include <cnRTL/ThreadSynchronization.h>
-#include <cnRTL/ObjectLifeCycle.h>
 #include <cnRTL/ObjectReference.h>
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
@@ -163,7 +162,7 @@ struct cAggregablePointerOwnerOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using cAggregablePtr = cnVar::cPtrOwner<T,cAggregablePointerOwnerOperator>;
+using cAggregablePtr = cnClass::cPtrOwner<T,cAggregablePointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class TInterfaceImplementation>
 class impInterfaceAggregable : public TInterfaceImplementation, public bcAggregable

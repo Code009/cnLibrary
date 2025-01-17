@@ -26,7 +26,7 @@ class cBluetoothAddress : public iAddress
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{	return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual eiOrdering cnLib_FUNC Compare(iAddress *Dest)noexcept(true)override;
 

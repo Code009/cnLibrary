@@ -807,9 +807,9 @@ struct cSharedLockPointerReferenceOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using lockPtr = cnVar::cPtrReference<T,cLockPointerReferenceOperator>;
+using lockPtr = cnClass::cPtrReference<T,cLockPointerReferenceOperator>;
 template<class T>
-using lockSharedPtr = cnVar::cPtrReference<T,cSharedLockPointerReferenceOperator>;
+using lockSharedPtr = cnClass::cPtrReference<T,cSharedLockPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 template<class TLock>
 inline lockPtr<TLock> TakeLock(TLock *Lock)noexcept(true)

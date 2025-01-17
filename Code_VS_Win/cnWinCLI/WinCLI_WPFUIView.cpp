@@ -357,7 +357,7 @@ cWPFUIView::~cWPFUIView()noexcept
 //---------------------------------------------------------------------------
 void* cWPFUIView::CastInterface(iTypeID ID)noexcept
 {
-	return cnVar::ImplementCastInterface<iCLIObject,iUIView,iUIKeyControl,iUIMouseControl,iUITouchControl>(this,ID);	
+	return cnClass::ImplementCastInterface<iCLIObject,iUIView,iUIKeyControl,iUIMouseControl,iUITouchControl>(this,ID);	
 }
 //---------------------------------------------------------------------------
 void cWPFUIView::VirtualStarted(void)noexcept

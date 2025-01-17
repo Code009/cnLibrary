@@ -44,15 +44,15 @@ public:
 	virtual bool IsNull(void)const noexcept(true) override{	return true;	}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionNullStorage));
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionNullStorage));
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 
 	static void MakeInMemory(void *Dest)noexcept(true){
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 };
 
@@ -70,15 +70,15 @@ public:
 	virtual bool IsNull(void)const noexcept(true) override{	return true;	}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionNullStorage));
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionNullStorage));
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 
 	static void MakeInMemory(void *Dest)noexcept(true){
-		ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
+		cnClass::ManualConstruct(*static_cast<cFunctionNullStorage*>(Dest));
 	}
 };
 
@@ -113,11 +113,11 @@ public:
 	virtual bool IsNull(void)const noexcept(true) override{	return fPtr==nullptr;		}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionInterfaceStorage));
-		ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionInterfaceStorage));
-		ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
 	}
 };
 
@@ -140,11 +140,11 @@ public:
 	virtual bool IsNull(void)const noexcept override{	return fPtr==nullptr;		}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionInterfaceStorage));
-		ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionInterfaceStorage));
-		ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionInterfaceStorage*>(Dest),fPtr);
 	}
 };
 
@@ -180,11 +180,11 @@ public:
 	virtual bool IsNull(void)const noexcept(true) override{			return fPtr==nullptr;		}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionPtrStorage));
-		ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept(true) override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionPtrStorage));
-		ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
 	}
 };
 
@@ -206,11 +206,11 @@ public:
 	virtual bool IsNull(void)const noexcept override{			return fPtr==nullptr;		}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionPtrStorage));
-		ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
 	}
 	virtual void MoveTo(void *Dest,uIntn DestSize)noexcept override{
 		cnLib_ASSERT(DestSize>=sizeof(cFunctionPtrStorage));
-		ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
+		cnClass::ManualConstruct(*static_cast<cFunctionPtrStorage*>(Dest),fPtr);
 	}
 };
 
@@ -482,7 +482,7 @@ public:
 	virtual TRet cnLib_FUNC Execute(TArgs...Args)override{
 		return (*this)(static_cast<TArgs&&>(Args)...);
 	}
-	virtual void Destruct(void)noexcept(true) override{	cnVar::ManualDestruct(*this);	}
+	virtual void Destruct(void)noexcept(true) override{	cnClass::ManualDestruct(*this);	}
 	virtual bool IsNull(void)const noexcept(true) override{			return false;			}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		if(TFunctionStorageOperator::MakeInMemory(Dest,DestSize,static_cast<const TFunctor&>(*this))==false){
@@ -512,7 +512,7 @@ public:
 	virtual TRet cnLib_FUNC Execute(TArgs...Args)noexcept override{
 		return (*this)(static_cast<TArgs&&>(Args)...);
 	}
-	virtual void Destruct(void)noexcept override{	cnVar::ManualDestruct(*this);	}
+	virtual void Destruct(void)noexcept override{	cnClass::ManualDestruct(*this);	}
 	virtual bool IsNull(void)const noexcept override{			return false;			}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept override{
 		if(TFunctionStorageOperator::MakeInMemory(Dest,DestSize,static_cast<const TFunctor&>(*this))==false){
@@ -554,13 +554,13 @@ public:
 	template<class TArg>
 	cFunctorDuplicationStorage(TArg&& Functor)noexcept(true){
 		fFunctor=static_cast<TFunctor*>(TFunctionStorageOperator::tAllocationOperator::Allocate(sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value));
-		ManualConstruct(*fFunctor,static_cast<TArg&&>(Functor));
+		cnClass::ManualConstruct(*fFunctor,static_cast<TArg&&>(Functor));
 
 	}
 
 	~cFunctorDuplicationStorage()noexcept(true){
 		if(fFunctor!=nullptr){
-			ManualDestruct(*fFunctor);
+			cnClass::ManualDestruct(*fFunctor);
 			TFunctionStorageOperator::tAllocationOperator::Deallocate(fFunctor,sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value);
 		}
 	}
@@ -570,7 +570,7 @@ public:
 	virtual TRet cnLib_FUNC Execute(TArgs...Args)override{
 		return (*fFunctor)(static_cast<TArgs&&>(Args)...);
 	}
-	virtual void Destruct(void)noexcept(true) override{		cnVar::ManualDestruct(*this);		}
+	virtual void Destruct(void)noexcept(true) override{		cnClass::ManualDestruct(*this);		}
 	virtual bool IsNull(void)const noexcept(true) override{	return fFunctor==nullptr;			}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept(true) override{
 		if(TFunctionStorageOperator::MakeInMemory(Dest,DestSize,*fFunctor)==false){
@@ -606,13 +606,13 @@ public:
 	template<class TArg>
 	cFunctorDuplicationStorage(TArg&& Functor)noexcept{
 		fFunctor=static_cast<TFunctor*>(TFunctionStorageOperator::tAllocationOperator::Allocate(sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value));
-		ManualConstruct(*fFunctor,static_cast<TArg&&>(Functor));
+		cnClass::ManualConstruct(*fFunctor,static_cast<TArg&&>(Functor));
 
 	}
 
 	~cFunctorDuplicationStorage()noexcept{
 		if(fFunctor!=nullptr){
-			ManualDestruct(*fFunctor);
+			cnClass::ManualDestruct(*fFunctor);
 			TFunctionStorageOperator::tAllocationOperator::Deallocate(fFunctor,sizeof(TFunctor),cnMemory::TAlignmentOf<TFunctor>::Value);
 		}
 	}
@@ -624,7 +624,7 @@ public:
 	virtual TRet cnLib_FUNC Execute(TArgs...Args)noexcept override{
 		return (*fFunctor)(static_cast<TArgs&&>(Args)...);
 	}
-	virtual void Destruct(void)noexcept override{		cnVar::ManualDestruct(*this);		}
+	virtual void Destruct(void)noexcept override{		cnClass::ManualDestruct(*this);		}
 	virtual bool IsNull(void)const noexcept override{	return fFunctor==nullptr;			}
 	virtual void CopyTo(void *Dest,uIntn DestSize)const noexcept override{
 		if(TFunctionStorageOperator::MakeInMemory(Dest,DestSize,*fFunctor)==false){
@@ -670,13 +670,13 @@ struct cFunctionStorageOperator
 		typedef typename cnVar::TRemoveCVRef<TFunctor>::Type TFunctorVariable;
 		if cnLib_IFCONSTEXPR(StorageSize>=sizeof(cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>)){
 			if(cnMemory::PointerIsAligned<TFunctor>(Dest)){
-				cnVar::ManualConstruct(*static_cast<cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
+				cnClass::ManualConstruct(*static_cast<cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
 				return;
 			}
 		}
 
 		static_assert(StorageSize>=sizeof(cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>),"not enough storage for the functor");
-		cnVar::ManualConstruct(*static_cast<cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
+		cnClass::ManualConstruct(*static_cast<cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
 	}
 
 	template<class TFunctor>
@@ -684,12 +684,12 @@ struct cFunctionStorageOperator
 		typedef typename cnVar::TRemoveCVRef<TFunctor>::Type TFunctorVariable;
 		if(cnMemory::PointerIsAligned<TFunctorVariable>(Dest)){
 			if(DestSize>=sizeof(cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>)){
-				cnVar::ManualConstruct(*static_cast<cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
+				cnClass::ManualConstruct(*static_cast<cFunctorInplaceCopyStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
 				return true;
 			}
 		}
 		if(DestSize>=sizeof(cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>)){
-			cnVar::ManualConstruct(*static_cast<cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
+			cnClass::ManualConstruct(*static_cast<cFunctorDuplicationStorage<TFunction,TFunctorVariable,cFunctionStorageOperator>*>(Dest),static_cast<TFunctor&&>(Functor));
 			return true;
 		}
 		return false;

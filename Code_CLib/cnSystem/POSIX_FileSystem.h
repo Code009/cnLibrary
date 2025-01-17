@@ -20,7 +20,7 @@ class cnLib_INTERFACE iPOSIXFileName : public iFileName
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFileName>(this,ID);	}
+	virtual void* CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface<iFileName>(this,ID);	}
 
 	virtual const uChar8* cnLib_FUNC GetPOSIXFileName(void)noexcept(true)=0;
 	virtual uIntn cnLib_FUNC GetPOSIXFileNameLength(void)noexcept(true)=0;

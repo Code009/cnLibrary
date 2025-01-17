@@ -22,7 +22,7 @@ class cnLib_INTERFACE iIPv4Address : public iAddress
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual uInt32 cnLib_FUNC IPv4Address(void)noexcept(true)=0;
 	virtual uInt16 cnLib_FUNC IPv4Port(void)noexcept(true)=0;

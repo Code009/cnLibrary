@@ -276,7 +276,7 @@ class cnLib_INTERFACE iUIScreen : public iUIArea
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 	
 	virtual bool cnLib_FUNC InsertScreenHandler(iUIScreenHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveScreenHandler(iUIScreenHandler *Handler)noexcept(true)=0;
@@ -340,7 +340,7 @@ class cnLib_INTERFACE iUIView : public iUIArea
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 	
 	virtual eUIState cnLib_FUNC GetUIState(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
@@ -391,7 +391,7 @@ class cnLib_INTERFACE iUIWindow : public iUIArea
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 		
 	virtual eUIState cnLib_FUNC GetUIState(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC InsertStateHandler(iUIStateHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
@@ -430,7 +430,7 @@ class cnLib_INTERFACE iPrintPaper : public iUIArea
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 		
 	virtual bool cnLib_FUNC InsertPrintPaperHandler(iPrintPaperHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemovePrintPaperHandler(iPrintPaperHandler *Handler)noexcept(true)=0;
@@ -499,7 +499,7 @@ class cnLib_INTERFACE iUIKeyControl : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual iUIView* cnLib_FUNC GetFocus(void)noexcept(true)=0;
 	virtual void cnLib_FUNC SetFocus(bool ActivateWindow)noexcept(true)=0;
@@ -558,7 +558,7 @@ class cnLib_INTERFACE iUIMouseControl : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual void cnLib_FUNC MouseUpdateCursor(void)noexcept(true)=0;
 
@@ -595,7 +595,7 @@ class cnLib_INTERFACE iUITouchControl : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual bool cnLib_FUNC InsertTouchHandler(iUITouchHandler *Handler,sfInt16 Order=0)noexcept(true)=0;
 	virtual bool cnLib_FUNC RemoveTouchHandler(iUITouchHandler *Handler)noexcept(true)=0;

@@ -7,7 +7,6 @@
 /*-------------------------------------------------------------------------*/
 #include <cnRTL/cnRTLHeader.h>
 #include <cnRTL/RuntimeFunction.h>
-#include <cnRTL/ObjectLifeCycle.h>
 #ifdef __cplusplus
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_CONSTEXPR >= 200704L
@@ -25,7 +24,10 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
-
+//---------------------------------------------------------------------------
+	using cnClass::bcDisposable;
+	using cnClass::bcVirtualLifeCycle;
+	using cnClass::bcRecyclable;
 //---------------------------------------------------------------------------
 class bcWeakReference
 {
@@ -201,20 +203,20 @@ protected:
 };
 //---------------------------------------------------------------------------
 template<class T>
-using rInnerPtr = cnVar::cPtrReference<T,cDualReference::cPointerReferenceOperator>;
+using rInnerPtr = cnClass::cPtrReference<T,cDualReference::cPointerReferenceOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 using TReferenceObjectLifeCycleActivation=typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcVirtualLifeCycle>::Value
 	, typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcDisposable>::Value
-		, cCPPLifeCycleActivation
-		, cDisposableLifeCycleActivation
+		, cnClass::CPPLifeCycleActivation
+		, cnClass::DisposableLifeCycleActivation
 	>::Type
-	, cVirtualLifeCycleActivation
+	, cnClass::VirtualLifeCycleActivation
 >::Type;
 template<class T>
 using TReferenceObjectLifeCycleSharedManager=typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcDisposable>::Value
-	, cCPPLifeCycleSharedManager<T>
-	, cDisposableLifeCycleSharedManager<T>
+	, cnClass::CPPLifeCycleSharedManager<T>
+	, cnClass::DisposableLifeCycleSharedManager<T>
 >::Type;
 //---------------------------------------------------------------------------
 
@@ -230,7 +232,7 @@ struct aPointerOwnerOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using aPtr = cnVar::cPtrOwner<T,aPointerOwnerOperator>;
+using aPtr = cnClass::cPtrOwner<T,aPointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline aPtr<T> aTake(T *Object)noexcept(true)
@@ -463,8 +465,8 @@ struct TInterfaceLifeCycleTypes
 {
 
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value
-		, cnRTL::impReferenceLifeCycleObject< impRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> >
-		, cnRTL::impObservedReferenceLifeCycleObject< impObsRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> >
+		, cnRTL::impReferenceLifeCycleObject< impRefInterface<T,typename cnClass::TClassReferenceInterface<T>::Type> >
+		, cnRTL::impObservedReferenceLifeCycleObject< impObsRefInterface<T,typename cnClass::TClassReferenceInterface<T>::Type> >
 	>::Type tLifeCycleObject;
 
 
@@ -528,7 +530,7 @@ struct arPointerOwnerOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using arPtr = cnVar::cPtrOwner<T,arPointerOwnerOperator>;
+using arPtr = cnClass::cPtrOwner<T,arPointerOwnerOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline arPtr<T> arCreateUnrecyclable(void)noexcept(true){
@@ -544,7 +546,7 @@ template<class T>
 class arSharedObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleSharedManager< cAutoRecyclableObject<T>,cRecyclableObjectAllocator< cAutoRecyclableObject<T> > > tLifeCycleRecyclableSharedManager;
+	typedef cnClass::RecyclableLifeCycleSharedManager< cAutoRecyclableObject<T>,cnClass::RecyclableObjectAllocator< cAutoRecyclableObject<T> > > tLifeCycleRecyclableSharedManager;
 	
 	arSharedObjectRecycler()noexcept(true) : fManager(tLifeCycleRecyclableSharedManager::GetSharedManager()){}
 	~arSharedObjectRecycler()noexcept(true){}
@@ -576,7 +578,7 @@ template<class T>
 class arObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleManager< cAutoRecyclableObject<T>,cRecyclableObjectAllocator< cAutoRecyclableObject<T> > > tLifeCycleRecyclableManager;
+	typedef cnClass::cRecyclableLifeCycleManager< cAutoRecyclableObject<T>,cnClass::RecyclableObjectAllocator< cAutoRecyclableObject<T> > > tLifeCycleRecyclableManager;
 
 	arObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
 	~arObjectRecycler()noexcept(true){}
@@ -674,7 +676,7 @@ template<class T>
 class rSharedObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleSharedManager<typename TReferenceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableSharedManager;
+	typedef cnClass::RecyclableLifeCycleSharedManager<typename TReferenceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableSharedManager;
 	rSharedObjectRecycler()noexcept(true) : fManager(tLifeCycleRecyclableSharedManager::GetSharedManager()){}
 	~rSharedObjectRecycler()noexcept(true){}
 
@@ -705,7 +707,7 @@ template<class T>
 class rObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleManager<typename TReferenceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableManager;
+	typedef cnClass::cRecyclableLifeCycleManager<typename TReferenceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableManager;
 	rObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
 	~rObjectRecycler()noexcept(true){}
 
@@ -723,8 +725,8 @@ template<class T>
 struct TInterfaceLifeCycleRecyclableTypes
 {
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,iObservedReference>::Value
-		, impReferenceRecyclableLifeCycleObject< cnLib_THelper::RTL_TH::LifeCycle::impRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> >
-		, impObservedReferenceRecyclableLifeCycleObject< cnLib_THelper::RTL_TH::LifeCycle::impObsRefInterface<T,typename cnVar::TClassReferenceInterface<T>::Type> >
+		, impReferenceRecyclableLifeCycleObject< cnLib_THelper::RTL_TH::LifeCycle::impRefInterface<T,typename cnClass::TClassReferenceInterface<T>::Type> >
+		, impObservedReferenceRecyclableLifeCycleObject< cnLib_THelper::RTL_TH::LifeCycle::impObsRefInterface<T,typename cnClass::TClassReferenceInterface<T>::Type> >
 	>::Type tLifeCycleObject;
 
 };
@@ -733,7 +735,7 @@ template<class T>
 class iSharedObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleSharedManager<typename TInterfaceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableSharedManager;
+	typedef cnClass::RecyclableLifeCycleSharedManager<typename TInterfaceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableSharedManager;
 	iSharedObjectRecycler()noexcept(true)	: fManager(tLifeCycleRecyclableSharedManager::GetSharedManager()){}
 	~iSharedObjectRecycler()noexcept(true){}
 
@@ -764,7 +766,7 @@ template<class T>
 class iObjectRecycler
 {
 public:
-	typedef cRecyclableLifeCycleManager<typename TInterfaceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableManager;
+	typedef cnClass::cRecyclableLifeCycleManager<typename TInterfaceLifeCycleRecyclableTypes<T>::tLifeCycleObject> tLifeCycleRecyclableManager;
 
 	iObjectRecycler()noexcept(true) : fManager(rCreate<tLifeCycleRecyclableManager>()){}
 	~iObjectRecycler()noexcept(true){}
@@ -800,8 +802,8 @@ public:
 	using T::operator =;
 
 	typedef typename cnVar::TSelect<cnVar::TClassIsInheritFrom<T,bcDisposable>::Value
-		, cCPPLifeCycleSharedManager<aCls>
-		, cDisposableLifeCycleSharedManager<aCls>
+		, cnClass::CPPLifeCycleSharedManager<aCls>
+		, cnClass::DisposableLifeCycleSharedManager<aCls>
 	>::Type tLifeCycleSharedManager;
 
 protected:
@@ -840,11 +842,11 @@ struct cAutoClassPointerReferenceOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using aClsRef = cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
+using aClsRef = cnClass::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
 template<class T>
-using aClsConstRef = cnVar::cPtrReference<const aCls<T>,cAutoClassPointerReferenceOperator>;
+using aClsConstRef = cnClass::cPtrReference<const aCls<T>,cAutoClassPointerReferenceOperator>;
 template<class T>
-using aClsAtomicRef = cnVar::cAtomicPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
+using aClsAtomicRef = cnClass::cAtomicPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 struct cAutoRecyclableClassPointerReferenceOperator;
@@ -863,11 +865,11 @@ public:
 	using T::T;
 	using T::operator =;
 
-	typedef cRecyclableLifeCycleSharedManager< arCls,cRecyclableObjectAllocator<arCls> > tLifeCycleSharedManager;
-	typedef cRecyclableLifeCycleManager< arCls,cRecyclableObjectAllocator<arCls> > tLifeCycleManager;
+	typedef cnClass::RecyclableLifeCycleSharedManager< arCls,cnClass::RecyclableObjectAllocator<arCls> > tLifeCycleSharedManager;
+	typedef cnClass::cRecyclableLifeCycleManager< arCls,cnClass::RecyclableObjectAllocator<arCls> > tLifeCycleManager;
 
 	friend bcVirtualLifeCycle::cLifeCycleActivation;
-	friend cRecyclableObjectAllocator<arCls>;
+	friend cnClass::RecyclableObjectAllocator<arCls>;
 
 protected:
 
@@ -888,11 +890,11 @@ struct cAutoRecyclableClassPointerReferenceOperator
 };
 //---------------------------------------------------------------------------
 template<class T>
-using arClsRef = cnVar::cPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
+using arClsRef = cnClass::cPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 template<class T>
-using arClsConstRef = cnVar::cPtrReference<const arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
+using arClsConstRef = cnClass::cPtrReference<const arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 template<class T>
-using arClsAtomicRef = cnVar::cAtomicPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
+using arClsAtomicRef = cnClass::cAtomicPtrReference<arCls<T>,cAutoRecyclableClassPointerReferenceOperator>;
 
 //---------------------------------------------------------------------------
 struct cAutoClassWeakRefTokenOperator
@@ -909,18 +911,18 @@ struct cAutoClassWeakRefTokenOperator
 
 	template<class TAutoClass>
 	struct tReference
-		: cnVar::TTypeDef< cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> >{};
+		: cnVar::TTypeDef< cnClass::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> >{};
 
 	template<class TAutoClass>
-	static cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> Reference(tToken *Token)noexcept(true){
-		return Token->Reference()?cnVar::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator>::TakeFromManual(Token):nullptr;
+	static cnClass::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator> Reference(tToken *Token)noexcept(true){
+		return Token->Reference()?cnClass::cPtrReference<typename TAutoClass::tClass,cAutoClassPointerReferenceOperator>::TakeFromManual(Token):nullptr;
 	}
 };
 //---------------------------------------------------------------------------
 template<class T>
-using aClsWeakRef=cnVar::cPtrWeakReference<aCls<T>,cAutoClassWeakRefTokenOperator>;
+using aClsWeakRef=cnClass::cPtrWeakReference<aCls<T>,cAutoClassWeakRefTokenOperator>;
 template<class T>
-using arClsWeakRef=cnVar::cPtrWeakReference<arCls<T>,cAutoClassWeakRefTokenOperator>;
+using arClsWeakRef=cnClass::cPtrWeakReference<arCls<T>,cAutoClassWeakRefTokenOperator>;
 //---------------------------------------------------------------------------
 template<class T>
 inline aCls<T>* aClsFromPtr(T *Src)noexcept(true)
@@ -948,7 +950,7 @@ inline aClsRef<T> aClsCreate(void)noexcept(true)
 	auto NewObject=new aCls<T>;
 	aCls<T>::tLifeCycleSharedManager::ManageShared(NewObject);
 	TReferenceObjectLifeCycleActivation< aCls<T> >::Start(NewObject);
-	return cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
+	return cnClass::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
 }
 
 template<class T,class...TArgs>
@@ -957,7 +959,7 @@ inline aClsRef<T> aClsCreate(TArgs&&...Args)noexcept(true)
 	auto NewObject=new aCls<T>(cnVar::Forward<TArgs>(Args)...);
 	aCls<T>::tLifeCycleSharedManager::ManageShared(NewObject);
 	TReferenceObjectLifeCycleActivation< aCls<T> >::Start(NewObject);
-	return cnVar::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
+	return cnClass::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
 }
 //---------------------------------------------------------------------------
 template<class T>

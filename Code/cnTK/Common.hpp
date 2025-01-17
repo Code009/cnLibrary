@@ -609,7 +609,11 @@ static cnLib_CONSTVAR bool UCharExists=TUCharExists<Size>::Value;
 
 //---------------------------------------------------------------------------
 template<class T> static inline T DeclVal()noexcept(true);
-
+//---------------------------------------------------------------------------
+}	// namespace cnVar
+//---------------------------------------------------------------------------
+namespace cnClass{
+//---------------------------------------------------------------------------
 struct cNoInitialization{};
 static cnLib_CONSTVAR cNoInitialization *NoInitialization=0;
 //---------------------------------------------------------------------------
@@ -617,8 +621,8 @@ static cnLib_CONSTVAR cNoInitialization *NoInitialization=0;
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-inline void* operator new (cnLibrary::tSize,cnLibrary::cnVar::cNoInitialization *Pointer)noexcept(true){	return Pointer;}
-inline void operator delete(void *,cnLibrary::cnVar::cNoInitialization*)noexcept(true){}
+inline void* operator new (cnLibrary::tSize,cnLibrary::cnClass::cNoInitialization *Pointer)noexcept(true){	return Pointer;}
+inline void operator delete(void *,cnLibrary::cnClass::cNoInitialization*)noexcept(true){}
 //---------------------------------------------------------------------------
 namespace cnLib_THelper{
 //---------------------------------------------------------------------------

@@ -39,11 +39,6 @@ cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iThread={
 	0x10,
 };
 
-cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iDataCache={
-	&LibID_cnLib,
-	0x20,
-};
-
 //cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iFile={
 //	&LibID_cnLib,
 //	0x30,
@@ -112,17 +107,6 @@ cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iPrintPaper={
 //	&LibID_cnLib,
 //	0xA0,
 //};
-
-
-cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iStreamErrorReport={
-	&LibID_cnLib,
-	0x0101,
-};
-
-cnSystem_INTERFACE_INFO_DECL cnLib_CONSTVAR iTypeInfo IID_iConnectErrorReport={
-	&LibID_cnLib,
-	0x102,
-};
 
 #ifdef __cnLibrary_cnSystem_Socket_H__
 

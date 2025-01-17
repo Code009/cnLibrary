@@ -490,7 +490,7 @@ public:
 template<class TSocketIOHandle>
 class cNT6ThreadPoolRecyclableIOHandleManager
 	: public bcNTSocketOverlappedIORecyclableHandleManager
-	, public bcRecyclableLifeCycleManager< impReferenceRecyclableLifeCycleObject<TSocketIOHandle> >
+	, public cnClass::bcRecyclableLifeCycleManager< impReferenceRecyclableLifeCycleObject<TSocketIOHandle> >
 {
 public:
 	typedef impReferenceRecyclableLifeCycleObject<TSocketIOHandle> tLifeCycleObject;
@@ -521,7 +521,7 @@ public:
 		}
 		else{
 			// recycle socket now
-			bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(SocketIO);
+			cnClass::bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(SocketIO);
 			rDecReference(this,'lcle');
 		}
 	}
@@ -529,7 +529,7 @@ public:
 	virtual void SocketDisconnected(bcNTSocketOverlappedIOHandle *Object)noexcept(true)override{
 		auto LCObject=static_cast<tLifeCycleObject*>(Object);
 		LCObject->Connected=false;
-		bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(LCObject);
+		cnClass::bcRecyclableLifeCycleManager<tLifeCycleObject>::Dispose(LCObject);
 		rDecReference(this,'lcle');
 	}
 	virtual void SocketDisconnectError(bcNTSocketOverlappedIOHandle *SocketIO)noexcept(true)override{

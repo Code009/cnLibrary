@@ -187,7 +187,7 @@ class cnLib_INTERFACE iEndpoint : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
 	virtual iReadQueue* cnLib_FUNC GetReadQueue(void)noexcept(true)=0;
@@ -260,7 +260,7 @@ class cnLib_INTERFACE iStream : public iSyncStream
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC  CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC  CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 	
 		// ReadAsync
 	//	read from stream

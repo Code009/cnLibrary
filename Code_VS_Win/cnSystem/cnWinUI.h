@@ -68,7 +68,7 @@ class iWindowViewport : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	//virtual bool cnLib_FUNC InsertWindowViewportHandler(iWindowMessageHandler *Handler)=0;
 	//virtual bool cnLib_FUNC RemoveWindowViewportHandler(iWindowMessageHandler *Handler)=0;
@@ -80,7 +80,7 @@ class cnLib_INTERFACE iWindowHandleProperty : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual HWND cnLib_FUNC GetWindowHandle(void)noexcept(true)=0;
 };
@@ -89,7 +89,7 @@ class cnLib_INTERFACE iWindowClient : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)=0;
 	// Client
@@ -101,7 +101,7 @@ class cnLib_INTERFACE iWindowFrame : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual iWindow* cnLib_FUNC GetWindow(void)noexcept(true)=0;
 
@@ -115,7 +115,7 @@ class cnLib_INTERFACE iWindow : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual iUIThread* cnLib_FUNC GetUIThread(void)noexcept(true)=0;
 	virtual HWND cnLib_FUNC GetWindowHandle(void)noexcept(true)=0;
@@ -180,7 +180,7 @@ class cnLib_INTERFACE iMouseCursorSetter : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
 	virtual void cnLib_FUNC SetCursor(void)noexcept(true)=0;
 };
@@ -197,7 +197,7 @@ class cnLib_INTERFACE iGDIBitmap : public iInterface
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 	
 	virtual HBITMAP cnLib_FUNC GetBitmap(void)noexcept(true)=0;
 	virtual bool cnLib_FUNC HasAlpha(void)noexcept(true)=0;

@@ -160,7 +160,7 @@ class cnLib_INTERFACE iFileName : public iFile
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iFile>(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface<iFile>(this,ID);	}
 
 	virtual eiOrdering cnLib_FUNC Compare(iFileName *Dest)noexcept(true)=0;
 

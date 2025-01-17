@@ -168,6 +168,7 @@
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h" />
     <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp" />
+    <ClInclude Include="..\..\Code\cnTK\ObjectLifeCycle.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp" />
@@ -225,7 +226,6 @@
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceWrapper.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Logger.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.h" />
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Stream.h" />
@@ -303,7 +303,6 @@
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceImplementation.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Logger.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.cpp" />
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectLifeCycle.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Stream.cpp" />

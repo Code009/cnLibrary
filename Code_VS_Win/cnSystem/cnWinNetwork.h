@@ -20,7 +20,7 @@ class cnLib_INTERFACE iWinSocketMulticastAddress : public iSocketAddress
 {
 public:
 	struct tInterfaceID{	static iTypeID Value;	};
-	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnVar::ImplementCastInterface<iSocketAddress>(this,ID);	}
+	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface<iSocketAddress>(this,ID);	}
 
 	virtual uIntn cnLib_FUNC AddMember(SOCKET Socket)noexcept(true)=0;
 	virtual uIntn cnLib_FUNC DropMember(SOCKET Socket)noexcept(true)=0;

@@ -78,7 +78,7 @@ void cWPFWindow::Cleanup(void)noexcept
 //---------------------------------------------------------------------------
 void* cWPFWindow::CastInterface(iTypeID IID)noexcept
 {
-	return cnVar::ImplementCastInterface<iWindow>(this,IID);
+	return cnClass::ImplementCastInterface<iWindow>(this,IID);
 }
 //---------------------------------------------------------------------------
 HWND cWPFWindow::GetHandle(void)noexcept
@@ -345,7 +345,7 @@ void cWPFWindowClient::Cleanup(void)noexcept
 //---------------------------------------------------------------------------
 void* cWPFWindowClient::CastInterface(iTypeID IID)noexcept
 {
-	return cnVar::FindInterface<iUIWindow,iCLIObject,iWindowClient,iWPFWindowClient>(this,IID);
+	return cnClass::FindInterface<iUIWindow,iCLIObject,iWindowClient,iWPFWindowClient>(this,IID);
 }
 //---------------------------------------------------------------------------
 bool cWPFWindowClient::CheckThread(void)noexcept
