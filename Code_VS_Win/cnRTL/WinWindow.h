@@ -104,33 +104,42 @@ HWND GetWindowHandleFromUIView(iUIView *View)noexcept(true);
 iWindow* GetWindowFromUIWindow(iUIArea *Area)noexcept(true);
 iWindow* GetWindowFromUIView(iUIView *View)noexcept(true);
 //---------------------------------------------------------------------------
-class cWindowMessageThread : public cDualReference
+class cWindowMessageThread
 {
 public:
 	cWindowMessageThread()noexcept(true);
 	~cWindowMessageThread()noexcept(true);
 
-	void SetupCurrentThread(HWND MessageWindow)noexcept(true);
+	void Setup(HWND MessageWindow,DWORD MessageThreadID)noexcept(true);
+	void Clear(void)noexcept(true);
+
+	HWND GetMessageWindow(void)const noexcept(true);
 
 	void PostQuitMessageLoop(int ExitCode)noexcept(true);
-	int MessageLoop(void)noexcept(true);
+	static int MessageLoop(void)noexcept(true);
 
+	void SendNoop(void)noexcept(true);
+	void PostNoop(void)noexcept(true);
 	void Execute(iReference *Reference,iProcedure *Procedure)noexcept(true);
 	void ExecuteNoRef(iProcedure *Procedure)noexcept(true);
 	void ExecuteSync(iProcedure *Procedure)noexcept(true);
 	bool IsCurrentThread(void)const noexcept(true);
 
+	bool SetTimer(iProcedure *Procedure,UINT Interval)noexcept(true);
+	bool KillTimer(iProcedure *Procedure)noexcept(true);
+
+
+	void SendFunction(void *Parameter,void (*Function)(void *Parameter)noexcept(true))noexcept(true);
+	void PostFunction(void *Parameter,void (*Function)(void *Parameter)noexcept(true))noexcept(true);
+
 	static bool MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true);
 protected:
-	void VirtualStarted(void)noexcept(true);
-	void VirtualStopped(void)noexcept(true);
-	
-	void FinishMessageLoop(void)noexcept(true);
 
 	DWORD fMessageThreadID;
 	HWND fMessageWindow;
 
-	static const UINT Message_Terminate;
+	static const UINT Message_Noop;
+	static const UINT Message_Function;
 	static const UINT Message_Execute;
 	static const UINT Message_ExecuteRef;
 	static const UINT Message_QuitLoop;

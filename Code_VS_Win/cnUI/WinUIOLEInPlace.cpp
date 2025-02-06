@@ -396,7 +396,8 @@ bool cOLEInPlaceWindowlessControl::OLERequestUIActivate(void)noexcept
 //---------------------------------------------------------------------------
 bool cOLEInPlaceWindowlessControl::OLECanWindowlessActivate(void)noexcept
 {
-	return fWindowViewport!=nullptr;
+	//return fWindowViewport!=nullptr;
+	return false;
 }
 //---------------------------------------------------------------------------
 HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetCapture(void)noexcept

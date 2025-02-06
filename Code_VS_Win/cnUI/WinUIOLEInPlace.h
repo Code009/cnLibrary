@@ -156,7 +156,7 @@ protected:
 	COMPtr<IOleInPlaceObjectWindowless> fInPlaceObjectWindowless;
 	COMPtr<IViewObject> fViewObjectWindowless;
 
-	iWindowViewport *fWindowViewport;
+	//iWindowViewport *fWindowViewport;
 	virtual void cnLib_FUNC WindowAttached(void)noexcept(true)override;
 	virtual void cnLib_FUNC WindowDetached(void)noexcept(true)override;
 	virtual bool cnLib_FUNC WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)noexcept(true)override;

@@ -247,10 +247,11 @@ iWindow* cnWinRTL::GetWindowFromUIView(iUIView *View)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-const UINT cWindowMessageThread::Message_Terminate		=WM_USER+0;
-const UINT cWindowMessageThread::Message_Execute		=WM_USER+1;
-const UINT cWindowMessageThread::Message_ExecuteRef		=WM_USER+2;
-const UINT cWindowMessageThread::Message_QuitLoop		=WM_USER+3;
+const UINT cWindowMessageThread::Message_Noop			=WM_USER;
+const UINT cWindowMessageThread::Message_Function		=WM_USER+1;
+const UINT cWindowMessageThread::Message_Execute		=WM_USER+2;
+const UINT cWindowMessageThread::Message_ExecuteRef		=WM_USER+3;
+const UINT cWindowMessageThread::Message_QuitLoop		=WM_USER+4;
 //---------------------------------------------------------------------------
 cWindowMessageThread::cWindowMessageThread()noexcept
 {
@@ -260,49 +261,31 @@ cWindowMessageThread::~cWindowMessageThread()noexcept
 {
 }
 //---------------------------------------------------------------------------
-void cWindowMessageThread::VirtualStarted(void)noexcept
+void cWindowMessageThread::Setup(HWND MessageWindow,DWORD MessageThreadID)noexcept
 {
-	cDualReference::VirtualStarted();
-	fMessageThreadID=0;
-	fMessageWindow=nullptr;
-}
-//---------------------------------------------------------------------------
-void cWindowMessageThread::VirtualStopped(void)noexcept
-{
-	if(fMessageThreadID==0)
-		return;
-	::PostMessageW(fMessageWindow,Message_Terminate,0,reinterpret_cast<WPARAM>(this));
-	
-	cDualReference::VirtualStopped();
-}
-//---------------------------------------------------------------------------
-void cWindowMessageThread::SetupCurrentThread(HWND MessageWindow)noexcept
-{
-	fMessageThreadID=::GetCurrentThreadId();
+	fMessageThreadID=MessageThreadID;
 	fMessageWindow=MessageWindow;
-	InnerIncReference('mstp');
 }
 //---------------------------------------------------------------------------
-void cWindowMessageThread::FinishMessageLoop(void)noexcept
+void cWindowMessageThread::Clear(void)noexcept
 {
-	::DestroyWindow(fMessageWindow);
-	MSG msg;
-	while(::PeekMessageW(&msg,nullptr,0,0,PM_REMOVE)){
-		::TranslateMessage(&msg);
-		::DispatchMessageW(&msg);
-	}
-	::PostQuitMessage(0);
+	fMessageWindow=nullptr;
+	fMessageThreadID=0;
+}
+//---------------------------------------------------------------------------
+HWND cWindowMessageThread::GetMessageWindow(void)const noexcept
+{
+	return fMessageWindow;
 }
 //---------------------------------------------------------------------------
 bool cWindowMessageThread::MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept
-{
+{hWnd;
 	switch(uMsg){
-	case Message_Terminate:
-		{
-			auto Host=reinterpret_cast<cWindowMessageThread*>(lParam);
-			Host->FinishMessageLoop();
-			Host->InnerDecReference('mstp');
-		}
+	case WM_TIMER:
+		reinterpret_cast<iProcedure*>(wParam)->Execute();
+		return true;
+	case Message_Function:
+		reinterpret_cast<void (*)(void *)noexcept(true)>(lParam)(reinterpret_cast<void*>(wParam));
 		return true;
 	case Message_Execute:
 		reinterpret_cast<iProcedure*>(lParam)->Execute();
@@ -343,6 +326,16 @@ bool cWindowMessageThread::IsCurrentThread(void)const noexcept
 	return ::GetCurrentThreadId()==fMessageThreadID;
 }
 //---------------------------------------------------------------------------
+void cWindowMessageThread::SendNoop(void)noexcept(true)
+{
+	::SendMessageW(fMessageWindow,Message_Noop,0,0);
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::PostNoop(void)noexcept(true)
+{
+	::PostMessageW(fMessageWindow,Message_Noop,0,0);
+}
+//---------------------------------------------------------------------------
 void cWindowMessageThread::Execute(iReference *Reference,iProcedure *Procedure)noexcept
 {
 	rIncReference(Reference,'mexe');
@@ -359,6 +352,26 @@ void cWindowMessageThread::ExecuteNoRef(iProcedure *Procedure)noexcept
 void cWindowMessageThread::ExecuteSync(iProcedure *Procedure)noexcept
 {
 	::SendMessageW(fMessageWindow,Message_Execute,0,reinterpret_cast<LPARAM>(Procedure));
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::SendFunction(void *Parameter,void (*Function)(void *Parameter)noexcept(true))noexcept(true)
+{
+	::SendMessageW(fMessageWindow,Message_Function,reinterpret_cast<WPARAM>(Parameter),reinterpret_cast<LPARAM>(Function));
+}
+//---------------------------------------------------------------------------
+void cWindowMessageThread::PostFunction(void *Parameter,void (*Function)(void *Parameter)noexcept(true))noexcept(true)
+{
+	::PostMessageW(fMessageWindow,Message_Function,reinterpret_cast<WPARAM>(Parameter),reinterpret_cast<LPARAM>(Function));
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageThread::SetTimer(iProcedure *Procedure,UINT Interval)noexcept
+{
+	return ::SetTimer(fMessageWindow,reinterpret_cast<UINT_PTR>(Procedure),Interval,nullptr)!=FALSE;
+}
+//---------------------------------------------------------------------------
+bool cWindowMessageThread::KillTimer(iProcedure *Procedure)noexcept
+{
+	return ::KillTimer(fMessageWindow,reinterpret_cast<UINT_PTR>(Procedure))!=FALSE;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

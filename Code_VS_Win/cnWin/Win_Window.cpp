@@ -90,7 +90,7 @@ LRESULT CALLBACK cMessageThreadWindowClass::MessageWindowProc(HWND hWnd,UINT uMs
 //---------------------------------------------------------------------------
 DWORD WINAPI cMessageThreadWindowClass::MessageThreadProcedure(LPVOID Parameter)noexcept
 {
-	rInnerPtr<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
+	aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
 	{
 		auto ThreadParam=static_cast<cWindowMessageThreadParam*>(Parameter);
 		ThreadParam->MessageThread=aClsCreate<cnWinRTL::cWindowMessageThread>();
@@ -98,7 +98,7 @@ DWORD WINAPI cMessageThreadWindowClass::MessageThreadProcedure(LPVOID Parameter)
 
 		HWND MessageWindow=::CreateWindowExW(0,gMessageThreadWindowClass,nullptr,0,0,0,0,0,HWND_MESSAGE,nullptr,gModuleHandle,nullptr);
 	
-		MessageThread->SetupCurrentThread(MessageWindow);
+		MessageThread->Setup(MessageWindow,::GetCurrentThreadId());
 		
 		ThreadParam->CallerNotify.Notify();
 	}
