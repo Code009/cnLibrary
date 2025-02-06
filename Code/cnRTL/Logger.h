@@ -145,10 +145,12 @@ public:
 class cLogMessageQueue
 {
 public:
-	void Reset(void)noexcept(true);
 	void Submit(rPtr<cLogMessageRecord> Record)noexcept(true);
+	void Cleanup(void)noexcept(true);
 	void Async(iAsyncExecution *Execution)noexcept(true);
 	void Connect(iLogRecorder *Recorder)noexcept(true);
+
+	void Terminate(iProcedure *CompletionProcedure)noexcept(true);
 
 	template<bool Enable>
 	struct tLogFunction;
@@ -166,6 +168,8 @@ private:
 	bool fAsyncInitialized=false;
 	uInt8 fRecordMissingCount=0;
 	bool fAsyncWaitFlag=false;
+	ufInt8 fTerminateState=0;
+	iProcedure *fTerminateNotifyProcedure;
 	cAtomicVar<ufInt32> fAsyncRefCount=0;
 	cAtomicQueueSO<cMsgItem> fMsgQueue;
 	cAtomicStack<cMsgItem> fMsgRecycler;
@@ -181,8 +185,6 @@ private:
 		virtual void cnLib_FUNC DecreaseReference(void)noexcept(true)override;
 
 		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
-	
-		iThread *AsyncWaitThread=nullptr;
 	};
 	cnVar::cStaticVariable<cAsyncContext> fAsyncContext;
 

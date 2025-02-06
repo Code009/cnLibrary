@@ -98,44 +98,6 @@ cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Reset(void)noexcept
-{
-	// prepare notification
-	fAsyncWaitFlag=true;
-	fAsyncContext->AsyncWaitThread=cnSystem::CurrentThread::GetThread();
-
-	// remove asynchronization
-	fNeedAsync=true;
-	ProcessMsgQueue();
-
-	// wait async thread completion
-	if(fAsyncRefCount.Free--!=0){
-		while(fAsyncWaitFlag){
-			cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
-		}
-	}
-	fAsyncRefCount.Free++;
-	fAsyncContext->AsyncWaitThread=nullptr;
-
-	// clear recorder
-	auto PrevRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
-	if(PrevRecorder!=nullptr){
-		rDecReference(PrevRecorder,'logr');
-	}
-
-	fNeedReplaceRecorder=true;
-	ProcessMsgQueue();
-
-	// remove item cache
-	auto DeleteItems=fMsgRecycler.Swap(nullptr);
-	while(DeleteItems!=nullptr){
-		auto CurItem=DeleteItems;
-		DeleteItems=DeleteItems->Next;
-
-		delete CurItem;
-	}
-}
-//---------------------------------------------------------------------------
 void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept
 {
 	auto SubmitItem=fMsgRecycler.Pop();
@@ -146,6 +108,18 @@ void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept
 	fMsgQueue.Enqueue(SubmitItem);
 
 	ProcessMsgQueue();
+}
+//---------------------------------------------------------------------------
+void cLogMessageQueue::Cleanup(void)noexcept
+{
+	// remove item cache
+	auto DeleteItems=fMsgRecycler.Swap(nullptr);
+	while(DeleteItems!=nullptr){
+		auto CurItem=DeleteItems;
+		DeleteItems=DeleteItems->Next;
+
+		delete CurItem;
+	}
 }
 //---------------------------------------------------------------------------
 void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
@@ -177,6 +151,16 @@ void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
+void cLogMessageQueue::Terminate(iProcedure *CompletionProcedure)noexcept
+{
+	if(fTerminateState!=0)
+		return;
+
+	fTerminateState=1;
+	fTerminateNotifyProcedure=CompletionProcedure;
+	ProcessMsgQueue();
+}
+//---------------------------------------------------------------------------
 void cLogMessageQueue::cAsyncContext::IncreaseReference(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
@@ -186,9 +170,12 @@ void cLogMessageQueue::cAsyncContext::IncreaseReference(void)noexcept
 void cLogMessageQueue::cAsyncContext::DecreaseReference(void)noexcept
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
-	if(Host->fAsyncRefCount.Free--==0){
-		if(AsyncWaitThread!=nullptr){
-			AsyncWaitThread->Wake(&Host->fAsyncWaitFlag);
+	if(--Host->fAsyncRefCount.Free==0){
+		// all message processed
+		if(Host->fTerminateState==2){
+			Host->fTerminateState=3;
+			if(Host->fTerminateNotifyProcedure!=nullptr)
+				Host->fTerminateNotifyProcedure->Execute();
 		}
 	}
 }
@@ -215,6 +202,14 @@ void cLogMessageQueue::ProcessMsgQueue(void)noexcept
 //---------------------------------------------------------------------------
 void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
 {
+	if(fTerminateState){
+		fNeedAsync=false;
+		auto Execution=fReplaceAsyncExecution.Barrier.Xchg(nullptr);
+		if(Execution!=nullptr){
+			iDecReference(Execution,'logr');
+		}
+		return;
+	}
 	if(fNeedAsync){
 		fNeedAsync=false;
 		
@@ -244,6 +239,14 @@ void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
 //---------------------------------------------------------------------------
 void cLogMessageQueue::ProcessUpdateRecorder(void)noexcept
 {
+	if(fTerminateState){
+		auto ReplaceRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
+		if(ReplaceRecorder!=nullptr){
+			fRecorder->Release(this);
+			rDecReference(ReplaceRecorder,'logr');
+		}
+		return;
+	}
 	if(fNeedReplaceRecorder){
 		fNeedReplaceRecorder=false;
 
@@ -273,7 +276,22 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 				Item->Record=nullptr;
 				fMsgRecycler.Push(Item);
 			}
-			ProcessUpdateRecorder();
+			if(fTerminateState==1){
+				// all message submitted,  remove recorder
+				fRecorder->Release(this);
+				rDecReference(fRecorder,'logr');
+
+				// remove async work
+				if(fAsyncWork!=nullptr){
+					rDecReference(fAsyncWork,'logr');
+					fAsyncWork=nullptr;
+				}
+
+				fTerminateState=2;
+			}
+			else{
+				ProcessUpdateRecorder();
+			}
 		}
 		else{
 			if(++fRecordMissingCount>64){
@@ -282,6 +300,16 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 					Item->Record=nullptr;
 					fMsgRecycler.Push(Item);
 				}
+			}
+
+			if(fTerminateState==1){
+				// all message submitted,  remove async work
+				if(fAsyncWork!=nullptr){
+					rDecReference(fAsyncWork,'logr');
+					fAsyncWork=nullptr;
+				}
+
+				fTerminateState=2;
 			}
 		}
 	}while(fRecordExclusive.Release()==false);

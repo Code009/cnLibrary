@@ -265,26 +265,6 @@ uInt64 cnRTL::TimeNSTruncate(uInt64 TimeNS,uInt64 Mod)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cSpinLock::Acquire(void)noexcept
-{
-	while(fOwned.Acquire.CmpStore(false,true)==false){
-		if(fOwned.WatchEqual(false,SpinCount)==false){
-			cnSystem::CurrentThread::SwitchThread();
-		}
-	}
-}
-//---------------------------------------------------------------------------
-bool cSpinLock::TryAcquire(void)noexcept
-{
-	return fOwned.Acquire.CmpStore(false,true);
-}
-//---------------------------------------------------------------------------
-void cSpinLock::Release(void)noexcept
-{
-	fOwned.Release.Store(false);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 //constexpr uInt8 cExclusiveFlag::rfIdle;
 //constexpr uInt8 cExclusiveFlag::rfExecute;
 //constexpr uInt8 cExclusiveFlag::rfPending;
@@ -376,21 +356,15 @@ void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept
 	NotifyProcess();
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::Execute(void)noexcept
-{
-	auto Host=cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<cContext>*>(this),&cReferenceCountLogger::fContext);
-	Host->ThreadProcess();
-}
-//---------------------------------------------------------------------------
 void cReferenceCountLogger::cContext::Inc(void *Object,uInt32 Tag)noexcept
 {
-	auto &ObjectItem=fObjectMap[Object];
+	auto &ObjectItem=ObjectMap[Object];
 	ObjectItem[Tag]++;
 }
 //---------------------------------------------------------------------------
 void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 {
-	auto ObjectPair=fObjectMap.GetPair(Object);
+	auto ObjectPair=ObjectMap.GetPair(Object);
 	if(ObjectPair==nullptr){
 		// error! object not found
 		cnSystem::AssertionMessage("object not found");
@@ -405,15 +379,15 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 			if(--TagPair->Value==0){
 				ObjectPair->Value.RemovePair(TagPair);
 				if(ObjectPair->Value.GetCount()==0){
-					fObjectMap.RemovePair(ObjectPair);
+					ObjectMap.RemovePair(ObjectPair);
 				}
 			}
 		}
 	}
 }
 //---------------------------------------------------------------------------
-const uChar16 cReferenceCountLogger::cReferrer::DependentName[]=u"cReferenceCountLogger";
-rPtr<iStringReference> cReferenceCountLogger::cReferrer::CreateDescription(void)noexcept
+const uChar16 cReferenceCountLogger::cContext::DependentName[]=u"cReferenceCountLogger";
+rPtr<iStringReference> cReferenceCountLogger::cContext::CreateDescription(void)noexcept
 {
 	cArrayConstant<uChar16> Array;
 	Array.Pointer=DependentName;
@@ -422,12 +396,33 @@ rPtr<iStringReference> cReferenceCountLogger::cReferrer::CreateDescription(void)
 	return Desc.Token();
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cReferrer::Execute(void)noexcept
+void cReferenceCountLogger::cContext::cStartupCompleteProc::Execute(iLibraryReference *Reference)noexcept(true)
 {
-	auto Host=reinterpret_cast<cReferenceCountLogger*>(this);
-	Host->fSystemShutdown=1;
-	if(Host->fExclusiveFlag.Acquire()){
-		cnSystem::DefaultThreadPool->Execute(nullptr,&Host->fContext);
+	auto HostReferrer=cnMemory::GetObjectFromMemberPointer(this,&cContext::StartupCompleteProc);
+	auto HostLogger=cnMemory::GetObjectFromMemberPointer(HostReferrer,&cReferenceCountLogger::fContext);
+	HostLogger->StartupCompleted(Reference);
+}
+//---------------------------------------------------------------------------
+void cReferenceCountLogger::cContext::cShutdownNotifyProc::Execute(void)noexcept(true)
+{
+	auto HostReferrer=cnMemory::GetObjectFromMemberPointer(this,&cContext::ShutdownNotifyProc);
+	auto HostLogger=cnMemory::GetObjectFromMemberPointer(HostReferrer,&cReferenceCountLogger::fContext);
+	HostLogger->Shutdown();
+}
+//---------------------------------------------------------------------------
+void cReferenceCountLogger::StartupCompleted(iLibraryReference *Reference)noexcept(true)
+{
+	cnLib_ASSERT(fAsyncContextState==1);
+	fContext->Observer=Reference->CreateReferenceObserver(nullptr,&fContext->ShutdownNotifyProc);
+	fAsyncContextState=2;
+	NotifyProcess();
+}
+//---------------------------------------------------------------------------
+void cReferenceCountLogger::Shutdown(void)noexcept(true)
+{
+	fSystemShutdown=1;
+	if(fExclusiveFlag.Acquire()){
+		fAsyncContext->ProcessWork->Start();
 	}
 }
 //---------------------------------------------------------------------------
@@ -469,14 +464,12 @@ void cReferenceCountLogger::Process(void)noexcept
 				delete CurItem;
 			}
 
-			fContext.Destruct();
-			fContextInitialized=false;
-
-			auto Observer=fReferrer->Observer;
+			fAsyncContext.Destruct();
+			auto Observer=fContext->Observer;
 			if(Observer!=nullptr){
 				Observer->Close();
 			}
-		
+			fAsyncContextState=0;
 		}
 	}
 }
@@ -495,33 +488,60 @@ void cReferenceCountLogger::NotifyProcess(void)noexcept
 {
 	if(fExclusiveFlag.Acquire()==false)
 		return;
-
-	fExclusiveFlag.Continue();
-	if(fReferrerInitialized==false){
-		fReferrer.Construct();
-		fReferrerInitialized=true;
-	}
-	if(fContextInitialized==false){
-
-		auto SysReference=cnSystem::SystemQueryReference(&fReferrer);
-		while(SysReference==nullptr){
-			// system not started? delay process
-			if(fExclusiveFlag.Release()){
+	do{
+		switch(fAsyncContextState){
+		case 0:
+			fExclusiveFlag.Continue();
+			if(fContextInitialized==false){
+				fContext.Construct();
+				fContextInitialized=true;
+			}
+			if(fSystemShutdown!=0){
+				do{
+					fExclusiveFlag.Continue();
+					Process();
+				}while(fExclusiveFlag.Release()==false);
 				return;
 			}
-			SysReference=cnSystem::SystemQueryReference(&fReferrer);
+			{
+				auto SysReference=cnSystem::SystemQueryReferenceAsync(&fContext->StartupCompleteProc,&fContext);
+				if(SysReference==nullptr){
+					// wait for system startup
+					fAsyncContextState=1;
+					break;
+				}
+				fContext->Observer=SysReference->CreateReferenceObserver(nullptr,&fContext->ShutdownNotifyProc);
+			}
+			cnLib_SWITCH_FALLTHROUGH;
+		case 2:
+			fAsyncContextState=3;
+			fAsyncContext.Construct();
+			cnLib_SWITCH_FALLTHROUGH;
+		case 3:
+			do{
+				fExclusiveFlag.Continue();
+				Process();
+			}while(fExclusiveFlag.Release()==false);
+			return;
+		default:
+		case 1:
+			break;
 		}
-
-		fContextInitialized=true;
-		fContext.Construct();
-
-		fReferrer->Observer=SysReference->CreateReferenceObserver(nullptr,&fReferrer);
-	}
-
-	Process();
-
-	if(fExclusiveFlag.Release()==false){
-		cnSystem::DefaultThreadPool->Execute(nullptr,&fContext);
-	}
+	}while(fExclusiveFlag.Release()==false);
+}
+//---------------------------------------------------------------------------
+cReferenceCountLogger::cAsyncContext::cAsyncContext()noexcept
+	: ProcessWork(cnSystem::DefaultThreadPool->CreateWork(nullptr,this))
+{
+}
+//---------------------------------------------------------------------------
+cReferenceCountLogger::cAsyncContext::~cAsyncContext()noexcept
+{
+}
+//---------------------------------------------------------------------------
+void cReferenceCountLogger::cAsyncContext::Execute(void)noexcept
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<cAsyncContext>*>(this),&cReferenceCountLogger::fAsyncContext);
+	Host->ThreadProcess();
 }
 //---------------------------------------------------------------------------

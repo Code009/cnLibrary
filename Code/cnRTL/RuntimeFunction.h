@@ -777,6 +777,7 @@ private:
 // Synchronization
 
 //---------------------------------------------------------------------------
+template<uIntn SpinCount=16384>
 class cSpinLock
 {
 public:
@@ -785,13 +786,21 @@ public:
 	~cSpinLock()noexcept(true){	cnLib_ASSERT(fOwned==false);	}
 #endif // cnLib_DEBUG
 
-	void Acquire(void)noexcept(true);
-	bool TryAcquire(void)noexcept(true);
-	void Release(void)noexcept(true);
+	void Acquire(void)noexcept(true){
+		while(fOwned.Acquire.CmpStore(false,true)==false){
+			if(fOwned.WatchEqual(false,SpinCount)==false){
+				cnSystem::CurrentThread::SwitchThread();
+			}
+		}
+	}
+	bool TryAcquire(void)noexcept(true){
+		return fOwned.Acquire.CmpStore(false,true);
+	}
+	void Release(void)noexcept(true){
+		fOwned.Release.Store(false);
+	}
 protected:
 	cAtomicVar<bool> fOwned=false;
-public:
-	ufInt16 SpinCount=16384;
 };
 //---------------------------------------------------------------------------
 struct cLockPointerReferenceOperator
@@ -834,6 +843,59 @@ inline auto TakeSharedLock(TLock &Lock)noexcept(true) -> lockSharedPtr<typename 
 {
 	return Lock.operator ->();
 }
+//---------------------------------------------------------------------------
+
+template<class TVariable>
+class cStaticVariableOnReference
+{
+public:
+	void IncreaseReference(void)noexcept(true){
+		auto RefCount=fRefCount.Barrier++;
+		if(RefCount&cnVar::TIntegerValue<uIntn>::MSB){
+			// loaded
+			return;
+		}
+		auto ContextAutoLock=TakeLock(&fConstructionLock);
+		RefCount=fRefCount.Acquire.Load();
+		if((RefCount&cnVar::TIntegerValue<uIntn>::MSB)==0){
+			fVariable.Construct();
+			fRefCount.Barrier+=cnVar::TIntegerValue<uIntn>::MSB;
+		}
+	}
+
+	void DecreaseReference(void)noexcept(true){
+		auto RefCount=--fRefCount.Barrier;
+		if(RefCount!=cnVar::TIntegerValue<uIntn>::MSB){
+			return;
+		}
+		auto ContextAutoLock=TakeLock(&fConstructionLock);
+		RefCount=fRefCount.Acquire.Load();
+		if(RefCount&cnVar::TIntegerValue<uIntn>::MSB){
+			fVariable.Destruct();
+			fRefCount.Barrier-=cnVar::TIntegerValue<uIntn>::MSB;
+		}
+	}
+
+	static cStaticVariableOnReference* FromPtr(TVariable *Variable){
+		return cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<TVariable>*>(Variable),&cStaticVariableOnReference::fVariable);
+	}
+
+	operator TVariable&()noexcept(true){				return fVariable;	}
+	operator const TVariable&()const noexcept(true){	return fVariable;	}
+
+	TVariable* operator &()noexcept(true){				return &fVariable;	}
+	const TVariable* operator &()const noexcept(true){	return &fVariable;	}
+
+	TVariable* operator ->()noexcept(true){				return &fVariable;	}
+	const TVariable* operator ->()const noexcept(true){	return &fVariable;	}
+
+protected:
+
+	cnVar::cStaticVariable<TVariable> fVariable;
+	cnRTL::cAtomicVar<uIntn> fRefCount=0;
+	cnRTL::cSpinLock<> fConstructionLock;
+
+};
 //---------------------------------------------------------------------------
 
 // AsyncFlag
@@ -905,37 +967,50 @@ public:
 	};
 
 	void Log(void *Object,uInt32 Tag,bool Inc)noexcept(true);
+
 private:
-	class cReferrer : public iProcedure, public iLibraryReferrer
+	class cContext : public iLibraryReferrer
 	{
 	public:
 		virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)override;
-		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 
+		class cStartupCompleteProc : public iFunction<void (iLibraryReference*)noexcept(true)>
+		{
+			virtual void cnLib_FUNC Execute(iLibraryReference *Reference)noexcept(true)override;
+		}StartupCompleteProc;
+		class cShutdownNotifyProc : public iProcedure
+		{
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+		}ShutdownNotifyProc;
 		iReferenceObserver *Observer=nullptr;
 		static const uChar16 DependentName[];
-	};
-	class cContext : public iProcedure
-	{
-	public:
-		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 
-		cSeqMap<void*, cSeqMap<uInt32,uIntn> > fObjectMap;
+		cSeqMap<void*, cSeqMap<uInt32,uIntn> > ObjectMap;
 
 		void Inc(void *Object,uInt32 Tag)noexcept(true);
 		void Dec(void *Object,uInt32 Tag)noexcept(true);
-
 	};
-	cnVar::cStaticVariable<cReferrer> fReferrer;
+	class cAsyncContext : public iProcedure
+	{
+	public:
+		cAsyncContext()noexcept(true);
+		~cAsyncContext()noexcept(true);
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+
+		rPtr<iAsyncProcedure> ProcessWork;
+	};
 	cnVar::cStaticVariable<cContext> fContext;
+	cnVar::cStaticVariable<cAsyncContext> fAsyncContext;
 	cAtomicQueueSO<cItem> fItemQueue;
 	cAtomicStack<cItem> fRecycleStack;
 
 	cExclusiveFlag fExclusiveFlag;
-	bool fReferrerInitialized;
 	bool fContextInitialized;
+	ufInt8 fAsyncContextState;
 	ufInt8 fSystemShutdown;
 
+	void StartupCompleted(iLibraryReference *Reference)noexcept(true);
+	void Shutdown(void)noexcept(true);
 	void Process(void)noexcept(true);
 
 	void ThreadProcess(void)noexcept(true);

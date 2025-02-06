@@ -93,12 +93,27 @@ public:
 		cnRTL::gRTLLog.Async(&cnWin_THREADING_NAMESPACE::cDefaultThreadPool::gInstance);
 	}
 	~cWinLogModule()noexcept{
-		cnRTL::gRTLLog.Reset();
+		cTerminationCompletionProc TerminationProc;
+		TerminationProc.Notification.Setup();
+		cnRTL::gRTLLog.Terminate(&TerminationProc);
+		TerminationProc.Notification.Wait();
+
+		cnRTL::gRTLLog.Cleanup();
 	}
 
 	void LogConnectRecorder(iLogRecorder *Recorder)noexcept{
 		return cnRTL::gRTLLog.Connect(Recorder);
 	}
+
+private:
+	class cTerminationCompletionProc : public iProcedure
+	{
+	public:
+		cnRTL::cnWinRTL::cWinSingleThreadNotification Notification;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
+			Notification.Notify();
+		}
+	};
 };
 //---------------------------------------------------------------------------
 }	// namespace cnWin

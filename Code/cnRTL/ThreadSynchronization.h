@@ -122,8 +122,8 @@ private:
 	}
 
 #else
-	void Acquire(void *Object)noexcept(true){	return cWaitObject::Acquire();	}
-	void Release(void *Object)noexcept(true){	return cWaitObject::Release();	}
+	void Acquire(void *)noexcept(true){	return cWaitObject::Acquire();	}
+	void Release(void *)noexcept(true){	return cWaitObject::Release();	}
 #endif
 };
 //---------------------------------------------------------------------------
