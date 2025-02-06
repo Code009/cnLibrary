@@ -63,6 +63,25 @@ struct TAddressOf<typename cnVar::TTypeConditional<void,sizeof(&T::operator &)>:
 //---------------------------------------------------------------------------
 }	// namespace Memory_TH{
 //---------------------------------------------------------------------------
+namespace Class_TH{
+//---------------------------------------------------------------------------
+
+template<class TEnable,class TPointerWeakRegistration>
+struct PtrWeakRegistrationEnableMove
+	: cnVar::TConstantValueFalse{};
+
+#if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+template<class TPointerWeakRegistration>
+struct PtrWeakRegistrationEnableMove<
+	typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<bool (TPointerWeakRegistration::*&)(TPointerWeakRegistration&&)>()=&TPointerWeakRegistration::Move)>::Type
+	, TPointerWeakRegistration
+>
+	: cnVar::TConstantValueTrue{};
+#endif	// cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
+
+//---------------------------------------------------------------------------
+}	// namespace Class_TH{
+//---------------------------------------------------------------------------
 }	// namespace cnLib_THelper
 //---------------------------------------------------------------------------
 namespace cnLibrary{
@@ -548,29 +567,34 @@ protected:
 	T* fPointer;
 };
 //---------------------------------------------------------------------------
+struct cPtrWeakReferenceNoNotification
+{
+};
+//---------------------------------------------------------------------------
 //TPointerWeakReferenceOperator
 //{
-//	typedef tToken;
-//	static tToken* Register(T *Pointer)noexcept;
-//	static void Unregister(tToken *RegToken)noexcept;
+//  typedef tRegistration;
+//	static bool Register(tRegistration &Registration,T *Pointer)noexcept;
+//	static void Unregister(tRegistration &Registration,T *Pointer)noexcept;
+//
+//	bool Move(tRegistration &&Dest,tRegistration &&Src)noexcept;	// optional
 //
 //	tReference<T>{
 //		typedef Type;
 //	};
-//	static tReference<T>::Type Reference(tRegToken RegToken,T *Pointer)noexcept;
+//	tReference<T>::Type Reference(tRegistration &Registration,T *Pointer)noexcept;
 //};
 //---------------------------------------------------------------------------
 template<class T,class TPointerWeakReferenceOperator>
-class cPtrWeakReference
+class cPtrWeakReference : public TPointerWeakReferenceOperator::tRegistration
 {
 public:
 	cPtrWeakReference()noexcept(true)
-		: fToken(nullptr)
-		, fPointer(nullptr)
+		: fPointer(nullptr)
 	{}
 	~cPtrWeakReference()noexcept(true){
-		if(fToken!=nullptr){
-			TPointerWeakReferenceOperator::Unregister(fToken);
+		if(fPointer!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(*this,fPointer);
 		}
 	}
 
@@ -578,8 +602,7 @@ public:
 
 	// construct with null
 	cPtrWeakReference(tNullptr)noexcept(true)
-		: fToken(nullptr)
-		, fPointer(nullptr)
+		: fPointer(nullptr)
 	{}
 	// assign with null
 	cPtrWeakReference& operator =(tNullptr)noexcept(true){
@@ -590,8 +613,7 @@ public:
 
 	cPtrWeakReference(T *Pointer)noexcept(true){
 		if(Pointer!=nullptr){
-			fToken=TPointerWeakReferenceOperator::Register(Pointer);
-			if(fToken!=nullptr){
+			if(TPointerWeakReferenceOperator::Register(*this,Pointer)){
 				fPointer=Pointer;
 			}
 			else{
@@ -599,7 +621,6 @@ public:
 			}
 		}
 		else{
-			fToken=nullptr;
 			fPointer=nullptr;
 		}
 	}
@@ -608,8 +629,7 @@ public:
 		if(fPointer!=Pointer){
 			Clear();
 			if(Pointer!=nullptr){
-				fToken=TPointerWeakReferenceOperator::Register(Pointer);
-				if(fToken!=nullptr){
+				if(TPointerWeakReferenceOperator::Register(*this,Pointer)){
 					fPointer=Pointer;
 				}
 			}
@@ -618,24 +638,32 @@ public:
 	}
 
 	void Clear(void)noexcept(true){
-		if(fToken!=nullptr){
-			TPointerWeakReferenceOperator::Unregister(fToken);
-			fToken=nullptr;
+		if(fPointer!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(*this,fPointer);
 			fPointer=nullptr;
 		}
 	}
 
 
-	typename TPointerWeakReferenceOperator::template tReference<T>::Type Ref(void)noexcept(true){
-		if(fToken==nullptr)
+	typename TPointerWeakReferenceOperator::template tReference<T>::Type Ref(void)const noexcept(true){
+		if(fPointer==nullptr)
 			return nullptr;
 
-		typename TPointerWeakReferenceOperator::template tReference<T>::Type RetReference=TPointerWeakReferenceOperator::Reference(fToken,fPointer);
+		return TPointerWeakReferenceOperator::Reference(*this,fPointer);
+	}
+	typename TPointerWeakReferenceOperator::template tReference<T>::Type operator + (void)const noexcept(true){
+		return Ref();
+	}
+
+	typename TPointerWeakReferenceOperator::template tReference<T>::Type Ref(void)noexcept(true){
+		if(fPointer==nullptr)
+			return nullptr;
+
+		typename TPointerWeakReferenceOperator::template tReference<T>::Type RetReference=TPointerWeakReferenceOperator::Reference(*this,fPointer);
 		if(RetReference){
 			return RetReference;
 		}
-		TPointerWeakReferenceOperator::Unregister(fToken);
-		fToken=nullptr;
+		TPointerWeakReferenceOperator::Unregister(*this,fPointer);
 		fPointer=nullptr;
 		return nullptr;
 	}
@@ -643,17 +671,16 @@ public:
 		return Ref();
 	}
 
-	operator bool ()const noexcept(true){	return fToken!=nullptr;	}
+	operator bool ()const noexcept(true){	return fPointer!=nullptr;	}
 
 
 	// copy constructor
 
 	cPtrWeakReference(const cPtrWeakReference &Src)noexcept(true){
-		if(Src.fToken!=nullptr){
+		if(Src.fPointer!=nullptr){
 			typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
 			if(SrcReference!=nullptr){
-				fToken=TPointerWeakReferenceOperator::Register(static_cast<T*>(SrcReference));
-				if(fToken!=nullptr){
+				if(TPointerWeakReferenceOperator::Register(*this,static_cast<T*>(SrcReference))){
 					fPointer=SrcReference;
 				}
 				else{
@@ -661,12 +688,10 @@ public:
 				}
 			}
 			else{
-				fToken=nullptr;
 				fPointer=nullptr;
 			}
 		}
 		else{
-			fToken=nullptr;
 			fPointer=nullptr;
 		}
 	}
@@ -678,8 +703,7 @@ public:
 			Clear();
 			typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
 			if(SrcReference!=nullptr){
-				fToken=TPointerWeakReferenceOperator::Register(static_cast<T*>(SrcReference));
-				if(fToken!=nullptr){
+				if(TPointerWeakReferenceOperator::Register(*this,static_cast<T*>(SrcReference))){
 					fPointer=SrcReference;
 				}
 			}
@@ -690,25 +714,62 @@ public:
 
 	// move constructor
 
-	cPtrWeakReference(cPtrWeakReference &&Src)noexcept(true)
-		: fToken(Src.fToken)
-		, fPointer(Src.fPointer)
+	template< class TEnable=cnVar::TTypeConditional<cPtrWeakReference,cnLib_THelper::Class_TH::PtrWeakRegistrationEnableMove<void,TPointerWeakReferenceOperator>::Value> >
+	cPtrWeakReference(typename TEnable::Type &&Src)noexcept(true)
+		: fPointer(Src.fPointer)
 	{
-		Src.fToken=nullptr;
+		if(fPointer!=nullptr){
+			if(TPointerWeakReferenceOperator::Move(*this,Src)){
+				Src.fPointer=nullptr;
+			}
+			else{
+				// fallback to copy
+				typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
+				if(SrcReference!=nullptr){
+					if(TPointerWeakReferenceOperator::Register(*this,static_cast<T*>(SrcReference))){
+						fPointer=SrcReference;
+					}
+					else{
+						fPointer=nullptr;
+					}
+				}
+				else{
+					fPointer=nullptr;
+				}
+			}
+		}
 	}
 
 	// move
 
-	cPtrWeakReference& operator =(cPtrWeakReference &&Src)noexcept(true){
-		if(fToken!=nullptr){
-			TPointerWeakReferenceOperator::Unregister(fToken);
+	template< class TEnable=cnVar::TTypeConditional<cPtrWeakReference,cnLib_THelper::Class_TH::PtrWeakRegistrationEnableMove<void,TPointerWeakReferenceOperator>::Value> >
+	typename TEnable::Type& operator =(cPtrWeakReference &&Src)noexcept(true){
+		if(fPointer!=nullptr){
+			TPointerWeakReferenceOperator::Unregister(*this,fPointer);
 		}
-
-		fToken=Src.fToken;
 		fPointer=Src.fPointer;
 
-		Src.fToken=nullptr;
-		Src.fPointer=nullptr;
+		if(fPointer!=nullptr){
+			if(TPointerWeakReferenceOperator::Move(*this,Src)){
+				Src.fPointer=nullptr;
+			}
+			else{
+				// fallback to copy
+				typename TPointerWeakReferenceOperator::template tReference<T>::Type SrcReference=Src.Ref();
+				if(SrcReference!=nullptr){
+					if(TPointerWeakReferenceOperator::Register(*this,static_cast<T*>(SrcReference))){
+						fPointer=SrcReference;
+					}
+					else{
+						fPointer=nullptr;
+					}
+				}
+				else{
+					fPointer=nullptr;
+				}
+			}
+		}
+
 		return *this;
 	}
 
@@ -720,7 +781,7 @@ public:
 	template<class TSrc,class TSrcPointerReferenceOperator
 #ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
 		, class=typename cnVar::TTypeConditional<void,
-		cnVar::TIsConvertible<TSrc*,T*>::Value
+			cnVar::TIsConvertible<TSrc*,T*>::Value
 		>::Type
 #endif
 	>
@@ -728,8 +789,7 @@ public:
 	{
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){
-			fToken=TPointerWeakReferenceOperator::Register(Pointer);
-			if(fToken!=nullptr){
+			if(TPointerWeakReferenceOperator::Register(*this,Pointer)){
 				fPointer=Pointer;
 			}
 			else{
@@ -737,7 +797,6 @@ public:
 			}
 		}
 		else{
-			fToken=nullptr;
 			fPointer=nullptr;
 		}
 	}
@@ -752,15 +811,14 @@ public:
 		Clear();
 		auto Pointer=Src.Pointer();
 		if(Pointer!=nullptr){
-			fToken=TPointerWeakReferenceOperator::Register(Pointer);
-			if(fToken!=nullptr){
+			if(TPointerWeakReferenceOperator::Register(*this,Pointer)){
 				fPointer=Pointer;
 			}
 		}
+		return *this;
 	}
 
 protected:
-	typename TPointerWeakReferenceOperator::tToken *fToken;
 	T *fPointer;
 };
 //---------------------------------------------------------------------------

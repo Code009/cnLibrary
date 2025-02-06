@@ -93,6 +93,11 @@ bcRegisteredReference::bcRegisteredReference(bool InitialReference)noexcept(true
 {
 }
 //---------------------------------------------------------------------------
+void bcRegisteredReference::ResetRef(bool InitialReference)noexcept(true)
+{
+	fRefCount=InitialReference;
+}
+//---------------------------------------------------------------------------
 void bcRegisteredReference::IncRef(void)noexcept(true)
 {
 	++fRefCount.Barrier;
@@ -102,7 +107,7 @@ void bcRegisteredReference::DecRef(void)noexcept(true)
 {
 	if(--fRefCount.Barrier==0){
 		fShutdownNotifySet.Notify();
-		ReferenceShutdown();
+		ReferenceUpdate();
 	}
 }
 //---------------------------------------------------------------------------
@@ -124,7 +129,7 @@ rPtr<iLibraryReference> bcRegisteredReference::CreateReference(iLibraryReferrer 
 	return rPtr<iLibraryReference>::TakeFromManual(Reference);
 }
 //---------------------------------------------------------------------------
-bool bcRegisteredReference::UpdateReferenceSet(void)noexcept(true)
+void bcRegisteredReference::Update(void)noexcept(true)
 {
 	for(auto p=fReferenceList.begin();p!=fReferenceList.end();){
 		auto RemoveItem=*p;
@@ -137,8 +142,11 @@ bool bcRegisteredReference::UpdateReferenceSet(void)noexcept(true)
 			// update description
 		}
 	}
-
-	return fReferenceList.IsEmpty();
+}
+//---------------------------------------------------------------------------
+bool bcRegisteredReference::CheckShutdown(void)noexcept(true)
+{
+	return fReferenceList.IsEmpty() && fRefCount.Acquire.Load()==0;
 }
 //---------------------------------------------------------------------------
 void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportText)noexcept(true)
@@ -147,8 +155,8 @@ void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportTex
 		ReportText.Append(u"Remaining reference :\n");
 		for(auto Reference : fReferenceList){
 			auto Referrer=Reference->GetReferrer();
-			auto Description=Referrer->CreateDescription();
 			cArray<const uChar16> DescArray;
+			rPtr<iStringReference> Description=(Referrer!=nullptr ? Referrer->CreateDescription() : nullptr);
 			if(Description!=nullptr){
 				DescArray=Description->Get();
 			}

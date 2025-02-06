@@ -28,6 +28,7 @@ public:
 namespace cnSystem{
 //---------------------------------------------------------------------------
 rPtr<iLibraryReference> cnLib_FUNC SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true);
+rPtr<iLibraryReference> cnLib_FUNC SystemQueryReferenceAsync(iFunction<void (iLibraryReference*)noexcept(true)> *Procedure,iLibraryReferrer *Referrer)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------
