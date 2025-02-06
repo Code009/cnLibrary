@@ -84,28 +84,137 @@ public:
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
 //---------------------------------------------------------------------------
+class cWinSingleThreadNotification
+{
+public:
+	void Setup(void)noexcept(true);
+	void Clear(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	void Notify(void)noexcept(true);
+protected:
+	HANDLE fNotifyThreadHandle;
+	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR)noexcept(true);
+};
+//---------------------------------------------------------------------------
 class bcModuleReference : public bcRegisteredReference
 {
 public:
 	bcModuleReference()noexcept(true);
 	~bcModuleReference()noexcept(true);
 
-	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer,bool NoLoad)noexcept(true);
+	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer)noexcept(true);
 
 protected:
 	virtual void ReferenceUpdate(void)noexcept(true)override final;
-	virtual void ReferenceShutdown(void)noexcept(true)override final;
 
 	virtual void ModuleInitialize(void)noexcept(true)=0;
 	virtual void ModuleFinialize(void)noexcept(true)=0;
 private:
 
 	cnWinRTL::cCriticalSection fCS;
-	bool fModuleActive;
-	bool fModuleShutdown;
 	cExclusiveFlag fReferenceProcessFlag;
+	static constexpr ufInt8 sIdle=0;
+	static constexpr ufInt8 sActive=1;
+	static constexpr ufInt8 sShutdown=2;
+	ufInt8 fState;
 
-	void ReferenceProcess(void)noexcept(true);
+	void ShutdownProcess(void)noexcept(true);
+	static DWORD WINAPI ShutdownThreadProc(LPVOID Parameter)noexcept(true);
+};
+//---------------------------------------------------------------------------
+class LibraryMutex
+{
+public:
+	static rPtr<iMutex> Query(void)noexcept(true);
+private:
+	class cMutex : public iMutex
+	{
+	public:
+		cnRTL::cnWinRTL::cCriticalSection CS;
+
+		virtual	void cnLib_FUNC IncreaseReference(void)noexcept(true)override;
+		virtual	void cnLib_FUNC DecreaseReference(void)noexcept(true)override;
+		virtual void cnLib_FUNC Acquire(void)noexcept(true)override;
+		virtual bool cnLib_FUNC TryAcquire(void)noexcept(true)override;
+		virtual void cnLib_FUNC Release(void)noexcept(true)override;
+	};
+	static cStaticVariableOnReference<cMutex> gInstance;
+};
+//---------------------------------------------------------------------------
+struct cWinLibraryReferenceThreadExecution
+{
+	static rPtr<iMutex> QueryMutex(void)noexcept(true);
+	static bool Run(iProcedure *Procedure)noexcept(true);
+	static DWORD WINAPI ReferenceThreadProc(LPVOID Parameter)noexcept(true);
+};
+//---------------------------------------------------------------------------
+template<class TLibraryInitialization>
+class cWinLibraryReference : public cLibraryReference<TLibraryInitialization,cWinLibraryReferenceThreadExecution>
+{
+public:
+	void WaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true)
+	{
+		cShutdownNotifyProcedure ShutdownProc;
+		{
+			auto AutoLock=TakeLock(this->fContext->LibMutex);
+			if(this->IsIdle())
+				return;
+			if(this->fContext->ShutdownCompletionProcedure!=nullptr){
+				return;
+			}
+
+
+			HANDLE CurProc=::GetCurrentProcess();
+			HANDLE CurThread=::GetCurrentThread();
+
+			::DuplicateHandle(CurProc,CurThread,CurProc,&ShutdownProc.ThreadHandle,0,false,DUPLICATE_SAME_ACCESS);
+			if(ShutdownProc.ThreadHandle==nullptr)
+				return;
+
+			this->fContext->ShutdownCompletionProcedure=&ShutdownProc;
+		}
+
+		rPtr<iMutex> LibMutex=this->fContext->LibMutex;
+		Reference=nullptr;
+
+#if 1 && defined(cnLib_DEBUG)
+		do{
+			if(::SleepEx(3000,TRUE)==0){
+				// timeout, report remaining referrer
+				auto AutoLock=TakeLock(LibMutex);
+
+				cStringBuffer<uChar16> ReportText;
+				this->fContext->ReportReferenceSet(ReportText);
+				OutputDebugStringW(utow(ReportText.GetString()));
+				break;
+			}
+			// apc triggered
+		}while(ShutdownProc.ThreadHandle!=nullptr);
+#endif
+		while(ShutdownProc.ThreadHandle!=nullptr){
+			::SleepEx(INFINITE,TRUE);
+		}
+
+	}
+private:
+
+	class cShutdownNotifyProcedure : public iProcedure
+	{
+	public:
+		HANDLE ThreadHandle;
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
+			::QueueUserAPC(NotifyShutdownAPC,ThreadHandle,reinterpret_cast<ULONG_PTR>(this));
+		}
+
+		static VOID CALLBACK NotifyShutdownAPC(_In_ ULONG_PTR Parameter)noexcept(true)
+		{
+			auto This=reinterpret_cast<cShutdownNotifyProcedure*>(Parameter);
+			if(This->ThreadHandle!=nullptr){
+				::CloseHandle(This->ThreadHandle);
+				This->ThreadHandle=nullptr;
+			}
+		}
+	};
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7

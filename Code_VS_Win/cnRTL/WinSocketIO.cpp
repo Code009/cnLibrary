@@ -1196,7 +1196,7 @@ void bcNTSocketOverlappedIORecyclableHandleManager::QueueProcessDone(void)noexce
 		}
 		else{
 			SocketDisconnected(CurTask->SocketIO);
-		}	
+		}
 		delete CurTask;
 	}
 }

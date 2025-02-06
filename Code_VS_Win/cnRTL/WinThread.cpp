@@ -6,6 +6,8 @@ using namespace cnRTL;
 using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
+cStaticVariableOnReference<LibraryMutex::cMutex> LibraryMutex::gInstance;
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 constexpr char cWinExclusiveFlag::rfIdle;
 constexpr char cWinExclusiveFlag::rfExecute;
@@ -164,9 +166,46 @@ void cWinWaitReference::DecreaseReference(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void cWinSingleThreadNotification::Setup(void)noexcept
+{
+	HANDLE ProcessHandle=::GetCurrentProcess();
+	HANDLE ThreadHandle=::GetCurrentThread();
+	::DuplicateHandle(ProcessHandle,ThreadHandle,ProcessHandle,&fNotifyThreadHandle,0,FALSE,DUPLICATE_SAME_ACCESS);
+}
+//---------------------------------------------------------------------------
+void cWinSingleThreadNotification::Wait(void)noexcept
+{
+	while(fNotifyThreadHandle){
+		SleepEx(INFINITE,TRUE);
+	}
+}
+//---------------------------------------------------------------------------
+void cWinSingleThreadNotification::Notify(void)noexcept
+{
+	::QueueUserAPC(WaitNotifyAPC,fNotifyThreadHandle,reinterpret_cast<ULONG_PTR>(this));
+}
+//---------------------------------------------------------------------------
+void cWinSingleThreadNotification::Clear(void)noexcept
+{
+	if(fNotifyThreadHandle!=nullptr){
+		::CloseHandle(fNotifyThreadHandle);
+		fNotifyThreadHandle=nullptr;
+	}
+}
+//---------------------------------------------------------------------------
+VOID CALLBACK cWinSingleThreadNotification::WaitNotifyAPC(ULONG_PTR Param)noexcept
+{
+	auto This=reinterpret_cast<cWinSingleThreadNotification*>(Param);
+	if(This->fNotifyThreadHandle!=nullptr){
+		::CloseHandle(This->fNotifyThreadHandle);
+		This->fNotifyThreadHandle=nullptr;
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 bcModuleReference::bcModuleReference()noexcept(true)
 	: bcRegisteredReference(false)
-	, fModuleActive(false)
+	, fState(sIdle)
 {
 }
 //---------------------------------------------------------------------------
@@ -174,7 +213,7 @@ bcModuleReference::~bcModuleReference()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Referrer,bool NoLoad)noexcept(true)
+rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Referrer)noexcept(true)
 {
 	bool Referenced=MakeStrongReference();
 
@@ -182,13 +221,14 @@ rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Refe
 
 	if(Referenced==false){
 		// RefCount==0
-
-		if(fModuleActive || NoLoad){
-			// is shutting down, or did not load
-			return nullptr;
+		switch(fState){
+		case sIdle:
+			ModuleInitialize();
+			cnLib_SWITCH_FALLTHROUGH;
+		case sShutdown:
+			fState=sActive;
+			break;
 		}
-		fModuleShutdown=false;
-		fModuleActive=true;
 		ModuleInitialize();
 		IncRef();
 	}
@@ -197,17 +237,6 @@ rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Refe
 }
 //---------------------------------------------------------------------------
 void bcModuleReference::ReferenceUpdate(void)noexcept(true)
-{
-	ReferenceProcess();
-}
-//---------------------------------------------------------------------------
-void bcModuleReference::ReferenceShutdown(void)noexcept(true)
-{
-	fModuleShutdown=true;
-	ReferenceProcess();
-}
-//---------------------------------------------------------------------------
-void bcModuleReference::ReferenceProcess(void)noexcept(true)
 {
 	if(fReferenceProcessFlag.Acquire()==false)
 		return;
@@ -218,18 +247,102 @@ void bcModuleReference::ReferenceProcess(void)noexcept(true)
 
 		auto AutoLock=TakeLock(&fCS);
 
-		auto IsEmptySet=UpdateReferenceSet();
-		if(fModuleShutdown){
+		Update();
+		if(CheckShutdown()){
+			fState=sShutdown;
 
-			if(IsEmptySet){
-				// all reference deleted
-				ModuleFinialize();
-
-				fModuleActive=false;
+			HANDLE ThreadHandle=::CreateThread(nullptr,0,ShutdownThreadProc,this,0,nullptr);
+			if(ThreadHandle!=nullptr){
+				return;
 			}
+			// failed to create shutdown thread
+			fState=sActive;
 		}
 
 	}while(fReferenceProcessFlag.Release()==false);
+}
+//---------------------------------------------------------------------------
+DWORD bcModuleReference::ShutdownThreadProc(LPVOID Parameter)noexcept(true)
+{
+	static_cast<bcModuleReference*>(Parameter)->ShutdownProcess();	
+	return 0;
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::ShutdownProcess(void)noexcept(true)
+{
+	do{
+		fReferenceProcessFlag.Continue();
+
+		auto AutoLock=TakeLock(&fCS);
+
+		if(fState==sShutdown){
+			// all reference deleted
+			ModuleFinialize();
+			fState=sIdle;
+		}
+		else{
+			Update();
+			if(CheckShutdown()){
+				// all reference deleted
+				ModuleFinialize();
+				fState=sIdle;
+			}
+		}
+	}while(fReferenceProcessFlag.Release()==false);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rPtr<iMutex> LibraryMutex::Query(void)noexcept(true)
+{
+	gInstance.IncreaseReference();
+	return rPtr<iMutex>::TakeFromManual(&gInstance);
+}
+//---------------------------------------------------------------------------
+void LibraryMutex::cMutex::IncreaseReference(void)noexcept(true)
+{
+	cStaticVariableOnReference<cMutex>::FromPtr(this)->IncreaseReference();
+}
+//---------------------------------------------------------------------------
+void LibraryMutex::cMutex::DecreaseReference(void)noexcept(true)
+{
+	cStaticVariableOnReference<cMutex>::FromPtr(this)->DecreaseReference();
+}
+//---------------------------------------------------------------------------
+void LibraryMutex::cMutex::Acquire(void)noexcept(true)
+{
+	CS.Acquire();
+}
+//---------------------------------------------------------------------------
+bool LibraryMutex::cMutex::TryAcquire(void)noexcept(true)
+{
+	return CS.TryAcquire();
+}
+//---------------------------------------------------------------------------
+void LibraryMutex::cMutex::Release(void)noexcept(true)
+{
+	CS.Release();
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+rPtr<iMutex> cWinLibraryReferenceThreadExecution::QueryMutex(void)noexcept(true)
+{
+	return LibraryMutex::Query();
+}
+//---------------------------------------------------------------------------
+bool cWinLibraryReferenceThreadExecution::Run(iProcedure *Procedure)noexcept(true)
+{
+	HANDLE ThreadHandle=::CreateThread(nullptr,0,ReferenceThreadProc,Procedure,0,nullptr);
+	if(ThreadHandle!=nullptr){
+		::CloseHandle(ThreadHandle);
+		return true;
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+DWORD WINAPI cWinLibraryReferenceThreadExecution::ReferenceThreadProc(LPVOID Parameter)noexcept(true)
+{
+	static_cast<iProcedure*>(Parameter)->Execute();
+	return 0;
 }
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7

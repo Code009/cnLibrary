@@ -62,8 +62,10 @@ public:
 //---------------------------------------------------------------------------
 namespace cnWindows{
 //---------------------------------------------------------------------------
+rPtr<iMutex> cnLib_FUNC QueryLibraryMutex(void)noexcept(true);
+//---------------------------------------------------------------------------
 extern const wchar_t *DLLFileName_cnPLWindows;
-//---------------------------------------------------------------------------s
+//---------------------------------------------------------------------------
 struct LibLoadResult
 {
 	static const ufInt8	Success					=0;
@@ -73,7 +75,6 @@ struct LibLoadResult
 	static const ufInt8	FileVersionNotMatch		=4;
 };
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> cnLib_FUNC SystemStartup(iLibraryReferrer *Referrer)noexcept(true);
 void cnLib_FUNC SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true);
 //---------------------------------------------------------------------------
 extern iTextStreamOutput*const DebugLogStream;
