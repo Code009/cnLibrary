@@ -24,7 +24,7 @@ extern HANDLE gCurrentThreadHandle;
 //---------------------------------------------------------------------------
 struct cSysInfo : SYSTEM_INFO
 {
-	cSysInfo();
+	cSysInfo()noexcept(true);
 };
 //---------------------------------------------------------------------------
 extern const cSysInfo gSysInfo;
@@ -36,11 +36,11 @@ extern const cSysInfo gSysInfo;
 ////---------------------------------------------------------------------------
 //extern const cStartupInfo gStartupInfo;
 //---------------------------------------------------------------------------
-DWORD GetMemPageSize(void);
-DWORD GetMemAllocationGranularity(void);
+DWORD GetMemPageSize(void)noexcept(true);
+DWORD GetMemAllocationGranularity(void)noexcept(true);
 //---------------------------------------------------------------------------
-BOOL DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHandle=FALSE);
-BOOL DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle=FALSE);
+BOOL DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHandle=FALSE)noexcept(true);
+BOOL DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle=FALSE)noexcept(true);
 
 //---------------------------------------------------------------------------
 struct cWindowsLibraryInitialization

@@ -18,9 +18,9 @@ namespace cnWinNT6{
 //---------------------------------------------------------------------------
 namespace AudioDevice{
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher>	QueryAudioDefaultInputDeviceWatcher(void);
-rPtr<iAudioDeviceWatcher>	QueryAudioDefaultOutputDeviceWatcher(void);
-iPtr<iAudioDevice>			QueryAudioMainDevice(void);
+rPtr<iAudioDeviceWatcher>	QueryAudioDefaultInputDeviceWatcher(void)noexcept(true);
+rPtr<iAudioDeviceWatcher>	QueryAudioDefaultOutputDeviceWatcher(void)noexcept(true);
+iPtr<iAudioDevice>			QueryAudioMainDevice(void)noexcept(true);
 //---------------------------------------------------------------------------
 }	//	namespace AudioDevice
 //---------------------------------------------------------------------------

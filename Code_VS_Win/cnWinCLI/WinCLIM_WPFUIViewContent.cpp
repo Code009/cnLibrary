@@ -12,47 +12,47 @@ rcNativeCaller_WPFUIViewContent::rcNativeCaller_WPFUIViewContent(void *CPP)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFDrawingContext::mSetup(void)noexcept
+void mcWPFDrawingContext::mSetup(void)noexcept(true)
 {
 	fHandle.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingContext::mClear(void)noexcept
+void mcWPFDrawingContext::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
 #pragma unmanaged
-const cGCHandle& mcWPFDrawingContext::GetContextHandle(void)const noexcept
+const cGCHandle& mcWPFDrawingContext::GetContextHandle(void)const noexcept(true)
 {
 	return fHandle;
 }
 #pragma managed
 //---------------------------------------------------------------------------
-System::Windows::Media::DrawingContext^ mcWPFDrawingContext::GetContext(void)const noexcept
+System::Windows::Media::DrawingContext^ mcWPFDrawingContext::GetContext(void)const noexcept(true)
 {
 	return fHandle.Get();
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingContext::Start(System::Windows::Media::DrawingContext ^Context)noexcept
+void mcWPFDrawingContext::Start(System::Windows::Media::DrawingContext ^Context)noexcept(true)
 {
 	fHandle.Set(Context);
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingContext::Finish(void)noexcept
+void mcWPFDrawingContext::Finish(void)noexcept(true)
 {
 	auto Context=fHandle.Get();
 	fHandle.Set(nullptr);
 }
 //---------------------------------------------------------------------------
-System::Windows::Media::DrawingContext^ mcWPFDrawingContext::Stop(void)noexcept
+System::Windows::Media::DrawingContext^ mcWPFDrawingContext::Stop(void)noexcept(true)
 {
 	auto Context=fHandle.Get();
 	fHandle.Set(nullptr);
 	return Context;
 }
 //---------------------------------------------------------------------------
-bool mcWPFDrawingContext::mFill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept
+bool mcWPFDrawingContext::mFill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept(true)
 {
 	System::Windows::Rect DrawRC;
 	DrawRC.X=DrawPosition.x;
@@ -67,7 +67,7 @@ bool mcWPFDrawingContext::mFill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFDrawingGroup::mSetup(bool Create)noexcept
+void mcWPFDrawingGroup::mSetup(bool Create)noexcept(true)
 {
 	if(Create){
 		fHandle.Alloc(gcnew System::Windows::Media::DrawingGroup());
@@ -77,12 +77,12 @@ void mcWPFDrawingGroup::mSetup(bool Create)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingGroup::mClear(void)noexcept
+void mcWPFDrawingGroup::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
-bool mcWPFDrawingGroup::mStartDraw(mcWPFDrawingContext &mContext)noexcept
+bool mcWPFDrawingGroup::mStartDraw(mcWPFDrawingContext &mContext)noexcept(true)
 {
 	auto Drawing=fHandle.Get();
 	if(Drawing==nullptr){
@@ -100,7 +100,7 @@ bool mcWPFDrawingGroup::mStartDraw(mcWPFDrawingContext &mContext)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool mcWPFDrawingGroup::mStopDraw(mcWPFDrawingContext &mContext)noexcept
+bool mcWPFDrawingGroup::mStopDraw(mcWPFDrawingContext &mContext)noexcept(true)
 {
 	auto Context=mContext.Stop();
 	if(Context!=nullptr){
@@ -110,26 +110,26 @@ bool mcWPFDrawingGroup::mStopDraw(mcWPFDrawingContext &mContext)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingGroup::mDiscard(void)noexcept
+void mcWPFDrawingGroup::mDiscard(void)noexcept(true)
 {
 	fHandle.Set(nullptr);
 }
 //---------------------------------------------------------------------------
 #pragma unmanaged
 //---------------------------------------------------------------------------
-const cGCHandle& mcWPFDrawingGroup::GetHandle(void)noexcept
+const cGCHandle& mcWPFDrawingGroup::GetHandle(void)noexcept(true)
 {
 	return fHandle;
 }
 //---------------------------------------------------------------------------
-cGCHandle& mcWPFDrawingGroup::Fetch(void)noexcept
+cGCHandle& mcWPFDrawingGroup::Fetch(void)noexcept(true)
 {
 	return fHandle;
 }
 //---------------------------------------------------------------------------
 #pragma managed
 //---------------------------------------------------------------------------
-void mcWPFDrawingGroup::mTransformScaleOffset(double X,double Y,double Scale)noexcept
+void mcWPFDrawingGroup::mTransformScaleOffset(double X,double Y,double Scale)noexcept(true)
 {
 	auto Drawing=fHandle.Get();
 
@@ -145,7 +145,7 @@ void mcWPFDrawingGroup::mTransformScaleOffset(double X,double Y,double Scale)noe
 	}
 }
 //---------------------------------------------------------------------------
-void mcWPFDrawingGroup::mTransformScale(Float32 Scale)noexcept
+void mcWPFDrawingGroup::mTransformScale(Float32 Scale)noexcept(true)
 {
 	auto Drawing=fHandle.Get();
 
@@ -160,17 +160,17 @@ void mcWPFDrawingGroup::mTransformScale(Float32 Scale)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFImageSource::mSetup(void)noexcept
+void mcWPFImageSource::mSetup(void)noexcept(true)
 {
 	fHandle.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFImageSource::mClear(void)noexcept
+void mcWPFImageSource::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
-cUIPoint mcWPFImageSource::mGetImageSize(void)noexcept
+cUIPoint mcWPFImageSource::mGetImageSize(void)noexcept(true)
 {
 	auto ImageSource=fHandle.Get();
 
@@ -180,7 +180,7 @@ cUIPoint mcWPFImageSource::mGetImageSize(void)noexcept
 	return ImageSize;
 }
 //---------------------------------------------------------------------------
-void mcWPFImageSource::mTakeDrawing(cGCHandle &DrawingHandle)noexcept
+void mcWPFImageSource::mTakeDrawing(cGCHandle &DrawingHandle)noexcept(true)
 {
 	auto Drawing=DrawingHandle.Cast<System::Windows::Media::Drawing>();
 	if(Drawing==nullptr)
@@ -194,7 +194,7 @@ void mcWPFImageSource::mTakeDrawing(cGCHandle &DrawingHandle)noexcept
 	fHandle.Set(ImageSource);
 }
 //---------------------------------------------------------------------------
-void mcWPFImageSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void mcWPFImageSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	auto Context=ContextHandle.DynamicCast<System::Windows::Media::DrawingContext>();
 	if(Context==nullptr)
@@ -208,17 +208,17 @@ void mcWPFImageSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPositio
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFBitmapSource::mSetup(void)noexcept
+void mcWPFBitmapSource::mSetup(void)noexcept(true)
 {
 	fHandle.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFBitmapSource::mClear(void)noexcept
+void mcWPFBitmapSource::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
-cUIPoint mcWPFBitmapSource::mGetImageSize(void)noexcept
+cUIPoint mcWPFBitmapSource::mGetImageSize(void)noexcept(true)
 {
 	auto Source=fHandle.Get();
 
@@ -228,7 +228,7 @@ cUIPoint mcWPFBitmapSource::mGetImageSize(void)noexcept
 	return ImageSize;
 }
 //---------------------------------------------------------------------------
-void mcWPFBitmapSource::mTakeDrawing(cGCHandle &DrawingHandle,int Width,int Height)noexcept
+void mcWPFBitmapSource::mTakeDrawing(cGCHandle &DrawingHandle,int Width,int Height)noexcept(true)
 {
 	auto Drawing=DrawingHandle.Cast<System::Windows::Media::Drawing>();
 	if(Drawing==nullptr)
@@ -247,7 +247,7 @@ void mcWPFBitmapSource::mTakeDrawing(cGCHandle &DrawingHandle,int Width,int Heig
 	fHandle.Set(BitmapTarget);
 }
 //---------------------------------------------------------------------------
-void mcWPFBitmapSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void mcWPFBitmapSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	auto Context=ContextHandle.DynamicCast<System::Windows::Media::DrawingContext>();
 	if(Context==nullptr)
@@ -261,24 +261,24 @@ void mcWPFBitmapSource::mDraw(const cGCHandle &ContextHandle,cUIPoint DrawPositi
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFTypeface::mSetup(void)noexcept
+void mcWPFTypeface::mSetup(void)noexcept(true)
 {
 	fHandle.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFTypeface::mClear(void)noexcept
+void mcWPFTypeface::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
 #pragma unmanaged
-const cGCHandle& mcWPFTypeface::GetHandle(void)const noexcept
+const cGCHandle& mcWPFTypeface::GetHandle(void)const noexcept(true)
 {
 	return fHandle;
 }
 #pragma managed
 //---------------------------------------------------------------------------
-bool mcWPFTypeface::mCreate(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept
+bool mcWPFTypeface::mCreate(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true)
 {
 	try{
 		auto FontNameString=System::Runtime::InteropServices::Marshal::PtrToStringUni(System::IntPtr(const_cast<uChar16*>(Name)),NameLength);
@@ -302,7 +302,7 @@ bool mcWPFTypeface::mCreate(const uChar16 *Name,uIntn NameLength,eUIFontStyle Fo
 	}
 }
 //---------------------------------------------------------------------------
-Float32 mcWPFTypeface::mGetWeight(void)const noexcept
+Float32 mcWPFTypeface::mGetWeight(void)const noexcept(true)
 {
 	auto Typeface=fHandle.Get();
 	int GDIWeight=Typeface->Weight.ToOpenTypeWeight();
@@ -314,7 +314,7 @@ Float32 mcWPFTypeface::mGetWeight(void)const noexcept
 	return FontWeight;
 }
 //---------------------------------------------------------------------------
-eUIFontStyle mcWPFTypeface::mGetFontStyle(void)const noexcept
+eUIFontStyle mcWPFTypeface::mGetFontStyle(void)const noexcept(true)
 {
 	auto Typeface=fHandle.Get();
 	if(Typeface->Style==System::Windows::FontStyles::Italic){
@@ -326,24 +326,24 @@ eUIFontStyle mcWPFTypeface::mGetFontStyle(void)const noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFImageDrawing::mSetup(void)noexcept
+void mcWPFImageDrawing::mSetup(void)noexcept(true)
 {
 	fHandle.Alloc(gcnew System::Windows::Media::ImageDrawing());
 }
 //---------------------------------------------------------------------------
-void mcWPFImageDrawing::mClear(void)noexcept
+void mcWPFImageDrawing::mClear(void)noexcept(true)
 {
 	fHandle.Free();
 }
 //---------------------------------------------------------------------------
 #pragma unmanaged
-const cGCHandle& mcWPFImageDrawing::GetDrawingHandle(void)const noexcept
+const cGCHandle& mcWPFImageDrawing::GetDrawingHandle(void)const noexcept(true)
 {
 	return fHandle;
 }
 #pragma managed
 //---------------------------------------------------------------------------
-void mcWPFImageDrawing::mUpdateRect(double X,double Y,double Width,double Height)noexcept
+void mcWPFImageDrawing::mUpdateRect(double X,double Y,double Width,double Height)noexcept(true)
 {
 	System::Windows::Rect ContentRect;
 	ContentRect.X=X;
@@ -354,7 +354,7 @@ void mcWPFImageDrawing::mUpdateRect(double X,double Y,double Width,double Height
 	Drawing->Rect=ContentRect;
 }
 //---------------------------------------------------------------------------
-void mcWPFImageDrawing::mApplyVisual(void *Section,uIntn Stride,int Width,int Height)noexcept
+void mcWPFImageDrawing::mApplyVisual(void *Section,uIntn Stride,int Width,int Height)noexcept(true)
 {
 	auto Drawing=fHandle.Get();
 
@@ -375,7 +375,7 @@ void mcWPFImageDrawing::mApplyVisual(void *Section,uIntn Stride,int Width,int He
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void miWPFTextLayout::mCalculate(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept
+void miWPFTextLayout::mCalculate(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true)
 {
 	rcWPFTextLayout TextLayout;
 	TextLayout.SetupText(Text,Length,Style,nullptr,0,1.);
@@ -689,17 +689,17 @@ void __clrcall rcWPFTextGraph::Draw(System::Windows::Media::DrawingContext ^Cont
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFUISimpleTextGraph::mSetup(void)noexcept
+void mcWPFUISimpleTextGraph::mSetup(void)noexcept(true)
 {
 	fGraph.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFUISimpleTextGraph::mClear(void)noexcept
+void mcWPFUISimpleTextGraph::mClear(void)noexcept(true)
 {
 	fGraph.Free();
 }
 //---------------------------------------------------------------------------
-cUIPoint mcWPFUISimpleTextGraph::mSetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept
+cUIPoint mcWPFUISimpleTextGraph::mSetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true)
 {
 	auto Graph=gcnew rcWPFTextGraph();
 	auto TextSize=Graph->SetupText(Text,Length,Style,TextDistance,TextMinHeight);
@@ -707,7 +707,7 @@ cUIPoint mcWPFUISimpleTextGraph::mSetupText(const uChar32 *Text,uIntn Length,con
 	return TextSize;
 }
 //---------------------------------------------------------------------------
-void mcWPFUISimpleTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void mcWPFUISimpleTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	auto Graph=fGraph.Get();
 	if(Graph!=nullptr){
@@ -717,17 +717,17 @@ void mcWPFUISimpleTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFUIRichTextGraph::mSetup(void)noexcept
+void mcWPFUIRichTextGraph::mSetup(void)noexcept(true)
 {
 	fText.Alloc(nullptr);
 }
 //---------------------------------------------------------------------------
-void mcWPFUIRichTextGraph::mClear(void)noexcept
+void mcWPFUIRichTextGraph::mClear(void)noexcept(true)
 {
 	fText.Free();
 }
 //---------------------------------------------------------------------------
-void mcWPFUIRichTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void mcWPFUIRichTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	auto Text=fText.Get();
 	if(Text==nullptr)
@@ -740,7 +740,7 @@ void mcWPFUIRichTextGraph::mDraw(const cGCHandle &Handle,cUIPoint DrawPosition,c
 	Context->DrawText(Text,DrawPos);
 }
 //---------------------------------------------------------------------------
-cUIPoint mcWPFUIRichTextGraph::mSetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept
+cUIPoint mcWPFUIRichTextGraph::mSetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true)
 {
 	auto String=System::Runtime::InteropServices::Marshal::PtrToStringUni(System::IntPtr(const_cast<uChar16*>(Text)),Length);
 
@@ -771,14 +771,14 @@ void rcNativeCaller_WPFUIViewContent::mbcWPFGDI_OnDisplaySettingsChanged(System:
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mbcWPFGDI::mSetup(void)noexcept
+void mbcWPFGDI::mSetup(void)noexcept(true)
 {
 	auto Caller=gcnew rcNativeCaller_WPFUIViewContent(this);
 	fCaller.Alloc(Caller);
 	Microsoft::Win32::SystemEvents::DisplaySettingsChanged+=gcnew System::EventHandler(Caller,&rcNativeCaller_WPFUIViewContent::mbcWPFGDI_OnDisplaySettingsChanged);
 }
 //---------------------------------------------------------------------------
-void mbcWPFGDI::mClear(void)noexcept
+void mbcWPFGDI::mClear(void)noexcept(true)
 {
 	auto Caller=fCaller.Get();
 	fCaller.Free();
@@ -794,7 +794,7 @@ void rcNativeCaller_WPFUIViewContent::mbcWPFD3DImageDrawing_OnIsFrontBufferAvail
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mSetup(void)noexcept
+void mbcWPFD3DImageDrawing::mSetup(void)noexcept(true)
 {
 	auto Drawing=gcnew System::Windows::Media::ImageDrawing();
 	auto DImage=gcnew System::Windows::Interop::D3DImage();
@@ -807,13 +807,13 @@ void mbcWPFD3DImageDrawing::mSetup(void)noexcept
 	fFrontBufferAvailable=DImage->IsFrontBufferAvailable;
 }
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mClear(void)noexcept
+void mbcWPFD3DImageDrawing::mClear(void)noexcept(true)
 {
 	fDrawingHandle.Free();
 	fImageHandle.Free();
 }
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mUpdateRect(double X,double Y,double Width,double Height)noexcept
+void mbcWPFD3DImageDrawing::mUpdateRect(double X,double Y,double Width,double Height)noexcept(true)
 {
 	System::Windows::Rect ContentRect;
 	ContentRect.X=X;
@@ -824,7 +824,7 @@ void mbcWPFD3DImageDrawing::mUpdateRect(double X,double Y,double Width,double He
 	Drawing->Rect=ContentRect;
 }
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mApplyBackBuffer(void *BackBuffer,int Width,int Height)noexcept
+void mbcWPFD3DImageDrawing::mApplyBackBuffer(void *BackBuffer,int Width,int Height)noexcept(true)
 {
 	auto DImage=fImageHandle.Get();
 	DImage->Lock();
@@ -833,7 +833,7 @@ void mbcWPFD3DImageDrawing::mApplyBackBuffer(void *BackBuffer,int Width,int Heig
 	DImage->Unlock();
 }
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mSetBackBuffer(void* BackBuffer)noexcept
+void mbcWPFD3DImageDrawing::mSetBackBuffer(void* BackBuffer)noexcept(true)
 {
 	auto Drawing=fDrawingHandle.Get();
 	auto DImage=fImageHandle.Get();
@@ -845,7 +845,7 @@ void mbcWPFD3DImageDrawing::mSetBackBuffer(void* BackBuffer)noexcept
 
 }
 //---------------------------------------------------------------------------
-void mbcWPFD3DImageDrawing::mPresent(int Width,int Height)noexcept
+void mbcWPFD3DImageDrawing::mPresent(int Width,int Height)noexcept(true)
 {
 	auto DImage=fImageHandle.Get();
 

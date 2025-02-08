@@ -304,16 +304,16 @@ void cBufferPacker::Clear(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLoopbackStreamBuffer::cLoopbackStreamBuffer()noexcept
+cLoopbackStreamBuffer::cLoopbackStreamBuffer()noexcept(true)
 {
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-cLoopbackStreamBuffer::~cLoopbackStreamBuffer()noexcept
+cLoopbackStreamBuffer::~cLoopbackStreamBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cMemory cLoopbackStreamBuffer::GetReadBuffer(void)const noexcept
+cMemory cLoopbackStreamBuffer::GetReadBuffer(void)const noexcept(true)
 {
 	cMemory ReadBuffer;
 	ReadBuffer.Pointer=fBuffer[fReadIndex];
@@ -321,12 +321,12 @@ cMemory cLoopbackStreamBuffer::GetReadBuffer(void)const noexcept
 	return ReadBuffer;
 }
 //---------------------------------------------------------------------------
-cConstMemory cLoopbackStreamBuffer::GatherReadBuffer(uIntn)noexcept
+cConstMemory cLoopbackStreamBuffer::GatherReadBuffer(uIntn)noexcept(true)
 {
 	return GetReadBuffer();
 }
 //---------------------------------------------------------------------------
-void cLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
+void cLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept(true)
 {
 	fReadIndex+=Size;
 	if(fReadIndex<fBuffer->Length){
@@ -337,7 +337,7 @@ void cLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-cMemory cLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
+cMemory cLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept(true)
 {
 	uIntn NewCapacity=fBuffer->Length+QuerySize;
 	if(NewCapacity>fBuffer->Capacity){
@@ -352,7 +352,7 @@ cMemory cLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	return WriteBuffer;
 }
 //---------------------------------------------------------------------------
-void cLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
+void cLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept(true)
 {
 	uIntn BufferCapacity=fBuffer->Capacity;
 	uIntn BufferLength=fBuffer->Length;
@@ -366,12 +366,12 @@ void cLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
 }
 
 //---------------------------------------------------------------------------
-uIntn cLoopbackStreamBuffer::ReadTo(void *Buffer,uIntn Size)noexcept
+uIntn cLoopbackStreamBuffer::ReadTo(void *Buffer,uIntn Size)noexcept(true)
 {
 	return ReadFromStream(Buffer,Size,this);
 }
 //---------------------------------------------------------------------------
-uIntn cLoopbackStreamBuffer::WriteFrom(const void *Buffer,uIntn Size)noexcept
+uIntn cLoopbackStreamBuffer::WriteFrom(const void *Buffer,uIntn Size)noexcept(true)
 {
 	return WriteToStream(Buffer,Size,this);
 }
@@ -435,7 +435,7 @@ void cStreamBufferIOQueue::CommitWrite(uIntn Size)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noexcept
+cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noexcept(true)
 	: fBufferSize(cAllocationOperator::RoundUpCapacity(BufferSizeLimit))
 	, fReadingItem(fBufferItem)
 	, fWritingItem(fBufferItem)
@@ -455,7 +455,7 @@ cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noe
 	fEmptyBufferStack.PushChain(fBufferItem+1,fBufferItem+3);
 }
 //---------------------------------------------------------------------------
-cAsyncLoopbackStreamBuffer::~cAsyncLoopbackStreamBuffer()noexcept
+cAsyncLoopbackStreamBuffer::~cAsyncLoopbackStreamBuffer()noexcept(true)
 {
 	cAllocationOperator::Deallocate(fBufferItem[3].Buffer,fBufferSize,0);
 	cAllocationOperator::Deallocate(fBufferItem[2].Buffer,fBufferSize,0);
@@ -463,12 +463,12 @@ cAsyncLoopbackStreamBuffer::~cAsyncLoopbackStreamBuffer()noexcept
 	cAllocationOperator::Deallocate(fBufferItem[0].Buffer,fBufferSize,0);
 }
 //---------------------------------------------------------------------------
-uIntn cAsyncLoopbackStreamBuffer::GetBufferSizeLimit(void)const noexcept
+uIntn cAsyncLoopbackStreamBuffer::GetBufferSizeLimit(void)const noexcept(true)
 {
 	return fBufferSize;
 }
 //---------------------------------------------------------------------------
-//bool cAsyncLoopbackStreamBuffer::IsReadAvailable(void)const noexcept
+//bool cAsyncLoopbackStreamBuffer::IsReadAvailable(void)const noexcept(true)
 //{
 //	return fTotalBufferSize.Free.Load()!=0;
 //	if(fReadingItem!=nullptr)
@@ -478,7 +478,7 @@ uIntn cAsyncLoopbackStreamBuffer::GetBufferSizeLimit(void)const noexcept
 //	return false;
 //}
 //---------------------------------------------------------------------------
-cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn QuerySize)noexcept
+cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn QuerySize)noexcept(true)
 {
 	cConstMemory ReadBuffer;
 
@@ -525,7 +525,7 @@ cConstMemory cAsyncLoopbackStreamBuffer::GatherReadBuffer(uIntn QuerySize)noexce
 	return ReadBuffer;
 }
 //---------------------------------------------------------------------------
-void cAsyncLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
+void cAsyncLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept(true)
 {
 	uIntn NewOffset=fReadBufferOffset+Size;
 	if(NewOffset<fReadingItem->WriteIndex){
@@ -546,7 +546,7 @@ void cAsyncLoopbackStreamBuffer::DismissReadBuffer(uIntn Size)noexcept
 	fEmptyBufferStack.Push(RecycleItem);
 }
 //---------------------------------------------------------------------------
-cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
+cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept(true)
 {
 	if(QuerySize<=fBufferSize){
 		if(fWritingItem->WriteIndex+QuerySize<fBufferSize){
@@ -579,7 +579,7 @@ cMemory cAsyncLoopbackStreamBuffer::ReserveWriteBuffer(uIntn QuerySize)noexcept
 	return EmptyBuffer;
 }
 //---------------------------------------------------------------------------
-void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
+void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept(true)
 {
 	if(Size!=0){
 		uIntn NextWriteIndex=Size+fWritingItem->WriteIndex;
@@ -592,19 +592,19 @@ void cAsyncLoopbackStreamBuffer::CommitWriteBuffer(uIntn Size)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cAsyncLoopbackStreamBuffer::ReadTo(void *Buffer,uIntn Size)noexcept
+uIntn cAsyncLoopbackStreamBuffer::ReadTo(void *Buffer,uIntn Size)noexcept(true)
 {
 	return ReadFromStream(Buffer,Size,this);
 }
 //---------------------------------------------------------------------------
-uIntn cAsyncLoopbackStreamBuffer::WriteFrom(const void *Buffer,uIntn Size)noexcept
+uIntn cAsyncLoopbackStreamBuffer::WriteFrom(const void *Buffer,uIntn Size)noexcept(true)
 {
 	uIntn Ret=WriteToStream(Buffer,Size,this);
 	return Ret;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cStreamReadPackingBuffer::cStreamReadPackingBuffer()noexcept
+cStreamReadPackingBuffer::cStreamReadPackingBuffer()noexcept(true)
 {
 	fDataStartIndex=0;
 	fReadBuffer=nullptr;
@@ -612,11 +612,11 @@ cStreamReadPackingBuffer::cStreamReadPackingBuffer()noexcept
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-cStreamReadPackingBuffer::~cStreamReadPackingBuffer()noexcept
+cStreamReadPackingBuffer::~cStreamReadPackingBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cStreamReadPackingBuffer::Clear(void)noexcept
+void cStreamReadPackingBuffer::Clear(void)noexcept(true)
 {
 	fDataBuffer.Clear();
 	fDataStartIndex=0;
@@ -626,14 +626,14 @@ void cStreamReadPackingBuffer::Clear(void)noexcept
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-void cStreamReadPackingBuffer::StartBuffer(const void *Buffer,uIntn BufferSize)noexcept
+void cStreamReadPackingBuffer::StartBuffer(const void *Buffer,uIntn BufferSize)noexcept(true)
 {
 	fReadBuffer=Buffer;
 	fReadBufferSize=BufferSize;
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-uIntn cStreamReadPackingBuffer::FinishBuffer(void)noexcept
+uIntn cStreamReadPackingBuffer::FinishBuffer(void)noexcept(true)
 {
 	auto SizeRead=fReadIndex;
 
@@ -651,7 +651,7 @@ uIntn cStreamReadPackingBuffer::FinishBuffer(void)noexcept
 	return SizeRead;
 }
 //---------------------------------------------------------------------------
-void cStreamReadPackingBuffer::QueueAllBuffer(void)noexcept
+void cStreamReadPackingBuffer::QueueAllBuffer(void)noexcept(true)
 {
 	// remove unused head
 	if(fDataStartIndex!=0){
@@ -673,7 +673,7 @@ void cStreamReadPackingBuffer::QueueAllBuffer(void)noexcept
 	fReadIndex=0;
 }
 //---------------------------------------------------------------------------
-cConstMemory cStreamReadPackingBuffer::GatherReadBuffer(uIntn QuerySize)noexcept
+cConstMemory cStreamReadPackingBuffer::GatherReadBuffer(uIntn QuerySize)noexcept(true)
 {
 	uIntn ReadSizeAvailable=fReadBufferSize-fReadIndex;
 	auto PackedSize=fDataBuffer.GetSize();
@@ -709,7 +709,7 @@ cConstMemory cStreamReadPackingBuffer::GatherReadBuffer(uIntn QuerySize)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamReadPackingBuffer::DismissReadBuffer(uIntn Size)noexcept
+void cStreamReadPackingBuffer::DismissReadBuffer(uIntn Size)noexcept(true)
 {
 	uIntn AdvancReadBufferSize=Size;
 	auto PackedSize=fDataBuffer.GetSize();

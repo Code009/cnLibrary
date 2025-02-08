@@ -259,7 +259,7 @@ public:
 	cWinTabPainter()noexcept(true);
 	virtual ~cWinTabPainter()noexcept(true);
 
-	virtual ufInt16n TabBorderSize(void)noexcept(true)=0;
+	virtual ufInt16 TabBorderSize(void)noexcept(true)=0;
 	virtual void PaintPanelHeader(HDC DC,const RECT &PanelRect)noexcept(true)=0;
 
 	enum class TabState : uInt8{
@@ -284,7 +284,7 @@ public:
 
 	static HTHEME OpenTheme(HWND WindowHandle)noexcept(true);
 
-	virtual ufInt16n TabBorderSize(void)noexcept(true)override;
+	virtual ufInt16 TabBorderSize(void)noexcept(true)override;
 	virtual void PaintPanelHeader(HDC DC,const RECT &PanelRect)noexcept(true)override;
 
 	virtual RECT PaintItemLeft(HDC DC,const RECT &Rect,TabState State)noexcept(true)override;

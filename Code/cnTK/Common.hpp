@@ -521,29 +521,6 @@ using SFastIntegerOfSize=typename TFastIntegerOfSize<Size,true>::Type;
 
 #endif // cnLibrary_CPPFEATURE_ALIAS_TEMPLATES >= 200704L
 
-
-template<uIntn Size,bool Signed>
-struct TFastIntegerOfSizeMostNature
-	: TFastIntegerOfSize<(Size<sizeof(uIntn)?Size:sizeof(uIntn)),Signed>
-{};
-
-//---------------------------------------------------------------------------
-}	// namespace cnVar
-//---------------------------------------------------------------------------
-
-typedef cnVar::TFastIntegerOfSizeMostNature<2,true>::Type	sfInt16n;
-typedef cnVar::TFastIntegerOfSizeMostNature<2,false>::Type	ufInt16n;
-typedef cnVar::TFastIntegerOfSizeMostNature<4,true>::Type	sfInt32n;
-typedef cnVar::TFastIntegerOfSizeMostNature<4,false>::Type	ufInt32n;
-typedef cnVar::TFastIntegerOfSizeMostNature<8,true>::Type	sfInt64n;
-typedef cnVar::TFastIntegerOfSizeMostNature<8,false>::Type	ufInt64n;
-typedef cnVar::TFastIntegerOfSizeMostNature<16,true>::Type	sfInt128n;
-typedef cnVar::TFastIntegerOfSizeMostNature<16,false>::Type	ufInt128n;
-
-//---------------------------------------------------------------------------
-namespace cnVar{
-//---------------------------------------------------------------------------
-
 template<uIntn Size>	struct TFloatOfSize{};
 
 template<>	struct TFloatOfSize<4>					: TTypeDef<Float32>{};
@@ -734,25 +711,25 @@ struct TInteger_BitScan
 	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
 	typedef typename cnVar::TIntegerOfSize<IntegerSize/2,false>::Type tUIntH;
 
-	static void L(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+	static void BitScanL(ufInt8 &BitIndex,tUInt Src)noexcept(true){
 		if((Src&((static_cast<tUInt>(1)<<IntegerSize*ByteBitCount/2)-1))==0){
 			BitIndex+=IntegerSize*ByteBitCount/2;
 			Src>>=(IntegerSize*ByteBitCount/2);
 		}
-		return TInteger_BitScan<IntegerSize/2>::L(BitIndex,static_cast<tUIntH>(Src));
+		return TInteger_BitScan<IntegerSize/2>::BitScanL(BitIndex,static_cast<tUIntH>(Src));
 	}
-	static void H(ufInt8 &BitIndex,tUInt Src)noexcept(true){
+	static void BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept(true){
 		if(Src&((~static_cast<tUInt>(0))<<IntegerSize*ByteBitCount/2)){
 			BitIndex+=IntegerSize*ByteBitCount/2;
 			Src>>=(IntegerSize*ByteBitCount/2);
 		}
-		return TInteger_BitScan<IntegerSize/2>::H(BitIndex,static_cast<tUIntH>(Src));
+		return TInteger_BitScan<IntegerSize/2>::BitScanH(BitIndex,static_cast<tUIntH>(Src));
 	}
 };
 template<>
 struct TInteger_BitScan<1>
 {
-	static void L(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
+	static void BitScanL(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
 		if((Src&0xF)==0){
 			BitIndex+=4;
 			Src>>=4;
@@ -770,7 +747,7 @@ struct TInteger_BitScan<1>
 			BitIndex+=3;
 		}
 	}
-	static void H(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
+	static void BitScanH(ufInt8 &BitIndex,uInt8 Src)noexcept(true){
 		if(Src&0xF0){
 			BitIndex+=4;
 			Src>>=4;
@@ -817,7 +794,7 @@ struct TInteger
 			return false;
 		}
 		BitIndex=0;
-		TInteger_BitScan<IntegerSize>::L(BitIndex,Src);
+		TInteger_BitScan<IntegerSize>::BitScanL(BitIndex,Src);
 		return true;
 	}
 	static bool BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept(true){
@@ -825,7 +802,7 @@ struct TInteger
 			return false;
 		}
 		BitIndex=0;
-		TInteger_BitScan<IntegerSize>::H(BitIndex,Src);
+		TInteger_BitScan<IntegerSize>::BitScanH(BitIndex,Src);
 		return true;
 	}
 

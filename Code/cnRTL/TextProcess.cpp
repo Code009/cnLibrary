@@ -6,7 +6,7 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-uIntn cTextTranscoding_Copy::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cTextTranscoding_Copy::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	uIntn CopySize=DestSize;
 	if(CopySize>SrcSize)
@@ -21,7 +21,7 @@ uIntn cTextTranscoding_Copy::Convert(void *Dest,uIntn DestSize,const void *Src,u
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-uIntn cnRTL::TextTranscodingFromUTF32(const iUTF32Transcoding *ToTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cnRTL::TextTranscodingFromUTF32(const iUTF32Transcoding *ToTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	auto pSrc=static_cast<const uChar32*>(Src);
 	uIntn SrcLength=SrcSize/4;
@@ -42,7 +42,7 @@ uIntn cnRTL::TextTranscodingFromUTF32(const iUTF32Transcoding *ToTranscoding,voi
 	return DestOffset;
 }
 //---------------------------------------------------------------------------
-uIntn cnRTL::TextTranscodingToUTF32(const iUTF32Transcoding *FromTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cnRTL::TextTranscodingToUTF32(const iUTF32Transcoding *FromTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	auto pDest=static_cast<uChar32*>(Dest);
 	uIntn DestLength=DestSize/4;
@@ -64,7 +64,7 @@ uIntn cnRTL::TextTranscodingToUTF32(const iUTF32Transcoding *FromTranscoding,voi
 	return DestIndex*4;
 }
 //---------------------------------------------------------------------------
-uIntn cnRTL::TextTranscodingThroughUTF32(const iUTF32Transcoding *FromTranscoding,const iUTF32Transcoding *ToTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cnRTL::TextTranscodingThroughUTF32(const iUTF32Transcoding *FromTranscoding,const iUTF32Transcoding *ToTranscoding,void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	uIntn SrcIndex=0;
 	uIntn DestIndex=0;
@@ -89,25 +89,25 @@ uIntn cnRTL::TextTranscodingThroughUTF32(const iUTF32Transcoding *FromTranscodin
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-uIntn cUTF32Transcoding_UTF16::ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept
+uIntn cUTF32Transcoding_UTF16::ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept(true)
 {
 	uIntn SrcConvertedLength=UnicodeChar16To32(Dest,static_cast<const uChar16*>(Src),SrcSize/sizeof(uChar16));
 	return SrcConvertedLength*sizeof(uChar16);
 }
 //---------------------------------------------------------------------------
-uIntn cUTF32Transcoding_UTF16::FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept
+uIntn cUTF32Transcoding_UTF16::FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept(true)
 {
 	uIntn DestResultLength=UnicodeChar16From32(static_cast<uChar16*>(Dest),DestSize/sizeof(uChar16),Src);
 	return DestResultLength*sizeof(uChar16);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-uIntn cUTF32Transcoding_UTF8::ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept
+uIntn cUTF32Transcoding_UTF8::ToUTF32(uChar32 &Dest,const void *Src,uIntn SrcSize)const noexcept(true)
 {
 	return UnicodeChar8To32(Dest,static_cast<const uChar8*>(Src),SrcSize);
 }
 //---------------------------------------------------------------------------
-uIntn cUTF32Transcoding_UTF8::FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept
+uIntn cUTF32Transcoding_UTF8::FromUTF32(void *Dest,uIntn DestSize,uChar32 Src)const noexcept(true)
 {
 	return UnicodeChar8From32(static_cast<uChar8*>(Dest),DestSize,Src);
 }
@@ -212,17 +212,17 @@ static const ufInt8 UnicodeTranscoderEncodingSizeMap[5]={
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-const iUTF32Transcoding* cnRTL::UTF32Transcoding16(void)noexcept
+const iUTF32Transcoding* cnRTL::UTF32Transcoding16(void)noexcept(true)
 {
 	return cnVar::StaticInitializedConstSinglton<cUTF32Transcoding_UTF16>();
 }
 //---------------------------------------------------------------------------
-const iUTF32Transcoding* cnRTL::UTF32Transcoding8(void)noexcept
+const iUTF32Transcoding* cnRTL::UTF32Transcoding8(void)noexcept(true)
 {
 	return cnVar::StaticInitializedConstSinglton<cUTF32Transcoding_UTF8>();
 }
 //---------------------------------------------------------------------------
-iTextEncodingConverter* cnRTL::UnicodeTranscoder(ufInt8 ToEncodingSize,ufInt8 FromEncodingSize)noexcept
+iTextEncodingConverter* cnRTL::UnicodeTranscoder(ufInt8 ToEncodingSize,ufInt8 FromEncodingSize)noexcept(true)
 {
 	if(ToEncodingSize>4 || FromEncodingSize>4)
 		return nullptr;
@@ -240,35 +240,35 @@ iTextEncodingConverter* cnRTL::UnicodeTranscoder(ufInt8 ToEncodingSize,ufInt8 Fr
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextTranscoding_FromUTF32::cTextTranscoding_FromUTF32(const iUTF32Transcoding *To)noexcept
+cTextTranscoding_FromUTF32::cTextTranscoding_FromUTF32(const iUTF32Transcoding *To)noexcept(true)
 	: fTo(To)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cTextTranscoding_FromUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cTextTranscoding_FromUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	return TextTranscodingFromUTF32(fTo,Dest,DestSize,Src,SrcSize,SrcConvertedSize);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextTranscoding_ToUTF32::cTextTranscoding_ToUTF32(const iUTF32Transcoding *From)noexcept
+cTextTranscoding_ToUTF32::cTextTranscoding_ToUTF32(const iUTF32Transcoding *From)noexcept(true)
 	: fFrom(From)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cTextTranscoding_ToUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cTextTranscoding_ToUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	return TextTranscodingToUTF32(fFrom,Dest,DestSize,Src,SrcSize,SrcConvertedSize);
 }
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextTranscoding_ThroughUTF32::cTextTranscoding_ThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept
+cTextTranscoding_ThroughUTF32::cTextTranscoding_ThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept(true)
 	:fFrom(From),fTo(To)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cTextTranscoding_ThroughUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept
+uIntn cTextTranscoding_ThroughUTF32::Convert(void *Dest,uIntn DestSize,const void *Src,uIntn SrcSize,uIntn *SrcConvertedSize)noexcept(true)
 {
 	uIntn SrcIndex=0;
 	uIntn DestIndex=0;
@@ -292,17 +292,17 @@ uIntn cTextTranscoding_ThroughUTF32::Convert(void *Dest,uIntn DestSize,const voi
 	return DestIndex;
 }
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderFromUTF32(const iUTF32Transcoding *To)noexcept
+rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderFromUTF32(const iUTF32Transcoding *To)noexcept(true)
 {
 	return rCreate<cTextTranscoding_FromUTF32>(To);
 }
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderToUTF32(const iUTF32Transcoding *From)noexcept
+rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderToUTF32(const iUTF32Transcoding *From)noexcept(true)
 {
 	return rCreate<cTextTranscoding_ToUTF32>(From);
 }
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept
+rPtr<iTextEncodingConverter> cnRTL::CreateTranscoderThroughUTF32(const iUTF32Transcoding *From,const iUTF32Transcoding *To)noexcept(true)
 {
 	return rCreate<cTextTranscoding_ThroughUTF32>(From,To);
 }

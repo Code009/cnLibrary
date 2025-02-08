@@ -8,33 +8,33 @@ using namespace cnWin;
 cnVar::cStaticVariable< cnWinRTL::cWinLibraryReference<cWindowsLibraryInitialization> > cnWin::gWindowsSystemReference;
 
 //- System Info -------------------------------------------------------------
-cSysInfo::cSysInfo()
+cSysInfo::cSysInfo()noexcept(true)
 {
 	::GetSystemInfo(this);
 }
 //- System Info - Startup Info ----------------------------------------------
-//cStartupInfo::cStartupInfo()
+//cStartupInfo::cStartupInfo()noexcept(true)
 //{
 //	::GetStartupInfoW(this);
 //}
 //---------------------------------------------------------------------------
-DWORD cnWin::GetMemPageSize(void)
+DWORD cnWin::GetMemPageSize(void)noexcept(true)
 {
 	return gSysInfo.dwPageSize;
 }
 //---------------------------------------------------------------------------
-DWORD cnWin::GetMemAllocationGranularity(void)
+DWORD cnWin::GetMemAllocationGranularity(void)noexcept(true)
 {
 	return gSysInfo.dwAllocationGranularity;
 }
 //---------------------------------------------------------------------------
-BOOL cnWin::DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHandle)
+BOOL cnWin::DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHandle)noexcept(true)
 {
 	cnLib_ASSERT(&OutHandle!=nullptr);
 
 	return DuplicateHandle(gCurrentProcessHandle,gCurrentThreadHandle,gCurrentProcessHandle,&OutHandle,Access,InheritHandle,0);
 }
-BOOL cnWin::DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle)
+BOOL cnWin::DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle)noexcept(true)
 {
 	cnLib_ASSERT(&OutHandle!=nullptr);
 

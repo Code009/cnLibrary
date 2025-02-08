@@ -1637,7 +1637,7 @@ private:
 	sfInt32 fSampleImageWidth;
 	sfInt32 fSampleImageHeight;
 
-	ufInt32n fBufferLockCount=0;
+	ufInt32 fBufferLockCount=0;
 	cMemoryBlock fBufferPixelData;
 	uIntn fBufferPitch;
 	sfInt32 fBufferImageWidth;

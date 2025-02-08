@@ -9,15 +9,15 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcExclusiveProcedure::bcExclusiveProcedure()noexcept
+bcExclusiveProcedure::bcExclusiveProcedure()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bcExclusiveProcedure::~bcExclusiveProcedure()noexcept
+bcExclusiveProcedure::~bcExclusiveProcedure()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcExclusiveProcedure::ProcedureThreadRunLoop(void)noexcept
+void bcExclusiveProcedure::ProcedureThreadRunLoop(void)noexcept(true)
 {
 	do{
 		do{
@@ -26,7 +26,7 @@ void bcExclusiveProcedure::ProcedureThreadRunLoop(void)noexcept
 	}while(!fExclusiveFlag.Release());
 }
 //---------------------------------------------------------------------------
-void bcExclusiveProcedure::Run(void)noexcept
+void bcExclusiveProcedure::Run(void)noexcept(true)
 {
 	if(!fExclusiveFlag.Acquire()){
 		return;
@@ -36,26 +36,26 @@ void bcExclusiveProcedure::Run(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::bcAsyncExclusiveProcedure()noexcept
+bcAsyncExclusiveProcedure::bcAsyncExclusiveProcedure()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::~bcAsyncExclusiveProcedure()noexcept
+bcAsyncExclusiveProcedure::~bcAsyncExclusiveProcedure()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::cProcedure::Execute(void)noexcept
+void bcAsyncExclusiveProcedure::cProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcAsyncExclusiveProcedure::fProcedure);
 	return Host->ProcedureThreadRunLoop();
 }
 //---------------------------------------------------------------------------
-bcAsyncExclusiveProcedure::operator iProcedure*()noexcept
+bcAsyncExclusiveProcedure::operator iProcedure*()noexcept(true)
 {
 	return &fProcedure;
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)noexcept
+void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)noexcept(true)
 {
 	cnLib_ASSERT(AsyncProc!=nullptr);
 	if(fExclusiveFlag.Acquire()){
@@ -63,7 +63,7 @@ void bcAsyncExclusiveProcedure::RunAsync(iAsyncProcedure *AsyncProc)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count)noexcept
+void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn Count)noexcept(true)
 {
 	cnLib_ASSERT(AsyncProc!=nullptr);
 
@@ -84,22 +84,22 @@ void bcAsyncExclusiveProcedure::RunAsyncAfter(iAsyncProcedure *AsyncProc,uIntn C
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cCancellationFlag::Reset(void)noexcept
+void cCancellationFlag::Reset(void)noexcept(true)
 {
 	fFlag=cfNormal;
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::Complete(void)noexcept
+bool cCancellationFlag::Complete(void)noexcept(true)
 {
 	return fFlag.Release.CmpStore(cfNormal,cfCompleted);
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::Cancel(void)noexcept
+bool cCancellationFlag::Cancel(void)noexcept(true)
 {
 	return fFlag.Release.CmpStore(cfNormal,cfCancelled);
 }
 //---------------------------------------------------------------------------
-bool cCancellationFlag::IsCancelled(void)const noexcept
+bool cCancellationFlag::IsCancelled(void)const noexcept(true)
 {
 	return fFlag==cfCancelled;
 }

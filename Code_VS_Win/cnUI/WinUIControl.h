@@ -707,7 +707,7 @@ public:
 	cWinTabPainter_Normal()noexcept(true);
 	virtual ~cWinTabPainter_Normal()noexcept(true);
 
-	virtual ufInt16n TabBorderSize(void)noexcept(true)override;
+	virtual ufInt16 TabBorderSize(void)noexcept(true)override;
 	virtual void PaintPanelHeader(HDC DC,const RECT &PanelRect)noexcept(true)override;
 
 	virtual RECT PaintItemLeft(HDC DC,const RECT &Rect,TabState State)noexcept(true)override;

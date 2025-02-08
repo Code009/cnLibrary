@@ -11,39 +11,43 @@ using namespace cnWin;
 
 rPtr<iLibraryReference> cnSystem::SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true)
 {
-	return gWindowsSystemReference->QueryReference(Referrer,true);
+	return gWindowsSystemReference->QueryReference(Referrer);
+}
+rPtr<iLibraryReference> cnSystem::SystemQueryReferenceAsync(iFunction<void (iLibraryReference*)noexcept(true)> *Procedure,iLibraryReferrer *Referrer)noexcept(true)
+{
+	return gWindowsSystemReference->QueryReferenceAsync(Procedure,Referrer);
 }
 
-void cnSystem::AssertionMessage(const char *Message)noexcept
+void cnSystem::AssertionMessage(const char *Message)noexcept(true)
 {
 	if(::MessageBoxA(nullptr,Message,"assert",MB_ICONERROR|MB_YESNO)==IDYES){
 		__debugbreak();
 	}
 }
 
-void cnSystem::LogConnectRecorder(iLogRecorder *Recorder)noexcept
+void cnSystem::LogConnectRecorder(iLogRecorder *Recorder)noexcept(true)
 {
 	return gRTLLog.Connect(Recorder);
 }
 //- Default Heap ------------------------------------------------------------
 
-void* cnSystem::DefaultHeap::Alloc(uIntn Alignment,uIntn Size)noexcept
+void* cnSystem::DefaultHeap::Alloc(uIntn Alignment,uIntn Size)noexcept(true)
 {
 	return gDefaultMemoryHeap.Alloc(Alignment,Size);
 }
-bool cnSystem::DefaultHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept
+bool cnSystem::DefaultHeap::Free(void *Pointer,uIntn Size,uIntn Alignment)noexcept(true)
 {
 	return gDefaultMemoryHeap.Free(Pointer,Size,Alignment);
 }
-bool cnSystem::DefaultHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept
+bool cnSystem::DefaultHeap::Resize(void *Pointer,uIntn Size,uIntn NewSize)noexcept(true)
 {
 	return gDefaultMemoryHeap.Resize(Pointer,Size,NewSize);
 }
-void* cnSystem::DefaultHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept
+void* cnSystem::DefaultHeap::Relocate(void *Pointer,uIntn Size,uIntn Alignment,uIntn NewSize,uIntn NewAlignment,bool &ManualCopy)noexcept(true)
 {
 	return gDefaultMemoryHeap.Relocate(Pointer,Size,NewAlignment,NewSize,NewAlignment,ManualCopy);
 }
-uIntn cnSystem::DefaultHeap::SizeOf(void *Pointer)noexcept
+uIntn cnSystem::DefaultHeap::SizeOf(void *Pointer)noexcept(true)
 {
 	return gDefaultMemoryHeap.SizeOf(Pointer);
 }
@@ -58,20 +62,20 @@ uIntn cnSystem::DefaultHeap::SizeOf(void *Pointer)noexcept
 
 //- Time --------------------------------------------------------------------
 
-uInt64 cnSystem::GetSystemTimeNow(void)noexcept
+uInt64 cnSystem::GetSystemTimeNow(void)noexcept(true)
 {
 	cNTFileTime ft;
 	ft.SetNow();
 	return ft.ToSystemTime();
 }
 
-bool cnSystem::UTCGregorianDateFromSystemTime(cDateTime &DateTime,uInt64 SystemTime)noexcept
+bool cnSystem::UTCGregorianDateFromSystemTime(cDateTime &DateTime,uInt64 SystemTime)noexcept(true)
 {
 	cNTFileTime ft;
 	ft.FromSystemTime(SystemTime);
 	return ft.ToDateTime(DateTime);
 }
-bool cnSystem::UTCGregorianDateToSystemTime(uInt64 &SystemTime,const cDateTime &DateTime)noexcept
+bool cnSystem::UTCGregorianDateToSystemTime(uInt64 &SystemTime,const cDateTime &DateTime)noexcept(true)
 {
 	cNTFileTime ft;
 	if(ft.FromDateTime(DateTime)==false)
@@ -80,51 +84,51 @@ bool cnSystem::UTCGregorianDateToSystemTime(uInt64 &SystemTime,const cDateTime &
 	return true;
 }
 //- Thread sync -------------------------------------------------------------
-rPtr<iMutex> cnSystem::CreateMutexLock(void)noexcept
+rPtr<iMutex> cnSystem::CreateMutexLock(void)noexcept(true)
 {
 	return rCreate<cnRTL::impMutex<cCriticalSection>>();
 }
 //- Thread sync -------------------------------------------------------------
-rPtr<iMutex> cnSystem::CreateRecursiveLock(void)noexcept
+rPtr<iMutex> cnSystem::CreateRecursiveLock(void)noexcept(true)
 {
 	return rCreate<cnRTL::impMutex<cCriticalSection>>();
 }
 //- Thread sync -------------------------------------------------------------
-rPtr<iSharedMutex> cnSystem::CreateSharedLock(void)noexcept
+rPtr<iSharedMutex> cnSystem::CreateSharedLock(void)noexcept(true)
 {
 	return rCreate<cnRTL::impSharedMutex<vcSRWLock>>();
 }
 //- Thread sync -------------------------------------------------------------
-rPtr<iThreadLocalVariable> cnSystem::CreateThreadLocalVariable(void)noexcept
+rPtr<iThreadLocalVariable> cnSystem::CreateThreadLocalVariable(void)noexcept(true)
 {
 	return rCreate<cNT6ThreadLocalVariable>();
 }
 //- Thread ------------------------------------------------------------------
-iPtr<iThread> cnSystem::StartThread(iProcedure *ThreadProcedure)noexcept
+iPtr<iThread> cnSystem::StartThread(iProcedure *ThreadProcedure)noexcept(true)
 {
 	return cThread::StartThread(ThreadProcedure);
 }
 //- Thread ------------------------------------------------------------------
-iPtr<iDispatch> cnSystem::CreateDispatchThread(void)noexcept
+iPtr<iDispatch> cnSystem::CreateDispatchThread(void)noexcept(true)
 {
 	return cnWin::CreateWindowMessageDispathThread();
 }
 //- Current Thread ----------------------------------------------------------
-void cnSystem::CurrentThread::SwitchThread(void)noexcept
+void cnSystem::CurrentThread::SwitchThread(void)noexcept(true)
 {	::SwitchToThread();	}
 
-void cnSystem::CurrentThread::SuspendFor(uInt64 Delay)noexcept
+void cnSystem::CurrentThread::SuspendFor(uInt64 Delay)noexcept(true)
 {	return ::Sleep(Delay/Time_1ms);	}
-bool cnSystem::CurrentThread::SleepUntil(uInt64 Time)noexcept
+bool cnSystem::CurrentThread::SleepUntil(uInt64 Time)noexcept(true)
 {	return CurrentThreadSleepUntil(Time);	}
 
-iThread* cnSystem::CurrentThread::GetThread(void)noexcept
+iThread* cnSystem::CurrentThread::GetThread(void)noexcept(true)
 {	return cThread::QueryCurrent();	}
 
-bool cnSystem::CurrentThread::SetPriority(sInt8 Priority)noexcept
+bool cnSystem::CurrentThread::SetPriority(sInt8 Priority)noexcept(true)
 {	return cThreadHandle::SetPriority(gCurrentThreadHandle,Priority);	}
 
-sInt8 cnSystem::CurrentThread::GetPriority(void)noexcept
+sInt8 cnSystem::CurrentThread::GetPriority(void)noexcept(true)
 {	return cThreadHandle::GetPriority(gCurrentThreadHandle);	}
 
 //- Thread Pool -------------------------------------------------------------
@@ -132,19 +136,19 @@ sInt8 cnSystem::CurrentThread::GetPriority(void)noexcept
 
 //- File System -------------------------------------------------------------
 
-rPtr<iSwapMemory> cnSystem::CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode)noexcept
+rPtr<iSwapMemory> cnSystem::CreateSwapMemoryFromFile(iFile *File,uInt64 Size,eFileAccess AccessMode)noexcept(true)
 {
 	return cnWin::CreateSwapMemoryFromFile(File,Size,AccessMode);
 }
 
 //- Network -----------------------------------------------------------------
 
-iPtr<iIPv4Address> cnSystem::CreateAddressIPv4(uInt32 IP,uInt16 Port)noexcept
+iPtr<iIPv4Address> cnSystem::CreateAddressIPv4(uInt32 IP,uInt16 Port)noexcept(true)
 {
 	return Win32CreateAddressIPv4(IP,Port);
 }
 
-iPtr<iSocketAddress> cnSystem::CreateSocketAddress(const sockaddr *addr,socklen_t addrlen)noexcept
+iPtr<iSocketAddress> cnSystem::CreateSocketAddress(const sockaddr *addr,socklen_t addrlen)noexcept(true)
 {
 	return Win32CreateCopySocketAddress(addr,addrlen);
 }
@@ -152,22 +156,22 @@ iPtr<iSocketAddress> cnSystem::CreateSocketAddress(const sockaddr *addr,socklen_
 //---------------------------------------------------------------------------
 // UI
 //---------------------------------------------------------------------------
-iPtr<iUIView> cnSystem::CreateUIView(void)noexcept
+iPtr<iUIView> cnSystem::CreateUIView(void)noexcept(true)
 {
 	return WPFCreateUIView();
 }
 //---------------------------------------------------------------------------
-rPtr<iPopupWindowControl> cnSystem::CreatePopupWindowControl(void)noexcept
+rPtr<iPopupWindowControl> cnSystem::CreatePopupWindowControl(void)noexcept(true)
 {
 	return WPFCreatePopupWindowControl();
 }
 //---------------------------------------------------------------------------
-iUIThread* cnSystem::CurrentUIThread::GetUIThread(void)noexcept
+iUIThread* cnSystem::CurrentUIThread::GetUIThread(void)noexcept(true)
 {
 	return cWPFUIThread::CurrentUIThread();
 }
 //---------------------------------------------------------------------------
-iDispatch* cnSystem::CurrentUIThread::GetDispatch(bool HighPriority)noexcept
+iDispatch* cnSystem::CurrentUIThread::GetDispatch(bool HighPriority)noexcept(true)
 {
 	auto UIThread=cWPFUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
@@ -176,17 +180,17 @@ iDispatch* cnSystem::CurrentUIThread::GetDispatch(bool HighPriority)noexcept
 	return UIThread->GetDispatch(HighPriority);
 }
 //---------------------------------------------------------------------------
-iUIKeyboard* cnSystem::CurrentUIThread::GetDefaultKeyboard(void)noexcept
+iUIKeyboard* cnSystem::CurrentUIThread::GetDefaultKeyboard(void)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iUIMouse* cnSystem::CurrentUIThread::GetDefaultMouse(void)noexcept
+iUIMouse* cnSystem::CurrentUIThread::GetDefaultMouse(void)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iInterface* cnLib_FUNC cnSystem::GetSysMouseCursor(eSysMouseCursor CursorID)noexcept
+iInterface* cnLib_FUNC cnSystem::GetSysMouseCursor(eSysMouseCursor CursorID)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - GetSysMouseCursor")
 	/*switch(CursorID){
@@ -212,29 +216,29 @@ iInterface* cnLib_FUNC cnSystem::GetSysMouseCursor(eSysMouseCursor CursorID)noex
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iClipboardReader> cnSystem::QueryClipboardReader(iUIView *View)noexcept
+rPtr<iClipboardReader> cnSystem::QueryClipboardReader(iUIView *View)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - iClipboardReader")
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iClipboardWriter> cnSystem::QueryClipboardWriter(iUIView *View)noexcept
+rPtr<iClipboardWriter> cnSystem::QueryClipboardWriter(iUIView *View)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - iClipboardWriter")
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iUIFont> cnSystem::QueryFont(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept
+iPtr<iUIFont> cnSystem::QueryFont(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true)
 {
 	return cnWin::DNetCreateFont(Name,NameLength,FontStyle,FontWeight);
 }
 //---------------------------------------------------------------------------
-rPtr<iUITextLineLayout> cnSystem::CreateTextLineLayout(const uChar16 *Text,uIntn Length,const cUITextStyle &Style)noexcept
+rPtr<iUITextLineLayout> cnSystem::CreateTextLineLayout(const uChar16 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true)
 {
 	return DNetCreateTextLineLayout(Text,Length,Style);
 }
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnSystem::CreateBitmapSourceFromFile(iFileName *FileName)noexcept
+iPtr<iBitmapDataSource> cnSystem::CreateBitmapSourceFromFile(iFileName *FileName)noexcept(true)
 {
 	auto WinFileName=iCast<iWin32FileName>(FileName);
 	if(WinFileName==nullptr)
@@ -247,13 +251,13 @@ iPtr<iBitmapDataSource> cnSystem::CreateBitmapSourceFromFile(iFileName *FileName
 	return iCreate<cWICBitmapDataSource>(Bitmap);
 }
 //---------------------------------------------------------------------------
-rPtr<iUISimplePaintDevice> cnSystem::QueryUISimplePaintDevice(iUIView *ForView)noexcept
+rPtr<iUISimplePaintDevice> cnSystem::QueryUISimplePaintDevice(iUIView *ForView)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - QueryUISimplePaintDevice")
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iUISimpleViewContent> cnSystem::CreateUISimpleViewContent(iUISimplePainter *Painter)noexcept
+rPtr<iUISimpleViewContent> cnSystem::CreateUISimpleViewContent(iUISimplePainter *Painter)noexcept(true)
 {
 	return rCreate<cWPFUISimpleViewContent>(Painter);
 }
@@ -261,23 +265,23 @@ rPtr<iUISimpleViewContent> cnSystem::CreateUISimpleViewContent(iUISimplePainter 
 //---------------------------------------------------------------------------
 //	Audio
 //---------------------------------------------------------------------------
-iPtr<iInterface> cnSystem::CreateAudioFormat_PCM(uInt32 Freq,uInt8 bits,uInt8 Channels)noexcept
+iPtr<iInterface> cnSystem::CreateAudioFormat_PCM(uInt32 Freq,uInt8 bits,uInt8 Channels)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - CreateAudioFormat_PCM")
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher>	cnSystem::QueryAudioDefaultInputDeviceWatcher(void)noexcept
+rPtr<iAudioDeviceWatcher>	cnSystem::QueryAudioDefaultInputDeviceWatcher(void)noexcept(true)
 {
 	return vnAudioDevice::QueryAudioDefaultInputDeviceWatcher();
 }
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher>	cnSystem::QueryAudioDefaultOutputDeviceWatcher(void)noexcept
+rPtr<iAudioDeviceWatcher>	cnSystem::QueryAudioDefaultOutputDeviceWatcher(void)noexcept(true)
 {
 	return vnAudioDevice::QueryAudioDefaultOutputDeviceWatcher();
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioDevice>			cnSystem::QueryAudioMainDevice(void)noexcept
+iPtr<iAudioDevice>			cnSystem::QueryAudioMainDevice(void)noexcept(true)
 {
 	return vnAudioDevice::QueryAudioMainDevice();
 }
@@ -291,23 +295,18 @@ iPtr<iAudioDevice>			cnSystem::QueryAudioMainDevice(void)noexcept
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> cnWindows::SystemStartup(iLibraryReferrer *Referrer)noexcept(true)
-{
-	return gWindowsSystemReference->QueryReference(Referrer,false);
-}
-//---------------------------------------------------------------------------
 void cnWindows::SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true)
 {
 	return gWindowsSystemReference->WaitShutdown(cnVar::MoveCast(Reference));
 }
 //---------------------------------------------------------------------------
-rPtr<iTextEncodingConverter> cnWindows::CodePageToUTF16(UINT SrcCodePage)noexcept
+rPtr<iTextEncodingConverter> cnWindows::CodePageToUTF16(UINT SrcCodePage)noexcept(true)
 {
 	auto Converter=rCreate<cTextEncodingConverter_MultiByteToUnicode>();
 	Converter->SrcCodePage=SrcCodePage;
 	return Converter;
 }
-rPtr<iTextEncodingConverter> cnWindows::CodePageFromUTF16(UINT DestCodePage)noexcept
+rPtr<iTextEncodingConverter> cnWindows::CodePageFromUTF16(UINT DestCodePage)noexcept(true)
 {
 	auto Converter=rCreate<cTextEncodingConverter_UnicodeToMultiByte>();
 	Converter->DestCodePage=DestCodePage;
@@ -317,32 +316,32 @@ rPtr<iTextEncodingConverter> cnWindows::CodePageFromUTF16(UINT DestCodePage)noex
 
 //---------------------------------------------------------------------------
 
-rPtr<iCOMApartmentThreading> cnWindows::COMApartmentThreadingGet(void)noexcept
+rPtr<iCOMApartmentThreading> cnWindows::COMApartmentThreadingGet(void)noexcept(true)
 {
 	return gCOMApartmentThreadingModule.Get();
 }
 
-rPtr<iCOMApartmentThreading> cnWindows::COMApartmentThreadingQuery(iDispatch *Dispatch)noexcept
+rPtr<iCOMApartmentThreading> cnWindows::COMApartmentThreadingQuery(iDispatch *Dispatch)noexcept(true)
 {
 	return gCOMApartmentThreadingModule.Query(Dispatch);
 }
 
 //- Heap---------------------------------------------------------------------
-rPtr<iMemoryHeap> cnWindows::CreateMemoryHeap(void)noexcept
+rPtr<iMemoryHeap> cnWindows::CreateMemoryHeap(void)noexcept(true)
 {
 	return rCreate<cWinMemoryHeap>(0,0,0);
 }
 //- Thread pool -------------------------------------------------------------
-iPtr<iThreadPool> cnWindows::CreateThreadPool(void)noexcept
+iPtr<iThreadPool> cnWindows::CreateThreadPool(void)noexcept(true)
 {
 	return iCreate<vcThreadPool>();
 }
 //---------------------------------------------------------------------------
-iPtr<iWin32FileName> cnWindows::CreateFileName(const wchar_t *Win32FileName)noexcept
+iPtr<iWin32FileName> cnWindows::CreateFileName(const wchar_t *Win32FileName)noexcept(true)
 {
 	return iCreate<cWin32FileName>(Win32FileName);
 }
-iPtr<iWin32FileName> cnWindows::CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix)noexcept
+iPtr<iWin32FileName> cnWindows::CreateTemporaryFileName(iFileName *FolderName,const wchar_t *Prefix)noexcept(true)
 {
 	auto WinFolderName=iCast<iWin32FileName>(FolderName);
 	if(WinFolderName==nullptr)
@@ -354,7 +353,7 @@ iPtr<iWin32FileName> cnWindows::CreateTemporaryFileName(iFileName *FolderName,co
 	return iCreate<cWin32FileName>(cnVar::MoveCast(TempFileName));
 }
 
-iPtr<iWin32FileName> cnWindows::GetSystemFileName(cnWindows::eSystemFile File)noexcept
+iPtr<iWin32FileName> cnWindows::GetSystemFileName(cnWindows::eSystemFile File)noexcept(true)
 {
 	auto FolderName=WindowsInterface::Win32FileMakeSystemFileName(File);
 	if(FolderName->Length==0)
@@ -362,12 +361,12 @@ iPtr<iWin32FileName> cnWindows::GetSystemFileName(cnWindows::eSystemFile File)no
 	return iCreate<cWin32FileName>(FolderName.Swap());
 }
 
-iPtr<iStream> cnWindows::OpenDeviceStream(const wchar_t *DeviceName,eFileAccess AccessMode,eFileCreate CreateMode)noexcept
+iPtr<iStream> cnWindows::OpenDeviceStream(const wchar_t *DeviceName,eFileAccess AccessMode,eFileCreate CreateMode)noexcept(true)
 {
 	return WindowsInterface::Win32FileOpenDeviceStream(DeviceName,AccessMode,CreateMode);
 }
 
-iPtr<iEndpoint> cnWindows::OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAccess AccessMode,eFileCreate CreateMode)noexcept
+iPtr<iEndpoint> cnWindows::OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAccess AccessMode,eFileCreate CreateMode)noexcept(true)
 {
 	return WindowsInterface::Win32FileOpenDeviceEndpoint(DeviceName,AccessMode,CreateMode);
 }
@@ -376,7 +375,7 @@ iPtr<iEndpoint> cnWindows::OpenDeviceEndpoint(const wchar_t *DeviceName,eFileAcc
 //- Database ----------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-rPtr<iODBC> cnWindows::ODBC(void)noexcept
+rPtr<iODBC> cnWindows::ODBC(void)noexcept(true)
 {
 	return rCreate<cODBC>();
 }
@@ -385,33 +384,33 @@ rPtr<iODBC> cnWindows::ODBC(void)noexcept
 //- UI ----------------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-rPtr<iWindowsConsoleHost> cnWindows::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept
+rPtr<iWindowsConsoleHost> cnWindows::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept(true)
 {
 	return cnWinRTL::CreateWindowsConsoleHost(Dispatch);
 }
 
 
-iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept
+iWindow* cnWindows::GetWindowFromHandle(HWND WindowHandle)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - GetWindowHostFromWindowHandle")
 	return nullptr;
 }
 
-rPtr<iWindowsUIApplication> cnWindows::CreateWindowsUIApplication(void)noexcept
+rPtr<iWindowsUIApplication> cnWindows::CreateWindowsUIApplication(void)noexcept(true)
 {
 	return cWPFUIApplication::CreateWindowsUIApplication();
 }
 
-iPtr<iUIThread> cnWindows::CreateUIThreadOnCurrentThread(void)noexcept
+iPtr<iUIThread> cnWindows::CreateUIThreadOnCurrentThread(void)noexcept(true)
 {
 	return cWPFUIThread::CreateOnCurrentThread();
 }
-iPtr<iUIThread> cnWindows::StartUIThread(void)noexcept
+iPtr<iUIThread> cnWindows::StartUIThread(void)noexcept(true)
 {
 	return cWPFUIThread::StartUIThread();
 }
 
-iPtr<iWindowProvider> cnWindows::CreateWindowProvider(void)noexcept
+iPtr<iWindowProvider> cnWindows::CreateWindowProvider(void)noexcept(true)
 {
 	auto UIThread=cWPFUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
@@ -419,24 +418,24 @@ iPtr<iWindowProvider> cnWindows::CreateWindowProvider(void)noexcept
 	return iCreate<cWPFWindow>(UIThread);
 }
 
-iPtr<iWindowClient> cnWindows::CreateWindowClient(void)noexcept
+iPtr<iWindowClient> cnWindows::CreateWindowClient(void)noexcept(true)
 {
 	return WPFCreateWindowClient();
 }
 
-iPtr<iWindowFrame> cnWindows::CreateWindowFrame(void)noexcept
+iPtr<iWindowFrame> cnWindows::CreateWindowFrame(void)noexcept(true)
 {
 	// no frame support
 	return nullptr;
 }
 
-iPtr<iOwnerFocusWindowClient> cnWindows::CreateOwnerFocusWindowClient(void)noexcept
+iPtr<iOwnerFocusWindowClient> cnWindows::CreateOwnerFocusWindowClient(void)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - rpCreateOwnerFocusWindowClientComponent")
 	return nullptr;
 }
 
-iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept
+iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowText,DWORD Style,DWORD ExStyle,LONG X,LONG Y,LONG Width,LONG Height,UINT ChildID)noexcept(true)
 {
 	auto UIThread=cWPFUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
@@ -453,19 +452,19 @@ iPtr<iWindow> cnWindows::CreateWindowHandle(HWND Parent,const wchar_t *WindowTex
 //- Device Context ----------------------------------------------------------
 //---------------------------------------------------------------------------
 
-rPtr<iDCPaintDevice> cnWindows::QueryDCPaintDevice(void)noexcept
+rPtr<iDCPaintDevice> cnWindows::QueryDCPaintDevice(void)noexcept(true)
 {
 	auto Context=cWPFGDIModule::QueryThreadContext();
 	return Context->Device;
 }
 
-rPtr<iDCViewContent> cnWindows::CreateDCViewContent(iDCPainter *Painter,uIntn DCViewContentOptions)noexcept
+rPtr<iDCViewContent> cnWindows::CreateDCViewContent(iDCPainter *Painter,uIntn DCViewContentOptions)noexcept(true)
 {
 	bool OutputAlpha=(0!=(DCViewContentOptions&DCViewContentOptions_OutputAlpha));
 	return rCreate<cWPFDCViewContent>(Painter,OutputAlpha);
 }
 
-rPtr<iDXGIViewContent> cnWindows::CreateDXGIViewContent(iDXGIPainter *Painter)noexcept
+rPtr<iDXGIViewContent> cnWindows::CreateDXGIViewContent(iDXGIPainter *Painter)noexcept(true)
 {
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 	return rCreate<cWPFDXGIViewContent>(Painter);

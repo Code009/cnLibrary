@@ -31,7 +31,7 @@ static const uInt8 BitReverse_Map[256]={
 }	// namespace cnRTL
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-uInt8 cnRTL::BitReverse(uInt8 Src)noexcept
+uInt8 cnRTL::BitReverse(uInt8 Src)noexcept(true)
 {
 	return BitReverse_Map[Src];
 }
@@ -41,7 +41,7 @@ const cVectorZeroValue cnRTL::VectorZeroValue;
 cnVar::cStaticVariable<cReferenceCountLogger> cnRTL::gStaticReferenceCountLogger;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cSystemTime::cSystemTime(iTimepoint *RefTime)noexcept
+cSystemTime::cSystemTime(iTimepoint *RefTime)noexcept(true)
 {
 	if(RefTime==nullptr){
 		fNanoSeconds=0;
@@ -51,93 +51,93 @@ cSystemTime::cSystemTime(iTimepoint *RefTime)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cSystemTime::~cSystemTime()noexcept
+cSystemTime::~cSystemTime()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cSystemTime::operator iTimepoint*()const noexcept
+cSystemTime::operator iTimepoint*()const noexcept(true)
 {
 	return const_cast<cSystemTime*>(this);
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::SystemTime(void)noexcept
+sInt64 cSystemTime::SystemTime(void)noexcept(true)
 {
 	return fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::Since(iTimepoint *Time)const noexcept
+sInt64 cSystemTime::Since(iTimepoint *Time)const noexcept(true)
 {
 	sInt64 TimeNS=Time->SystemTime();
 	sInt64 delta=fNanoSeconds-TimeNS;
 	return delta;
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::SinceTime(iTimepoint *Time)noexcept
+sInt64 cSystemTime::SinceTime(iTimepoint *Time)noexcept(true)
 {
 	return Since(Time);
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator == (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator == (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds==Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator != (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator != (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds!=Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator < (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator < (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds<Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator <= (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator <= (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds<=Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator > (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator > (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds>Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator >= (const cSystemTime &Src)const noexcept
+bool cSystemTime::operator >= (const cSystemTime &Src)const noexcept(true)
 {
 	return fNanoSeconds>=Src.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator == (iTimepoint *Src)const noexcept
+bool cSystemTime::operator == (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)==0;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator != (iTimepoint *Src)const noexcept
+bool cSystemTime::operator != (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)!=0;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator < (iTimepoint *Src)const noexcept
+bool cSystemTime::operator < (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)<0;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator <= (iTimepoint *Src)const noexcept
+bool cSystemTime::operator <= (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)<=0;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator > (iTimepoint *Src)const noexcept
+bool cSystemTime::operator > (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)>0;
 }
 //---------------------------------------------------------------------------
-bool cSystemTime::operator >= (iTimepoint *Src)const noexcept
+bool cSystemTime::operator >= (iTimepoint *Src)const noexcept(true)
 {
 	return Since(Src)>=0;
 }
 //---------------------------------------------------------------------------
-cSystemTime& cSystemTime::operator =(iTimepoint *RefTime)noexcept
+cSystemTime& cSystemTime::operator =(iTimepoint *RefTime)noexcept(true)
 {
 	if(RefTime==nullptr){
 		fNanoSeconds=0;
@@ -148,22 +148,22 @@ cSystemTime& cSystemTime::operator =(iTimepoint *RefTime)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cSystemTime cSystemTime::operator + (sInt64 Src)const noexcept
+cSystemTime cSystemTime::operator + (sInt64 Src)const noexcept(true)
 {
 	return cSystemTime{fNanoSeconds+Src};
 }
 //---------------------------------------------------------------------------
-cSystemTime cSystemTime::operator - (sInt64 Src)const noexcept
+cSystemTime cSystemTime::operator - (sInt64 Src)const noexcept(true)
 {
 	return cSystemTime{fNanoSeconds-Src};
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::operator - (const cSystemTime &Relative)const noexcept
+sInt64 cSystemTime::operator - (const cSystemTime &Relative)const noexcept(true)
 {
 	return fNanoSeconds-Relative.fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::operator - (iTimepoint *Relative)const noexcept
+sInt64 cSystemTime::operator - (iTimepoint *Relative)const noexcept(true)
 {
 	if(Relative==nullptr)
 		return fNanoSeconds;
@@ -171,94 +171,94 @@ sInt64 cSystemTime::operator - (iTimepoint *Relative)const noexcept
 	return fNanoSeconds-Src;
 }
 //---------------------------------------------------------------------------
-cSystemTime& cSystemTime::operator +=(sInt64 Src)noexcept
+cSystemTime& cSystemTime::operator +=(sInt64 Src)noexcept(true)
 {
 	fNanoSeconds+=Src;
 	return *this;
 }
 //---------------------------------------------------------------------------
-cSystemTime& cSystemTime::operator -=(sInt64 Src)noexcept
+cSystemTime& cSystemTime::operator -=(sInt64 Src)noexcept(true)
 {
 	fNanoSeconds-=Src;
 	return *this;
 }
 //---------------------------------------------------------------------------
-sInt64 cSystemTime::SinceUnixEpoch(void)const noexcept
+sInt64 cSystemTime::SinceUnixEpoch(void)const noexcept(true)
 {
 	sInt64 EpochDelta=Time_1s*cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 	return EpochDelta+fNanoSeconds;
 }
 //---------------------------------------------------------------------------
-void cSystemTime::SetTimeUnix(sInt64 NanoSeconds)noexcept
+void cSystemTime::SetTimeUnix(sInt64 NanoSeconds)noexcept(true)
 {
 	sInt64 EpochDelta=Time_1s*cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 	fNanoSeconds=NanoSeconds-EpochDelta;
 }
 //---------------------------------------------------------------------------
-void cSystemTime::SetTimeNow(void)noexcept
+void cSystemTime::SetTimeNow(void)noexcept(true)
 {
 	fNanoSeconds=cnSystem::GetSystemTimeNow();
 }
 //---------------------------------------------------------------------------
-void cSystemTime::SetSystemTime(sInt64 SystemTime)noexcept
+void cSystemTime::SetSystemTime(sInt64 SystemTime)noexcept(true)
 {
 	fNanoSeconds=SystemTime;
 }
 //---------------------------------------------------------------------------
-void cSystemTime::Truncate(uInt64 Mod)noexcept
+void cSystemTime::Truncate(uInt64 Mod)noexcept(true)
 {
 	fNanoSeconds-=fNanoSeconds%Mod;
 }
 //---------------------------------------------------------------------------
-cSystemTime cSystemTime::TimeNow(void)noexcept
+cSystemTime cSystemTime::TimeNow(void)noexcept(true)
 {
 	return cSystemTime(cnSystem::GetSystemTimeNow());
 }
 //---------------------------------------------------------------------------
-sInt64 cnRTL::operator - (iTimepoint *Dest,const cSystemTime &Src)noexcept
+sInt64 cnRTL::operator - (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return -Src.Since(Dest);
 }
 //---------------------------------------------------------------------------
-bool cnRTL::operator == (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator == (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src.operator ==(Dest);
 }
-bool cnRTL::operator != (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator != (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src.operator !=(Dest);
 }
-bool cnRTL::operator < (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator < (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src>Dest;
 }
-bool cnRTL::operator <= (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator <= (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src>=Dest;
 }
-bool cnRTL::operator > (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator > (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src<Dest;
 }
-bool cnRTL::operator >= (iTimepoint *Dest,const cSystemTime &Src)noexcept
+bool cnRTL::operator >= (iTimepoint *Dest,const cSystemTime &Src)noexcept(true)
 {
 	return Src<=Dest;
 }
 //---------------------------------------------------------------------------
-uInt64 cnRTL::SystemTimeToUnixTimeNS(uInt64 SystemTime)noexcept
+uInt64 cnRTL::SystemTimeToUnixTimeNS(uInt64 SystemTime)noexcept(true)
 {
 	sInt64 EpochDelta=Time_1s*cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 	SystemTime+=EpochDelta;
 	return SystemTime;
 }
 //---------------------------------------------------------------------------
-uInt64 cnRTL::SystemTimeFromUnixTimeNS(uInt64 UnixTime)noexcept
+uInt64 cnRTL::SystemTimeFromUnixTimeNS(uInt64 UnixTime)noexcept(true)
 {
 	sInt64 EpochDelta=Time_1s*cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 	return UnixTime-EpochDelta;
 }
 //---------------------------------------------------------------------------
-uInt64 cnRTL::TimeNSTruncate(uInt64 TimeNS,uInt64 Mod)noexcept
+uInt64 cnRTL::TimeNSTruncate(uInt64 TimeNS,uInt64 Mod)noexcept(true)
 {
 	TimeNS-=TimeNS%Mod;
 	return TimeNS;
@@ -269,17 +269,17 @@ uInt64 cnRTL::TimeNSTruncate(uInt64 TimeNS,uInt64 Mod)noexcept
 //constexpr uInt8 cExclusiveFlag::rfExecute;
 //constexpr uInt8 cExclusiveFlag::rfPending;
 //---------------------------------------------------------------------------
-bool cExclusiveFlag::IsRunning(void)const noexcept
+bool cExclusiveFlag::IsRunning(void)const noexcept(true)
 {
 	return RunFlag!=rfIdle;
 }
 //---------------------------------------------------------------------------
-void cExclusiveFlag::Reset(void)noexcept
+void cExclusiveFlag::Reset(void)noexcept(true)
 {
 	RunFlag=rfIdle;
 }
 //---------------------------------------------------------------------------
-bool cExclusiveFlag::Acquire(void)noexcept
+bool cExclusiveFlag::Acquire(void)noexcept(true)
 {
 	auto PrevRunFlag=RunFlag.Release<<=rfPending;
 	switch(PrevRunFlag){
@@ -298,7 +298,7 @@ bool cExclusiveFlag::Acquire(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cExclusiveFlag::Release(void)noexcept
+bool cExclusiveFlag::Release(void)noexcept(true)
 {
 	// decrease state
 	auto NextRunFlag=RunFlag.Release-=1;
@@ -315,35 +315,35 @@ bool cExclusiveFlag::Release(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cExclusiveFlag::Continue(void)noexcept
+void cExclusiveFlag::Continue(void)noexcept(true)
 {
 	RunFlag.Release=rfExecute;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cResourceAvailableFlag::Start(void)noexcept
+void cResourceAvailableFlag::Start(void)noexcept(true)
 {
 	AvailableFlag.Free.Store(rfRunning);
 }
 //---------------------------------------------------------------------------
-void cResourceAvailableFlag::Pause(void)noexcept
+void cResourceAvailableFlag::Pause(void)noexcept(true)
 {
 	AvailableFlag.Free.Store(rfPending);
 }
 //---------------------------------------------------------------------------
-bool cResourceAvailableFlag::Finish(void)noexcept
+bool cResourceAvailableFlag::Finish(void)noexcept(true)
 {
 	return AvailableFlag.Barrier.CmpStore(rfRunning,rfIdle);
 }
 //---------------------------------------------------------------------------
-bool cResourceAvailableFlag::MarkAvailable(void)noexcept
+bool cResourceAvailableFlag::MarkAvailable(void)noexcept(true)
 {
 	ufInt8 LastFlag=AvailableFlag.Barrier.Xchg(rfPending);
 	return LastFlag==rfIdle;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept
+void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept(true)
 {
 	auto Item=fRecycleStack.Pop();
 	if(Item==nullptr){
@@ -356,13 +356,13 @@ void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept
 	NotifyProcess();
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::Inc(void *Object,uInt32 Tag)noexcept
+void cReferenceCountLogger::cContext::Inc(void *Object,uInt32 Tag)noexcept(true)
 {
 	auto &ObjectItem=ObjectMap[Object];
 	ObjectItem[Tag]++;
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
+void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept(true)
 {
 	auto ObjectPair=ObjectMap.GetPair(Object);
 	if(ObjectPair==nullptr){
@@ -387,7 +387,7 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept
 }
 //---------------------------------------------------------------------------
 const uChar16 cReferenceCountLogger::cContext::DependentName[]=u"cReferenceCountLogger";
-rPtr<iStringReference> cReferenceCountLogger::cContext::CreateDescription(void)noexcept
+rPtr<iStringReference> cReferenceCountLogger::cContext::CreateDescription(void)noexcept(true)
 {
 	cArrayConstant<uChar16> Array;
 	Array.Pointer=DependentName;
@@ -426,7 +426,7 @@ void cReferenceCountLogger::Shutdown(void)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::Process(void)noexcept
+void cReferenceCountLogger::Process(void)noexcept(true)
 {
 	auto Items=fItemQueue.DequeueAll();
 	if(fSystemShutdown==0){
@@ -474,7 +474,7 @@ void cReferenceCountLogger::Process(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::ThreadProcess(void)noexcept
+void cReferenceCountLogger::ThreadProcess(void)noexcept(true)
 {
 	do{
 		fExclusiveFlag.Continue();
@@ -484,7 +484,7 @@ void cReferenceCountLogger::ThreadProcess(void)noexcept
 	}while(fExclusiveFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::NotifyProcess(void)noexcept
+void cReferenceCountLogger::NotifyProcess(void)noexcept(true)
 {
 	if(fExclusiveFlag.Acquire()==false)
 		return;
@@ -530,16 +530,16 @@ void cReferenceCountLogger::NotifyProcess(void)noexcept
 	}while(fExclusiveFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-cReferenceCountLogger::cAsyncContext::cAsyncContext()noexcept
+cReferenceCountLogger::cAsyncContext::cAsyncContext()noexcept(true)
 	: ProcessWork(cnSystem::DefaultThreadPool->CreateWork(nullptr,this))
 {
 }
 //---------------------------------------------------------------------------
-cReferenceCountLogger::cAsyncContext::~cAsyncContext()noexcept
+cReferenceCountLogger::cAsyncContext::~cAsyncContext()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cReferenceCountLogger::cAsyncContext::Execute(void)noexcept
+void cReferenceCountLogger::cAsyncContext::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<cAsyncContext>*>(this),&cReferenceCountLogger::fAsyncContext);
 	Host->ThreadProcess();

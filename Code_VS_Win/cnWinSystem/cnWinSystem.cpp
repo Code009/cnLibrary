@@ -60,32 +60,32 @@ int cnWin::Initialization_AtExit(void (__cdecl *Proc)(void))
 //- File System -------------------------------------------------------------
 //---------------------------------------------------------------------------
 
-iPtr<iFileStream>		WindowsInterface::Win32FileOpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileStream>		WindowsInterface::Win32FileOpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return vnWin32FileSystem::OpenFileStream(FileName,AccessMode,CreateFlag);
 }
 
-iPtr<iStream>			WindowsInterface::Win32FileOpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iStream>			WindowsInterface::Win32FileOpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return vnWin32FileSystem::OpenDeviceStream(FileName,AccessMode,CreateFlag);
 }
 
-iPtr<iEndpoint>			WindowsInterface::Win32FileOpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iEndpoint>			WindowsInterface::Win32FileOpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return vnWin32FileSystem::OpenDeviceEndpoint(FileName,AccessMode,CreateFlag);
 }
 
-cnRTL::cStringBuffer<wchar_t>	WindowsInterface::Win32FileMakeSystemFileName(cnWindows::eSystemFile File)
+cnRTL::cStringBuffer<wchar_t>	WindowsInterface::Win32FileMakeSystemFileName(cnWindows::eSystemFile File)noexcept(true)
 {
 	return vnWin32FileSystem::MakeSystemFileName(File);
 }
 
-rPtr<iAsyncNotification>	WindowsInterface::Win32FileOpenFileWatcher(const wchar_t *FolderName)
+rPtr<iAsyncNotification>	WindowsInterface::Win32FileOpenFileWatcher(const wchar_t *FolderName)noexcept(true)
 {
 	return vnWin32FileSystem::OpenFileWatcher(FolderName);
 }
 
-rPtr<iFileObserver>			WindowsInterface::Win32FileOpenFileObserver(cnRTL::cString<wchar_t> FolderName)
+rPtr<iFileObserver>			WindowsInterface::Win32FileOpenFileObserver(cnRTL::cString<wchar_t> FolderName)noexcept(true)
 {
 	return vnWin32FileSystem::OpenFileObserver(cnVar::MoveCast(FolderName));
 }
@@ -94,16 +94,16 @@ rPtr<iFileObserver>			WindowsInterface::Win32FileOpenFileObserver(cnRTL::cString
 //- Window Subclass ---------------------------------------------------------
 //---------------------------------------------------------------------------
 
-bool WindowsInterface::WindowLocalSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool WindowsInterface::WindowLocalSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vnWindowSubclass::SetLocal(WindowHandle,Subclass);
 }
-bool WindowsInterface::WindowSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool WindowsInterface::WindowSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vnWindowSubclass::SetLocal(WindowHandle,Subclass);
 }
 
-void WindowsInterface::WindowSubclassRestore(HWND WindowHandle,bcWindowSubclass *Subclass)
+void WindowsInterface::WindowSubclassRestore(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vnWindowSubclass::Restore(WindowHandle,Subclass);
 }

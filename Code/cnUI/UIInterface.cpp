@@ -6,39 +6,39 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void iControlComponent::SetContentZPosition(Float32)noexcept
+void iControlComponent::SetContentZPosition(Float32)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void kiControl::SetLayoutOrder(sfInt16)noexcept
+void kiControl::SetLayoutOrder(sfInt16)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void viControl::SetContentVisible(bool)noexcept
+void viControl::SetContentVisible(bool)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-viData::viData()noexcept
+viData::viData()noexcept(true)
 	: fInvalidated(false)
 	, fInvalidating(false)
 {
 }
 //---------------------------------------------------------------------------
-viData::~viData()noexcept
+viData::~viData()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void viData::InvalidateData(void)noexcept
+void viData::InvalidateData(void)noexcept(true)
 {
 	fInvalidated=true;
 	NotifyInvalidate();
 }
 //---------------------------------------------------------------------------
-void viData::NotifyInvalidate(void)noexcept
+void viData::NotifyInvalidate(void)noexcept(true)
 {
 	fInvalidating=true;
 	for(auto Item : fRefSet){
@@ -48,14 +48,14 @@ void viData::NotifyInvalidate(void)noexcept
 	fInvalidating=false;
 }
 //---------------------------------------------------------------------------
-void viData::NotifyRegister(bcNotifyToken *NotifyToken)noexcept
+void viData::NotifyRegister(bcNotifyToken *NotifyToken)noexcept(true)
 {
 	if(fInvalidated || fInvalidating)
 		return;
 	fRefSet.Insert(NotifyToken);
 }
 //---------------------------------------------------------------------------
-void viData::NotifyUnregister(bcNotifyToken *NotifyToken)noexcept
+void viData::NotifyUnregister(bcNotifyToken *NotifyToken)noexcept(true)
 {
 	if(fInvalidated || fInvalidating)
 		return;

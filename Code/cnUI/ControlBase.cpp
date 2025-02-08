@@ -6,45 +6,45 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-Form::Form()noexcept
+Form::Form()noexcept(true)
 {
 	fView=cnSystem::CreateUIView();
 	fView->InsertStateHandler(this);
 	fView->InsertViewHandler(this);
 }
 //---------------------------------------------------------------------------
-Form::~Form()noexcept
+Form::~Form()noexcept(true)
 {
 	fView->RemoveStateHandler(this);
 	fView->RemoveViewHandler(this);
 }
 //---------------------------------------------------------------------------
-Form::operator iUIView *()const noexcept
+Form::operator iUIView *()const noexcept(true)
 {
 	return fView;
 }
 //---------------------------------------------------------------------------
-iUIView* Form::GetView(void)const noexcept
+iUIView* Form::GetView(void)const noexcept(true)
 {
 	return fView;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-ViewControl::ViewControl()noexcept
+ViewControl::ViewControl()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-ViewControl::~ViewControl()noexcept
+ViewControl::~ViewControl()noexcept(true)
 {
 	this->SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-iUIView* ViewControl::GetView(void)const noexcept
+iUIView* ViewControl::GetView(void)const noexcept(true)
 {
 	return fView;
 }
 //---------------------------------------------------------------------------
-void ViewControl::SetView(iUIView *View)noexcept
+void ViewControl::SetView(iUIView *View)noexcept(true)
 {
 	if(fView!=nullptr){
 		ViewClear();
@@ -55,7 +55,7 @@ void ViewControl::SetView(iUIView *View)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iUIView* ViewControl::CreateView(void)noexcept
+iUIView* ViewControl::CreateView(void)noexcept(true)
 {
 	if(fView==nullptr){
 		SetView(cnSystem::CreateUIView());
@@ -63,24 +63,24 @@ iUIView* ViewControl::CreateView(void)noexcept
 	return fView;
 }
 //---------------------------------------------------------------------------
-void ViewControl::ViewSetup(void)noexcept
+void ViewControl::ViewSetup(void)noexcept(true)
 {
 	fView->InsertViewHandler(this,LayoutOrder);
 }
 //---------------------------------------------------------------------------
-void ViewControl::ViewClear(void)noexcept
+void ViewControl::ViewClear(void)noexcept(true)
 {
 	fView->RemoveViewHandler(this);
 }
 //---------------------------------------------------------------------------
-void ViewControl::UpdateLayoutOrder(void)noexcept
+void ViewControl::UpdateLayoutOrder(void)noexcept(true)
 {
 	if(fView!=nullptr){
 		fView->InsertViewHandler(this,LayoutOrder);
 	}
 }
 //---------------------------------------------------------------------------
-void ViewControl::SetLayoutOrder(sfInt16 Order)noexcept
+void ViewControl::SetLayoutOrder(sfInt16 Order)noexcept(true)
 {
 	if(LayoutOrder==Order)
 		return;
@@ -90,16 +90,16 @@ void ViewControl::SetLayoutOrder(sfInt16 Order)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-Control::Control()noexcept
+Control::Control()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-Control::~Control()noexcept
+Control::~Control()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void Control::ViewSetup(void)noexcept
+void Control::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 
@@ -108,7 +108,7 @@ void Control::ViewSetup(void)noexcept
 	ViewInsertTouchHandler(fView,this);
 }
 //---------------------------------------------------------------------------
-void Control::ViewClear(void)noexcept
+void Control::ViewClear(void)noexcept(true)
 {
 	ViewRemoveKeyHandler(fView,this);
 	ViewRemoveMouseHandler(fView,this);
@@ -118,35 +118,35 @@ void Control::ViewClear(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-LayoutControl::LayoutControl()noexcept
+LayoutControl::LayoutControl()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-LayoutControl::~LayoutControl()noexcept
+LayoutControl::~LayoutControl()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void LayoutControl::UpdateControlZOffset(void)noexcept
+void LayoutControl::UpdateControlZOffset(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void LayoutControl::SetControlZOffset(Float32 ZPosition)noexcept
+void LayoutControl::SetControlZOffset(Float32 ZPosition)noexcept(true)
 {
 	ControlZOffset=ZPosition;
 	UpdateControlZOffset();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-VisualControl::VisualControl()noexcept
+VisualControl::VisualControl()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-VisualControl::~VisualControl()noexcept
+VisualControl::~VisualControl()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void VisualControl::UpdateControlZOffset(void)noexcept
+void VisualControl::UpdateControlZOffset(void)noexcept(true)
 {
 	LayoutControl::UpdateControlZOffset();
 	if(fBackground!=nullptr){
@@ -155,19 +155,19 @@ void VisualControl::UpdateControlZOffset(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void VisualControl::SetContentVisible(bool Visible)noexcept
+void VisualControl::SetContentVisible(bool Visible)noexcept(true)
 {
 	if(fBackground!=nullptr){
 		fBackground->SetContentVisible(Visible);
 	}
 }
 //---------------------------------------------------------------------------
-Float32 VisualControl::ControlBackgroundZPosition(void)noexcept
+Float32 VisualControl::ControlBackgroundZPosition(void)noexcept(true)
 {
 	return ZPosition_Background+ControlZOffset;
 }
 //---------------------------------------------------------------------------
-void VisualControl::SetBackground(rPtr<viControl> Background)noexcept
+void VisualControl::SetBackground(rPtr<viControl> Background)noexcept(true)
 {
 	if(fBackground==Background)
 		return;
@@ -185,7 +185,7 @@ void VisualControl::SetBackground(rPtr<viControl> Background)noexcept
 	ControlBackgroundChanged();
 }
 //---------------------------------------------------------------------------
-void VisualControl::ViewSetup(void)noexcept
+void VisualControl::ViewSetup(void)noexcept(true)
 {
 	fView->InsertViewHandler(this,LayoutOrder);
 
@@ -197,7 +197,7 @@ void VisualControl::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void VisualControl::ViewClear(void)noexcept
+void VisualControl::ViewClear(void)noexcept(true)
 {
 	if(fBackground!=nullptr){
 		fBackground->SetView(nullptr);
@@ -206,63 +206,63 @@ void VisualControl::ViewClear(void)noexcept
 	fView->RemoveViewHandler(this);
 }
 //---------------------------------------------------------------------------
-void VisualControl::ControlBackgroundSetDefault(void)noexcept
+void VisualControl::ControlBackgroundSetDefault(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void VisualControl::ControlBackgroundChanged(void)noexcept
+void VisualControl::ControlBackgroundChanged(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vSimpleViewPainter::vSimpleViewPainter()noexcept
+vSimpleViewPainter::vSimpleViewPainter()noexcept(true)
 {
 	fViewContent=cnSystem::CreateUISimpleViewContent(this);
 }
 //---------------------------------------------------------------------------
-vSimpleViewPainter::~vSimpleViewPainter()noexcept
+vSimpleViewPainter::~vSimpleViewPainter()noexcept(true)
 {
 	fViewContent->SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void vSimpleViewPainter::SetView(iUIView *View)noexcept
+void vSimpleViewPainter::SetView(iUIView *View)noexcept(true)
 {
 	fViewContent->SetView(View);
 }
 //---------------------------------------------------------------------------
-void vSimpleViewPainter::SetContentZPosition(Float32 ZPosition)noexcept
+void vSimpleViewPainter::SetContentZPosition(Float32 ZPosition)noexcept(true)
 {
 	fViewContent->SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-void vSimpleViewPainter::SetContentVisible(bool Visible)noexcept
+void vSimpleViewPainter::SetContentVisible(bool Visible)noexcept(true)
 {
 	fViewContent->SetVisible(Visible);
 }
 //---------------------------------------------------------------------------
-void vSimpleViewPainter::PaintStarted(void)noexcept{}
-void vSimpleViewPainter::PaintShow(void)noexcept{}
-void vSimpleViewPainter::PaintResume(void)noexcept{}
-void vSimpleViewPainter::PaintPaused(void)noexcept{}
-void vSimpleViewPainter::PaintHide(void)noexcept{}
-void vSimpleViewPainter::PaintStopped(void)noexcept{}
+void vSimpleViewPainter::PaintStarted(void)noexcept(true){}
+void vSimpleViewPainter::PaintShow(void)noexcept(true){}
+void vSimpleViewPainter::PaintResume(void)noexcept(true){}
+void vSimpleViewPainter::PaintPaused(void)noexcept(true){}
+void vSimpleViewPainter::PaintHide(void)noexcept(true){}
+void vSimpleViewPainter::PaintStopped(void)noexcept(true){}
 //---------------------------------------------------------------------------
-void vSimpleViewPainter::PaintRectChanged(void)noexcept
+void vSimpleViewPainter::PaintRectChanged(void)noexcept(true)
 {
 	fPaintSize=fViewContent->GetPaintSize();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-KeyAction::KeyAction()noexcept
+KeyAction::KeyAction()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-KeyAction::~KeyAction()noexcept
+KeyAction::~KeyAction()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void KeyAction::ViewSetup(void)noexcept
+void KeyAction::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 
@@ -275,7 +275,7 @@ void KeyAction::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void KeyAction::ViewClear(void)noexcept
+void KeyAction::ViewClear(void)noexcept(true)
 {
 	if(fKeyRegisterAsFilter){
 		ViewRemoveKeyHandlerFilter(fView,this);
@@ -288,16 +288,16 @@ void KeyAction::ViewClear(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-MouseAction::MouseAction()noexcept
+MouseAction::MouseAction()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-MouseAction::~MouseAction()noexcept
+MouseAction::~MouseAction()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void MouseAction::ViewSetup(void)noexcept
+void MouseAction::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 
@@ -310,7 +310,7 @@ void MouseAction::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void MouseAction::ViewClear(void)noexcept
+void MouseAction::ViewClear(void)noexcept(true)
 {
 	if(fMouseRegisterAsFilter){
 		ViewRemoveMouseHandlerFilter(fView,this);
@@ -323,16 +323,16 @@ void MouseAction::ViewClear(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-TouchAction::TouchAction()noexcept
+TouchAction::TouchAction()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-TouchAction::~TouchAction()noexcept
+TouchAction::~TouchAction()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void TouchAction::ViewSetup(void)noexcept
+void TouchAction::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 
@@ -345,7 +345,7 @@ void TouchAction::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void TouchAction::ViewClear(void)noexcept
+void TouchAction::ViewClear(void)noexcept(true)
 {
 	if(fTouchRegisterAsFilter){
 		ViewRemoveTouchHandlerFilter(fView,this);
@@ -357,9 +357,9 @@ void TouchAction::ViewClear(void)noexcept
 	ViewControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void (*cnUI::gApplyDefaultTextStyle)(cUITextStyle &TextStyle)noexcept=ApplyDefaultTextStyle;
+void (*cnUI::gApplyDefaultTextStyle)(cUITextStyle &TextStyle)noexcept(true)=ApplyDefaultTextStyle;
 //---------------------------------------------------------------------------
-void cnUI::ApplyDefaultTextStyle(cUITextStyle &TextStyle)noexcept
+void cnUI::ApplyDefaultTextStyle(cUITextStyle &TextStyle)noexcept(true)
 {
 	TextStyle.FontSize=14;
 	TextStyle.Strike=false;

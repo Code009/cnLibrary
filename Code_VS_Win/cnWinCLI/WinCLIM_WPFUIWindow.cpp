@@ -5,12 +5,12 @@ using namespace cnWin;
 using namespace DNet;
 
 //---------------------------------------------------------------------------
-void cnWin::mMakeWPFViewRoot(cGCRef &Ref)noexcept
+void cnWin::mMakeWPFViewRoot(cGCRef &Ref)noexcept(true)
 {
 	Ref.Set(gcnew WPFViewRoot());
 }
 //---------------------------------------------------------------------------
-riWPFUIViewRemoteRoot^ cnWin::WPFUIViewQueryRemoteRootFromRootVisual(System::Windows::Media::Visual ^RootVisual)noexcept
+riWPFUIViewRemoteRoot^ cnWin::WPFUIViewQueryRemoteRootFromRootVisual(System::Windows::Media::Visual ^RootVisual)noexcept(true)
 {
 	auto RootTargetElement=dynamic_cast<IWPFUIViewRootTargetElement^>(RootVisual);
 	if(RootTargetElement!=nullptr){
@@ -137,7 +137,7 @@ void rcWPFUIViewRootTargetElementAsRemoteRoot::RemoteChildDetach(DNet::IWPFUIVie
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mbcWPFUIViewRoot::mSetup(const cGCHandle &WPFUIViewRootTargetElement)noexcept
+void mbcWPFUIViewRoot::mSetup(const cGCHandle &WPFUIViewRootTargetElement)noexcept(true)
 {
 	auto TargetElement=WPFUIViewRootTargetElement.DynamicCast<IWPFUIViewRootTargetElement>();
 	fTargetRootElement.Alloc(TargetElement);
@@ -145,7 +145,7 @@ void mbcWPFUIViewRoot::mSetup(const cGCHandle &WPFUIViewRootTargetElement)noexce
 	TargetElement->Adapter.CPPAttach(this);
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIViewRoot::mClear(void)noexcept
+void mbcWPFUIViewRoot::mClear(void)noexcept(true)
 {
 	auto TargetElement=fTargetRootElement.Get();
 	TargetElement->Adapter.CPPDetach(this);
@@ -154,18 +154,18 @@ void mbcWPFUIViewRoot::mClear(void)noexcept
 }
 //---------------------------------------------------------------------------
 #pragma unmanaged
-const cGCHandle& mbcWPFUIViewRoot::GetTargetElementHandle(void)const noexcept
+const cGCHandle& mbcWPFUIViewRoot::GetTargetElementHandle(void)const noexcept(true)
 {
 	return fTargetRootElement;
 }
 #pragma managed
 //---------------------------------------------------------------------------
-DNet::IWPFUIViewRootTargetElement^ mbcWPFUIViewRoot::GetTargetElement(void)const noexcept
+DNet::IWPFUIViewRootTargetElement^ mbcWPFUIViewRoot::GetTargetElement(void)const noexcept(true)
 {
 	return fTargetRootElement.Get();
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIViewRoot::WPFDispatcherShutdownStarted(void)noexcept
+void mbcWPFUIViewRoot::WPFDispatcherShutdownStarted(void)noexcept(true)
 {
 	auto WPFRoot=fTargetRootElement.Get();
 	if(WPFRoot==nullptr)
@@ -176,7 +176,7 @@ void mbcWPFUIViewRoot::WPFDispatcherShutdownStarted(void)noexcept
 	WPFWindowShutdownStarted();
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIViewRoot::mSetClient(const cGCHandle &ObjectHandle)noexcept
+bool mbcWPFUIViewRoot::mSetClient(const cGCHandle &ObjectHandle)noexcept(true)
 {
 	auto ClientViewTargetElement=ObjectHandle.DynamicCast<System::Windows::UIElement>();
 	if(ClientViewTargetElement==nullptr)
@@ -193,13 +193,13 @@ bool mbcWPFUIViewRoot::mSetClient(const cGCHandle &ObjectHandle)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIViewRoot::mResetClient(void)noexcept
+void mbcWPFUIViewRoot::mResetClient(void)noexcept(true)
 {
 	auto WPFRoot=fTargetRootElement.Get();
 	WPFRoot->ClientElement=nullptr;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIViewRoot::mGetVisible(void)noexcept
+bool mbcWPFUIViewRoot::mGetVisible(void)noexcept(true)
 {
 	auto TargetElement=fTargetRootElement.Get();
 	if(TargetElement!=nullptr){
@@ -211,7 +211,7 @@ bool mbcWPFUIViewRoot::mGetVisible(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIViewRoot::mSetVisible(bool Visible)noexcept
+bool mbcWPFUIViewRoot::mSetVisible(bool Visible)noexcept(true)
 {
 	auto TargetElement=fTargetRootElement.Get();
 	if(TargetElement!=nullptr){
@@ -229,13 +229,13 @@ bool mbcWPFUIViewRoot::mSetVisible(bool Visible)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIViewRoot::mSetBackgroundColor(uInt8 r,uInt8 g,uInt8 b)noexcept
+bool mbcWPFUIViewRoot::mSetBackgroundColor(uInt8 r,uInt8 g,uInt8 b)noexcept(true)
 {
 	auto WPFRoot=fTargetRootElement.Get();
 	return WPFRoot->SetBackgroundColor(System::Windows::Media::Color::FromRgb(r,g,b));
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIViewRoot::mSetWindowOwner(const cGCHandle &WPFRootRef)noexcept
+bool mbcWPFUIViewRoot::mSetWindowOwner(const cGCHandle &WPFRootRef)noexcept(true)
 {
 	auto OwnerRoot=WPFRootRef.Cast<IWPFUIViewRootTargetElement>();
 	if(OwnerRoot==nullptr)
@@ -246,7 +246,7 @@ bool mbcWPFUIViewRoot::mSetWindowOwner(const cGCHandle &WPFRootRef)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIViewRoot::mClearWindowOwner(void)noexcept
+void mbcWPFUIViewRoot::mClearWindowOwner(void)noexcept(true)
 {
 	auto WPFRoot=fTargetRootElement.Get();
 	WPFRoot->OwnerTargetElement=nullptr;
@@ -452,17 +452,17 @@ System::IntPtr rcWPFHwndHandler::WindowMessageHook(System::IntPtr hwnd, int msg,
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mbcWPFWindow::mSetup(void)noexcept
+void mbcWPFWindow::mSetup(void)noexcept(true)
 {
 	fWPFHwndHandler.Alloc(gcnew rcWPFHwndHandler(this));
 }
 //---------------------------------------------------------------------------
-void mbcWPFWindow::mClear(void)noexcept
+void mbcWPFWindow::mClear(void)noexcept(true)
 {
 	fWPFHwndHandler.Free();
 }
 //---------------------------------------------------------------------------
-Float32 mbcWPFWindow::mQueryLayoutScale(void)const noexcept
+Float32 mbcWPFWindow::mQueryLayoutScale(void)const noexcept(true)
 {
 	auto WPFHwndHandler=fWPFHwndHandler.Get();
 	auto Source=WPFHwndHandler->Source;
@@ -475,7 +475,7 @@ Float32 mbcWPFWindow::mQueryLayoutScale(void)const noexcept
 	return static_cast<Float32>(CompositionTarget->TransformToDevice.M11);
 }
 //---------------------------------------------------------------------------
-bool mbcWPFWindow::mCreate(void *ParentWindowHandle,const wchar_t *WindowText,uInt32 Style,uInt32 ExStyle,sInt32 X,sInt32 Y,sInt32 Width,sInt32 Height)noexcept
+bool mbcWPFWindow::mCreate(void *ParentWindowHandle,const wchar_t *WindowText,uInt32 Style,uInt32 ExStyle,sInt32 X,sInt32 Y,sInt32 Width,sInt32 Height)noexcept(true)
 {
 	auto WPFHwndHandler=fWPFHwndHandler.Get();
 
@@ -492,7 +492,7 @@ bool mbcWPFWindow::mCreate(void *ParentWindowHandle,const wchar_t *WindowText,uI
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFWindow::mDestroy(void)noexcept
+bool mbcWPFWindow::mDestroy(void)noexcept(true)
 {
 	auto WPFHwndHandler=fWPFHwndHandler.Get();
 
@@ -504,7 +504,7 @@ bool mbcWPFWindow::mDestroy(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFWindow::mGetVisualRoot(cGCRef &VisualHandle)noexcept
+bool mbcWPFWindow::mGetVisualRoot(cGCRef &VisualHandle)noexcept(true)
 {
 	auto WPFHwndHandler=fWPFHwndHandler.Get();
 	auto Source=WPFHwndHandler->Source;
@@ -514,7 +514,7 @@ bool mbcWPFWindow::mGetVisualRoot(cGCRef &VisualHandle)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFWindow::mSetVisualRoot(const cGCHandle &VisualHandle)noexcept
+bool mbcWPFWindow::mSetVisualRoot(const cGCHandle &VisualHandle)noexcept(true)
 {
 	auto RootVisual=VisualHandle.DynamicCast<System::Windows::Media::Visual>();
 	if(RootVisual==nullptr)
@@ -527,7 +527,7 @@ bool mbcWPFWindow::mSetVisualRoot(const cGCHandle &VisualHandle)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFWindow::mClearVisualRoot(void)noexcept
+bool mbcWPFWindow::mClearVisualRoot(void)noexcept(true)
 {
 	auto WPFHwndHandler=fWPFHwndHandler.Get();
 	auto Source=WPFHwndHandler->Source;

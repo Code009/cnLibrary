@@ -5,35 +5,35 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cnUI::ImageRatioCompare(cUIPoint Size1,cUIPoint Size2)noexcept
+bool cnUI::ImageRatioCompare(cUIPoint Size1,cUIPoint Size2)noexcept(true)
 {
 	return Size1.x*Size2.y < Size1.y*Size2.x;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vImage::vImage(viImageData *Data)noexcept
+vImage::vImage(viImageData *Data)noexcept(true)
 	: fData(Data)
 {
 	fUpdateImage=true;
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vImage::~vImage()noexcept
+vImage::~vImage()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vImage::Create(viImageData *Data)noexcept
+rPtr<viControl> vImage::Create(viImageData *Data)noexcept(true)
 {
 	return rCreate< bwvControl<vImage> >(Data);
 }
 //---------------------------------------------------------------------------
-viImageData* vImage::GetData(void)noexcept
+viImageData* vImage::GetData(void)noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vImage::SetData(viImageData *Data)noexcept
+void vImage::SetData(viImageData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -45,14 +45,14 @@ void vImage::SetData(viImageData *Data)noexcept
 	Update();
 }
 //---------------------------------------------------------------------------
-void vImage::Update(void)noexcept
+void vImage::Update(void)noexcept(true)
 {
 	fUpdateImage=true;
 	if(fViewContent!=nullptr)
 		fViewContent->QueryUpdate();
 }
 //---------------------------------------------------------------------------
-void vImage::DataInsertCallback(void)noexcept
+void vImage::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fImageDataNotifyToken=fData->ControlImageNotifySet.Insert([this]{
@@ -61,14 +61,14 @@ void vImage::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vImage::DataRemoveCallback(void)noexcept
+void vImage::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->ControlImageNotifySet.Remove(fImageDataNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vImage::Paint(iUISimplePaintContext *Context)noexcept
+void vImage::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	SetupImageCache();
 
@@ -83,7 +83,7 @@ void vImage::Paint(iUISimplePaintContext *Context)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint vImage::TransformImageRect()noexcept
+cUIPoint vImage::TransformImageRect()noexcept(true)
 {
 	cUIPoint ImageSize=fImageGraphSize;
 	cUIPoint AreaSize=fPaintSize;
@@ -121,7 +121,7 @@ cUIPoint vImage::TransformImageRect()noexcept
 	return TextPos;
 }
 //---------------------------------------------------------------------------
-void vImage::SetupImageCache(void)noexcept
+void vImage::SetupImageCache(void)noexcept(true)
 {
 	if(fUpdateImage==false){
 		return;
@@ -147,61 +147,61 @@ void vImage::SetupImageCache(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cImage::cImage()noexcept
+cImage::cImage()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cImage::~cImage()noexcept
+cImage::~cImage()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cImage::ControlContentSetDefault(void)noexcept
+void cImage::ControlContentSetDefault(void)noexcept(true)
 {
 	SetContent(vImage::Create(this));
 }
 //---------------------------------------------------------------------------
-void cImage::Update(void)noexcept
+void cImage::Update(void)noexcept(true)
 {
 	ControlImageNotifySet();
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource* cImage::ControlImage(void)noexcept
+iBitmapDataSource* cImage::ControlImage(void)noexcept(true)
 {
 	return Image;
 }
 //---------------------------------------------------------------------------
-eImageBlendingOperator cImage::ControlImageBlendingOperator(void)noexcept
+eImageBlendingOperator cImage::ControlImageBlendingOperator(void)noexcept(true)
 {
 	return ImageBlend;
 }
 //---------------------------------------------------------------------------
-eAlignment cImage::ControlImageAlignment(void)noexcept
+eAlignment cImage::ControlImageAlignment(void)noexcept(true)
 {
 	return ImageAlign;
 }
 //---------------------------------------------------------------------------
-eImageScaleType cImage::ControlImageScale(void)noexcept
+eImageScaleType cImage::ControlImageScale(void)noexcept(true)
 {
 	return ImageScale;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cButtonImageData::cButtonImageData()noexcept
+cButtonImageData::cButtonImageData()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cButtonImageData::~cButtonImageData()noexcept
+cButtonImageData::~cButtonImageData()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cButtonImageData::Update(void)noexcept
+void cButtonImageData::Update(void)noexcept(true)
 {
 	ButtonImageNotifySet();
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource* cButtonImageData::ButtonImageForState(eButtonState State)noexcept
+iBitmapDataSource* cButtonImageData::ButtonImageForState(eButtonState State)noexcept(true)
 {
 	switch(State){
 	case ButtonState::Normal:
@@ -218,18 +218,18 @@ iBitmapDataSource* cButtonImageData::ButtonImageForState(eButtonState State)noex
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-eImageBlendingOperator cButtonImageData::ButtonImageBlendingOperatorForState(eButtonState)noexcept
+eImageBlendingOperator cButtonImageData::ButtonImageBlendingOperatorForState(eButtonState)noexcept(true)
 {
 	return ImageBlend;
 }
 //---------------------------------------------------------------------------
-eAlignment cButtonImageData::ButtonImageAlignment(void)noexcept
+eAlignment cButtonImageData::ButtonImageAlignment(void)noexcept(true)
 {
 	return ImageAlign;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vButtonImage::vButtonImage(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept
+vButtonImage::vButtonImage(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept(true)
 	: fButtonData(ButtonData)
 	, fImageData(ImageData)
 {
@@ -237,23 +237,23 @@ vButtonImage::vButtonImage(viButtonData *ButtonData,viButtonImageData *ImageData
 	ImageDataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vButtonImage::~vButtonImage()noexcept
+vButtonImage::~vButtonImage()noexcept(true)
 {
 	ButtonDataRemoveCallback();
 	ImageDataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vButtonImage::Create(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept
+rPtr<viControl> vButtonImage::Create(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept(true)
 {
 	return rCreate< bwvControl<vButtonImage> >(ButtonData,ImageData);
 }
 //---------------------------------------------------------------------------
-viButtonData* vButtonImage::GetButtonData(void)const noexcept
+viButtonData* vButtonImage::GetButtonData(void)const noexcept(true)
 {
 	return fButtonData;
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetButtonData(viButtonData *Data)noexcept
+void vButtonImage::SetButtonData(viButtonData *Data)noexcept(true)
 {
 	if(fButtonData==Data)
 		return;
@@ -265,12 +265,12 @@ void vButtonImage::SetButtonData(viButtonData *Data)noexcept
 	UpdateState();
 }
 //---------------------------------------------------------------------------
-viButtonImageData* vButtonImage::GetImageData(void)const noexcept
+viButtonImageData* vButtonImage::GetImageData(void)const noexcept(true)
 {
 	return fImageData;
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetImageData(viButtonImageData *Data)noexcept
+void vButtonImage::SetImageData(viButtonImageData *Data)noexcept(true)
 {
 	if(fImageData==Data)
 		return;
@@ -282,7 +282,7 @@ void vButtonImage::SetImageData(viButtonImageData *Data)noexcept
 	Update();
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetData(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept
+void vButtonImage::SetData(viButtonData *ButtonData,viButtonImageData *ImageData)noexcept(true)
 {
 	if(fButtonData==ButtonData)
 		return SetImageData(ImageData);
@@ -299,7 +299,7 @@ void vButtonImage::SetData(viButtonData *ButtonData,viButtonImageData *ImageData
 	Update();
 }
 //---------------------------------------------------------------------------
-void vButtonImage::ButtonDataInsertCallback(void)noexcept
+void vButtonImage::ButtonDataInsertCallback(void)noexcept(true)
 {
 	if(fButtonData!=nullptr){
 		fButtonDataNofityToken=fButtonData->ButtonNotifySet.Insert([this]{
@@ -308,14 +308,14 @@ void vButtonImage::ButtonDataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::ButtonDataRemoveCallback(void)noexcept
+void vButtonImage::ButtonDataRemoveCallback(void)noexcept(true)
 {
 	if(fButtonData!=nullptr){
 		fButtonData->ButtonNotifySet.Remove(fButtonDataNofityToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::ImageDataInsertCallback(void)noexcept
+void vButtonImage::ImageDataInsertCallback(void)noexcept(true)
 {
 	if(fImageData!=nullptr){
 		fButtonDataNofityToken=fImageData->ButtonImageNotifySet.Insert([this]{
@@ -324,14 +324,14 @@ void vButtonImage::ImageDataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::ImageDataRemoveCallback(void)noexcept
+void vButtonImage::ImageDataRemoveCallback(void)noexcept(true)
 {
 	if(fImageData!=nullptr){
 		fImageData->ButtonImageNotifySet.Remove(fButtonDataNofityToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::Paint(iUISimplePaintContext *Context)noexcept
+void vButtonImage::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	if(fImageData==nullptr)
 		return;
@@ -377,7 +377,7 @@ void vButtonImage::Paint(iUISimplePaintContext *Context)noexcept
 
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCacheImage(iPtr<iUIBitmap> &CacheImage,eButtonState State)noexcept
+void vButtonImage::SetupCacheImage(iPtr<iUIBitmap> &CacheImage,eButtonState State)noexcept(true)
 {
 	auto ImageSource=fImageData->ButtonImageForState(State);
 	if(ImageSource==nullptr){
@@ -388,12 +388,12 @@ void vButtonImage::SetupCacheImage(iPtr<iUIBitmap> &CacheImage,eButtonState Stat
 	CacheImage=Device->CreateBitmapCopyFromSource(ImageSource);
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCacheNormal(void)noexcept
+void vButtonImage::SetupCacheNormal(void)noexcept(true)
 {
 	SetupCacheImage(fCacheImageNormal,ButtonState::Normal);
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCacheHot(void)noexcept
+void vButtonImage::SetupCacheHot(void)noexcept(true)
 {
 	SetupCacheImage(fCacheImageHot,ButtonState::Hot);
 	if(fCacheImageHot==nullptr){
@@ -404,7 +404,7 @@ void vButtonImage::SetupCacheHot(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCachePressed(void)noexcept
+void vButtonImage::SetupCachePressed(void)noexcept(true)
 {
 	SetupCacheImage(fCacheImagePressed,ButtonState::Pressed);
 	if(fCacheImagePressed==nullptr){
@@ -415,7 +415,7 @@ void vButtonImage::SetupCachePressed(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCacheInactive(void)noexcept
+void vButtonImage::SetupCacheInactive(void)noexcept(true)
 {
 	SetupCacheImage(fCacheImageInactive,ButtonState::Inactive);
 	if(fCacheImageInactive==nullptr){
@@ -426,7 +426,7 @@ void vButtonImage::SetupCacheInactive(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::SetupCacheDisabled(void)noexcept
+void vButtonImage::SetupCacheDisabled(void)noexcept(true)
 {
 	SetupCacheImage(fCacheImageDisabled,ButtonState::Disabled);
 	if(fCacheImageDisabled==nullptr){
@@ -437,7 +437,7 @@ void vButtonImage::SetupCacheDisabled(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::ClearCache(void)noexcept
+void vButtonImage::ClearCache(void)noexcept(true)
 {
 	fCacheImageNormal=nullptr;
 	fCacheImageHot=nullptr;
@@ -446,7 +446,7 @@ void vButtonImage::ClearCache(void)noexcept
 	fCacheImageInactive=nullptr;
 }
 //---------------------------------------------------------------------------
-void vButtonImage::Update(void)noexcept
+void vButtonImage::Update(void)noexcept(true)
 {
 	ClearCache();
 	if(fViewContent!=nullptr){
@@ -454,7 +454,7 @@ void vButtonImage::Update(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButtonImage::UpdateState(void)noexcept
+void vButtonImage::UpdateState(void)noexcept(true)
 {
 	if(fViewContent!=nullptr){
 		fViewContent->QueryUpdate();
@@ -462,7 +462,7 @@ void vButtonImage::UpdateState(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cnUI::LayoutImageText(cUIPoint &TextPos,cUIPoint &ImagePos,const cUIPoint &TextSize,const cUIPoint &ImageSize,const cUIPoint &AreaSize,const cLayoutImageTextOptions &Option)noexcept
+void cnUI::LayoutImageText(cUIPoint &TextPos,cUIPoint &ImagePos,const cUIPoint &TextSize,const cUIPoint &ImageSize,const cUIPoint &AreaSize,const cLayoutImageTextOptions &Option)noexcept(true)
 {
 	cUIPoint ContentAreaSize=AreaSize;
 	ContentAreaSize.x-=Option.Margin.Left+Option.Margin.Right;
@@ -563,7 +563,7 @@ void cnUI::LayoutImageText(cUIPoint &TextPos,cUIPoint &ImagePos,const cUIPoint &
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vImageLabel::vImageLabel(viImageTextControlData *Data)noexcept
+vImageLabel::vImageLabel(viImageTextControlData *Data)noexcept(true)
 	: fData(Data)
 {
 	fUpdateImage=true;
@@ -571,22 +571,22 @@ vImageLabel::vImageLabel(viImageTextControlData *Data)noexcept
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vImageLabel::~vImageLabel()noexcept
+vImageLabel::~vImageLabel()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vImageLabel::Create(viImageTextControlData *Data)noexcept
+rPtr<viControl> vImageLabel::Create(viImageTextControlData *Data)noexcept(true)
 {
 	return rCreate< bwvControl<vImageLabel> >(Data);
 }
 //---------------------------------------------------------------------------
-viImageTextControlData* vImageLabel::GetData(void)const noexcept
+viImageTextControlData* vImageLabel::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vImageLabel::SetData(viImageTextControlData *Data)noexcept
+void vImageLabel::SetData(viImageTextControlData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -598,7 +598,7 @@ void vImageLabel::SetData(viImageTextControlData *Data)noexcept
 	Update();
 }
 //---------------------------------------------------------------------------
-void vImageLabel::DataInsertCallback(void)noexcept
+void vImageLabel::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fImageTextNoftifyToken=fData->ControlImageTextNotifySet.Insert([this]{
@@ -607,14 +607,14 @@ void vImageLabel::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vImageLabel::DataRemoveCallback(void)noexcept
+void vImageLabel::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->ControlImageTextNotifySet.Remove(fImageTextNoftifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vImageLabel::Update(void)noexcept
+void vImageLabel::Update(void)noexcept(true)
 {
 	fUpdateImage=true;
 	fUpdateText=true;
@@ -622,7 +622,7 @@ void vImageLabel::Update(void)noexcept
 		fViewContent->QueryUpdate();
 }
 //---------------------------------------------------------------------------
-void vImageLabel::Paint(iUISimplePaintContext *Context)noexcept
+void vImageLabel::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	SetupTextCache();
 	SetupImageCache();
@@ -649,7 +649,7 @@ void vImageLabel::Paint(iUISimplePaintContext *Context)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vImageLabel::SetupTextCache(void)noexcept
+void vImageLabel::SetupTextCache(void)noexcept(true)
 {
 	if(fUpdateText==false){
 		return;
@@ -675,7 +675,7 @@ void vImageLabel::SetupTextCache(void)noexcept
 	fTextGraphSize=fCacheTextGraph->GetSize();
 }
 //---------------------------------------------------------------------------
-void vImageLabel::SetupImageCache(void)noexcept
+void vImageLabel::SetupImageCache(void)noexcept(true)
 {
 	if(fUpdateImage==false){
 		return;
@@ -700,52 +700,52 @@ void vImageLabel::SetupImageCache(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cImageLabel::cImageLabel()noexcept
+cImageLabel::cImageLabel()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-cImageLabel::~cImageLabel()noexcept
+cImageLabel::~cImageLabel()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cImageLabel::ControlContentSetDefault(void)noexcept
+void cImageLabel::ControlContentSetDefault(void)noexcept(true)
 {
 	SetContent(vImageLabel::Create(this));
 }
 //---------------------------------------------------------------------------
-void cImageLabel::Update(void)noexcept
+void cImageLabel::Update(void)noexcept(true)
 {
 	ControlImageTextNotifySet();
 }
 //---------------------------------------------------------------------------
-const uChar16* cImageLabel::ControlTextString(void)noexcept
+const uChar16* cImageLabel::ControlTextString(void)noexcept(true)
 {
 	return Text->Pointer;
 }
 //---------------------------------------------------------------------------
-uIntn cImageLabel::ControlTextLength(void)noexcept
+uIntn cImageLabel::ControlTextLength(void)noexcept(true)
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-const cUITextStyle& cImageLabel::ControlTextStyle(void)noexcept
+const cUITextStyle& cImageLabel::ControlTextStyle(void)noexcept(true)
 {
 	return TextStyle;
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource* cImageLabel::ControlImage(void)noexcept
+iBitmapDataSource* cImageLabel::ControlImage(void)noexcept(true)
 {
 	return Image;
 }
 //---------------------------------------------------------------------------
-eImageBlendingOperator cImageLabel::ControlImageBlendingOperator(void)noexcept
+eImageBlendingOperator cImageLabel::ControlImageBlendingOperator(void)noexcept(true)
 {
 	return ImageBlend;
 }
 //---------------------------------------------------------------------------
-cLayoutImageTextOptions cImageLabel::ControlImageTextOption(void)noexcept
+cLayoutImageTextOptions cImageLabel::ControlImageTextOption(void)noexcept(true)
 {
 	cLayoutImageTextOptions Options;
 	Options.Margin.Left=0;
@@ -759,23 +759,23 @@ cLayoutImageTextOptions cImageLabel::ControlImageTextOption(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcImageTextButton::bcImageTextButton()noexcept
+bcImageTextButton::bcImageTextButton()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-bcImageTextButton::~bcImageTextButton()noexcept
+bcImageTextButton::~bcImageTextButton()noexcept(true)
 {
 	SetView(nullptr);
 	viImageTextControlData::InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::ControlContentSetDefault(void)noexcept
+void bcImageTextButton::ControlContentSetDefault(void)noexcept(true)
 {
 	SetContent(vImageLabel::Create(this));
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::UpdateZPosition(void)noexcept
+void bcImageTextButton::UpdateZPosition(void)noexcept(true)
 {
 	bcButton::UpdateZPosition();
 	if(fContent!=nullptr){
@@ -783,7 +783,7 @@ void bcImageTextButton::UpdateZPosition(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::SetContent(rPtr<viControl> Content)noexcept
+void bcImageTextButton::SetContent(rPtr<viControl> Content)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -795,7 +795,7 @@ void bcImageTextButton::SetContent(rPtr<viControl> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::ViewSetup(void)noexcept
+void bcImageTextButton::ViewSetup(void)noexcept(true)
 {
 	bcButton::ViewSetup();
 
@@ -807,7 +807,7 @@ void bcImageTextButton::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::ViewClear(void)noexcept
+void bcImageTextButton::ViewClear(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -816,43 +816,43 @@ void bcImageTextButton::ViewClear(void)noexcept
 	bcButton::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::Update(void)noexcept
+void bcImageTextButton::Update(void)noexcept(true)
 {
 	ControlImageTextNotifySet();
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcImageTextButton::UpdateState(void)noexcept
+void bcImageTextButton::UpdateState(void)noexcept(true)
 {
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-const uChar16* bcImageTextButton::ControlTextString(void)noexcept
+const uChar16* bcImageTextButton::ControlTextString(void)noexcept(true)
 {
 	return cnString::TEmptyString<uChar16>::Value;
 }
 //---------------------------------------------------------------------------
-uIntn bcImageTextButton::ControlTextLength(void)noexcept
+uIntn bcImageTextButton::ControlTextLength(void)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-const cUITextStyle& bcImageTextButton::ControlTextStyle(void)noexcept
+const cUITextStyle& bcImageTextButton::ControlTextStyle(void)noexcept(true)
 {
 	return TextStyle;
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource* bcImageTextButton::ControlImage(void)noexcept
+iBitmapDataSource* bcImageTextButton::ControlImage(void)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-eImageBlendingOperator bcImageTextButton::ControlImageBlendingOperator(void)noexcept
+eImageBlendingOperator bcImageTextButton::ControlImageBlendingOperator(void)noexcept(true)
 {
 	return ImageBlendingOperator::Alpha;
 }
 //---------------------------------------------------------------------------
-cLayoutImageTextOptions bcImageTextButton::ControlImageTextOption(void)noexcept
+cLayoutImageTextOptions bcImageTextButton::ControlImageTextOption(void)noexcept(true)
 {
 	cLayoutImageTextOptions Options;
 	Options.Margin.Left=ContentMarginLeft;
@@ -866,47 +866,47 @@ cLayoutImageTextOptions bcImageTextButton::ControlImageTextOption(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cImageTextButton::cImageTextButton()noexcept
+cImageTextButton::cImageTextButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cImageTextButton::~cImageTextButton()noexcept
+cImageTextButton::~cImageTextButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cImageTextButton::ButtonMouseAllowButton(eMouseButton Button)noexcept
+bool cImageTextButton::ButtonMouseAllowButton(eMouseButton Button)noexcept(true)
 {
 	return Button==MouseButton::Left;
 }
 //---------------------------------------------------------------------------
-void cImageTextButton::ButtonClick(const cUIPoint &)noexcept
+void cImageTextButton::ButtonClick(const cUIPoint &)noexcept(true)
 {
 	if(OnClick!=nullptr){
 		OnClick();
 	}
 }
 //---------------------------------------------------------------------------
-ufInt8 cImageTextButton::CheckState(void)noexcept
+ufInt8 cImageTextButton::CheckState(void)noexcept(true)
 {
 	return Check;
 }
 //---------------------------------------------------------------------------
-const uChar16* cImageTextButton::ControlTextString(void)noexcept
+const uChar16* cImageTextButton::ControlTextString(void)noexcept(true)
 {
 	return Text;
 }
 //---------------------------------------------------------------------------
-uIntn cImageTextButton::ControlTextLength(void)noexcept
+uIntn cImageTextButton::ControlTextLength(void)noexcept(true)
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-iBitmapDataSource* cImageTextButton::ControlImage(void)noexcept
+iBitmapDataSource* cImageTextButton::ControlImage(void)noexcept(true)
 {
 	return Image;
 }
 //---------------------------------------------------------------------------
-eImageBlendingOperator cImageTextButton::ControlImageBlendingOperator(void)noexcept
+eImageBlendingOperator cImageTextButton::ControlImageBlendingOperator(void)noexcept(true)
 {
 	return ImageBlendingOperator::Alpha;
 }

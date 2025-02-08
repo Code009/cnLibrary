@@ -27,7 +27,7 @@ namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
 template<class T>
-cnRTL_CONSTEXPR_FUNC T CRC_ByteTable(uInt8 Value,T Polynomial)
+cnRTL_CONSTEXPR_FUNC T CRC_ByteTable(uInt8 Value,T Polynomial)noexcept(true)
 {
 	T crc;
 	crc = static_cast<T>(Value) << (sizeof(T)*ByteBitCount - ByteBitCount);
@@ -41,7 +41,7 @@ cnRTL_CONSTEXPR_FUNC T CRC_ByteTable(uInt8 Value,T Polynomial)
 }
 //---------------------------------------------------------------------------
 template<class T>
-cnRTL_CONSTEXPR_FUNC T CRCReverse_ByteTable(uInt8 Value,T Polynomial)
+cnRTL_CONSTEXPR_FUNC T CRCReverse_ByteTable(uInt8 Value,T Polynomial)noexcept(true)
 {
     uInt8 Temp=Value;
 	for(uInt8 i=0;i<ByteBitCount;i++){
@@ -60,10 +60,10 @@ cnRTL_CONSTEXPR_FUNC T CRCReverse_ByteTable(uInt8 Value,T Polynomial)
 	return crc;
 }
 //---------------------------------------------------------------------------
-uInt8 CRC8_LT(const void *Buffer,uIntn Size,const uInt8 *Table,uInt8 Accum);
+uInt8 CRC8_LT(const void *Buffer,uIntn Size,const uInt8 *Table,uInt8 Accum)noexcept(true);
 //---------------------------------------------------------------------------
 template<class T>
-T CRC_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTypeDef<T>::Type Accum)
+inline T CRC_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTypeDef<T>::Type Accum)noexcept(true)
 {
 	if cnRTL_IFCONSTEXPR(sizeof(T)==1){
 		return CRC8_LT(Buffer,Size,reinterpret_cast<const uInt8*>(Table),Accum);
@@ -85,7 +85,7 @@ T CRC_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTypeDef<T
 }
 //---------------------------------------------------------------------------
 template<class T>
-T CRCReverse_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTypeDef<T>::Type Accum)
+inline T CRCReverse_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTypeDef<T>::Type Accum)noexcept(true)
 {
 	if cnRTL_IFCONSTEXPR(sizeof(T)==1){
 		return CRC8_LT(Buffer,Size,reinterpret_cast<const uInt8*>(Table),Accum);
@@ -106,15 +106,15 @@ T CRCReverse_LT(const void *Buffer,uIntn Size,const T *Table,typename cnVar::TTy
 	}
 }
 //---------------------------------------------------------------------------
-uInt8 CRC8_07(const void *Buffer,uIntn Size);
-uInt8 CRC8_EBU(const void *Buffer,uIntn Size);
-uInt8 CRC8_ICODE(const void *Buffer,uIntn Size);
+uInt8 CRC8_07(const void *Buffer,uIntn Size)noexcept(true);
+uInt8 CRC8_EBU(const void *Buffer,uIntn Size)noexcept(true);
+uInt8 CRC8_ICODE(const void *Buffer,uIntn Size)noexcept(true);
 //---------------------------------------------------------------------------
-uInt16 CRC16_ARC(const void *Buffer,uIntn Size);
-uInt16 CRC16_BUYPASS(const void *Buffer,uIntn Size);
+uInt16 CRC16_ARC(const void *Buffer,uIntn Size)noexcept(true);
+uInt16 CRC16_BUYPASS(const void *Buffer,uIntn Size)noexcept(true);
 //---------------------------------------------------------------------------
-uInt32 CRC32_04C11DB7(const void *Buffer,uIntn Size);
-uInt32 CRC32_POSIX(const void *Buffer,uIntn Size);
+uInt32 CRC32_04C11DB7(const void *Buffer,uIntn Size)noexcept(true);
+uInt32 CRC32_POSIX(const void *Buffer,uIntn Size)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnRTL
 //---------------------------------------------------------------------------

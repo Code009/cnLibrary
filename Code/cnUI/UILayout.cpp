@@ -5,7 +5,7 @@ using namespace cnLibrary;
 using namespace cnUI;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUIPoint cnUI::RectAlignInRect(eAlignment Align,Float32 DestLeft,Float32 DestTop,Float32 DestRight,Float32 DestBottom,cUIPoint AlignSize,cUIPoint DefaultPos)noexcept
+cUIPoint cnUI::RectAlignInRect(eAlignment Align,Float32 DestLeft,Float32 DestTop,Float32 DestRight,Float32 DestBottom,cUIPoint AlignSize,cUIPoint DefaultPos)noexcept(true)
 {
 	cUIPoint AlignPos;
 	switch(Align&(Alignment::Left|Alignment::Right)){
@@ -41,7 +41,7 @@ cUIPoint cnUI::RectAlignInRect(eAlignment Align,Float32 DestLeft,Float32 DestTop
 	return AlignPos;
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::RectAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoint AlignSize,cUIPoint AlignPos)noexcept
+cUIPoint cnUI::RectAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoint AlignSize,cUIPoint AlignPos)noexcept(true)
 {
 	switch(Align&(Alignment::Left|Alignment::Right)){
 	default:
@@ -74,7 +74,7 @@ cUIPoint cnUI::RectAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoint Align
 	return AlignPos;
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::RectStretchAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoint &AlignSize)noexcept
+cUIPoint cnUI::RectStretchAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoint &AlignSize)noexcept(true)
 {
 	cUIPoint Pos;
 	switch(Align&(Alignment::Left|Alignment::Right)){
@@ -112,7 +112,7 @@ cUIPoint cnUI::RectStretchAlignInRect(eAlignment Align,cUIPoint DestSize,cUIPoin
 	return Pos;
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::RectAlignAroundRect(eAroundAlignment Align,cUIPoint DestPos,cUIPoint DestSize,cUIPoint SrcSize,cUIPoint DefaultPos)noexcept
+cUIPoint cnUI::RectAlignAroundRect(eAroundAlignment Align,cUIPoint DestPos,cUIPoint DestSize,cUIPoint SrcSize,cUIPoint DefaultPos)noexcept(true)
 {
 	cUIPoint Pos;
 	switch(Align&AroundAlignment::MaskDirection){
@@ -166,7 +166,7 @@ cUIPoint cnUI::RectAlignAroundRect(eAroundAlignment Align,cUIPoint DestPos,cUIPo
 	return Pos;
 }
 //---------------------------------------------------------------------------
-cUIPoint cnUI::RectAlignAroundRectLimited(eAroundAlignment Align,cUIPoint LimitSize,cUIPoint DestPos,cUIPoint DestSize,cUIPoint SrcSize,cUIPoint DefaultPos)noexcept
+cUIPoint cnUI::RectAlignAroundRectLimited(eAroundAlignment Align,cUIPoint LimitSize,cUIPoint DestPos,cUIPoint DestSize,cUIPoint SrcSize,cUIPoint DefaultPos)noexcept(true)
 {
 	cUIPoint Pos;
 
@@ -326,7 +326,7 @@ cUIPoint cnUI::RectAlignAroundRectLimited(eAroundAlignment Align,cUIPoint LimitS
 	return Pos;
 }
 //---------------------------------------------------------------------------
-void cnUI::RectApplyMargin(cUIRect &Rect,const cUIRectangle &Margin)noexcept
+void cnUI::RectApplyMargin(cUIRect &Rect,const cUIRectangle &Margin)noexcept(true)
 {
 	Rect.Pos.x+=Margin.Left;
 	Rect.Pos.y+=Margin.Top;
@@ -335,7 +335,7 @@ void cnUI::RectApplyMargin(cUIRect &Rect,const cUIRectangle &Margin)noexcept
 	Rect.Size.y-=Margin.Top+Margin.Bottom;
 }
 //---------------------------------------------------------------------------
-cUIRectangle cnUI::MergeMargin(cUIRectangle Margin1,const cUIRectangle &Margin2)noexcept
+cUIRectangle cnUI::MergeMargin(cUIRectangle Margin1,const cUIRectangle &Margin2)noexcept(true)
 {
 	Margin1.Left-=Margin2.Left;
 	Margin1.Top-=Margin2.Top;
@@ -354,7 +354,7 @@ cUIRectangle cnUI::MergeMargin(cUIRectangle Margin1,const cUIRectangle &Margin2)
 	return Margin1;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cnUI::RectToVector(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept
+cVector<Float32,4> cnUI::RectToVector(Float32 Left,Float32 Top,Float32 Right,Float32 Bottom)noexcept(true)
 {
 	cVector<Float32,4> v;
 	v[0]=Left;
@@ -364,7 +364,7 @@ cVector<Float32,4> cnUI::RectToVector(Float32 Left,Float32 Top,Float32 Right,Flo
 	return v;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cnUI::RectToVector(const cUIRectangle &Rect)noexcept
+cVector<Float32,4> cnUI::RectToVector(const cUIRectangle &Rect)noexcept(true)
 {
 	cVector<Float32,4> v;
 	v[0]=Rect.Left;
@@ -379,23 +379,23 @@ cPixelLayout::cPixelLayout()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cPixelLayout::cPixelLayout(const cPixelLayout &Src)noexcept
+cPixelLayout::cPixelLayout(const cPixelLayout &Src)noexcept(true)
 	: BoundsVector(Src.BoundsVector)
 	, ClientMarginVector(Src.ClientMarginVector)
 {
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::ClearMargin(void)noexcept
+void cPixelLayout::ClearMargin(void)noexcept(true)
 {
 	ClientMarginVector.Zero();
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::Reset(const cUIRect &Rect)noexcept
+void cPixelLayout::Reset(const cUIRect &Rect)noexcept(true)
 {
 	return Reset(Rect.Pos,Rect.Size);
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::Reset(const cUIPoint &Size)noexcept
+void cPixelLayout::Reset(const cUIPoint &Size)noexcept(true)
 {
 	ClearMargin();
 
@@ -405,7 +405,7 @@ void cPixelLayout::Reset(const cUIPoint &Size)noexcept
 	Bounds.Bottom=Size.y;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::Reset(const cUIPoint &Pos,const cUIPoint &Size)noexcept
+void cPixelLayout::Reset(const cUIPoint &Pos,const cUIPoint &Size)noexcept(true)
 {
 	ClearMargin();
 
@@ -415,7 +415,7 @@ void cPixelLayout::Reset(const cUIPoint &Pos,const cUIPoint &Size)noexcept
 	Bounds.Bottom=Pos.y+Size.y;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cPixelLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	ClientMargin.Left=MarginLeft;
 	ClientMargin.Top=MarginTop;
@@ -423,7 +423,7 @@ void cPixelLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 Margin
 	ClientMargin.Bottom=MarginBottom;
 }
 //---------------------------------------------------------------------------
-cPixelLayout::operator cUIRect ()const noexcept
+cPixelLayout::operator cUIRect ()const noexcept(true)
 {
 	cUIRect r;
 	r.Pos.x=Bounds.Left;
@@ -433,7 +433,7 @@ cPixelLayout::operator cUIRect ()const noexcept
 	return r;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept
+void cPixelLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept(true)
 {
 	ClientMarginVector-=MarginVector;
 
@@ -447,34 +447,34 @@ void cPixelLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept
 		ClientMargin.Bottom=0;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::MergeMargin(const cUIRectangle &Margin)noexcept
+void cPixelLayout::MergeMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	return MergeMargin(RectToVector(Margin));
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::MergeMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cPixelLayout::MergeMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	return MergeMargin(RectToVector(MarginLeft,MarginTop,MarginRight,MarginBottom));
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::AddMargin(const cVector<Float32,4> &MarginVector)noexcept
+void cPixelLayout::AddMargin(const cVector<Float32,4> &MarginVector)noexcept(true)
 {
 	ClientMarginVector+=MarginVector;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::AddMargin(const cUIRectangle &Margin)noexcept
+void cPixelLayout::AddMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	cVector<Float32,4> MarginVector=RectToVector(Margin);
 	ClientMarginVector+=MarginVector;
 }
 //---------------------------------------------------------------------------
-void cPixelLayout::AddMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cPixelLayout::AddMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	cVector<Float32,4> MarginVector=RectToVector(MarginLeft,MarginTop,MarginRight,MarginBottom);
 	ClientMarginVector+=MarginVector;
 }
 //---------------------------------------------------------------------------
-Float32 cPixelLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)const noexcept
+Float32 cPixelLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)const noexcept(true)
 {
 	if(MarginLeft<ClientMargin.Left){
 		MarginLeft=ClientMargin.Left;
@@ -487,7 +487,7 @@ Float32 cPixelLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)cons
 	return ClientRight-ClientLeft;
 }
 //---------------------------------------------------------------------------
-Float32 cPixelLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)const noexcept
+Float32 cPixelLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)const noexcept(true)
 {
 	if(MarginTop<ClientMargin.Top){
 		MarginTop=ClientMargin.Top;
@@ -500,7 +500,7 @@ Float32 cPixelLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)con
 	return ClientBottom-ClientTop;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Union(const cPixelLayout &Src)const noexcept
+cPixelLayout cPixelLayout::Union(const cPixelLayout &Src)const noexcept(true)
 {
 	cPixelLayout r;
 	if(Bounds.Left<Src.Bounds.Left){
@@ -538,7 +538,7 @@ cPixelLayout cPixelLayout::Union(const cPixelLayout &Src)const noexcept
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Float32 pBottom)const noexcept
+cPixelLayout cPixelLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Float32 pBottom)const noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -549,7 +549,7 @@ cPixelLayout cPixelLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Flo
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Client(void)const noexcept
+cPixelLayout cPixelLayout::Client(void)const noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -564,7 +564,7 @@ cPixelLayout cPixelLayout::Client(void)const noexcept
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)const noexcept
+cPixelLayout cPixelLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)const noexcept(true)
 {
 	if(MarginLeft<ClientMargin.Left){
 		MarginLeft=ClientMargin.Left;
@@ -591,12 +591,12 @@ cPixelLayout cPixelLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 M
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Client(const cUIRectangle &Margin)const noexcept
+cPixelLayout cPixelLayout::Client(const cUIRectangle &Margin)const noexcept(true)
 {
 	return Client(Margin.Left,Margin.Top,Margin.Right,Margin.Bottom);
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept
+cPixelLayout cPixelLayout::Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -639,21 +639,21 @@ cPixelLayout cPixelLayout::Align(eAlignment Alignment,Float32 Width,Float32 Heig
 	return r;
 }
 //---------------------------------------------------------------------------
-Float32 cPixelLayout::DivideWidth(ufInt32n Count,Float32 PartMargin,Float32 MarginLeft,Float32 MarginRight)const noexcept
+Float32 cPixelLayout::DivideWidth(ufInt32 Count,Float32 PartMargin,Float32 MarginLeft,Float32 MarginRight)const noexcept(true)
 {
 	Float32 DivideWidth=GetClientWidth(MarginLeft,MarginRight);
 	DivideWidth=(DivideWidth-PartMargin*(Count-1))/Count;
 	return DivideWidth;
 }
 //---------------------------------------------------------------------------
-Float32 cPixelLayout::DivideHeight(ufInt32n Count,Float32 PartMargin,Float32 MarginTop,Float32 MarginBottom)const noexcept
+Float32 cPixelLayout::DivideHeight(ufInt32 Count,Float32 PartMargin,Float32 MarginTop,Float32 MarginBottom)const noexcept(true)
 {
 	Float32 DivideHeight=GetClientHeight(MarginTop,MarginBottom);
 	DivideHeight=(DivideHeight-PartMargin*(Count-1))/Count;
 	return DivideHeight;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cPixelLayout cPixelLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cPixelLayout r;
 	if(MarginLeft<ClientMargin.Left){
@@ -679,7 +679,7 @@ cPixelLayout cPixelLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 M
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cPixelLayout cPixelLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cPixelLayout r;
 	if(MarginRight<ClientMargin.Right){
@@ -703,7 +703,7 @@ cPixelLayout cPixelLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cPixelLayout cPixelLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cPixelLayout r;
 	if(MarginTop<ClientMargin.Top){
@@ -727,7 +727,7 @@ cPixelLayout cPixelLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 Ma
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cPixelLayout cPixelLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cPixelLayout r;
 	if(MarginBottom<ClientMargin.Bottom){
@@ -751,7 +751,7 @@ cPixelLayout cPixelLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Floa
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cPixelLayout cPixelLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -772,7 +772,7 @@ cPixelLayout cPixelLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 Ma
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cPixelLayout cPixelLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -793,7 +793,7 @@ cPixelLayout cPixelLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cPixelLayout cPixelLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -814,7 +814,7 @@ cPixelLayout cPixelLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 Mar
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cPixelLayout cPixelLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -835,7 +835,7 @@ cPixelLayout cPixelLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cPixelLayout cPixelLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -856,7 +856,7 @@ cPixelLayout cPixelLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 Ma
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cPixelLayout cPixelLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -877,7 +877,7 @@ cPixelLayout cPixelLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cPixelLayout cPixelLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -898,7 +898,7 @@ cPixelLayout cPixelLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 Mar
 	return r;
 }
 //---------------------------------------------------------------------------
-cPixelLayout cPixelLayout::SliceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cPixelLayout cPixelLayout::SliceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cPixelLayout r;
 	r.ClearMargin();
@@ -921,39 +921,39 @@ cPixelLayout cPixelLayout::SliceBottom(Float32 Height,Float32 MarginBottom,Float
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLayout::cLayout()noexcept
+cLayout::cLayout()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cLayout::cLayout(const cLayout &Src)noexcept
+cLayout::cLayout(const cLayout &Src)noexcept(true)
 	: cPixelLayout(Src)
 {
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(const cUIRect &LayoutRect)noexcept
+void cLayout::Reset(const cUIRect &LayoutRect)noexcept(true)
 {
 	ParameterScaleVector.Fill(1);
 	cPixelLayout::Reset(LayoutRect);
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(const cUIPoint &Size)noexcept
+void cLayout::Reset(const cUIPoint &Size)noexcept(true)
 {
 	ParameterScaleVector.Fill(1);
 	cPixelLayout::Reset(Size);
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(const cUIPoint &Pos,const cUIPoint &Size)noexcept
+void cLayout::Reset(const cUIPoint &Pos,const cUIPoint &Size)noexcept(true)
 {
 	ParameterScaleVector.Fill(1);
 	cPixelLayout::Reset(Pos,Size);
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(Float32 ParameterScale,const cUIRect &LayoutRect)noexcept
+void cLayout::Reset(Float32 ParameterScale,const cUIRect &LayoutRect)noexcept(true)
 {
 	return Reset(ParameterScale,LayoutRect.Pos,LayoutRect.Size);
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Size)noexcept
+void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Size)noexcept(true)
 {
 	ClearMargin();
 	ParameterScaleVector.Fill(ParameterScale);
@@ -966,7 +966,7 @@ void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Size)noexcept
 	BoundsVector*=ParameterScaleVector;
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Pos,const cUIPoint &Size)noexcept
+void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Pos,const cUIPoint &Size)noexcept(true)
 {
 	ClearMargin();
 	ParameterScaleVector.Fill(ParameterScale);
@@ -979,7 +979,7 @@ void cLayout::Reset(Float32 ParameterScale,const cUIPoint &Pos,const cUIPoint &S
 	BoundsVector*=ParameterScaleVector;
 }
 //---------------------------------------------------------------------------
-void cLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	
 	ClientMarginVector[0]=MarginLeft;
@@ -991,7 +991,7 @@ void cLayout::SetMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight
 	}
 }
 //---------------------------------------------------------------------------
-void cLayout::Reset(iUIView *View)noexcept
+void cLayout::Reset(iUIView *View)noexcept(true)
 {
 	Float32 ContentScale=View->GetContentScale();
 	auto ViewSize=View->GetSize();
@@ -1004,7 +1004,7 @@ void cLayout::Reset(iUIView *View)noexcept
 	BoundsVector[3]=ViewSize.y;
 }
 //---------------------------------------------------------------------------
-void cLayout::ResetClient(iUIView *View)noexcept
+void cLayout::ResetClient(iUIView *View)noexcept(true)
 {
 	Float32 ContentScale=View->GetContentScale();
 	auto ViewSize=View->GetSize();
@@ -1018,17 +1018,17 @@ void cLayout::ResetClient(iUIView *View)noexcept
 	Bounds.Bottom=ViewSize.y-Margin.Bottom;
 }
 //---------------------------------------------------------------------------
-bool cLayout::ParameterNeedScale(void)const noexcept
+bool cLayout::ParameterNeedScale(void)const noexcept(true)
 {
 	return ParameterScaleVector[0]!=1.f;
 }
 //---------------------------------------------------------------------------
-bool cLayout::ParameterNoScale(void)const noexcept
+bool cLayout::ParameterNoScale(void)const noexcept(true)
 {
 	return ParameterScaleVector[0]==1.f;
 }
 //---------------------------------------------------------------------------
-void cLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept
+void cLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::MergeMargin(MarginVector);
@@ -1037,7 +1037,7 @@ void cLayout::MergeMargin(const cVector<Float32,4> &MarginVector)noexcept
 	return cPixelLayout::MergeMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::MergeMargin(const cUIRectangle &Margin)noexcept
+void cLayout::MergeMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	cVector<Float32,4> sMarginVector=RectToVector(Margin);
 	if(ParameterNeedScale()){
@@ -1046,7 +1046,7 @@ void cLayout::MergeMargin(const cUIRectangle &Margin)noexcept
 	return cPixelLayout::MergeMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::MergeMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cLayout::MergeMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	cVector<Float32,4> sMarginVector=RectToVector(MarginLeft,MarginTop,MarginRight,MarginBottom);
 	if(ParameterNeedScale()){
@@ -1055,7 +1055,7 @@ void cLayout::MergeMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRig
 	return cPixelLayout::MergeMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::AddMargin(const cVector<Float32,4> &MarginVector)noexcept
+void cLayout::AddMargin(const cVector<Float32,4> &MarginVector)noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::AddMargin(MarginVector);
@@ -1064,7 +1064,7 @@ void cLayout::AddMargin(const cVector<Float32,4> &MarginVector)noexcept
 	return cPixelLayout::AddMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::AddMargin(const cUIRectangle &Margin)noexcept
+void cLayout::AddMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	cVector<Float32,4> sMarginVector=RectToVector(Margin);
 	if(ParameterNeedScale()){
@@ -1073,7 +1073,7 @@ void cLayout::AddMargin(const cUIRectangle &Margin)noexcept
 	return cPixelLayout::AddMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::AddMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept
+void cLayout::AddMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)noexcept(true)
 {
 	cVector<Float32,4> sMarginVector=RectToVector(MarginLeft,MarginTop,MarginRight,MarginBottom);
 	if(ParameterNeedScale()){
@@ -1082,17 +1082,17 @@ void cLayout::AddMargin(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight
 	return cPixelLayout::AddMargin(sMarginVector);
 }
 //---------------------------------------------------------------------------
-void cLayout::ParameterScale(Float32 Scale)noexcept
+void cLayout::ParameterScale(Float32 Scale)noexcept(true)
 {
 	ParameterScaleVector*=cnRTL::VectorFillValue(Scale);
 }
 //---------------------------------------------------------------------------
-void cLayout::SetParameterScale(Float32 Scale)noexcept
+void cLayout::SetParameterScale(Float32 Scale)noexcept(true)
 {
 	ParameterScaleVector=cnRTL::VectorFillValue(Scale);
 }
 //---------------------------------------------------------------------------
-Float32 cLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)const noexcept
+Float32 cLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)const noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::GetClientWidth(MarginLeft,MarginRight);
@@ -1103,7 +1103,7 @@ Float32 cLayout::GetClientWidth(Float32 MarginLeft,Float32 MarginRight)const noe
 	return w/Scale;
 }
 //---------------------------------------------------------------------------
-Float32 cLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)const noexcept
+Float32 cLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)const noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::GetClientHeight(MarginTop,MarginBottom);
@@ -1114,7 +1114,7 @@ Float32 cLayout::GetClientHeight(Float32 MarginTop,Float32 MarginBottom)const no
 	return w/Scale;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Union(const cLayout &Src)const noexcept
+cLayout cLayout::Union(const cLayout &Src)const noexcept(true)
 {
 	cLayout r;
 	if(Src.ParameterScaleVector[0]==ParameterScaleVector[0]){
@@ -1134,7 +1134,7 @@ cLayout cLayout::Union(const cLayout &Src)const noexcept
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Float32 pBottom)const noexcept
+cLayout cLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Float32 pBottom)const noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1148,7 +1148,7 @@ cLayout cLayout::Padding(Float32 pLeft,Float32 pTop,Float32 pRight,Float32 pBott
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Client(void)const noexcept
+cLayout cLayout::Client(void)const noexcept(true)
 {
 	cLayout r;
 	static_cast<cPixelLayout&>(r)=cPixelLayout::Client();
@@ -1156,7 +1156,7 @@ cLayout cLayout::Client(void)const noexcept
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)const noexcept
+cLayout cLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight,Float32 MarginBottom)const noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1170,12 +1170,12 @@ cLayout cLayout::Client(Float32 MarginLeft,Float32 MarginTop,Float32 MarginRight
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Client(const cUIRectangle &Margin)const noexcept
+cLayout cLayout::Client(const cUIRectangle &Margin)const noexcept(true)
 {
 	return Client(Margin.Left,Margin.Top,Margin.Right,Margin.Bottom);
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept
+cLayout cLayout::Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1189,7 +1189,7 @@ cLayout cLayout::Align(eAlignment Alignment,Float32 Width,Float32 Height)const n
 	return r;
 }
 //---------------------------------------------------------------------------
-Float32 cLayout::DivideWidth(ufInt32n Count,Float32 PartMargin,Float32 MarginLeft,Float32 MarginRight)const noexcept
+Float32 cLayout::DivideWidth(ufInt32 Count,Float32 PartMargin,Float32 MarginLeft,Float32 MarginRight)const noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::DivideWidth(Count,PartMargin,MarginLeft,MarginRight);
@@ -1200,7 +1200,7 @@ Float32 cLayout::DivideWidth(ufInt32n Count,Float32 PartMargin,Float32 MarginLef
 	return w/Scale;
 }
 //---------------------------------------------------------------------------
-Float32 cLayout::DivideHeight(ufInt32n Count,Float32 PartMargin,Float32 MarginTop,Float32 MarginBottom)const noexcept
+Float32 cLayout::DivideHeight(ufInt32 Count,Float32 PartMargin,Float32 MarginTop,Float32 MarginBottom)const noexcept(true)
 {
 	if(ParameterNoScale()){
 		return cPixelLayout::DivideHeight(Count,PartMargin,MarginTop,MarginBottom);
@@ -1211,7 +1211,7 @@ Float32 cLayout::DivideHeight(ufInt32n Count,Float32 PartMargin,Float32 MarginTo
 	return h/Scale;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cLayout cLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1225,7 +1225,7 @@ cLayout cLayout::LayoutLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cLayout cLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1239,7 +1239,7 @@ cLayout cLayout::LayoutRight(Float32 Width,Float32 MarginRight,Float32 MarginLef
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cLayout cLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1253,7 +1253,7 @@ cLayout cLayout::LayoutTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cLayout cLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1267,7 +1267,7 @@ cLayout cLayout::LayoutBottom(Float32 Height,Float32 MarginBottom,Float32 Margin
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cLayout cLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1281,7 +1281,7 @@ cLayout cLayout::PlaceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cLayout cLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1295,7 +1295,7 @@ cLayout cLayout::PlaceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cLayout cLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1309,7 +1309,7 @@ cLayout cLayout::PlaceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cLayout cLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1323,7 +1323,7 @@ cLayout cLayout::PlaceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginT
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept
+cLayout cLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1337,7 +1337,7 @@ cLayout cLayout::SliceLeft(Float32 Width,Float32 MarginLeft,Float32 MarginRight)
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept
+cLayout cLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1351,7 +1351,7 @@ cLayout cLayout::SliceRight(Float32 Width,Float32 MarginRight,Float32 MarginLeft
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept
+cLayout cLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){
@@ -1365,7 +1365,7 @@ cLayout cLayout::SliceTop(Float32 Height,Float32 MarginTop,Float32 MarginBottom)
 	return r;
 }
 //---------------------------------------------------------------------------
-cLayout cLayout::SliceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept
+cLayout cLayout::SliceBottom(Float32 Height,Float32 MarginBottom,Float32 MarginTop)noexcept(true)
 {
 	cLayout r;
 	if(ParameterNoScale()){

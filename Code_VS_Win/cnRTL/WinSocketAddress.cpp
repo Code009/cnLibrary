@@ -16,7 +16,7 @@ using namespace cnRTL;
 using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
-eiOrdering cnWinRTL::Win32SocketAddressCompare(const SOCKADDR *addr1,const SOCKADDR *addr2)noexcept
+eiOrdering cnWinRTL::Win32SocketAddressCompare(const SOCKADDR *addr1,const SOCKADDR *addr2)noexcept(true)
 {
 	if(addr1->sa_family!=addr2->sa_family)
 		return iOrdering::Different;
@@ -68,7 +68,7 @@ eiOrdering cnWinRTL::Win32SocketAddressCompare(const SOCKADDR *addr1,const SOCKA
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32SocketAddress_IPv4::cWin32SocketAddress_IPv4(uInt32 IP,uInt16 Port)noexcept
+cWin32SocketAddress_IPv4::cWin32SocketAddress_IPv4(uInt32 IP,uInt16 Port)noexcept(true)
 {
 	fAddr.sin_family=AF_INET;
 	fAddr.sin_addr.s_addr=htonl(IP);
@@ -76,27 +76,27 @@ cWin32SocketAddress_IPv4::cWin32SocketAddress_IPv4(uInt32 IP,uInt16 Port)noexcep
 	cnMemory::ZeroFill(fAddr.sin_zero);
 }
 //---------------------------------------------------------------------------
-void * cWin32SocketAddress_IPv4::CastInterface(iTypeID InterfaceID)noexcept
+void * cWin32SocketAddress_IPv4::CastInterface(iTypeID InterfaceID)noexcept(true)
 {
 	return ImpCastInterface<iSocketAddress,iIPv4Address>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-eiOrdering cWin32SocketAddress_IPv4::Compare(iAddress *Dest)noexcept
+eiOrdering cWin32SocketAddress_IPv4::Compare(iAddress *Dest)noexcept(true)
 {
 	return cWin32SocketAddress::Compare(Dest);
 }
 //---------------------------------------------------------------------------
-uInt32 cWin32SocketAddress_IPv4::IPv4Address(void)noexcept
+uInt32 cWin32SocketAddress_IPv4::IPv4Address(void)noexcept(true)
 {
 	return ::ntohl(fAddr.sin_addr.s_addr);
 }
-uInt16 cWin32SocketAddress_IPv4::IPv4Port(void)noexcept
+uInt16 cWin32SocketAddress_IPv4::IPv4Port(void)noexcept(true)
 {
 	return ::ntohs(fAddr.sin_port);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(const sockaddr *addr,socklen_t addrlen)noexcept
+iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(const sockaddr *addr,socklen_t addrlen)noexcept(true)
 {
 	switch(addr->sa_family){
 	default:
@@ -116,7 +116,7 @@ iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(const sockaddr *addr
 	}
 }
 //---------------------------------------------------------------------------
-iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(iAddress *Address)noexcept
+iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(iAddress *Address)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -131,7 +131,7 @@ iPtr<iSocketAddress> cnWinRTL::Win32CreateCopySocketAddress(iAddress *Address)no
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-uIntn cnWinRTL::Win32CopySocketAddress(void *Buffer,uIntn BufferSize,iAddress *Address)noexcept
+uIntn cnWinRTL::Win32CopySocketAddress(void *Buffer,uIntn BufferSize,iAddress *Address)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -159,12 +159,12 @@ uIntn cnWinRTL::Win32CopySocketAddress(void *Buffer,uIntn BufferSize,iAddress *A
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iIPv4Address>	cnWinRTL::Win32CreateAddressIPv4(uInt32 IP,uInt16 Port)noexcept
+iPtr<iIPv4Address>	cnWinRTL::Win32CreateAddressIPv4(uInt32 IP,uInt16 Port)noexcept(true)
 {
 	return iCreate<cWin32SocketAddress_IPv4>(IP,Port);
 }
 //---------------------------------------------------------------------------
-uInt16 cnWinRTL::Win32QueryAddressFamily(iAddress *Address)noexcept
+uInt16 cnWinRTL::Win32QueryAddressFamily(iAddress *Address)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -177,7 +177,7 @@ uInt16 cnWinRTL::Win32QueryAddressFamily(iAddress *Address)noexcept
 	return AF_UNSPEC;
 }
 //---------------------------------------------------------------------------
-ufInt16 cnWinRTL::Win32QueryAddressSize(iAddress *Address)noexcept
+ufInt16 cnWinRTL::Win32QueryAddressSize(iAddress *Address)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -191,50 +191,50 @@ ufInt16 cnWinRTL::Win32QueryAddressSize(iAddress *Address)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32SocketAddressBuffer::cWin32SocketAddressBuffer()noexcept
+cWin32SocketAddressBuffer::cWin32SocketAddressBuffer()noexcept(true)
 {
 	fBuffer.SetSize(sizeof(SOCKADDR));
 }
 //---------------------------------------------------------------------------
-cWin32SocketAddressBuffer::~cWin32SocketAddressBuffer()noexcept
+cWin32SocketAddressBuffer::~cWin32SocketAddressBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWin32SocketAddressBuffer::Clear(void)noexcept
+void cWin32SocketAddressBuffer::Clear(void)noexcept(true)
 {
 	fBuffer.Clear();
 }
 //---------------------------------------------------------------------------
-SOCKADDR* cWin32SocketAddressBuffer::SockAddr(void)const noexcept
+SOCKADDR* cWin32SocketAddressBuffer::SockAddr(void)const noexcept(true)
 {
 	return static_cast<SOCKADDR*>(fBuffer->Pointer);
 }
 //---------------------------------------------------------------------------
-socklen_t cWin32SocketAddressBuffer::SockAddrLen(void)const noexcept
+socklen_t cWin32SocketAddressBuffer::SockAddrLen(void)const noexcept(true)
 {
 	return static_cast<socklen_t>(fBuffer->Length);
 }
 //---------------------------------------------------------------------------
-void cWin32SocketAddressBuffer::SetSockAddrLen(socklen_t len)noexcept
+void cWin32SocketAddressBuffer::SetSockAddrLen(socklen_t len)noexcept(true)
 {
 	if(len<sizeof(SOCKADDR))
 		len=sizeof(SOCKADDR);
 	return fBuffer.SetSize(len);
 }
 //---------------------------------------------------------------------------
-socklen_t cWin32SocketAddressBuffer::GetCapacity(void)const noexcept
+socklen_t cWin32SocketAddressBuffer::GetCapacity(void)const noexcept(true)
 {
 	return static_cast<socklen_t>(fBuffer.GetCapacity());
 }
 //---------------------------------------------------------------------------
-void cWin32SocketAddressBuffer::SetCapacity(socklen_t len)noexcept
+void cWin32SocketAddressBuffer::SetCapacity(socklen_t len)noexcept(true)
 {
 	if(len<sizeof(SOCKADDR))
 		len=sizeof(SOCKADDR);
 	return fBuffer.SetCapacity(len);
 }
 //---------------------------------------------------------------------------
-void cWin32SocketAddressBuffer::SetupBuffer(ADDRESS_FAMILY sa_family,socklen_t socklen)noexcept
+void cWin32SocketAddressBuffer::SetupBuffer(ADDRESS_FAMILY sa_family,socklen_t socklen)noexcept(true)
 {
 	auto *saddr=SockAddr();
 	socklen_t SockMinLength;
@@ -259,7 +259,7 @@ void cWin32SocketAddressBuffer::SetupBuffer(ADDRESS_FAMILY sa_family,socklen_t s
 	cnMemory::ZeroFill(saddr,socklen);
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::SetAddressAny(ADDRESS_FAMILY sa_family)noexcept
+bool cWin32SocketAddressBuffer::SetAddressAny(ADDRESS_FAMILY sa_family)noexcept(true)
 {
 	auto *saddr=SockAddr();
 	switch(sa_family){
@@ -280,14 +280,14 @@ bool cWin32SocketAddressBuffer::SetAddressAny(ADDRESS_FAMILY sa_family)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-iPtr<iSocketAddress> cWin32SocketAddressBuffer::CreateSocketAddress(void)noexcept
+iPtr<iSocketAddress> cWin32SocketAddressBuffer::CreateSocketAddress(void)noexcept(true)
 {
 	if(fBuffer.GetSize()==0)
 		return nullptr;
 	return Win32CreateCopySocketAddress(SockAddr(),SockAddrLen());
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::SetupForAddressFamily(ADDRESS_FAMILY sa_family)noexcept
+bool cWin32SocketAddressBuffer::SetupForAddressFamily(ADDRESS_FAMILY sa_family)noexcept(true)
 {
 	auto *saddr=SockAddr();
 	switch(sa_family){
@@ -307,17 +307,17 @@ bool cWin32SocketAddressBuffer::SetupForAddressFamily(ADDRESS_FAMILY sa_family)n
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::SetupRecvAddress(const SOCKADDR *addr)noexcept
+bool cWin32SocketAddressBuffer::SetupRecvAddress(const SOCKADDR *addr)noexcept(true)
 {
 	return SetupForAddressFamily(addr->sa_family);
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::SetupRecvAddress(iSocketAddress *Address)noexcept
+bool cWin32SocketAddressBuffer::SetupRecvAddress(iSocketAddress *Address)noexcept(true)
 {
 	return SetupForAddressFamily(Address->SockAddr()->sa_family);
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::SetupRecvAddress(iAddress *Address)noexcept
+bool cWin32SocketAddressBuffer::SetupRecvAddress(iAddress *Address)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -333,7 +333,7 @@ bool cWin32SocketAddressBuffer::SetupRecvAddress(iAddress *Address)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-const sockaddr* cWin32SocketAddressBuffer::SetupSendAddress(iAddress *Address,socklen_t &addrlen)noexcept
+const sockaddr* cWin32SocketAddressBuffer::SetupSendAddress(iAddress *Address,socklen_t &addrlen)noexcept(true)
 {
 	auto SocketAddress=iCast<iSocketAddress>(Address);
 	if(SocketAddress!=nullptr){
@@ -356,7 +356,7 @@ const sockaddr* cWin32SocketAddressBuffer::SetupSendAddress(iAddress *Address,so
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::GetBoundAddress(SOCKET s,ADDRESS_FAMILY sa_family)noexcept
+bool cWin32SocketAddressBuffer::GetBoundAddress(SOCKET s,ADDRESS_FAMILY sa_family)noexcept(true)
 {
 	SetupBuffer(sa_family,0);
 	auto BoundAddrLen=static_cast<socklen_t>(fBuffer.GetCapacity());
@@ -388,35 +388,35 @@ bool cWin32SocketAddressBuffer::GetBoundAddress(SOCKET s,ADDRESS_FAMILY sa_famil
 //	return true;
 //}
 //---------------------------------------------------------------------------
-eiOrdering cWin32SocketAddressBuffer::Compare(const SOCKADDR *addr)const noexcept
+eiOrdering cWin32SocketAddressBuffer::Compare(const SOCKADDR *addr)const noexcept(true)
 {
 	return Win32SocketAddressCompare(static_cast<const sockaddr*>(fBuffer.GetPointer()),addr);
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::operator == (const SOCKADDR *addr)const noexcept
+bool cWin32SocketAddressBuffer::operator == (const SOCKADDR *addr)const noexcept(true)
 {
 	return Compare(addr)==iOrdering::Equal;
 }
 //---------------------------------------------------------------------------
-bool cWin32SocketAddressBuffer::operator != (const SOCKADDR *addr)const noexcept
+bool cWin32SocketAddressBuffer::operator != (const SOCKADDR *addr)const noexcept(true)
 {
 	return Compare(addr)!=iOrdering::Equal;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32SocketMulticastAddress_IPv4::cWin32SocketMulticastAddress_IPv4(const SOCKADDR_IN *addr,const struct ip_mreq *MulticastAddrs,uIntn MulticastAddrCount)noexcept
+cWin32SocketMulticastAddress_IPv4::cWin32SocketMulticastAddress_IPv4(const SOCKADDR_IN *addr,const struct ip_mreq *MulticastAddrs,uIntn MulticastAddrCount)noexcept(true)
 {
 	fAddr=*addr;
 	cnMemory::ZeroFill(fAddr.sin_zero);
 	fMulticastAddressList.Append(MulticastAddrs,MulticastAddrCount);
 }
 //---------------------------------------------------------------------------
-void * cWin32SocketMulticastAddress_IPv4::CastInterface(iTypeID InterfaceID)noexcept
+void * cWin32SocketMulticastAddress_IPv4::CastInterface(iTypeID InterfaceID)noexcept(true)
 {
 	return ImpCastInterface<iWinSocketMulticastAddress,iIPv4Address>(this,InterfaceID);
 }
 //---------------------------------------------------------------------------
-eiOrdering cWin32SocketMulticastAddress_IPv4::Compare(iAddress *Dest)noexcept
+eiOrdering cWin32SocketMulticastAddress_IPv4::Compare(iAddress *Dest)noexcept(true)
 {
 	if(Dest==nullptr)
 		return iOrdering::Different;
@@ -428,17 +428,17 @@ eiOrdering cWin32SocketMulticastAddress_IPv4::Compare(iAddress *Dest)noexcept
 	return Win32SocketAddressCompare(&fSAddr,DestSocketAddress->SockAddr());
 }
 //---------------------------------------------------------------------------
-const sockaddr* cWin32SocketMulticastAddress_IPv4::SockAddr(void)noexcept
+const sockaddr* cWin32SocketMulticastAddress_IPv4::SockAddr(void)noexcept(true)
 {
 	return &fSAddr;
 }
 //---------------------------------------------------------------------------
-socklen_t cWin32SocketMulticastAddress_IPv4::SockAddrLen(void)noexcept
+socklen_t cWin32SocketMulticastAddress_IPv4::SockAddrLen(void)noexcept(true)
 {
 	return sizeof(fAddr);
 }
 //---------------------------------------------------------------------------
-uIntn cWin32SocketMulticastAddress_IPv4::AddMember(SOCKET s)noexcept
+uIntn cWin32SocketMulticastAddress_IPv4::AddMember(SOCKET s)noexcept(true)
 {
 	uIntn SuccessCount=0;
 	for(uIntn i=0,c=fMulticastAddressList.GetCount();i<c;i++){
@@ -450,7 +450,7 @@ uIntn cWin32SocketMulticastAddress_IPv4::AddMember(SOCKET s)noexcept
 	return SuccessCount;
 }
 //---------------------------------------------------------------------------
-uIntn cWin32SocketMulticastAddress_IPv4::DropMember(SOCKET s)noexcept
+uIntn cWin32SocketMulticastAddress_IPv4::DropMember(SOCKET s)noexcept(true)
 {
 	uIntn SuccessCount=0;
 	for(uIntn i=0,c=fMulticastAddressList.GetCount();i<c;i++){
@@ -462,11 +462,11 @@ uIntn cWin32SocketMulticastAddress_IPv4::DropMember(SOCKET s)noexcept
 	return SuccessCount;
 }
 //---------------------------------------------------------------------------
-uInt32 cWin32SocketMulticastAddress_IPv4::IPv4Address(void)noexcept
+uInt32 cWin32SocketMulticastAddress_IPv4::IPv4Address(void)noexcept(true)
 {
 	return ntohl(fAddr.sin_addr.s_addr);
 }
-uInt16 cWin32SocketMulticastAddress_IPv4::IPv4Port(void)noexcept
+uInt16 cWin32SocketMulticastAddress_IPv4::IPv4Port(void)noexcept(true)
 {
 	return ntohs(fAddr.sin_port);
 }

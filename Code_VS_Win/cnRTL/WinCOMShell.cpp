@@ -14,12 +14,12 @@ using namespace cnWinRTL;
 cnLib_INTERFACE_LOCALID_DEFINE(cWinShellFileName);
 
 //---------------------------------------------------------------------------
-ufInt16 cnWinRTL::ShellChildItemIDGetSize(const ITEMID_CHILD *ChildID)noexcept
+ufInt16 cnWinRTL::ShellChildItemIDGetSize(const ITEMID_CHILD *ChildID)noexcept(true)
 {
 	return ChildID->mkid.cb;
 }
 //---------------------------------------------------------------------------
-ITEMID_CHILD* cnWinRTL::ShellChildItemIDDuplicate(const ITEMID_CHILD *ChildID)noexcept
+ITEMID_CHILD* cnWinRTL::ShellChildItemIDDuplicate(const ITEMID_CHILD *ChildID)noexcept(true)
 {
 	if(ChildID==nullptr)
 		return nullptr;
@@ -30,7 +30,7 @@ ITEMID_CHILD* cnWinRTL::ShellChildItemIDDuplicate(const ITEMID_CHILD *ChildID)no
 	return DupID;
 }
 //---------------------------------------------------------------------------
-uIntn cnWinRTL::ShellItemIDListGetSize(const ITEMIDLIST *IDList)noexcept
+uIntn cnWinRTL::ShellItemIDListGetSize(const ITEMIDLIST *IDList)noexcept(true)
 {
 	uIntn TotalSize=0;
 	uInt16 CurSize;
@@ -42,7 +42,7 @@ uIntn cnWinRTL::ShellItemIDListGetSize(const ITEMIDLIST *IDList)noexcept
 	return TotalSize;
 }
 //---------------------------------------------------------------------------
-ITEMIDLIST* cnWinRTL::ShellItemIDListMakeCopy(const ITEMIDLIST *IDList,uIntn IDListSize)noexcept
+ITEMIDLIST* cnWinRTL::ShellItemIDListMakeCopy(const ITEMIDLIST *IDList,uIntn IDListSize)noexcept(true)
 {
 	auto *DupID=static_cast<ITEMIDLIST*>(::CoTaskMemAlloc(IDListSize+2));
 	cnMemory::Copy(DupID,IDList,IDListSize);
@@ -50,7 +50,7 @@ ITEMIDLIST* cnWinRTL::ShellItemIDListMakeCopy(const ITEMIDLIST *IDList,uIntn IDL
 	return DupID;
 }
 //---------------------------------------------------------------------------
-ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicate(const ITEMIDLIST *IDList,uIntn &IDListSize)noexcept
+ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicate(const ITEMIDLIST *IDList,uIntn &IDListSize)noexcept(true)
 {
 	if(IDList==nullptr){
 		IDListSize=0;
@@ -60,7 +60,7 @@ ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicate(const ITEMIDLIST *IDList,uIntn &I
 	return ShellItemIDListMakeCopy(IDList,IDListSize);
 }
 //---------------------------------------------------------------------------
-ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicateChildID(const ITEMID_CHILD *ChildID)noexcept
+ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicateChildID(const ITEMID_CHILD *ChildID)noexcept(true)
 {
 	if(ChildID==nullptr)
 		return nullptr;
@@ -68,17 +68,17 @@ ITEMIDLIST* cnWinRTL::ShellItemIDListDuplicateChildID(const ITEMID_CHILD *ChildI
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cShellString::cShellString()noexcept
+cShellString::cShellString()noexcept(true)
 	: fString(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cShellString::~cShellString()noexcept
+cShellString::~cShellString()noexcept(true)
 {
 	Clear();
 }
 //---------------------------------------------------------------------------
-void cShellString::Clear(void)noexcept
+void cShellString::Clear(void)noexcept(true)
 {
 	if(fString!=nullptr){
 		::CoTaskMemFree(fString);
@@ -86,23 +86,23 @@ void cShellString::Clear(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-LPWSTR* cShellString::RetPtr(void)noexcept
+LPWSTR* cShellString::RetPtr(void)noexcept(true)
 {
 	Clear();
 	return &fString;
 }
 //---------------------------------------------------------------------------
-cShellString::operator LPWSTR ()const noexcept
+cShellString::operator LPWSTR ()const noexcept(true)
 {
 	return fString;
 }
 //---------------------------------------------------------------------------
-LPWSTR cShellString::GetString(void)const noexcept
+LPWSTR cShellString::GetString(void)const noexcept(true)
 {
 	return fString;
 }
 //---------------------------------------------------------------------------
-LPWSTR cShellString::Duplicate(const wchar_t *String)noexcept
+LPWSTR cShellString::Duplicate(const wchar_t *String)noexcept(true)
 {
 	if(String==nullptr)
 		return nullptr;
@@ -112,23 +112,23 @@ LPWSTR cShellString::Duplicate(const wchar_t *String)noexcept
 	return DupStr;
 }
 //---------------------------------------------------------------------------
-cShellString::cShellString(const wchar_t *String)noexcept
+cShellString::cShellString(const wchar_t *String)noexcept(true)
 	: fString(Duplicate(String))
 {
 }
 //---------------------------------------------------------------------------
-cShellString::cShellString(const cShellString &ShellString)noexcept
+cShellString::cShellString(const cShellString &ShellString)noexcept(true)
 	: fString(Duplicate(ShellString.fString))
 {
 }
 //---------------------------------------------------------------------------
-cShellString::cShellString(cShellString &&ShellString)noexcept
+cShellString::cShellString(cShellString &&ShellString)noexcept(true)
 	: fString(ShellString.fString)
 {
 	ShellString.fString=nullptr;
 }
 //---------------------------------------------------------------------------
-cShellString& cShellString::operator =(const wchar_t *String)noexcept
+cShellString& cShellString::operator =(const wchar_t *String)noexcept(true)
 {
 	if(fString!=nullptr){
 		::CoTaskMemFree(fString);
@@ -137,7 +137,7 @@ cShellString& cShellString::operator =(const wchar_t *String)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellString& cShellString::operator =(const cShellString &ShellString)noexcept
+cShellString& cShellString::operator =(const cShellString &ShellString)noexcept(true)
 {
 	if(fString!=nullptr){
 		::CoTaskMemFree(fString);
@@ -146,7 +146,7 @@ cShellString& cShellString::operator =(const cShellString &ShellString)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellString& cShellString::operator =(cShellString &&ShellString)noexcept
+cShellString& cShellString::operator =(cShellString &&ShellString)noexcept(true)
 {
 	if(fString!=nullptr){
 		::CoTaskMemFree(fString);
@@ -156,13 +156,13 @@ cShellString& cShellString::operator =(cShellString &&ShellString)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-HRESULT cShellString::FromStrRet(STRRET &&StrRet,PCUITEMID_CHILD ChildItemID)noexcept
+HRESULT cShellString::FromStrRet(STRRET &&StrRet,PCUITEMID_CHILD ChildItemID)noexcept(true)
 {
 	Clear();
 	return StrRetToStrW(&StrRet,ChildItemID,&fString);
 }
 //---------------------------------------------------------------------------
-sfInt8 cShellString::Compare(const cShellString &ShellString)const noexcept
+sfInt8 cShellString::Compare(const cShellString &ShellString)const noexcept(true)
 {
 	if(fString==nullptr){
 		if(ShellString.fString==nullptr)
@@ -174,58 +174,58 @@ sfInt8 cShellString::Compare(const cShellString &ShellString)const noexcept
 	return cnString::Compare(fString,ShellString);
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator ==(const cShellString &ShellString)const noexcept
+bool cShellString::operator ==(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)==0;
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator !=(const cShellString &ShellString)const noexcept
+bool cShellString::operator !=(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)!=0;
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator <(const cShellString &ShellString)const noexcept
+bool cShellString::operator <(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)<0;
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator <=(const cShellString &ShellString)const noexcept
+bool cShellString::operator <=(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)<=0;
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator >(const cShellString &ShellString)const noexcept
+bool cShellString::operator >(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)>0;
 }
 //---------------------------------------------------------------------------
-bool cShellString::operator >=(const cShellString &ShellString)const noexcept
+bool cShellString::operator >=(const cShellString &ShellString)const noexcept(true)
 {
 	return Compare(ShellString)>=0;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cShellChildItemID::cShellChildItemID()noexcept
+cShellChildItemID::cShellChildItemID()noexcept(true)
 	: fChildID(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::~cShellChildItemID()noexcept
+cShellChildItemID::~cShellChildItemID()noexcept(true)
 {
 	Clear();
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::cShellChildItemID(ITEMID_CHILD &&ChildID)noexcept
+cShellChildItemID::cShellChildItemID(ITEMID_CHILD &&ChildID)noexcept(true)
 	: fChildID(&ChildID)
 {
 }
 //---------------------------------------------------------------------------
-cShellChildItemID cShellChildItemID::TakeChildID(ITEMID_CHILD *ChildID)noexcept
+cShellChildItemID cShellChildItemID::TakeChildID(ITEMID_CHILD *ChildID)noexcept(true)
 {
 	return cShellChildItemID(static_cast<ITEMID_CHILD&&>(*ChildID));
 }
 //---------------------------------------------------------------------------
-void cShellChildItemID::Clear(void)noexcept
+void cShellChildItemID::Clear(void)noexcept(true)
 {
 	if(fChildID!=nullptr){
 		::CoTaskMemFree(fChildID);
@@ -233,41 +233,41 @@ void cShellChildItemID::Clear(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-LPITEMIDLIST* cShellChildItemID::RetPtr(void)noexcept
+LPITEMIDLIST* cShellChildItemID::RetPtr(void)noexcept(true)
 {
 	Clear();
 	return &fChildID;
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::operator const ITEMID_CHILD *()const noexcept
+cShellChildItemID::operator const ITEMID_CHILD *()const noexcept(true)
 {
 	return fChildID;
 }
 //---------------------------------------------------------------------------
-uIntn cShellChildItemID::GetIDSize(void)const noexcept
+uIntn cShellChildItemID::GetIDSize(void)const noexcept(true)
 {
 	if(fChildID==nullptr)
 		return 0;
 	return fChildID->mkid.cb;
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::cShellChildItemID(const ITEMID_CHILD *ChildID)noexcept
+cShellChildItemID::cShellChildItemID(const ITEMID_CHILD *ChildID)noexcept(true)
 	: fChildID(ShellChildItemIDDuplicate(ChildID))
 {
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::cShellChildItemID(const cShellChildItemID &ID)noexcept
+cShellChildItemID::cShellChildItemID(const cShellChildItemID &ID)noexcept(true)
 	: fChildID(ShellChildItemIDDuplicate(ID.fChildID))
 {
 }
 //---------------------------------------------------------------------------
-cShellChildItemID::cShellChildItemID(cShellChildItemID &&ID)noexcept
+cShellChildItemID::cShellChildItemID(cShellChildItemID &&ID)noexcept(true)
 	: fChildID(ID.fChildID)
 {
 	ID.fChildID=nullptr;
 }
 //---------------------------------------------------------------------------
-cShellChildItemID& cShellChildItemID::operator =(ITEMID_CHILD *ChildID)noexcept
+cShellChildItemID& cShellChildItemID::operator =(ITEMID_CHILD *ChildID)noexcept(true)
 {
 	if(fChildID!=nullptr){
 		::CoTaskMemFree(fChildID);
@@ -276,7 +276,7 @@ cShellChildItemID& cShellChildItemID::operator =(ITEMID_CHILD *ChildID)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellChildItemID& cShellChildItemID::operator =(const cShellChildItemID &ID)noexcept
+cShellChildItemID& cShellChildItemID::operator =(const cShellChildItemID &ID)noexcept(true)
 {
 	if(fChildID!=nullptr){
 		::CoTaskMemFree(fChildID);
@@ -285,7 +285,7 @@ cShellChildItemID& cShellChildItemID::operator =(const cShellChildItemID &ID)noe
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellChildItemID& cShellChildItemID::operator =(cShellChildItemID &&ID)noexcept
+cShellChildItemID& cShellChildItemID::operator =(cShellChildItemID &&ID)noexcept(true)
 {
 	if(fChildID!=nullptr){
 		::CoTaskMemFree(fChildID);
@@ -295,7 +295,7 @@ cShellChildItemID& cShellChildItemID::operator =(cShellChildItemID &&ID)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-sfInt8 cShellChildItemID::Compare(const ITEMID_CHILD *ChildID)const noexcept
+sfInt8 cShellChildItemID::Compare(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	if(fChildID==nullptr){
 		if(ChildID==nullptr)
@@ -315,60 +315,60 @@ sfInt8 cShellChildItemID::Compare(const ITEMID_CHILD *ChildID)const noexcept
 	return cnMemory::Compare(fChildID,ChildID,Size);
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator ==(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator ==(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)==0;
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator !=(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator !=(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)!=0;
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator <(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator <(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)<0;
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator <=(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator <=(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)<=0;
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator >(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator >(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)>0;
 }
 //---------------------------------------------------------------------------
-bool cShellChildItemID::operator >=(const ITEMID_CHILD *ChildID)const noexcept
+bool cShellChildItemID::operator >=(const ITEMID_CHILD *ChildID)const noexcept(true)
 {
 	return Compare(ChildID)>=0;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList()noexcept
+cShellItemIDList::cShellItemIDList()noexcept(true)
 	: fIDList(nullptr)
 	, fCachedIDListSize(IndexNotFound)
 {
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::~cShellItemIDList()noexcept
+cShellItemIDList::~cShellItemIDList()noexcept(true)
 {
 	Clear();
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList(ITEMIDLIST &&IDList)noexcept
+cShellItemIDList::cShellItemIDList(ITEMIDLIST &&IDList)noexcept(true)
 	: fIDList(&IDList)
 	, fCachedIDListSize(IndexNotFound)
 {
 }
 //---------------------------------------------------------------------------
-cShellItemIDList cShellItemIDList::TakeIDList(ITEMIDLIST *IDList)noexcept
+cShellItemIDList cShellItemIDList::TakeIDList(ITEMIDLIST *IDList)noexcept(true)
 {
 	return cShellItemIDList(static_cast<ITEMIDLIST&&>(*IDList));
 }
 //---------------------------------------------------------------------------
-void cShellItemIDList::Clear(void)noexcept
+void cShellItemIDList::Clear(void)noexcept(true)
 {
 	if(fIDList!=nullptr){
 		::CoTaskMemFree(fIDList);
@@ -377,19 +377,19 @@ void cShellItemIDList::Clear(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-LPITEMIDLIST* cShellItemIDList::RetPtr(void)noexcept
+LPITEMIDLIST* cShellItemIDList::RetPtr(void)noexcept(true)
 {
 	Clear();
 	fCachedIDListSize=IndexNotFound;
 	return &fIDList;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::operator const ITEMIDLIST* ()const noexcept
+cShellItemIDList::operator const ITEMIDLIST* ()const noexcept(true)
 {
 	return fIDList;
 }
 //---------------------------------------------------------------------------
-uIntn cShellItemIDList::GetIDSize(void)const noexcept
+uIntn cShellItemIDList::GetIDSize(void)const noexcept(true)
 {
 	if(fCachedIDListSize==IndexNotFound){
 		if(fIDList==nullptr){
@@ -402,12 +402,12 @@ uIntn cShellItemIDList::GetIDSize(void)const noexcept
 	return fCachedIDListSize;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList(const ITEMIDLIST *IDList)noexcept
+cShellItemIDList::cShellItemIDList(const ITEMIDLIST *IDList)noexcept(true)
 	: fIDList(ShellItemIDListDuplicate(IDList,fCachedIDListSize))
 {
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList(const cShellItemIDList &ID)noexcept
+cShellItemIDList::cShellItemIDList(const cShellItemIDList &ID)noexcept(true)
 {
 	if(ID.fIDList!=nullptr){
 		fCachedIDListSize=ID.fCachedIDListSize;
@@ -424,14 +424,14 @@ cShellItemIDList::cShellItemIDList(const cShellItemIDList &ID)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList(cShellItemIDList &&ID)noexcept
+cShellItemIDList::cShellItemIDList(cShellItemIDList &&ID)noexcept(true)
 	: fIDList(ID.fIDList)
 	, fCachedIDListSize(ID.fCachedIDListSize)
 {
 	ID.fIDList=nullptr;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList& cShellItemIDList::operator =(ITEMIDLIST *IDList)noexcept
+cShellItemIDList& cShellItemIDList::operator =(ITEMIDLIST *IDList)noexcept(true)
 {
 	if(fIDList!=nullptr){
 		::CoTaskMemFree(fIDList);
@@ -440,7 +440,7 @@ cShellItemIDList& cShellItemIDList::operator =(ITEMIDLIST *IDList)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList& cShellItemIDList::operator =(const cShellItemIDList &ID)noexcept
+cShellItemIDList& cShellItemIDList::operator =(const cShellItemIDList &ID)noexcept(true)
 {
 	if(fIDList!=nullptr){
 		::CoTaskMemFree(fIDList);
@@ -460,7 +460,7 @@ cShellItemIDList& cShellItemIDList::operator =(const cShellItemIDList &ID)noexce
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList& cShellItemIDList::operator =(cShellItemIDList &&ID)noexcept
+cShellItemIDList& cShellItemIDList::operator =(cShellItemIDList &&ID)noexcept(true)
 {
 	if(fIDList!=nullptr){
 		::CoTaskMemFree(fIDList);
@@ -471,13 +471,13 @@ cShellItemIDList& cShellItemIDList::operator =(cShellItemIDList &&ID)noexcept
 	return *this;
 }
 //---------------------------------------------------------------------------
-cShellItemIDList::cShellItemIDList(const cShellChildItemID &ChildID)noexcept
+cShellItemIDList::cShellItemIDList(const cShellChildItemID &ChildID)noexcept(true)
 	: fIDList(ShellItemIDListDuplicateChildID(ChildID))
 	, fCachedIDListSize(ChildID.GetIDSize())
 {
 }
 //---------------------------------------------------------------------------
-cShellItemIDList& cShellItemIDList::operator =(const cShellChildItemID &ChildID)noexcept
+cShellItemIDList& cShellItemIDList::operator =(const cShellChildItemID &ChildID)noexcept(true)
 {
 	if(fIDList!=nullptr){
 		::CoTaskMemFree(fIDList);
@@ -493,7 +493,7 @@ cShellItemIDList& cShellItemIDList::operator =(const cShellChildItemID &ChildID)
 	return *this;
 }
 //---------------------------------------------------------------------------
-sfInt8 cShellItemIDList::Compare(const ITEMIDLIST *IDList)const noexcept
+sfInt8 cShellItemIDList::Compare(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	if(fIDList==nullptr){
 		if(IDList==nullptr)
@@ -513,37 +513,37 @@ sfInt8 cShellItemIDList::Compare(const ITEMIDLIST *IDList)const noexcept
 	return cnMemory::Compare(fIDList,IDList,ThisIDSize);
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator ==(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator ==(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)==0;
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator !=(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator !=(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)!=0;
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator <(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator <(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)<0;
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator <=(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator <=(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)<=0;
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator >(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator >(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)>0;
 }
 //---------------------------------------------------------------------------
-bool cShellItemIDList::operator >=(const ITEMIDLIST *IDList)const noexcept
+bool cShellItemIDList::operator >=(const ITEMIDLIST *IDList)const noexcept(true)
 {
 	return Compare(IDList)>=0;
 }
 //---------------------------------------------------------------------------
-void cShellItemIDList::AppendChildID(ITEMID_CHILD *ChildID)noexcept
+void cShellItemIDList::AppendChildID(ITEMID_CHILD *ChildID)noexcept(true)
 {
 	auto CurSize=GetIDSize();
 	uIntn NewSize=CurSize+ChildID->mkid.cb;
@@ -554,7 +554,7 @@ void cShellItemIDList::AppendChildID(ITEMID_CHILD *ChildID)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinShellFileName::cWinShellFileName(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Parent,cShellItemIDList ChildIDList)noexcept
+cWinShellFileName::cWinShellFileName(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Parent,cShellItemIDList ChildIDList)noexcept(true)
 	: fHostWindow(HostWindow)
 	, fThreading(cnVar::MoveCast(Threading))
 	, fParentFolder(cnVar::MoveCast(Parent))
@@ -564,11 +564,11 @@ cWinShellFileName::cWinShellFileName(iPtr<iWindow> HostWindow,rPtr<iCOMApartment
 	fCachedFileInfo=false;
 }
 //---------------------------------------------------------------------------
-cWinShellFileName::~cWinShellFileName()noexcept
+cWinShellFileName::~cWinShellFileName()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-eiOrdering cWinShellFileName::Compare(iFileName *Dest)noexcept
+eiOrdering cWinShellFileName::Compare(iFileName *Dest)noexcept(true)
 {
 	auto DestShellFileName=iCast<cWinShellFileName>(Dest);
 	if(DestShellFileName==nullptr)
@@ -587,7 +587,7 @@ eiOrdering cWinShellFileName::Compare(iFileName *Dest)noexcept
 	return iOrdering::Greater;
 }
 //---------------------------------------------------------------------------
-HRESULT cWinShellFileName::SetupFolder(void)noexcept
+HRESULT cWinShellFileName::SetupFolder(void)noexcept(true)
 {
 	if(fChildFolder!=nullptr)
 		return S_OK;
@@ -599,7 +599,7 @@ HRESULT cWinShellFileName::SetupFolder(void)noexcept
 	return hr;
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWinShellFileName::Enum(void)noexcept
+rPtr<iFileEnumerator> cWinShellFileName::Enum(void)noexcept(true)
 {
 	if(fParentFolder==nullptr)
 		return nullptr;
@@ -627,12 +627,12 @@ rPtr<iFileEnumerator> cWinShellFileName::Enum(void)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWinShellFileName::EnumFolder(void)noexcept
+rPtr<iFileEnumerator> cWinShellFileName::EnumFolder(void)noexcept(true)
 {
 	return Enum();
 }
 //---------------------------------------------------------------------------
-rPtr<iAsyncNotification> cWinShellFileName::WatchFolder(void)noexcept
+rPtr<iAsyncNotification> cWinShellFileName::WatchFolder(void)noexcept(true)
 {
 	if(fParentFolder==nullptr)
 		return nullptr;
@@ -645,7 +645,7 @@ rPtr<iAsyncNotification> cWinShellFileName::WatchFolder(void)noexcept
 	return rCreate<cWinShellFolderItemWatcher>(fHostWindow,fThreading,fChildFolder);
 }
 //---------------------------------------------------------------------------
-rPtr<iFileObserver> cWinShellFileName::ObserveFolder(void)noexcept
+rPtr<iFileObserver> cWinShellFileName::ObserveFolder(void)noexcept(true)
 {
 	if(fParentFolder==nullptr)
 		return nullptr;
@@ -658,7 +658,7 @@ rPtr<iFileObserver> cWinShellFileName::ObserveFolder(void)noexcept
 	return rCreate<cWinShellFolderItemObserver>(fHostWindow,fThreading,fChildFolder);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileSyncStream>	cWinShellFileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
+iPtr<iFileSyncStream>	cWinShellFileName::OpenSequentialStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	if(fParentFolder==nullptr)
 		return nullptr;
@@ -680,7 +680,7 @@ iPtr<iFileSyncStream>	cWinShellFileName::OpenSequentialStream(eFileAccess Access
 		return nullptr;
 
 	IStream *MarshallStream;
-	cFunction<void(void)noexcept> MarshallProc=(ThreadingDispatch,[this,&MarshallStream]{
+	cFunction<void(void)noexcept(true)> MarshallProc=(ThreadingDispatch,[this,&MarshallStream]{
 		::CoMarshalInterThreadInterfaceInStream(IID_IShellFolder,fParentFolder,&MarshallStream);
 	});
 	ThreadingDispatch->ExecuteSync(MarshallProc);
@@ -705,18 +705,18 @@ iPtr<iFileSyncStream>	cWinShellFileName::OpenSequentialStream(eFileAccess Access
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileStream>		cWinShellFileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept
+iPtr<iFileStream>		cWinShellFileName::OpenFileStream(eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::IsExists(void)noexcept
+bool cWinShellFileName::IsExists(void)noexcept(true)
 {
 	SetupAttributes();
 	return fCachedFileExists;
 }
 //---------------------------------------------------------------------------
-uInt64 cWinShellFileName::GetDataSize(void)noexcept
+uInt64 cWinShellFileName::GetDataSize(void)noexcept(true)
 {
 	if(SetupFileInfo()==false)
 		return 0;
@@ -727,7 +727,7 @@ uInt64 cWinShellFileName::GetDataSize(void)noexcept
 	return FileSize;
 }
 //---------------------------------------------------------------------------
-void cWinShellFileName::SetupAttributes(void)noexcept
+void cWinShellFileName::SetupAttributes(void)noexcept(true)
 {
 	HRESULT hr;
 
@@ -748,7 +748,7 @@ void cWinShellFileName::SetupAttributes(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::SetupFileInfo(void)noexcept
+bool cWinShellFileName::SetupFileInfo(void)noexcept(true)
 {
 	if(fCachedFileInfo)
 		return true;
@@ -787,7 +787,7 @@ bool cWinShellFileName::SetupFileInfo(void)noexcept
 	return fCachedFileInfo;
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::HasData(void)noexcept
+bool cWinShellFileName::HasData(void)noexcept(true)
 {
 	SetupAttributes();
 	if(fCachedFileExists==false)
@@ -795,7 +795,7 @@ bool cWinShellFileName::HasData(void)noexcept
 	return (fItemAttributes&SFGAO_STREAM)!=0;
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::HasFolder(void)noexcept
+bool cWinShellFileName::HasFolder(void)noexcept(true)
 {
 	SetupAttributes();
 	if(fCachedFileExists==false)
@@ -803,13 +803,13 @@ bool cWinShellFileName::HasFolder(void)noexcept
 	return (fItemAttributes&SFGAO_FOLDER)!=0;
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::Delete(void)noexcept
+bool cWinShellFileName::Delete(void)noexcept(true)
 {
 #pragma message (cnLib_FILE_LINE ": TODO - Delete file")
 	return false;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName>	cWinShellFileName::ParentFileName(void)noexcept
+iPtr<iFileName>	cWinShellFileName::ParentFileName(void)noexcept(true)
 {
 	if(fParentFolder==nullptr)
 		return nullptr;
@@ -842,14 +842,14 @@ iPtr<iFileName>	cWinShellFileName::ParentFileName(void)noexcept
 	return iCreate<cWinShellFileName>(fHostWindow,fThreading,cnVar::MoveCast(ParentFolder),cnVar::MoveCast(FolderID));
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator>	cWinShellFileName::EnumFileNames(const uChar16 *Filter)noexcept
+rPtr<iFileEnumerator>	cWinShellFileName::EnumFileNames(const uChar16 *Filter)noexcept(true)
 {
 	if(Filter!=nullptr)
 		return nullptr;
 	return Enum();
 }
 //---------------------------------------------------------------------------
-void cWinShellFileName::SetupName(void)noexcept
+void cWinShellFileName::SetupName(void)noexcept(true)
 {
 	if(fName->Length!=0)
 		return;
@@ -861,19 +861,19 @@ void cWinShellFileName::SetupName(void)noexcept
 	fName.SetString(wtou(fFileInfo.cFileName));
 }
 //---------------------------------------------------------------------------
-const uChar16*	cWinShellFileName::GetName(void)noexcept
+const uChar16*	cWinShellFileName::GetName(void)noexcept(true)
 {
 	SetupName();
 	return fName;
 }
 //---------------------------------------------------------------------------
-uIntn			cWinShellFileName::GetNameLength(void)noexcept
+uIntn			cWinShellFileName::GetNameLength(void)noexcept(true)
 {
 	SetupName();
 	return fName->Length;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName>	cWinShellFileName::MakeName(const uChar16*const *FilePath,uIntn Depth)noexcept
+iPtr<iFileName>	cWinShellFileName::MakeName(const uChar16*const *FilePath,uIntn Depth)noexcept(true)
 {
 	return nullptr;
 	// create file name
@@ -884,17 +884,17 @@ iPtr<iFileName>	cWinShellFileName::MakeName(const uChar16*const *FilePath,uIntn 
 	//return iCreate<cWinFileName>(FileName.Swap());
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileName::CreateFolder(void)noexcept
+bool cWinShellFileName::CreateFolder(void)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-uIntn cWinShellFileName::CreateFolderPath(void)noexcept
+uIntn cWinShellFileName::CreateFolderPath(void)noexcept(true)
 {
 	return IndexNotFound;
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cWinShellFileName::CreateFileNameFromFileSystemFolderItem(IShellFolder *ParentFolder,LPCITEMIDLIST ChildIDList)noexcept
+iPtr<iFileName> cWinShellFileName::CreateFileNameFromFileSystemFolderItem(IShellFolder *ParentFolder,LPCITEMIDLIST ChildIDList)noexcept(true)
 {
 	HRESULT hr;
 	STRRET Name;
@@ -911,7 +911,7 @@ iPtr<iFileName> cWinShellFileName::CreateFileNameFromFileSystemFolderItem(IShell
 	return cnWindows::CreateFileName(FilePath);
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cWinShellFileName::CreateFileNameFromFolderItem(iWindow *HostWindow,iCOMApartmentThreading *Threading,COMPtr<IShellFolder> ParentFolder,cShellItemIDList ChildIDList)noexcept
+iPtr<iFileName> cWinShellFileName::CreateFileNameFromFolderItem(iWindow *HostWindow,iCOMApartmentThreading *Threading,COMPtr<IShellFolder> ParentFolder,cShellItemIDList ChildIDList)noexcept(true)
 {
 	HRESULT hr;
 
@@ -932,7 +932,7 @@ iPtr<iFileName> cWinShellFileName::CreateFileNameFromFolderItem(iWindow *HostWin
 	return iCreate<cWinShellFileName>(HostWindow,Threading,cnVar::MoveCast(ParentFolder),cnVar::MoveCast(ChildIDList));
 }
 //---------------------------------------------------------------------------
-iPtr<iFileName> cWinShellFileName::CreateFileNameFromShellItem(iWindow *HostWindow,iCOMApartmentThreading *Threading,COMPtr<IShellItem> ShellItem)noexcept
+iPtr<iFileName> cWinShellFileName::CreateFileNameFromShellItem(iWindow *HostWindow,iCOMApartmentThreading *Threading,COMPtr<IShellItem> ShellItem)noexcept(true)
 {
 	HRESULT hr;
 	COMPtr<IParentAndItem> ItemParent;
@@ -950,7 +950,7 @@ iPtr<iFileName> cWinShellFileName::CreateFileNameFromShellItem(iWindow *HostWind
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinShellFileNameEnum::cWinShellFileNameEnum(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder,COMPtr<IEnumIDList> Enum)noexcept
+cWinShellFileNameEnum::cWinShellFileNameEnum(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder,COMPtr<IEnumIDList> Enum)noexcept(true)
 	: fHostWindow(cnVar::MoveCast(HostWindow))
 	, fThreading(cnVar::MoveCast(Threading))
 	, fFolder(cnVar::MoveCast(Folder))
@@ -958,11 +958,11 @@ cWinShellFileNameEnum::cWinShellFileNameEnum(iPtr<iWindow> HostWindow,rPtr<iCOMA
 {
 }
 //---------------------------------------------------------------------------
-cWinShellFileNameEnum::~cWinShellFileNameEnum()noexcept
+cWinShellFileNameEnum::~cWinShellFileNameEnum()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cWinShellFileNameEnum::Fetch(void)noexcept
+bool cWinShellFileNameEnum::Fetch(void)noexcept(true)
 {
 	HRESULT hr;
 	ULONG Fetched;
@@ -976,13 +976,13 @@ bool cWinShellFileNameEnum::Fetch(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-iFile* cWinShellFileNameEnum::GetCurrentFile(void)noexcept
+iFile* cWinShellFileNameEnum::GetCurrentFile(void)noexcept(true)
 {
 	return fCurrentFileName;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcWinShellFolderItemObserver::bcWinShellFolderItemObserver(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept
+bcWinShellFolderItemObserver::bcWinShellFolderItemObserver(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept(true)
 	: fHostWindow(cnVar::MoveCast(HostWindow))
 	, fThreading(cnVar::MoveCast(Threading))
 	, fFolder(cnVar::MoveCast(Folder))
@@ -991,18 +991,18 @@ bcWinShellFolderItemObserver::bcWinShellFolderItemObserver(iPtr<iWindow> HostWin
 	fCallback=nullptr;
 }
 //---------------------------------------------------------------------------
-bcWinShellFolderItemObserver::~bcWinShellFolderItemObserver()noexcept
+bcWinShellFolderItemObserver::~bcWinShellFolderItemObserver()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::VirtualStopped(void)noexcept
+void bcWinShellFolderItemObserver::VirtualStopped(void)noexcept(true)
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-cShellItemIDList bcWinShellFolderItemObserver::MakeFolderAbsoluteIDList(IShellFolder *Folder)noexcept
+cShellItemIDList bcWinShellFolderItemObserver::MakeFolderAbsoluteIDList(IShellFolder *Folder)noexcept(true)
 {
 	cShellItemIDList AbsoluteID;
 	// get absolute id for this folder
@@ -1019,20 +1019,20 @@ cShellItemIDList bcWinShellFolderItemObserver::MakeFolderAbsoluteIDList(IShellFo
 	return AbsoluteID;
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowAttached(void)noexcept
+void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowAttached(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowDetached(void)noexcept
+void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowDetached(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowMessage(LRESULT&,const cWindowMessageParam &)noexcept
+bool bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowMessage(LRESULT&,const cWindowMessageParam &)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowMessageProcessed(LRESULT,const cWindowMessageParam &MsgParam)noexcept
+void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowMessageProcessed(LRESULT,const cWindowMessageParam &MsgParam)noexcept(true)
 {
 	if(MsgParam.Code==WM_USER+1){
 		// shell notification
@@ -1155,7 +1155,7 @@ void bcWinShellFolderItemObserver::cNotifyWindowHandler::WindowMessageProcessed(
 	}
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::UpdateFolderMonitor(void)noexcept
+void bcWinShellFolderItemObserver::UpdateFolderMonitor(void)noexcept(true)
 {
 	if(IsNotificationStarted()){
 
@@ -1190,19 +1190,19 @@ void bcWinShellFolderItemObserver::UpdateFolderMonitor(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-LONG bcWinShellFolderItemObserver::ShellNotifyMask(void)noexcept
+LONG bcWinShellFolderItemObserver::ShellNotifyMask(void)noexcept(true)
 {
 	return SHCNE_RENAMEITEM|SHCNE_CREATE|SHCNE_DELETE|SHCNE_UPDATEITEM|SHCNE_ATTRIBUTES|
 		SHCNE_MKDIR|SHCNE_RMDIR|SHCNE_RENAMEFOLDER|SHCNE_UPDATEDIR;
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::cCreateNotifyWindowProc::Execute(void)noexcept
+void bcWinShellFolderItemObserver::cCreateNotifyWindowProc::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcWinShellFolderItemObserver::fCreateNotifyWindowProc);
 	Host->UpdateFolderMonitor();
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::NotifyFolderMonitor(void)noexcept
+void bcWinShellFolderItemObserver::NotifyFolderMonitor(void)noexcept(true)
 {
 	if(fHostWindow!=nullptr){
 		auto Thread=fHostWindow->GetUIThread();
@@ -1216,12 +1216,12 @@ void bcWinShellFolderItemObserver::NotifyFolderMonitor(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iReference* bcWinShellFolderItemObserver::NotificationInnerReference(void)noexcept
+iReference* bcWinShellFolderItemObserver::NotificationInnerReference(void)noexcept(true)
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::NotificationStarted(void)noexcept
+void bcWinShellFolderItemObserver::NotificationStarted(void)noexcept(true)
 {
 	bcAsyncQueue::NotificationStarted();
 
@@ -1230,7 +1230,7 @@ void bcWinShellFolderItemObserver::NotificationStarted(void)noexcept
 	NotifyFolderMonitor();
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::NotificationStopped(void)noexcept
+void bcWinShellFolderItemObserver::NotificationStopped(void)noexcept(true)
 {
 	NotifyFolderMonitor();
 
@@ -1242,18 +1242,18 @@ void bcWinShellFolderItemObserver::NotificationStopped(void)noexcept
 	bcAsyncQueue::NotificationStopped();
 }
 //---------------------------------------------------------------------------
-bcWinShellFolderItemObserver::CycleState bcWinShellFolderItemObserver::NotificationCheckState(void)noexcept
+bcWinShellFolderItemObserver::CycleState bcWinShellFolderItemObserver::NotificationCheckState(void)noexcept(true)
 {
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
-void bcWinShellFolderItemObserver::AsyncQueueNotify(void)noexcept
+void bcWinShellFolderItemObserver::AsyncQueueNotify(void)noexcept(true)
 {
 	fCallback->AsyncNotify();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinShellFolderItemWatcher::cWinShellFolderItemWatcher(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept
+cWinShellFolderItemWatcher::cWinShellFolderItemWatcher(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept(true)
 	: bcWinShellFolderItemObserver(cnVar::MoveCast(HostWindow),cnVar::MoveCast(Threading),cnVar::MoveCast(Folder))
 {
 }
@@ -1262,7 +1262,7 @@ cWinShellFolderItemWatcher::~cWinShellFolderItemWatcher()
 {
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
+bool cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -1275,38 +1275,38 @@ bool cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::StartNotify(iRefere
 	return true;
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::StopNotify(void)noexcept
+void cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::StopNotify(void)noexcept(true)
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::NotifyCallback(bool IdleNotify)noexcept
+void cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::NotifyCallback(bool IdleNotify)noexcept(true)
 {
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::IsClosed(void)noexcept
+bool cWinShellFolderItemWatcher::cWinShellFolderItemWatcher::IsClosed(void)noexcept(true)
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemWatcher::NotificationStarted(void)noexcept
+void cWinShellFolderItemWatcher::NotificationStarted(void)noexcept(true)
 {
 	rIncReference(this,'fiqu');
 
 	bcWinShellFolderItemObserver::NotificationStarted();
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemWatcher::NotificationStopped(void)noexcept
+void cWinShellFolderItemWatcher::NotificationStopped(void)noexcept(true)
 {
 	bcWinShellFolderItemObserver::NotificationStopped();
 	
 	rDecReference(this,'fiqu');
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemWatcher::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE *List)noexcept
+bool cWinShellFolderItemWatcher::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE *List)noexcept(true)
 {
 	const LONG CheckEvents=SHCNE_CREATE|SHCNE_DELETE|SHCNE_RENAMEITEM|SHCNE_UPDATEITEM|SHCNE_ATTRIBUTES
 		|SHCNE_MKDIR|SHCNE_RMDIR|SHCNE_RENAMEFOLDER|SHCNE_UPDATEDIR;
@@ -1318,18 +1318,18 @@ bool cWinShellFolderItemWatcher::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinShellFolderItemObserver::cChangeEnum::cChangeEnum(cWinShellFolderItemObserver *Owner)noexcept
+cWinShellFolderItemObserver::cChangeEnum::cChangeEnum(cWinShellFolderItemObserver *Owner)noexcept(true)
 	: fOwner(Owner)
 	, fCurrentIndex(IndexNotFound)
 {
 }
 //---------------------------------------------------------------------------
-cWinShellFolderItemObserver::cChangeEnum::~cChangeEnum()noexcept
+cWinShellFolderItemObserver::cChangeEnum::~cChangeEnum()noexcept(true)
 {
 	fOwner->ChangeEnumFinished();
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemObserver::cChangeEnum::Fetch(void)noexcept
+bool cWinShellFolderItemObserver::cChangeEnum::Fetch(void)noexcept(true)
 {
 	uIntn NextIndex=fCurrentIndex+1;
 	if(NextIndex>=ChangeList.GetCount()){
@@ -1340,7 +1340,7 @@ bool cWinShellFolderItemObserver::cChangeEnum::Fetch(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-iFile* cWinShellFolderItemObserver::cChangeEnum::GetCurrentFile(void)noexcept
+iFile* cWinShellFolderItemObserver::cChangeEnum::GetCurrentFile(void)noexcept(true)
 {
 	if(fCurrentFileName==nullptr){
 		auto &Item=ChangeList[fCurrentIndex];
@@ -1349,24 +1349,24 @@ iFile* cWinShellFolderItemObserver::cChangeEnum::GetCurrentFile(void)noexcept
 	return fCurrentFileName;
 }
 //---------------------------------------------------------------------------
-eFileChange cWinShellFolderItemObserver::cChangeEnum::GetChange(void)noexcept
+eFileChange cWinShellFolderItemObserver::cChangeEnum::GetChange(void)noexcept(true)
 {
 	auto &Item=ChangeList[fCurrentIndex];
 	return Item.Change;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinShellFolderItemObserver::cWinShellFolderItemObserver(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept
+cWinShellFolderItemObserver::cWinShellFolderItemObserver(iPtr<iWindow> HostWindow,rPtr<iCOMApartmentThreading> Threading,COMPtr<IShellFolder> Folder)noexcept(true)
 	: bcWinShellFolderItemObserver(cnVar::MoveCast(HostWindow),cnVar::MoveCast(Threading),cnVar::MoveCast(Folder))
 {
 	fChangeEnumInProgress=false;
 }
 //---------------------------------------------------------------------------
-cWinShellFolderItemObserver::~cWinShellFolderItemObserver()noexcept
+cWinShellFolderItemObserver::~cWinShellFolderItemObserver()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
+bool cWinShellFolderItemObserver::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -1379,29 +1379,29 @@ bool cWinShellFolderItemObserver::StartNotify(iReference *Reference,iAsyncNotifi
 	return true;
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::StopNotify(void)noexcept
+void cWinShellFolderItemObserver::StopNotify(void)noexcept(true)
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::NotifyCallback(bool IdleNotify)noexcept
+void cWinShellFolderItemObserver::NotifyCallback(bool IdleNotify)noexcept(true)
 {
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemObserver::IsClosed(void)noexcept
+bool cWinShellFolderItemObserver::IsClosed(void)noexcept(true)
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::DiscardChanges(void)noexcept
+void cWinShellFolderItemObserver::DiscardChanges(void)noexcept(true)
 {
 	//EnumFileDiscardChange();
 }
 //---------------------------------------------------------------------------
-rPtr<iFileEnumerator> cWinShellFolderItemObserver::ResetChanges(void)noexcept
+rPtr<iFileEnumerator> cWinShellFolderItemObserver::ResetChanges(void)noexcept(true)
 {
 	if(fChangeEnumInProgress)
 		return nullptr;
@@ -1441,7 +1441,7 @@ rPtr<iFileEnumerator> cWinShellFolderItemObserver::ResetChanges(void)noexcept
 	return rCreate<cWinShellFileNameEnum>(fHostWindow,fThreading,fFolder,cnVar::MoveCast(FolderEnum));
 }
 //---------------------------------------------------------------------------
-iPtr<iFile> cWinShellFolderItemObserver::FetchFileChange(eFileChange &Change)noexcept
+iPtr<iFile> cWinShellFolderItemObserver::FetchFileChange(eFileChange &Change)noexcept(true)
 {
 	if(fChangeEnumInProgress)
 		return nullptr;
@@ -1504,7 +1504,7 @@ iPtr<iFile> cWinShellFolderItemObserver::FetchFileChange(eFileChange &Change)noe
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWinShellFolderItemObserver::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE *List)noexcept
+bool cWinShellFolderItemObserver::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE *List)noexcept(true)
 {
 	if(Event&SHCNE_CREATE){
 		// create file or virtual item
@@ -1553,7 +1553,7 @@ bool cWinShellFolderItemObserver::ShellNotifyProcess(LONG Event,PIDLIST_ABSOLUTE
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::NotificationStarted(void)noexcept
+void cWinShellFolderItemObserver::NotificationStarted(void)noexcept(true)
 {
 	rIncReference(this,'fiqu');
 
@@ -1561,13 +1561,13 @@ void cWinShellFolderItemObserver::NotificationStarted(void)noexcept
 	AsyncQueueSetAvailable(false);
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::NotificationStopped(void)noexcept
+void cWinShellFolderItemObserver::NotificationStopped(void)noexcept(true)
 {
 	bcWinShellFolderItemObserver::NotificationStopped();
 	rDecReference(this,'fiqu');
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::NotificationProcedure(void)noexcept
+void cWinShellFolderItemObserver::NotificationProcedure(void)noexcept(true)
 {
 	if(fChangeEnumInProgress)
 		return;
@@ -1575,7 +1575,7 @@ void cWinShellFolderItemObserver::NotificationProcedure(void)noexcept
 	bcWinShellFolderItemObserver::NotificationProcedure();
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::OnFolderChanged(void)noexcept
+void cWinShellFolderItemObserver::OnFolderChanged(void)noexcept(true)
 {
 	if(fFolderChanged==false){
 		fFolderChanged=true;
@@ -1583,7 +1583,7 @@ void cWinShellFolderItemObserver::OnFolderChanged(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWinShellFolderItemObserver::ChangeEnumFinished(void)noexcept
+void cWinShellFolderItemObserver::ChangeEnumFinished(void)noexcept(true)
 {
 	fChangeEnumInProgress=false;
 	UpdateQueueState(false);

@@ -27,9 +27,9 @@ class cWindowClass : public bcWindowClass
 {
 public:
 
-	cWindowClass(const WNDCLASSEXW *ClassInfo);
-	cWindowClass(HINSTANCE Module,const wchar_t *ClassName,WNDPROC WndClassProc,UINT style=0);
-	~cWindowClass();
+	cWindowClass(const WNDCLASSEXW *ClassInfo)noexcept(true);
+	cWindowClass(HINSTANCE Module,const wchar_t *ClassName,WNDPROC WndClassProc,UINT style=0)noexcept(true);
+	~cWindowClass()noexcept(true);
 private:
 	HINSTANCE fModuleHandle;
 };

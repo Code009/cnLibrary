@@ -10,17 +10,17 @@ using namespace cnRTL;
 cLog<cnRTL_LOGLEVEL> cnRTL::gRTLLog;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cErrorFrame::~cErrorFrame()noexcept
+cErrorFrame::~cErrorFrame()noexcept(true)
 {
 	fMaker.Submit();
 }
 //---------------------------------------------------------------------------
-void cErrorFrame::SetMsg(const uChar16 *Text,uIntn Length)noexcept
+void cErrorFrame::SetMsg(const uChar16 *Text,uIntn Length)noexcept(true)
 {
 	fMaker.SetMessage(Text,Length);
 }
 //---------------------------------------------------------------------------
-cnSystem::ErrorReportMaker cErrorFrame::Make(const uChar16 *Function,uIntn Length)noexcept
+cnSystem::ErrorReportMaker cErrorFrame::Make(const uChar16 *Function,uIntn Length)noexcept(true)
 {
 	// clear error in tls
 	auto Report=cnSystem::ErrorReportManager::Fetch();	
@@ -32,7 +32,7 @@ cnSystem::ErrorReportMaker cErrorFrame::Make(const uChar16 *Function,uIntn Lengt
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cErrorReport::Retrieve(void)noexcept
+void cErrorReport::Retrieve(void)noexcept(true)
 {
 	fReport=cnSystem::ErrorReportManager::Fetch();
 }
@@ -53,7 +53,7 @@ bool cErrorReport::Query(tTypeID ErrorTypeID,const void* &Data)noexcept(true){
 	return false;
 }
 //---------------------------------------------------------------------------
-void cErrorReport::WriteError(iWriteBuffer<uChar16> *WriteBuffer,iErrorReport *Report)noexcept
+void cErrorReport::WriteError(iWriteBuffer<uChar16> *WriteBuffer,iErrorReport *Report)noexcept(true)
 {
 	auto Function=Report->FunctionName();
 	auto Message=Report->ErrorMessage();
@@ -77,7 +77,7 @@ void cErrorReport::WriteError(iWriteBuffer<uChar16> *WriteBuffer,iErrorReport *R
 	}
 }
 //---------------------------------------------------------------------------
-cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
+cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept(true)
 {
 	cStringBuffer<uChar16> Desc;
 	if(fReport!=nullptr){
@@ -98,7 +98,7 @@ cStringBuffer<uChar16> cErrorReport::Descripe(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept
+void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept(true)
 {
 	auto SubmitItem=fMsgRecycler.Pop();
 	if(SubmitItem==nullptr){
@@ -110,7 +110,7 @@ void cLogMessageQueue::Submit(rPtr<cLogMessageRecord> Record)noexcept
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Cleanup(void)noexcept
+void cLogMessageQueue::Cleanup(void)noexcept(true)
 {
 	// remove item cache
 	auto DeleteItems=fMsgRecycler.Swap(nullptr);
@@ -122,7 +122,7 @@ void cLogMessageQueue::Cleanup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
+void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept(true)
 {
 	iIncReference(Execution,'logr');
 	auto PrevExecution=fReplaceAsyncExecution.Barrier.Xchg(Execution);
@@ -134,7 +134,7 @@ void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
+void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept(true)
 {
 	if(Recorder!=nullptr){
 		if(Recorder->Acquire(this)==false)
@@ -151,7 +151,7 @@ void cLogMessageQueue::Connect(iLogRecorder *Recorder)noexcept
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::Terminate(iProcedure *CompletionProcedure)noexcept
+void cLogMessageQueue::Terminate(iProcedure *CompletionProcedure)noexcept(true)
 {
 	if(fTerminateState!=0)
 		return;
@@ -161,13 +161,13 @@ void cLogMessageQueue::Terminate(iProcedure *CompletionProcedure)noexcept
 	ProcessMsgQueue();
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::cAsyncContext::IncreaseReference(void)noexcept
+void cLogMessageQueue::cAsyncContext::IncreaseReference(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
 	++Host->fAsyncRefCount.Free;
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::cAsyncContext::DecreaseReference(void)noexcept
+void cLogMessageQueue::cAsyncContext::DecreaseReference(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
 	if(--Host->fAsyncRefCount.Free==0){
@@ -180,13 +180,13 @@ void cLogMessageQueue::cAsyncContext::DecreaseReference(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::cAsyncContext::Execute(void)noexcept
+void cLogMessageQueue::cAsyncContext::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLogMessageQueue::fAsyncContext);
 	return Host->ProcessMsgQueueThread();
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::ProcessMsgQueue(void)noexcept
+void cLogMessageQueue::ProcessMsgQueue(void)noexcept(true)
 {
 	if(fRecordExclusive.Acquire()==false)
 		return;
@@ -200,7 +200,7 @@ void cLogMessageQueue::ProcessMsgQueue(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
+void cLogMessageQueue::ProcessUpdateAsync(void)noexcept(true)
 {
 	if(fTerminateState){
 		fNeedAsync=false;
@@ -237,7 +237,7 @@ void cLogMessageQueue::ProcessUpdateAsync(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::ProcessUpdateRecorder(void)noexcept
+void cLogMessageQueue::ProcessUpdateRecorder(void)noexcept(true)
 {
 	if(fTerminateState){
 		auto ReplaceRecorder=fReplaceRecorder.Barrier.Xchg(nullptr);
@@ -258,7 +258,7 @@ void cLogMessageQueue::ProcessUpdateRecorder(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
+void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept(true)
 {
 	do{
 		fRecordExclusive.Continue();
@@ -315,7 +315,7 @@ void cLogMessageQueue::ProcessMsgQueueThread(void)noexcept
 	}while(fRecordExclusive.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cLogMessageQueue::SubmitMsgRecord(cLogMessageRecord *Record)noexcept
+void cLogMessageQueue::SubmitMsgRecord(cLogMessageRecord *Record)noexcept(true)
 {
 	cLogMessage Message;
 	Message.Time=Record->Time=cnSystem::GetSystemTimeNow();
@@ -326,13 +326,13 @@ void cLogMessageQueue::SubmitMsgRecord(cLogMessageRecord *Record)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcLogRecordSubmission::bcLogRecordSubmission(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept
+bcLogRecordSubmission::bcLogRecordSubmission(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept(true)
 	: fQueue(Queue)
 	, fRecord(cnVar::MoveCast(Record))
 {
 }
 //---------------------------------------------------------------------------
-bcLogRecordSubmission::~bcLogRecordSubmission()noexcept
+bcLogRecordSubmission::~bcLogRecordSubmission()noexcept(true)
 {
 	if(fRecord->TextBuffer.GetLength()!=0){
 		fQueue->Submit(cnVar::MoveCast(fRecord));
@@ -340,17 +340,17 @@ bcLogRecordSubmission::~bcLogRecordSubmission()noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLogStreamBuffer::cLogStreamBuffer(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept
+cLogStreamBuffer::cLogStreamBuffer(cLogMessageQueue *Queue,rPtr<cLogMessageRecord> Record)noexcept(true)
 	: bcLogRecordSubmission(Queue,cnVar::MoveCast(Record))
 	, fWriteBuffer(fRecord->TextBuffer.StreamWriteBuffer())
 {
 }
 //---------------------------------------------------------------------------
-cLogStreamBuffer::~cLogStreamBuffer()noexcept
+cLogStreamBuffer::~cLogStreamBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cLogStreamBuffer::Reset(void)noexcept
+void cLogStreamBuffer::Reset(void)noexcept(true)
 {
 	fRecord->TextBuffer.Clear();
 }
@@ -366,31 +366,31 @@ void cLogStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLogRecordHub::cLogRecordHub()noexcept
+cLogRecordHub::cLogRecordHub()noexcept(true)
 	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cLogRecordHub::~cLogRecordHub()noexcept
+cLogRecordHub::~cLogRecordHub()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cLogRecordHub::Acquire(void *Owner)noexcept
+bool cLogRecordHub::Acquire(void *Owner)noexcept(true)
 {
 	return fOwner.Barrier.CmpStore(nullptr,Owner);
 }
 //---------------------------------------------------------------------------
-bool cLogRecordHub::Release(void *Owner)noexcept
+bool cLogRecordHub::Release(void *Owner)noexcept(true)
 {
 	return fOwner.Barrier.CmpStore(Owner,nullptr);
 }
 //---------------------------------------------------------------------------
-void cLogRecordHub::Submit(iReference *Reference,const cLogMessage &Message)noexcept
+void cLogRecordHub::Submit(iReference *Reference,const cLogMessage &Message)noexcept(true)
 {
 	return SubmitMessage(Reference,Message);
 }
 //---------------------------------------------------------------------------
-void cLogRecordHub::InsertRecorder(iLogRecorder *Recorder)noexcept
+void cLogRecordHub::InsertRecorder(iLogRecorder *Recorder)noexcept(true)
 {
 	if(Recorder==nullptr)
 		return;
@@ -406,7 +406,7 @@ void cLogRecordHub::InsertRecorder(iLogRecorder *Recorder)noexcept
 	fOwner.Release.Store(nullptr);
 }
 //---------------------------------------------------------------------------
-void cLogRecordHub::RemoveRecorder(iLogRecorder *Recorder)noexcept
+void cLogRecordHub::RemoveRecorder(iLogRecorder *Recorder)noexcept(true)
 {
 	if(Recorder==nullptr)
 		return;
@@ -425,7 +425,7 @@ void cLogRecordHub::RemoveRecorder(iLogRecorder *Recorder)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogRecordHub::ClearRecorder(void)noexcept
+void cLogRecordHub::ClearRecorder(void)noexcept(true)
 {
 	if(fOwner.Barrier.CmpStore(nullptr,this)==false){
 		// cannot change recorder
@@ -439,7 +439,7 @@ void cLogRecordHub::ClearRecorder(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cLogRecordHub::SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept
+void cLogRecordHub::SubmitMessage(iReference *Reference,const cLogMessage &Message)noexcept(true)
 {
 	auto Owner=fOwner.Free.Load();
 	if(Owner==nullptr || Owner==this)
@@ -451,23 +451,23 @@ void cLogRecordHub::SubmitMessage(iReference *Reference,const cLogMessage &Messa
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextStreamOutputLogRecorder::cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept
+cTextStreamOutputLogRecorder::cTextStreamOutputLogRecorder(iTextStreamOutput *Output)noexcept(true)
 	: fOutput(Output)
 	, fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-bool cTextStreamOutputLogRecorder::Acquire(void *Owner)noexcept
+bool cTextStreamOutputLogRecorder::Acquire(void *Owner)noexcept(true)
 {
 	return fOwner.Free.CmpStore(nullptr,Owner);
 }
 //---------------------------------------------------------------------------
-bool cTextStreamOutputLogRecorder::Release(void *Owner)noexcept
+bool cTextStreamOutputLogRecorder::Release(void *Owner)noexcept(true)
 {
 	return fOwner.Free.CmpStore(Owner,nullptr);
 }
 //---------------------------------------------------------------------------
-void cTextStreamOutputLogRecorder::Submit(iReference*,const cLogMessage &Message)noexcept
+void cTextStreamOutputLogRecorder::Submit(iReference*,const cLogMessage &Message)noexcept(true)
 {
 	cStringBuffer<uChar16> Text;
 	{

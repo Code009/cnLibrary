@@ -14,7 +14,7 @@ using namespace cnString;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-ufInt8 cnRTL::UnicodeChar8To32(uChar32 &Dest,const uChar8 *Src,uIntn SrcLength)noexcept
+ufInt8 cnRTL::UnicodeChar8To32(uChar32 &Dest,const uChar8 *Src,uIntn SrcLength)noexcept(true)
 {
 	if(SrcLength==0)
 		return 0;
@@ -79,7 +79,7 @@ ufInt8 cnRTL::UnicodeChar8To32(uChar32 &Dest,const uChar8 *Src,uIntn SrcLength)n
 	return CharLen;
 }
 //---------------------------------------------------------------------------
-ufInt8 cnRTL::UnicodeChar16To32(uChar32 &Dest,const uChar16 *Src,uIntn SrcLength)noexcept
+ufInt8 cnRTL::UnicodeChar16To32(uChar32 &Dest,const uChar16 *Src,uIntn SrcLength)noexcept(true)
 {
 	if(SrcLength==0)
 		return 0;
@@ -111,7 +111,7 @@ ufInt8 cnRTL::UnicodeChar16To32(uChar32 &Dest,const uChar16 *Src,uIntn SrcLength
 	return 2;
 }
 //---------------------------------------------------------------------------
-ufInt8 cnRTL::UnicodeChar8From32(uChar8 *Dest,uIntn DestLength,uChar32 Src)noexcept
+ufInt8 cnRTL::UnicodeChar8From32(uChar8 *Dest,uIntn DestLength,uChar32 Src)noexcept(true)
 {
 	if(DestLength==0){
 		return 0;
@@ -157,7 +157,7 @@ ufInt8 cnRTL::UnicodeChar8From32(uChar8 *Dest,uIntn DestLength,uChar32 Src)noexc
 	return 1;
 }
 //---------------------------------------------------------------------------
-ufInt8 cnRTL::UnicodeChar16From32(uChar16 *Dest,uIntn DestLength,uChar32 Src)noexcept
+ufInt8 cnRTL::UnicodeChar16From32(uChar16 *Dest,uIntn DestLength,uChar32 Src)noexcept(true)
 {
 	if(DestLength==0)
 		return 0;
@@ -189,7 +189,7 @@ ufInt8 cnRTL::UnicodeChar16From32(uChar16 *Dest,uIntn DestLength,uChar32 Src)noe
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cFormatStringTokenParameter::SetDefault(void)noexcept
+void cFormatStringTokenParameter::SetDefault(void)noexcept(true)
 {
 	TokenType=FormatStringTokenType::Literal;
 	SizeModifier=FormatStringArgumentSize::Normal;
@@ -205,7 +205,7 @@ void cFormatStringTokenParameter::SetDefault(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cFormatStringParseStateTransistion::Reset(void)noexcept
+void cFormatStringParseStateTransistion::Reset(void)noexcept(true)
 {
 	fState=sStr;
 	fArgumentIndex=0;
@@ -244,7 +244,7 @@ const cFormatStringParseStateTransistion::eCharType cFormatStringParseStateTrans
 	ctType,		ctEnd,		ctSize,																// 0x78 - 0x7F
 };
 //---------------------------------------------------------------------------
-auto cFormatStringParseStateTransistion::CharType(uIntn c)noexcept -> eCharType
+auto cFormatStringParseStateTransistion::CharType(uIntn c)noexcept(true) -> eCharType
 {
 
 	if(c>=CharMapLen)
@@ -331,7 +331,7 @@ const cFormatStringParseStateAction cFormatStringParseStateTransistion::ActionOu
 	true,true
 };
 //---------------------------------------------------------------------------
-cFormatStringParseStateAction cFormatStringParseStateTransistion::Process(uIntn Char,cFormatStringTokenParameter &TokenParameter)noexcept
+cFormatStringParseStateAction cFormatStringParseStateTransistion::Process(uIntn Char,cFormatStringTokenParameter &TokenParameter)noexcept(true)
 {
 	auto Type=CharType(Char);
 	auto &Trans=FormatStringAnalyseTransistion[fState][Type];
@@ -487,7 +487,7 @@ cFormatStringParseStateAction cFormatStringParseStateTransistion::Process(uIntn 
 	return ActionNone;
 }
 //---------------------------------------------------------------------------
-void cFormatStringParseStateTransistion::ProcessEnd(cFormatStringTokenParameter &TokenParameter)noexcept
+void cFormatStringParseStateTransistion::ProcessEnd(cFormatStringTokenParameter &TokenParameter)noexcept(true)
 {
 	TokenParameter.TokenType=FormatStringTokenType::Literal;
 }

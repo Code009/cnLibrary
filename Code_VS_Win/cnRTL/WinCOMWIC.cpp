@@ -11,7 +11,7 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-COMPtr<IWICImagingFactory> cnWinRTL::WICQueryImagingFactory(void)noexcept
+COMPtr<IWICImagingFactory> cnWinRTL::WICQueryImagingFactory(void)noexcept(true)
 {
 	HRESULT hr;
 	COMPtr<IWICImagingFactory> ImageFactory;
@@ -246,7 +246,7 @@ void cBitmapConvert::SetupPixelBuffer(void)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapDataSourceFromIconResource::cBitmapDataSourceFromIconResource()noexcept
+cBitmapDataSourceFromIconResource::cBitmapDataSourceFromIconResource()noexcept(true)
 {
 	fSize={0,0};
 	fPixelFormat=BitmapPixelFormatUnknow;
@@ -255,11 +255,11 @@ cBitmapDataSourceFromIconResource::cBitmapDataSourceFromIconResource()noexcept
 	fPixelBufferPitch=0;
 }
 //---------------------------------------------------------------------------
-cBitmapDataSourceFromIconResource::~cBitmapDataSourceFromIconResource()noexcept
+cBitmapDataSourceFromIconResource::~cBitmapDataSourceFromIconResource()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cBitmapDataSourceFromIconResource::ClearData(void)noexcept
+void cBitmapDataSourceFromIconResource::ClearData(void)noexcept(true)
 {
 	fResourceData=nullptr;
 	fResMaskData=nullptr;
@@ -269,7 +269,7 @@ void cBitmapDataSourceFromIconResource::ClearData(void)noexcept
 	fPixelFormat=BitmapPixelFormatUnknow;
 }
 //---------------------------------------------------------------------------
-bool cBitmapDataSourceFromIconResource::SetIconData(const void *ResourceData,uIntn ResourceDataSize)noexcept
+bool cBitmapDataSourceFromIconResource::SetIconData(const void *ResourceData,uIntn ResourceDataSize)noexcept(true)
 {
 	if(fPixelLockCount!=0)	// in use
 		return false;
@@ -346,7 +346,7 @@ bool cBitmapDataSourceFromIconResource::SetIconData(const void *ResourceData,uIn
 	return true;
 }
 //---------------------------------------------------------------------------
-void cBitmapDataSourceFromIconResource::SetupPixelBuffer(void)noexcept
+void cBitmapDataSourceFromIconResource::SetupPixelBuffer(void)noexcept(true)
 {
 	if(fConvertedPixelBuffer->Length!=0){
 		// already loaded
@@ -392,11 +392,11 @@ void cBitmapDataSourceFromIconResource::SetupPixelBuffer(void)noexcept
 
 	// mix up mask
 	
-	for(sfInt32n LineIndex=0;LineIndex<fSize.y;LineIndex++){
+	for(sfInt32 LineIndex=0;LineIndex<fSize.y;LineIndex++){
 		auto *MaskLine=cnMemory::CastPointerAddByteOffset<const uInt8>(fResMaskData,LineIndex*fResMaskLineSize);
 		uInt32 *PixelLine=cnMemory::CastPointerAddByteOffset<uInt32>(fConvertedPixelBuffer->Pointer,LineIndex*fSize.x*4);
 
-		for(sfInt32n PixelIndex=0;PixelIndex<fSize.x;PixelIndex++){
+		for(sfInt32 PixelIndex=0;PixelIndex<fSize.x;PixelIndex++){
 
 			int bitmaskindex=PixelIndex/8;
 			int bitindex=PixelIndex%8;
@@ -422,17 +422,17 @@ void cBitmapDataSourceFromIconResource::SetupPixelBuffer(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint cBitmapDataSourceFromIconResource::GetImageSize(void)noexcept
+cUIPoint cBitmapDataSourceFromIconResource::GetImageSize(void)noexcept(true)
 {
 	return fSize;
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cBitmapDataSourceFromIconResource::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cBitmapDataSourceFromIconResource::GetPixelFormat(void)noexcept(true)
 {
 	return fPixelFormat;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromIconResource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cBitmapDataSourceFromIconResource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 	SetupPixelBuffer();
 	if(Offset>=fConvertedPixelBuffer->Length)
@@ -444,7 +444,7 @@ uIntn cBitmapDataSourceFromIconResource::CopyPixelBuffer(uIntn Offset,void *Dest
 	return PixelDataSize;
 }
 //---------------------------------------------------------------------------
-const void* cBitmapDataSourceFromIconResource::AcquirePixels(void)noexcept
+const void* cBitmapDataSourceFromIconResource::AcquirePixels(void)noexcept(true)
 {
 	if(fPixelLockCount==0xFFFF){
 		return nullptr;
@@ -454,32 +454,32 @@ const void* cBitmapDataSourceFromIconResource::AcquirePixels(void)noexcept
 	return fConvertedPixelBuffer->Pointer;
 }
 //---------------------------------------------------------------------------
-void cBitmapDataSourceFromIconResource::ReleasePixels(void)noexcept
+void cBitmapDataSourceFromIconResource::ReleasePixels(void)noexcept(true)
 {
 	if(fPixelLockCount!=0){
 		fPixelLockCount--;
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromIconResource::GetDataPitch(void)noexcept
+uIntn cBitmapDataSourceFromIconResource::GetDataPitch(void)noexcept(true)
 {
 	SetupPixelBuffer();
 	return fPixelBufferPitch;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromIconResource::GetDataSize(void)noexcept
+uIntn cBitmapDataSourceFromIconResource::GetDataSize(void)noexcept(true)
 {
 	SetupPixelBuffer();
 	return fConvertedPixelBuffer->Length;
 }
 //---------------------------------------------------------------------------
-bool cBitmapDataSourceFromIconResource::IsTopDown(void)noexcept
+bool cBitmapDataSourceFromIconResource::IsTopDown(void)noexcept(true)
 {
 	return fTopDown;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceBitmap(HMODULE hModule,LPCWSTR lpName)noexcept
+iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceBitmap(HMODULE hModule,LPCWSTR lpName)noexcept(true)
 {
 	auto ResourceHandle=::FindResourceW(hModule,lpName,RT_BITMAP);
 	if(ResourceHandle==nullptr)
@@ -524,7 +524,7 @@ iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceBitmap(HMODU
 	return BitmapMemSource;
 }
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIconItem(HMODULE hModule,LPCWSTR lpName)noexcept
+iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIconItem(HMODULE hModule,LPCWSTR lpName)noexcept(true)
 {
 	auto ResourceHandle=::FindResourceW(hModule,lpName,RT_ICON);
 	if(ResourceHandle==nullptr)
@@ -568,7 +568,7 @@ iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIconItem(HMO
 
 }
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIcon(HMODULE hModule,LPCWSTR lpName,int LookupX,int LookupY,UINT LookupFlag)noexcept
+iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIcon(HMODULE hModule,LPCWSTR lpName,int LookupX,int LookupY,UINT LookupFlag)noexcept(true)
 {
 	auto ResourceIconGroupHandle=::FindResourceW(hModule,lpName,RT_GROUP_ICON);
 	if(ResourceIconGroupHandle==nullptr)
@@ -586,7 +586,7 @@ iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapDataSourceFromResourceIcon(HMODULE
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmap *Bitmap)noexcept
+cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmap *Bitmap)noexcept(true)
 	: fBitmapSource(Bitmap),fBitmap(Bitmap)
 {
 	WICPixelFormatGUID FormatGUID;
@@ -599,7 +599,7 @@ cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmap *Bitmap)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmapSource *BitmapSource)noexcept
+cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmapSource *BitmapSource)noexcept(true)
 	: fBitmapSource(BitmapSource)
 {
 	WICPixelFormatGUID FormatGUID;
@@ -612,11 +612,11 @@ cWICBitmapDataSource::cWICBitmapDataSource(IWICBitmapSource *BitmapSource)noexce
 	}
 }
 //---------------------------------------------------------------------------
-cWICBitmapDataSource::~cWICBitmapDataSource()noexcept
+cWICBitmapDataSource::~cWICBitmapDataSource()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cWICBitmapDataSource::GUIDToFormat(const WICPixelFormatGUID &FormatGUID)noexcept
+cBitmapPixelFormat cWICBitmapDataSource::GUIDToFormat(const WICPixelFormatGUID &FormatGUID)noexcept(true)
 {
 
 	cBitmapPixelFormat Format;
@@ -697,24 +697,24 @@ cBitmapPixelFormat cWICBitmapDataSource::GUIDToFormat(const WICPixelFormatGUID &
 	return BitmapPixelFormatUnknow;
 }
 //---------------------------------------------------------------------------
-void* cWICBitmapDataSource::CastInterface(iTypeID IID)noexcept
+void* cWICBitmapDataSource::CastInterface(iTypeID IID)noexcept(true)
 {
 	return iCOMInterface::CastInterface(IID);
 }
 //---------------------------------------------------------------------------
-IUnknown* cWICBitmapDataSource::GetCOMInterface(void)noexcept
+IUnknown* cWICBitmapDataSource::GetCOMInterface(void)noexcept(true)
 {
 	return fBitmapSource;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWICBitmapDataSource::GetImageSize(void)noexcept
+cUIPoint cWICBitmapDataSource::GetImageSize(void)noexcept(true)
 {
 	cUIPoint Size;
 	fBitmapSource->GetSize(reinterpret_cast<UINT*>(&Size.x),reinterpret_cast<UINT*>(&Size.y));
 	return Size;
 }
 //---------------------------------------------------------------------------
-uIntn cWICBitmapDataSource::GetDataPitch(void)noexcept
+uIntn cWICBitmapDataSource::GetDataPitch(void)noexcept(true)
 {
 	SetupData();
 	UINT Stride;
@@ -724,7 +724,7 @@ uIntn cWICBitmapDataSource::GetDataPitch(void)noexcept
 	return 0;
 }
 //---------------------------------------------------------------------------
-uIntn cWICBitmapDataSource::GetDataSize(void)noexcept
+uIntn cWICBitmapDataSource::GetDataSize(void)noexcept(true)
 {
 	SetupData();
 	UINT LockSize;
@@ -735,12 +735,12 @@ uIntn cWICBitmapDataSource::GetDataSize(void)noexcept
 	return 0;
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cWICBitmapDataSource::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cWICBitmapDataSource::GetPixelFormat(void)noexcept(true)
 {
 	return fPixelFormat;
 }
 //---------------------------------------------------------------------------
-uIntn cWICBitmapDataSource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cWICBitmapDataSource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 #if 0
 
@@ -771,7 +771,7 @@ uIntn cWICBitmapDataSource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSi
 #endif // 0
 }
 //---------------------------------------------------------------------------
-bool cWICBitmapDataSource::SetupData(void)noexcept
+bool cWICBitmapDataSource::SetupData(void)noexcept(true)
 {
 	if(fBitmap==nullptr){
 		// create bitmap from source to access pixels
@@ -801,7 +801,7 @@ bool cWICBitmapDataSource::SetupData(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-const void* cWICBitmapDataSource::AcquirePixels(void)noexcept
+const void* cWICBitmapDataSource::AcquirePixels(void)noexcept(true)
 {
 	if(SetupData()==false)
 		return nullptr;
@@ -814,23 +814,23 @@ const void* cWICBitmapDataSource::AcquirePixels(void)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cWICBitmapDataSource::ReleasePixels(void)noexcept
+void cWICBitmapDataSource::ReleasePixels(void)noexcept(true)
 {
 	fDataLock=nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWICBitmapDataSource::IsTopDown(void)noexcept
+bool cWICBitmapDataSource::IsTopDown(void)noexcept(true)
 {
 	return true;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapSourceFromWIC(IWICBitmapSource *BitmapSource)noexcept
+iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapSourceFromWIC(IWICBitmapSource *BitmapSource)noexcept(true)
 {
 	return iCreate<cWICBitmapDataSource>(BitmapSource);
 }
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapSourceFromWICBitmap(IWICBitmap *Bitmap)noexcept
+iPtr<iBitmapDataSource> cnWinRTL::CreateBitmapSourceFromWICBitmap(IWICBitmap *Bitmap)noexcept(true)
 {
 	return iCreate<cWICBitmapDataSource>(Bitmap);
 }
@@ -864,21 +864,21 @@ COMPtr<IWICBitmapSource> WICCreateConvertedImage(IWICBitmapSource *BitmapSource)
 */
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWICImageFactory::cWICImageFactory()noexcept
+cWICImageFactory::cWICImageFactory()noexcept(true)
 	: fImagingFactory(WICQueryImagingFactory())
 {
 }
 //---------------------------------------------------------------------------
-cWICImageFactory::~cWICImageFactory()noexcept
+cWICImageFactory::~cWICImageFactory()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-IWICImagingFactory* cWICImageFactory::GetImagingFactory(void)noexcept
+IWICImagingFactory* cWICImageFactory::GetImagingFactory(void)noexcept(true)
 {
 	return fImagingFactory;
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageFile(const wchar_t *FileName)noexcept
+COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageFile(const wchar_t *FileName)noexcept(true)
 {
 	if(fImagingFactory==nullptr)
 		return nullptr;
@@ -902,7 +902,7 @@ COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageFile(const wchar_t *FileName
 	return FrameDecoder;
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageStream(IStream *Stream)noexcept
+COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageStream(IStream *Stream)noexcept(true)
 {
 	// create stream for resource
 	if(fImagingFactory==nullptr)
@@ -926,7 +926,7 @@ COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageStream(IStream *Stream)noexc
 	return FrameDecoder;
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept
+COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept(true)
 {
 	if(fImagingFactory==nullptr)
 		return nullptr;
@@ -977,7 +977,7 @@ COMPtr<IWICBitmapSource> cWICImageFactory::OpenImageResource(HMODULE hModule,LPC
 //---------------------------------------------------------------------------
 COMPtr<IWICBitmapSource> cWICImageFactory::ImageConvertFormat(IWICBitmapSource *pISource,REFWICPixelFormatGUID dstFormat,
 	WICBitmapDitherType dither,IWICPalette *pIPalette,
-	double alphaThresholdPercent,WICBitmapPaletteType paletteTranslate)noexcept
+	double alphaThresholdPercent,WICBitmapPaletteType paletteTranslate)noexcept(true)
 {
 	if(fImagingFactory==nullptr)
 		return nullptr;
@@ -1006,7 +1006,7 @@ COMPtr<IWICBitmapSource> cWICImageFactory::ImageConvertFormat(IWICBitmapSource *
 	return Converter;
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cWICImageFactory::ImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode)noexcept
+COMPtr<IWICBitmapSource> cWICImageFactory::ImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode)noexcept(true)
 {
 	if(fImagingFactory==nullptr)
 		return nullptr;
@@ -1036,31 +1036,31 @@ COMPtr<IWICBitmapSource> cWICImageFactory::ImageScale(IWICBitmapSource *Source,U
 	return Scaler;
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageFile(const wchar_t *FileName)noexcept
+COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageFile(const wchar_t *FileName)noexcept(true)
 {
 	cWICImageFactory Factory;
 	return Factory.OpenImageFile(FileName);
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageStream(IStream *Stream)noexcept
+COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageStream(IStream *Stream)noexcept(true)
 {
 	cWICImageFactory Factory;
 	return Factory.OpenImageStream(Stream);
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept
+COMPtr<IWICBitmapSource> cnWinRTL::WICOpenImageResource(HMODULE hModule,LPCWSTR lpName,LPCWSTR lpType)noexcept(true)
 {
 	cWICImageFactory Factory;
 	return Factory.OpenImageResource(hModule,lpName,lpType);
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cnWinRTL::WICImageConvertFormat(IWICBitmapSource *Source,REFWICPixelFormatGUID dstFormat,WICBitmapDitherType dither,IWICPalette *pIPalette,double alphaThresholdPercent,WICBitmapPaletteType paletteTranslate)noexcept
+COMPtr<IWICBitmapSource> cnWinRTL::WICImageConvertFormat(IWICBitmapSource *Source,REFWICPixelFormatGUID dstFormat,WICBitmapDitherType dither,IWICPalette *pIPalette,double alphaThresholdPercent,WICBitmapPaletteType paletteTranslate)noexcept(true)
 {
 	cWICImageFactory Factory;
 	return Factory.ImageConvertFormat(Source,dstFormat,dither,pIPalette,alphaThresholdPercent,paletteTranslate);
 }
 //---------------------------------------------------------------------------
-COMPtr<IWICBitmapSource> cnWinRTL::WICImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode)noexcept
+COMPtr<IWICBitmapSource> cnWinRTL::WICImageScale(IWICBitmapSource *Source,UINT uiWidth,UINT uiHeight,WICBitmapInterpolationMode mode)noexcept(true)
 {
 	cWICImageFactory Factory;
 	return Factory.ImageScale(Source,uiWidth,uiHeight,mode);

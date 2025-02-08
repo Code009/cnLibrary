@@ -4,35 +4,35 @@
 using namespace cnLibrary;
 using namespace cnUI;
 
-rPtr<viControl>				(*cnUI::gCreateDefaultButtonVisual)(viButtonData *Data)noexcept			=vButton::Create;
-rPtr<viScrollBar>			(*cnUI::gCreateDefaultScrollBarVisual)(viScrollBarData *Data)noexcept	=nullptr;
-rPtr<viControl>				(*cnUI::gCreateDefaultTabVisual)(viTabData *Data)noexcept				=nullptr;
+rPtr<viControl>				(*cnUI::gCreateDefaultButtonVisual)(viButtonData *Data)noexcept(true)		=vButton::Create;
+rPtr<viScrollBar>			(*cnUI::gCreateDefaultScrollBarVisual)(viScrollBarData *Data)noexcept(true)	=nullptr;
+rPtr<viControl>				(*cnUI::gCreateDefaultTabVisual)(viTabData *Data)noexcept(true)				=nullptr;
 
-static rPtr<viControl> CreateDefaultSplitterBarVisual(void)noexcept{
+static rPtr<viControl> CreateDefaultSplitterBarVisual(void)noexcept(true){
 	return vSolidStaticColor::Create(UIColorFromUInt32(0xFF0000FF));
 }
-rPtr<viControl>				(*cnUI::gCreateDefaultSplitterBarVisual)(void)noexcept					=CreateDefaultSplitterBarVisual;
+rPtr<viControl>				(*cnUI::gCreateDefaultSplitterBarVisual)(void)noexcept(true)					=CreateDefaultSplitterBarVisual;
 
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-lFrame::lFrame()noexcept
+lFrame::lFrame()noexcept(true)
 	: ClientMargin{0,0,0,0}
 {
 	
 }
 //---------------------------------------------------------------------------
-lFrame::~lFrame()noexcept
+lFrame::~lFrame()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-iUIView* lFrame::GetClientView(void)noexcept
+iUIView* lFrame::GetClientView(void)noexcept(true)
 {
 	return fClientView;
 }
 //---------------------------------------------------------------------------
-void lFrame::SetClientView(iUIView *View)noexcept
+void lFrame::SetClientView(iUIView *View)noexcept(true)
 {
 	if(fView!=nullptr){
 		if(fClientView!=nullptr){
@@ -48,7 +48,7 @@ void lFrame::SetClientView(iUIView *View)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void lFrame::ViewSetup(void)noexcept
+void lFrame::ViewSetup(void)noexcept(true)
 {
 	VisualControl::ViewSetup();
 
@@ -57,7 +57,7 @@ void lFrame::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void lFrame::ViewClear(void)noexcept
+void lFrame::ViewClear(void)noexcept(true)
 {
 	if(fClientView!=nullptr){
 		fView->RemoveView(fClientView);
@@ -66,7 +66,7 @@ void lFrame::ViewClear(void)noexcept
 	VisualControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void lFrame::UILayout(void)noexcept
+void lFrame::UILayout(void)noexcept(true)
 {
 	VisualControl::UILayout();
 
@@ -80,16 +80,16 @@ void lFrame::UILayout(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cContent::cContent()noexcept
+cContent::cContent()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cContent::~cContent()noexcept
+cContent::~cContent()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void cContent::SetContent(rPtr<viControl> Content)noexcept
+void cContent::SetContent(rPtr<viControl> Content)noexcept(true)
 {
 	if(fContent==Content)
 		return;
@@ -105,14 +105,14 @@ void cContent::SetContent(rPtr<viControl> Content)noexcept
 	ControlContentChanged();
 }
 //---------------------------------------------------------------------------
-void cContent::UpdateContentZPosition(void)noexcept
+void cContent::UpdateContentZPosition(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetContentZPosition(ContentZPosition);
 	}
 }
 //---------------------------------------------------------------------------
-void cContent::ViewSetup(void)noexcept
+void cContent::ViewSetup(void)noexcept(true)
 {
 	Control::ViewSetup();
 	
@@ -126,7 +126,7 @@ void cContent::ViewSetup(void)noexcept
 	
 }
 //---------------------------------------------------------------------------
-void cContent::ViewClear(void)noexcept
+void cContent::ViewClear(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -135,30 +135,30 @@ void cContent::ViewClear(void)noexcept
 	Control::ViewClear();
 }
 //---------------------------------------------------------------------------
-void cContent::ControlContentSetDefault(void)noexcept
+void cContent::ControlContentSetDefault(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cContent::ControlContentChanged(void)noexcept
+void cContent::ControlContentChanged(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cVisual::cVisual()noexcept
+cVisual::cVisual()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cVisual::~cVisual()noexcept
+cVisual::~cVisual()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-Float32 cVisual::ControlContentZPosition(void)noexcept
+Float32 cVisual::ControlContentZPosition(void)noexcept(true)
 {
 	return ZPosition_Content+ControlZOffset;
 }
 //---------------------------------------------------------------------------
-void cVisual::UpdateControlZOffset(void)noexcept
+void cVisual::UpdateControlZOffset(void)noexcept(true)
 {
 	VisualControl::UpdateControlZOffset();
 
@@ -168,11 +168,11 @@ void cVisual::UpdateControlZOffset(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cVisual::ControlContentSetDefault(void)noexcept
+void cVisual::ControlContentSetDefault(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cVisual::SetContent(rPtr<viControl> Content)noexcept
+void cVisual::SetContent(rPtr<viControl> Content)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -185,7 +185,7 @@ void cVisual::SetContent(rPtr<viControl> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cVisual::ViewSetup(void)noexcept
+void cVisual::ViewSetup(void)noexcept(true)
 {
 	VisualControl::ViewSetup();
 
@@ -197,7 +197,7 @@ void cVisual::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cVisual::ViewClear(void)noexcept
+void cVisual::ViewClear(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -207,7 +207,7 @@ void cVisual::ViewClear(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vLabel::vLabel(viTextControlData *Data)noexcept
+vLabel::vLabel(viTextControlData *Data)noexcept(true)
 	: fData(Data)
 {
 	fUpdateText=true;
@@ -215,22 +215,22 @@ vLabel::vLabel(viTextControlData *Data)noexcept
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vLabel::~vLabel()noexcept
+vLabel::~vLabel()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vLabel::Create(viTextControlData *Data)noexcept
+rPtr<viControl> vLabel::Create(viTextControlData *Data)noexcept(true)
 {
 	return rCreate< bwvControl<vLabel> >(Data);
 }
 //---------------------------------------------------------------------------
-viTextControlData* vLabel::GetData(void)const noexcept
+viTextControlData* vLabel::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vLabel::SetData(viTextControlData *Data)noexcept
+void vLabel::SetData(viTextControlData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -242,14 +242,14 @@ void vLabel::SetData(viTextControlData *Data)noexcept
 	Update();
 }
 //---------------------------------------------------------------------------
-void vLabel::Update(void)noexcept
+void vLabel::Update(void)noexcept(true)
 {
 	fUpdateText=true;
 	if(fViewContent!=nullptr)
 		fViewContent->QueryUpdate();
 }
 //---------------------------------------------------------------------------
-void vLabel::DataInsertCallback(void)noexcept
+void vLabel::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fTextControlNotifyToken=fData->ControlTextNotifySet.Insert([this]{
@@ -258,14 +258,14 @@ void vLabel::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vLabel::DataRemoveCallback(void)noexcept
+void vLabel::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->ControlTextNotifySet.Remove(fTextControlNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vLabel::Paint(iUISimplePaintContext *Context)noexcept
+void vLabel::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	SetupTextCache();
 
@@ -295,7 +295,7 @@ void vLabel::Paint(iUISimplePaintContext *Context)noexcept
 	Context->Graph(TextPos,fTextGraphSize,fCacheTextGraph);
 }
 //---------------------------------------------------------------------------
-void vLabel::SetupTextCache(void)noexcept
+void vLabel::SetupTextCache(void)noexcept(true)
 {
 	if(fUpdateText==false){
 		return;
@@ -327,96 +327,96 @@ void vLabel::SetupTextCache(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cLabel::cLabel()noexcept
+cLabel::cLabel()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-cLabel::~cLabel()noexcept
+cLabel::~cLabel()noexcept(true)
 {
 	SetContent(nullptr);
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cLabel::ControlContentSetDefault(void)noexcept
+void cLabel::ControlContentSetDefault(void)noexcept(true)
 {
 	SetContent(vLabel::Create(this));
 }
 //---------------------------------------------------------------------------
-void cLabel::Update(void)noexcept
+void cLabel::Update(void)noexcept(true)
 {
 	ControlTextNotifySet();
 }
 //---------------------------------------------------------------------------
-const uChar16* cLabel::ControlTextString(void)noexcept
+const uChar16* cLabel::ControlTextString(void)noexcept(true)
 {
 	return Text->Pointer;
 }
 //---------------------------------------------------------------------------
-uIntn cLabel::ControlTextLength(void)noexcept
+uIntn cLabel::ControlTextLength(void)noexcept(true)
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-const cUITextStyle& cLabel::ControlTextStyle(void)noexcept
+const cUITextStyle& cLabel::ControlTextStyle(void)noexcept(true)
 {
 	return TextStyle;
 }
 //---------------------------------------------------------------------------
-cUIRectangle cLabel::ControlTextMargin(void)noexcept
+cUIRectangle cLabel::ControlTextMargin(void)noexcept(true)
 {
 	if(fView==nullptr)
 		return UIRectangleZero;
 	return fView->GetFrameMargin();
 }
 //---------------------------------------------------------------------------
-eAlignment cLabel::ControlTextAlignment(void)noexcept
+eAlignment cLabel::ControlTextAlignment(void)noexcept(true)
 {
 	return TextAlign;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vButton::vButton(viButtonData *Data)noexcept
+vButton::vButton(viButtonData *Data)noexcept(true)
 	: fData(Data)
 {
 	DataInsertCallback();
 	LayoutOrder=LayoutOrder_Background;
 }
 //---------------------------------------------------------------------------
-vButton::~vButton()noexcept
+vButton::~vButton()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vButton::Create(viButtonData *Data)noexcept
+rPtr<viControl> vButton::Create(viButtonData *Data)noexcept(true)
 {
 	return rCreate< bwvControl<vButton> >(Data);
 }
 //---------------------------------------------------------------------------
-void vButton::SetView(iUIView *View)noexcept
+void vButton::SetView(iUIView *View)noexcept(true)
 {
 	ViewControl::SetView(View);
 	vSimpleViewPainter::SetView(View);
 }
 //---------------------------------------------------------------------------
-void vButton::SetContentZPosition(Float32 ZPosition)noexcept
+void vButton::SetContentZPosition(Float32 ZPosition)noexcept(true)
 {
 	vSimpleViewPainter::SetContentZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-cUIRectangle vButton::UIMargin(const cUIRectangle &Margin)noexcept
+cUIRectangle vButton::UIMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	cUIRectangle FrameMargin={2,2,2,2};
 
 	return MergeMargin(FrameMargin,Margin);
 }
 //---------------------------------------------------------------------------
-viButtonData* vButton::GetData(void)const noexcept
+viButtonData* vButton::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vButton::SetData(viButtonData *Data)noexcept
+void vButton::SetData(viButtonData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -433,7 +433,7 @@ const cUIColor vButton::StateColorHot=UIColorFromUInt32(0xFFFF0000);
 const cUIColor vButton::StateColorPressed=UIColorFromUInt32(0xFF0000FF);
 const cUIColor vButton::StateColorDisabled=UIColorFromUInt32(0xFF000000);
 //---------------------------------------------------------------------------
-void vButton::Paint(iUISimplePaintContext *Context)noexcept
+void vButton::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	if(fData==nullptr)
 		return;
@@ -458,14 +458,14 @@ void vButton::Paint(iUISimplePaintContext *Context)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButton::Update(void)noexcept
+void vButton::Update(void)noexcept(true)
 {
 	if(fViewContent!=nullptr){
 		fViewContent->QueryUpdate();
 	}
 }
 //---------------------------------------------------------------------------
-void vButton::DataInsertCallback(void)noexcept
+void vButton::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fButtonNotifyToken=fData->ButtonNotifySet.Insert([this]{
@@ -474,7 +474,7 @@ void vButton::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vButton::DataRemoveCallback(void)noexcept
+void vButton::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->ButtonNotifySet.Remove(fButtonNotifyToken);
@@ -482,16 +482,16 @@ void vButton::DataRemoveCallback(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcButton::bcButton()noexcept
+bcButton::bcButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bcButton::~bcButton()noexcept
+bcButton::~bcButton()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcButton::ViewSetup(void)noexcept
+void bcButton::ViewSetup(void)noexcept(true)
 {
 	Control::ViewSetup();
 	fHot=false;
@@ -508,7 +508,7 @@ void bcButton::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::ViewClear(void)noexcept
+void bcButton::ViewClear(void)noexcept(true)
 {
 	fMouseDown=false;
 	fTouchDown=false;
@@ -524,7 +524,7 @@ void bcButton::ViewClear(void)noexcept
 	Control::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcButton::SetBackground(rPtr<viControl> Background)noexcept
+void bcButton::SetBackground(rPtr<viControl> Background)noexcept(true)
 {
 	if(fBackground!=nullptr){
 		fBackground->SetView(nullptr);
@@ -538,32 +538,32 @@ void bcButton::SetBackground(rPtr<viControl> Background)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::UpdateZPosition(void)noexcept
+void bcButton::UpdateZPosition(void)noexcept(true)
 {
 	if(fBackground!=nullptr){
 		fBackground->SetContentZPosition(BackgroundZPosition);
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::ButtonBackgroundSetDefault(void)noexcept
+void bcButton::ButtonBackgroundSetDefault(void)noexcept(true)
 {
 	if(gCreateDefaultButtonVisual!=nullptr){
 		SetBackground(gCreateDefaultButtonVisual(this));
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::ButtonBackgroundChanged(void)noexcept
+void bcButton::ButtonBackgroundChanged(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcButton::MouseEnter(iUIMouseEvent*)noexcept
+void bcButton::MouseEnter(iUIMouseEvent*)noexcept(true)
 {
 	fHot=true;
 	fMouseDownBtn=MouseButton::None;
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcButton::MouseLeave(iUIMouseEvent*)noexcept
+void bcButton::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fHot=false;
 	fMouseDown=false;
@@ -572,7 +572,7 @@ void bcButton::MouseLeave(iUIMouseEvent*)noexcept
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcButton::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void bcButton::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	bool PrevDown=fMouseDown;
 	if(fMouseDownBtn!=MouseButton::None){
@@ -594,7 +594,7 @@ void bcButton::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcButton::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {	UnusedParameter(MouseEvent);
 	if(fMouseDownBtn!=MouseButton::None)
 		return;
@@ -609,7 +609,7 @@ void bcButton::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcButton::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcButton::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(Button==fMouseDownBtn){
 		fMouseDown=false;
@@ -627,7 +627,7 @@ void bcButton::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchDown(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchDown(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fTouchDownPointID!=nullptr)
 		return;
@@ -639,7 +639,7 @@ void bcButton::TouchDown(iUITouchEvent *TouchEvent)noexcept
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchUp(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchUp(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()==fTouchDownPointID){
 		fTouchDown=false;
@@ -656,7 +656,7 @@ void bcButton::TouchUp(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchLost(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchLost(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()==fTouchDownPointID){
 		fTouchDown=false;
@@ -665,7 +665,7 @@ void bcButton::TouchLost(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcButton::TouchMove(iUITouchEvent *TouchEvent)noexcept
+void bcButton::TouchMove(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fTouchDownPointID!=TouchEvent->GetTouchID()){
 		return;
@@ -681,22 +681,22 @@ void bcButton::TouchMove(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-eButtonState bcButton::ButtonState(void)noexcept
+eButtonState bcButton::ButtonState(void)noexcept(true)
 {
 	return GetButtonState();
 }
 //---------------------------------------------------------------------------
-ufInt8 bcButton::CheckState(void)noexcept
+ufInt8 bcButton::CheckState(void)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-void bcButton::ButtonStateChanged(void)noexcept
+void bcButton::ButtonStateChanged(void)noexcept(true)
 {
 	ButtonNotifySet();
 }
 //---------------------------------------------------------------------------
-eButtonState bcButton::GetButtonState(void)const noexcept
+eButtonState bcButton::GetButtonState(void)const noexcept(true)
 {
 	if(fView->IsEnabled()==false){
 		return ButtonState::Disabled;
@@ -711,15 +711,15 @@ eButtonState bcButton::GetButtonState(void)const noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cButton::cButton()noexcept
+cButton::cButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cButton::~cButton()noexcept
+cButton::~cButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cButton::ButtonClick(const cUIPoint &)noexcept
+void cButton::ButtonClick(const cUIPoint &)noexcept(true)
 {
 	if(OnClick!=nullptr){
 		OnClick();
@@ -727,19 +727,19 @@ void cButton::ButtonClick(const cUIPoint &)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTextButton::bcTextButton()noexcept
+bcTextButton::bcTextButton()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-bcTextButton::~bcTextButton()noexcept
+bcTextButton::~bcTextButton()noexcept(true)
 {
 	SetView(nullptr);
 	viButtonData::InvalidateData();
 	viTextControlData::InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcTextButton::ViewSetup(void)noexcept
+void bcTextButton::ViewSetup(void)noexcept(true)
 {
 	bcButton::ViewSetup();
 
@@ -751,7 +751,7 @@ void bcTextButton::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextButton::ViewClear(void)noexcept
+void bcTextButton::ViewClear(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -760,7 +760,7 @@ void bcTextButton::ViewClear(void)noexcept
 	bcButton::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcTextButton::UpdateZPosition(void)noexcept
+void bcTextButton::UpdateZPosition(void)noexcept(true)
 {
 	bcButton::UpdateZPosition();
 
@@ -769,12 +769,12 @@ void bcTextButton::UpdateZPosition(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextButton::ButtonContentSetDefault(void)noexcept
+void bcTextButton::ButtonContentSetDefault(void)noexcept(true)
 {
 	SetContent(vLabel::Create(this));
 }
 //---------------------------------------------------------------------------
-void bcTextButton::SetContent(rPtr<viControl> Content)noexcept
+void bcTextButton::SetContent(rPtr<viControl> Content)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -786,22 +786,22 @@ void bcTextButton::SetContent(rPtr<viControl> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-const uChar16* bcTextButton::ControlTextString(void)noexcept
+const uChar16* bcTextButton::ControlTextString(void)noexcept(true)
 {
 	return cnString::TEmptyString<uChar16>::Value;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextButton::ControlTextLength(void)noexcept
+uIntn bcTextButton::ControlTextLength(void)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-const cUITextStyle& bcTextButton::ControlTextStyle(void)noexcept
+const cUITextStyle& bcTextButton::ControlTextStyle(void)noexcept(true)
 {
 	return TextStyle;
 }
 //---------------------------------------------------------------------------
-cUIRectangle bcTextButton::ControlTextMargin(void)noexcept
+cUIRectangle bcTextButton::ControlTextMargin(void)noexcept(true)
 {
 	if(fView==nullptr)
 		return UIRectangleZero;
@@ -813,60 +813,60 @@ cUIRectangle bcTextButton::ControlTextMargin(void)noexcept
 	return Margin;
 }
 //---------------------------------------------------------------------------
-eAlignment bcTextButton::ControlTextAlignment(void)noexcept
+eAlignment bcTextButton::ControlTextAlignment(void)noexcept(true)
 {
 	return TextAlign;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextButton::cTextButton()noexcept
+cTextButton::cTextButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cTextButton::~cTextButton()noexcept
+cTextButton::~cTextButton()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cTextButton::ButtonMouseAllowButton(eMouseButton Button)noexcept
+bool cTextButton::ButtonMouseAllowButton(eMouseButton Button)noexcept(true)
 {
 	return Button==MouseButton::Left;
 }
 //---------------------------------------------------------------------------
-void cTextButton::ButtonClick(const cUIPoint &)noexcept
+void cTextButton::ButtonClick(const cUIPoint &)noexcept(true)
 {
 	if(OnClick!=nullptr){
 		OnClick();
 	}
 }
 //---------------------------------------------------------------------------
-ufInt8 cTextButton::CheckState(void)noexcept
+ufInt8 cTextButton::CheckState(void)noexcept(true)
 {
 	return Check;
 }
 //---------------------------------------------------------------------------
-const uChar16* cTextButton::ControlTextString(void)noexcept
+const uChar16* cTextButton::ControlTextString(void)noexcept(true)
 {
 	return Text;
 }
 //---------------------------------------------------------------------------
-uIntn cTextButton::ControlTextLength(void)noexcept
+uIntn cTextButton::ControlTextLength(void)noexcept(true)
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-void cTextButton::Update(void)noexcept
+void cTextButton::Update(void)noexcept(true)
 {
 	ControlTextNotifySet();
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
-void cTextButton::UpdateState(void)noexcept
+void cTextButton::UpdateState(void)noexcept(true)
 {
 	ButtonStateChanged();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcScrollBar::bcScrollBar()noexcept
+bcScrollBar::bcScrollBar()noexcept(true)
 {
 	fActiveButton=eScrollBarButton::None;
 
@@ -874,13 +874,13 @@ bcScrollBar::bcScrollBar()noexcept
 	fHot=false;
 }
 //---------------------------------------------------------------------------
-bcScrollBar::~bcScrollBar()noexcept
+bcScrollBar::~bcScrollBar()noexcept(true)
 {
 	SetView(nullptr);
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ViewSetup(void)noexcept
+void bcScrollBar::ViewSetup(void)noexcept(true)
 {
 	Control::ViewSetup();
 	
@@ -895,7 +895,7 @@ void bcScrollBar::ViewSetup(void)noexcept
 	fMousePressTimer=UIDispatch->CreateTimer(nullptr,&fMousePressTimerProc);
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ViewClear(void)noexcept
+void bcScrollBar::ViewClear(void)noexcept(true)
 {
 	fMousePressTimer->Stop();
 	fMousePressTimer=nullptr;
@@ -907,21 +907,21 @@ void bcScrollBar::ViewClear(void)noexcept
 	Control::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ControlContentSetDefault(void)noexcept
+void bcScrollBar::ControlContentSetDefault(void)noexcept(true)
 {
 	if(gCreateDefaultScrollBarVisual!=nullptr){
 		SetContent(gCreateDefaultScrollBarVisual(this));
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::UpdateZPosition(void)noexcept
+void bcScrollBar::UpdateZPosition(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetContentZPosition(ContentZPosition);
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::SetContent(rPtr<viScrollBar> Content)noexcept
+void bcScrollBar::SetContent(rPtr<viScrollBar> Content)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -933,17 +933,17 @@ void bcScrollBar::SetContent(rPtr<viScrollBar> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ScrollBarNotify(void)noexcept
+void bcScrollBar::ScrollBarNotify(void)noexcept(true)
 {
 	ScrollBarNotifySet();
 }
 //---------------------------------------------------------------------------
-eScrollBarButton bcScrollBar::ScrollBarActiveButton(void)noexcept
+eScrollBarButton bcScrollBar::ScrollBarActiveButton(void)noexcept(true)
 {
 	return fActiveButton;
 }
 //---------------------------------------------------------------------------
-eButtonState bcScrollBar::ScrollBarButtonState(void)noexcept
+eButtonState bcScrollBar::ScrollBarButtonState(void)noexcept(true)
 {
 	if(fButtonDown){
 		return ButtonState::Pressed;
@@ -953,7 +953,7 @@ eButtonState bcScrollBar::ScrollBarButtonState(void)noexcept
 	return ButtonState::Normal;
 }
 //---------------------------------------------------------------------------
-viScrollBarData::cScrollPosition bcScrollBar::ScrollBarPosition(void)noexcept
+viScrollBarData::cScrollPosition bcScrollBar::ScrollBarPosition(void)noexcept(true)
 {
 	cScrollPosition ScrollPos;
 	ScrollPos.View.Begin=0;
@@ -963,21 +963,21 @@ viScrollBarData::cScrollPosition bcScrollBar::ScrollBarPosition(void)noexcept
 	return ScrollPos;
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ScrollBarMove(Float32)noexcept
+void bcScrollBar::ScrollBarMove(Float32)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::ScrollBarMoveAction(bool,eScrollBarMoveDistance)noexcept
+void bcScrollBar::ScrollBarMoveAction(bool,eScrollBarMoveDistance)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseEnter(iUIMouseEvent*)noexcept
+void bcScrollBar::MouseEnter(iUIMouseEvent*)noexcept(true)
 {
 	fActiveButton=eScrollBarButton::None;
 	fHot=true;
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseLeave(iUIMouseEvent*)noexcept
+void bcScrollBar::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fActiveButton=eScrollBarButton::None;
 	fHot=false;
@@ -988,7 +988,7 @@ void bcScrollBar::MouseLeave(iUIMouseEvent*)noexcept
 	ScrollBarNotify();
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void bcScrollBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -1015,7 +1015,7 @@ void bcScrollBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcScrollBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(Button!=MouseButton::Left)
 		return;
@@ -1040,7 +1040,7 @@ void bcScrollBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexce
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept
+void bcScrollBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept(true)
 {
 	if(Button!=MouseButton::Left)
 		return;
@@ -1052,7 +1052,7 @@ void bcScrollBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept
 	ScrollBarNotify();
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept
+void bcScrollBar::MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 ScrollY)noexcept(true)
 {
 	Float32 ScrollOffset=fContent->ScrollOffsetToValue(ScrollX,ScrollY);
 	if(ScrollOffset!=0){
@@ -1060,13 +1060,13 @@ void bcScrollBar::MouseWheel(iUIMouseEvent *MouseEvent,Float32 ScrollX,Float32 S
 	}
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::cMousePressTimerProc::Execute(void)noexcept
+void bcScrollBar::cMousePressTimerProc::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&bcScrollBar::fMousePressTimerProc);
 	Host->MousePress();
 }
 //---------------------------------------------------------------------------
-void bcScrollBar::MousePress(void)noexcept
+void bcScrollBar::MousePress(void)noexcept(true)
 {
 	if(fActiveMouse==nullptr)
 		return;
@@ -1099,20 +1099,20 @@ void bcScrollBar::MousePress(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cScrollBar::cScrollBar()noexcept
+cScrollBar::cScrollBar()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cScrollBar::~cScrollBar()noexcept
+cScrollBar::~cScrollBar()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cScrollBar::Update(void)noexcept
+void cScrollBar::Update(void)noexcept(true)
 {
 	ScrollBarNotify();
 }
 //---------------------------------------------------------------------------
-cScrollBar::cScrollPosition cScrollBar::ScrollBarPosition(void)noexcept
+cScrollBar::cScrollPosition cScrollBar::ScrollBarPosition(void)noexcept(true)
 {
 	cScrollPosition ScrollPos;
 	ScrollPos.View.Begin=ScrollCurrent;
@@ -1122,7 +1122,7 @@ cScrollBar::cScrollPosition cScrollBar::ScrollBarPosition(void)noexcept
 	return ScrollPos;
 }
 //---------------------------------------------------------------------------
-void cScrollBar::ScrollBarMove(Float32 Offset)noexcept
+void cScrollBar::ScrollBarMove(Float32 Offset)noexcept(true)
 {
 	if(Offset!=0){
 		Float32 NewValue=ScrollCurrent+Offset;
@@ -1144,7 +1144,7 @@ void cScrollBar::ScrollBarMove(Float32 Offset)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance Distance)noexcept
+void cScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance Distance)noexcept(true)
 {
 	Float32 MoveOffset;
 	switch(Distance){
@@ -1164,21 +1164,21 @@ void cScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance Distan
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cControlScrollBar::cControlScrollBar()noexcept
+cControlScrollBar::cControlScrollBar()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cControlScrollBar::~cControlScrollBar()noexcept
+cControlScrollBar::~cControlScrollBar()noexcept(true)
 {
 	SetScrollInfo(nullptr);
 }
 //---------------------------------------------------------------------------
-iControlScrollInfo* cControlScrollBar::GetScrollInfo(void)const noexcept
+iControlScrollInfo* cControlScrollBar::GetScrollInfo(void)const noexcept(true)
 {
 	return fScrollInfo;
 }
 //---------------------------------------------------------------------------
-void cControlScrollBar::SetScrollInfo(iControlScrollInfo *ScrollInfo)noexcept
+void cControlScrollBar::SetScrollInfo(iControlScrollInfo *ScrollInfo)noexcept(true)
 {
 	if(fScrollInfo!=nullptr){
 		fScrollInfo->ScrollInfoNotifySet.Remove(fScrollInfoNotifyToken);
@@ -1197,12 +1197,12 @@ void cControlScrollBar::SetScrollInfo(iControlScrollInfo *ScrollInfo)noexcept
 	ScrollInfoChanged();
 }
 //---------------------------------------------------------------------------
-void cControlScrollBar::ScrollInfoChanged(void)noexcept
+void cControlScrollBar::ScrollInfoChanged(void)noexcept(true)
 {
 	ScrollBarNotify();
 }
 //---------------------------------------------------------------------------
-bool cControlScrollBar::NeedScrollBar(void)const noexcept
+bool cControlScrollBar::NeedScrollBar(void)const noexcept(true)
 {
 	if(fScrollInfo==nullptr)
 		return false;
@@ -1215,7 +1215,7 @@ bool cControlScrollBar::NeedScrollBar(void)const noexcept
 	return TotalSize>ScrollRange.ViewportSize;
 }
 //---------------------------------------------------------------------------
-cControlScrollBar::cScrollPosition cControlScrollBar::ScrollBarPosition(void)noexcept
+cControlScrollBar::cScrollPosition cControlScrollBar::ScrollBarPosition(void)noexcept(true)
 {
 	cScrollPosition ScrollPos;
 	if(fScrollInfo!=nullptr){
@@ -1235,7 +1235,7 @@ cControlScrollBar::cScrollPosition cControlScrollBar::ScrollBarPosition(void)noe
 	return ScrollPos;
 }
 //---------------------------------------------------------------------------
-void cControlScrollBar::ScrollBarMove(Float32 Offset)noexcept
+void cControlScrollBar::ScrollBarMove(Float32 Offset)noexcept(true)
 {
 	if(fScrollInfo==nullptr){
 		return;
@@ -1248,7 +1248,7 @@ void cControlScrollBar::ScrollBarMove(Float32 Offset)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cControlScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance Distance)noexcept
+void cControlScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance Distance)noexcept(true)
 {
 	if(fScrollInfo==nullptr){
 		return;
@@ -1272,32 +1272,32 @@ void cControlScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTab::bcTab()noexcept
+bcTab::bcTab()noexcept(true)
 {
 	fHotIndex=-1;
 }
 //---------------------------------------------------------------------------
-bcTab::~bcTab()noexcept
+bcTab::~bcTab()noexcept(true)
 {
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-sfInt16 bcTab::TabActiveIndex(void)noexcept
+sfInt16 bcTab::TabActiveIndex(void)noexcept(true)
 {
 	return -1;
 }
 //---------------------------------------------------------------------------
-sfInt16 bcTab::TabHotIndex(void)noexcept
+sfInt16 bcTab::TabHotIndex(void)noexcept(true)
 {
 	return fHotIndex;
 }
 //---------------------------------------------------------------------------
-uIntn bcTab::TabCount(void)noexcept
+uIntn bcTab::TabCount(void)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-bcTab::cTabItem bcTab::TabGet(uIntn)noexcept
+bcTab::cTabItem bcTab::TabGet(uIntn)noexcept(true)
 {
 	cTabItem EmptyItem;
 	EmptyItem.TabSize=0;
@@ -1308,19 +1308,19 @@ bcTab::cTabItem bcTab::TabGet(uIntn)noexcept
 	return EmptyItem;
 }
 //---------------------------------------------------------------------------
-void bcTab::TabNotify(void)noexcept
+void bcTab::TabNotify(void)noexcept(true)
 {
 	TabNotifySet();
 }
 //---------------------------------------------------------------------------
-void bcTab::ControlContentSetDefault(void)noexcept
+void bcTab::ControlContentSetDefault(void)noexcept(true)
 {
 	if(gCreateDefaultTabVisual!=nullptr){
 		SetContent(gCreateDefaultTabVisual(this));
 	}
 }
 //---------------------------------------------------------------------------
-sfInt16 bcTab::TabHitTest(Float32 x,Float32 y)noexcept
+sfInt16 bcTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
 {
 	auto ViewSize=fView->GetSize();
 	if(y<0)
@@ -1344,7 +1344,7 @@ sfInt16 bcTab::TabHitTest(Float32 x,Float32 y)noexcept
 	return -1;
 }
 //---------------------------------------------------------------------------
-void bcTab::MouseLeave(iUIMouseEvent*)noexcept
+void bcTab::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fHotIndex=-1;
 	fMouseBtnLeftDown=false;
@@ -1352,7 +1352,7 @@ void bcTab::MouseLeave(iUIMouseEvent*)noexcept
 	TabNotify();
 }
 //---------------------------------------------------------------------------
-void bcTab::MouseMove(iUIMouseEvent *Mouse)noexcept
+void bcTab::MouseMove(iUIMouseEvent *Mouse)noexcept(true)
 {
 	if(fMouseBtnLeftDown==false){
 		cUIPoint Pos;
@@ -1363,7 +1363,7 @@ void bcTab::MouseMove(iUIMouseEvent *Mouse)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTab::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTab::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(fMouseBtnLeftDown==false){
 		if(Button==MouseButton::Left){
@@ -1377,7 +1377,7 @@ void bcTab::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTab::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTab::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -1395,29 +1395,29 @@ void bcTab::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTab::TabClick(sfInt16)noexcept{}
+void bcTab::TabClick(sfInt16)noexcept(true){}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTab::cTab()noexcept
+cTab::cTab()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-cTab::~cTab()noexcept
+cTab::~cTab()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-sfInt16 cTab::TabActiveIndex(void)noexcept
+sfInt16 cTab::TabActiveIndex(void)noexcept(true)
 {
 	return fActiveIndex;
 }
 //---------------------------------------------------------------------------
-uIntn cTab::TabCount(void)noexcept
+uIntn cTab::TabCount(void)noexcept(true)
 {
 	return TabList.GetCount();
 }
 //---------------------------------------------------------------------------
-cTab::cTabItem cTab::TabGet(uIntn Index)noexcept
+cTab::cTabItem cTab::TabGet(uIntn Index)noexcept(true)
 {
 	cTabItem Item;
 	auto &TabItem=TabList[Index];
@@ -1429,17 +1429,17 @@ cTab::cTabItem cTab::TabGet(uIntn Index)noexcept
 	return Item;
 }
 //---------------------------------------------------------------------------
-void cTab::Update(void)noexcept
+void cTab::Update(void)noexcept(true)
 {
 	TabNotify();
 }
 //---------------------------------------------------------------------------
-sfInt16 cTab::GetActiveIndex(void)const noexcept
+sfInt16 cTab::GetActiveIndex(void)const noexcept(true)
 {
 	return fActiveIndex;
 }
 //---------------------------------------------------------------------------
-void cTab::SetActiveIndex(sfInt16 Index)noexcept
+void cTab::SetActiveIndex(sfInt16 Index)noexcept(true)
 {
 	if(fActiveIndex!=Index){
 		fActiveIndex=Index;
@@ -1449,7 +1449,7 @@ void cTab::SetActiveIndex(sfInt16 Index)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cTab::TabClick(sfInt16 Index)noexcept
+void cTab::TabClick(sfInt16 Index)noexcept(true)
 {
 	if(OnClickTab!=nullptr){
 		OnClickTab(Index);
@@ -1463,31 +1463,31 @@ void cTab::TabClick(sfInt16 Index)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cSplitterBar::cSplitterBar()noexcept
+cSplitterBar::cSplitterBar()noexcept(true)
 {
 	MouseCursorH=cnSystem::GetSysMouseCursor(SysMouseCursor::SizeH);
 	MouseCursorV=cnSystem::GetSysMouseCursor(SysMouseCursor::SizeV);
 }
 //---------------------------------------------------------------------------
-cSplitterBar::~cSplitterBar()noexcept
+cSplitterBar::~cSplitterBar()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::ControlContentSetDefault(void)noexcept
+void cSplitterBar::ControlContentSetDefault(void)noexcept(true)
 {
 	if(gCreateDefaultSplitterBarVisual!=nullptr){
 		SetContent(gCreateDefaultSplitterBarVisual());
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::RectangleChanged(bool,bool Sized)noexcept
+void cSplitterBar::RectangleChanged(bool,bool Sized)noexcept(true)
 {
 	if(Sized){
 		SizeChanged();
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::SizeChanged(void)noexcept
+void cSplitterBar::SizeChanged(void)noexcept(true)
 {
 	auto Size=fView->GetSize();
 	bool Horization=Size.x<Size.y;
@@ -1500,12 +1500,12 @@ void cSplitterBar::SizeChanged(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::MouseLeave(iUIMouseEvent*)noexcept
+void cSplitterBar::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fBtnDown=false;
 }
 //---------------------------------------------------------------------------
-iInterface* cSplitterBar::MouseGetCursor(iUIMouseEvent*)noexcept
+iInterface* cSplitterBar::MouseGetCursor(iUIMouseEvent*)noexcept(true)
 {
 	if(fHorization){
 		return MouseCursorH;
@@ -1515,7 +1515,7 @@ iInterface* cSplitterBar::MouseGetCursor(iUIMouseEvent*)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void cSplitterBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	if(fBtnDown){
 		cUIPoint CurPos;
@@ -1533,7 +1533,7 @@ void cSplitterBar::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void cSplitterBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(Button==MouseActionButton){
 		fBtnDown=true;
@@ -1541,7 +1541,7 @@ void cSplitterBar::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexc
 	}
 }
 //---------------------------------------------------------------------------
-void cSplitterBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept
+void cSplitterBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept(true)
 {
 	if(Button==MouseActionButton){
 		fBtnDown=false;
@@ -1549,15 +1549,15 @@ void cSplitterBar::MouseUp(iUIMouseEvent*,eMouseButton Button)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-lEdgeInsets::lEdgeInsets()noexcept
+lEdgeInsets::lEdgeInsets()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-lEdgeInsets::~lEdgeInsets()noexcept
+lEdgeInsets::~lEdgeInsets()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void lEdgeInsets::ViewSetup(void)noexcept
+void lEdgeInsets::ViewSetup(void)noexcept(true)
 {
 	LayoutControl::ViewSetup();
 
@@ -1572,7 +1572,7 @@ void lEdgeInsets::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void lEdgeInsets::ViewClear(void)noexcept
+void lEdgeInsets::ViewClear(void)noexcept(true)
 {
 	for(uIntn i=0;i<4;i++){
 		auto &Inset=fInsets[i];
@@ -1587,12 +1587,12 @@ void lEdgeInsets::ViewClear(void)noexcept
 	LayoutControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-iControlComponent* lEdgeInsets::GetInset(eDirection Direction)const noexcept
+iControlComponent* lEdgeInsets::GetInset(eDirection Direction)const noexcept(true)
 {
 	return fInsets[Direction].Content;
 }
 //---------------------------------------------------------------------------
-void lEdgeInsets::SetInset(rPtr<iControlComponent> Inset,eDirection Direction)noexcept
+void lEdgeInsets::SetInset(rPtr<iControlComponent> Inset,eDirection Direction)noexcept(true)
 {
 	auto &InsetItem=fInsets[Direction];
 	if(InsetItem.Content!=nullptr){
@@ -1611,7 +1611,7 @@ void lEdgeInsets::SetInset(rPtr<iControlComponent> Inset,eDirection Direction)no
 
 }
 //---------------------------------------------------------------------------
-cUIRectangle lEdgeInsets::UIMargin(const cUIRectangle &Margin)noexcept
+cUIRectangle lEdgeInsets::UIMargin(const cUIRectangle &Margin)noexcept(true)
 {
 	fInsetPos=Margin;
 
@@ -1632,7 +1632,7 @@ cUIRectangle lEdgeInsets::UIMargin(const cUIRectangle &Margin)noexcept
 	return InsetMargin;
 }
 //---------------------------------------------------------------------------
-void lEdgeInsets::UILayout(void)noexcept
+void lEdgeInsets::UILayout(void)noexcept(true)
 {
 	auto ViewSize=fView->GetSize();
 
@@ -1654,44 +1654,44 @@ void lEdgeInsets::UILayout(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTitledFrame::cTitledFrame()noexcept
+cTitledFrame::cTitledFrame()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 
 	TextMargin=UIRectangleZero;
 }
 //---------------------------------------------------------------------------
-cTitledFrame::~cTitledFrame()noexcept
+cTitledFrame::~cTitledFrame()noexcept(true)
 {
 	viTextControlData::InvalidateData();
 }
 //---------------------------------------------------------------------------
-void cTitledFrame::Update(void)noexcept
+void cTitledFrame::Update(void)noexcept(true)
 {
 	ControlTextNotifySet();
 }
 //---------------------------------------------------------------------------
-const uChar16* cTitledFrame::ControlTextString(void)noexcept
+const uChar16* cTitledFrame::ControlTextString(void)noexcept(true)
 {
 	return Text->Pointer;
 }
 //---------------------------------------------------------------------------
-uIntn cTitledFrame::ControlTextLength(void)noexcept
+uIntn cTitledFrame::ControlTextLength(void)noexcept(true)
 {
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-const cUITextStyle& cTitledFrame::ControlTextStyle(void)noexcept
+const cUITextStyle& cTitledFrame::ControlTextStyle(void)noexcept(true)
 {
 	return TextStyle;
 }
 //---------------------------------------------------------------------------
-cUIRectangle cTitledFrame::ControlTextMargin(void)noexcept
+cUIRectangle cTitledFrame::ControlTextMargin(void)noexcept(true)
 {
 	return TextMargin;
 }
 //---------------------------------------------------------------------------
-eAlignment cTitledFrame::ControlTextAlignment(void)noexcept
+eAlignment cTitledFrame::ControlTextAlignment(void)noexcept(true)
 {
 	return Alignment::Center;
 }

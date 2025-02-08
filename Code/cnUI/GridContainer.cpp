@@ -6,7 +6,7 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cGridLineData::cGridLineInfo cGridLineData::GridLineInfo(void)noexcept
+cGridLineData::cGridLineInfo cGridLineData::GridLineInfo(void)noexcept(true)
 {
 	cGridLineInfo Info;
 	Info.HorizontalItemCount=fLines[0].GetCount();
@@ -14,28 +14,28 @@ cGridLineData::cGridLineInfo cGridLineData::GridLineInfo(void)noexcept
 	return Info;
 }
 //---------------------------------------------------------------------------
-cUIRange cGridLineData::GridLineRange(bool Vertical,ufInt16 Index)noexcept
+cUIRange cGridLineData::GridLineRange(bool Vertical,ufInt16 Index)noexcept(true)
 {
 	auto &Lines=fLines[Vertical];
 	auto &Line=Lines[Index];
 	return Line.Range;
 }
 //---------------------------------------------------------------------------
-ufInt16 cGridLineData::GridLinePartCount(bool Vertical,ufInt16 Index)noexcept
+ufInt16 cGridLineData::GridLinePartCount(bool Vertical,ufInt16 Index)noexcept(true)
 {
 	auto &Lines=fLines[Vertical];
 	auto &Line=Lines[Index];
 	return Line.Parts.GetCount();
 }
 //---------------------------------------------------------------------------
-cUIRange cGridLineData::GridLinePartRange(bool Vertical,ufInt16 Index,ufInt16 PartIndex)noexcept
+cUIRange cGridLineData::GridLinePartRange(bool Vertical,ufInt16 Index,ufInt16 PartIndex)noexcept(true)
 {
 	auto &Lines=fLines[Vertical];
 	auto &Line=Lines[Index];
 	return Line.Parts[PartIndex];
 }
 //---------------------------------------------------------------------------
-void cGridLineData::GridLineSetupStart(ufInt16 HorizontalCount,ufInt16 VerticalCount,cUIRange HoriRange,cUIRange VertRange)noexcept
+void cGridLineData::GridLineSetupStart(ufInt16 HorizontalCount,ufInt16 VerticalCount,cUIRange HoriRange,cUIRange VertRange)noexcept(true)
 {
 	auto &HLines=fLines[0];
 	auto &VLines=fLines[1];
@@ -61,7 +61,7 @@ void cGridLineData::GridLineSetupStart(ufInt16 HorizontalCount,ufInt16 VerticalC
 	}
 }
 //---------------------------------------------------------------------------
-void cGridLineData::GridLineSetupFinish(void)noexcept
+void cGridLineData::GridLineSetupFinish(void)noexcept(true)
 {
 	for(ufInt8 di=0;di<2;di++){
 		auto &Lines=fLines[di];
@@ -121,14 +121,14 @@ void cGridLineData::GridLineSetupFinish(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cGridLineData::GridLineSetupRange(bool Vertical,ufInt16 Index,const cUIRange &Range)noexcept
+void cGridLineData::GridLineSetupRange(bool Vertical,ufInt16 Index,const cUIRange &Range)noexcept(true)
 {
 	auto &Lines=fLines[Vertical];
 	Lines[Index].Range.End=Range.Begin;
 	Lines[Index+1].Range.Begin=Range.End;
 }
 //---------------------------------------------------------------------------
-void cGridLineData::GridLineSetupGap(bool Vertical,ufInt16 Index,ufInt16 GapIndex,ufInt16 GapEndIndex)noexcept
+void cGridLineData::GridLineSetupGap(bool Vertical,ufInt16 Index,ufInt16 GapIndex,ufInt16 GapEndIndex)noexcept(true)
 {
 	auto &Lines=fLines[Vertical];
 	auto &Line=Lines[Index];
@@ -139,7 +139,7 @@ void cGridLineData::GridLineSetupGap(bool Vertical,ufInt16 Index,ufInt16 GapInde
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcViewList::bcViewList()noexcept
+bcViewList::bcViewList()noexcept(true)
 	: fListXItem(false)
 	, fInLayout(false)
 	, fNeedUpdateListViews(false)
@@ -149,7 +149,7 @@ bcViewList::bcViewList()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcViewList::~bcViewList()noexcept
+bcViewList::~bcViewList()noexcept(true)
 {
 	SetView(nullptr);
 	InvalidateData();
@@ -159,12 +159,12 @@ bcViewList::~bcViewList()noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool bcViewList::GetHorizontalList(void)const noexcept
+bool bcViewList::GetHorizontalList(void)const noexcept(true)
 {
 	return fListXItem;
 }
 //---------------------------------------------------------------------------
-void bcViewList::SetHorizontalList(bool Value)noexcept
+void bcViewList::SetHorizontalList(bool Value)noexcept(true)
 {
 	if(fListXItem==Value)
 		return;
@@ -173,26 +173,26 @@ void bcViewList::SetHorizontalList(bool Value)noexcept
 	SetNeedUpdateListLayout();
 }
 //---------------------------------------------------------------------------
-Float32 bcViewList::GetListOffset(void)const noexcept
+Float32 bcViewList::GetListOffset(void)const noexcept(true)
 {
 	return fScrollOffset[!fListXItem];
 }
 //---------------------------------------------------------------------------
-void bcViewList::SetListOffset(Float32 ListOffset)noexcept
+void bcViewList::SetListOffset(Float32 ListOffset)noexcept(true)
 {
 	Float32 Offset[2];
 	Offset[!fListXItem]=ListOffset;
 	SetScrollOffset({Offset[0],Offset[1]});
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewList::FindItemIndexAt(Float32 Position)noexcept
+ufInt32 bcViewList::FindItemIndexAt(Float32 Position)noexcept(true)
 {
 	ufInt32 ItemIndex;
 	FindItemIndexAt(Position,ItemIndex);
 	return ItemIndex;
 }
 //---------------------------------------------------------------------------
-bool bcViewList::FindItemIndexAt(Float32 Position,ufInt32 &ItemIndex)noexcept
+bool bcViewList::FindItemIndexAt(Float32 Position,ufInt32 &ItemIndex)noexcept(true)
 {
 	ufInt32 DisplayIndex;
 	bool Ret=ViewListDisplayFindAt(Position,DisplayIndex);
@@ -200,7 +200,7 @@ bool bcViewList::FindItemIndexAt(Float32 Position,ufInt32 &ItemIndex)noexcept
 	return Ret;
 }
 //---------------------------------------------------------------------------
-bool bcViewList::IsItemVisible(ufInt32 ItemIndex)const noexcept
+bool bcViewList::IsItemVisible(ufInt32 ItemIndex)const noexcept(true)
 {
 	auto ItemPair=fItemMap.GetPair(ItemIndex);
 	if(ItemPair==nullptr){
@@ -210,7 +210,7 @@ bool bcViewList::IsItemVisible(ufInt32 ItemIndex)const noexcept
 	return ItemPair->Value->IsVisible();
 }
 //---------------------------------------------------------------------------
-void bcViewList::SetNeedUpdateListLayout(void)noexcept
+void bcViewList::SetNeedUpdateListLayout(void)noexcept(true)
 {
 	if(fInLayout || fNeedUpdateListLayout)
 		return;
@@ -219,7 +219,7 @@ void bcViewList::SetNeedUpdateListLayout(void)noexcept
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-void bcViewList::SetNeedUpdateListViews(void)noexcept
+void bcViewList::SetNeedUpdateListViews(void)noexcept(true)
 {
 	if(fInLayout || fNeedUpdateListViews)
 		return;
@@ -228,17 +228,17 @@ void bcViewList::SetNeedUpdateListViews(void)noexcept
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewList::ViewListItemIndexToDisplayIndex(ufInt32 ItemIndex)noexcept
+ufInt32 bcViewList::ViewListItemIndexToDisplayIndex(ufInt32 ItemIndex)noexcept(true)
 {
 	return ItemIndex;
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewList::ViewListDisplayIndexToItemIndex(ufInt32 DisplayIndex)noexcept
+ufInt32 bcViewList::ViewListDisplayIndexToItemIndex(ufInt32 DisplayIndex)noexcept(true)
 {
 	return DisplayIndex;
 }
 //---------------------------------------------------------------------------
-void bcViewList::ScrollContentUpdateContentLayout(void)noexcept
+void bcViewList::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	fInLayout=true;
 
@@ -386,7 +386,7 @@ void bcViewList::ScrollContentUpdateContentLayout(void)noexcept
 	fInLayout=false;
 }
 //---------------------------------------------------------------------------
-aClsRef<bcViewList::cItem> bcViewList::QueryItem(ufInt32 ItemIndex)noexcept
+aClsRef<bcViewList::cItem> bcViewList::QueryItem(ufInt32 ItemIndex)noexcept(true)
 {
 	aClsRef<bcViewList::cItem> RetItem;
 
@@ -408,7 +408,7 @@ aClsRef<bcViewList::cItem> bcViewList::QueryItem(ufInt32 ItemIndex)noexcept
 	return RetItem;
 }
 //---------------------------------------------------------------------------
-void bcViewList::ItemDeleted(cItem *Item)noexcept
+void bcViewList::ItemDeleted(cItem *Item)noexcept(true)
 {
 	auto Pair=fItemMap.GetPair(Item->fItemIndex);
 	if(Pair!=nullptr){
@@ -417,7 +417,7 @@ void bcViewList::ItemDeleted(cItem *Item)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewList::PositItem(cItem *Item)noexcept
+void bcViewList::PositItem(cItem *Item)noexcept(true)
 {
 	cUIRectangle ItemRect;
 
@@ -444,39 +444,39 @@ void bcViewList::PositItem(cItem *Item)noexcept
 	ViewItemSetRectangle(Item,ItemRect);
 }
 //---------------------------------------------------------------------------
-bcViewList::cItem::cItem()noexcept
+bcViewList::cItem::cItem()noexcept(true)
 	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-bcViewList::cItem::~cItem()noexcept
+bcViewList::cItem::~cItem()noexcept(true)
 {
 	if(fOwner!=nullptr){
 		fOwner->ItemDeleted(this);
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewList::cItem::SetupOwner(bcViewList *Owner,ufInt32 ItemIndex)noexcept
+void bcViewList::cItem::SetupOwner(bcViewList *Owner,ufInt32 ItemIndex)noexcept(true)
 {
 	fOwner=Owner;
 	fItemIndex=ItemIndex;
 	fOwner->ViewItemAttach(this);
 }
 //---------------------------------------------------------------------------
-void bcViewList::cItem::ClearOwner(void)noexcept
+void bcViewList::cItem::ClearOwner(void)noexcept(true)
 {
 	fOwner->ViewItemDetach(this);
 	fOwner=nullptr;
 }
 //---------------------------------------------------------------------------
-iViewReference* bcViewList::cItem::GetViewReference(void)const noexcept
+iViewReference* bcViewList::cItem::GetViewReference(void)const noexcept(true)
 {
 	if(fOwner==nullptr)
 		return nullptr;
 	return fOwner->ViewItemGetViewReference(this);
 }
 //---------------------------------------------------------------------------
-void bcViewList::cItem::SetViewReference(iViewReference *ViewRef)noexcept
+void bcViewList::cItem::SetViewReference(iViewReference *ViewRef)noexcept(true)
 {
 	if(fOwner==nullptr)
 		return;
@@ -484,7 +484,7 @@ void bcViewList::cItem::SetViewReference(iViewReference *ViewRef)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcViewGrid::bcViewGrid()noexcept
+bcViewGrid::bcViewGrid()noexcept(true)
 	: fGridXRow(false)
 	, fInLayout(false)
 	, fNeedUpdateGridViews(false)
@@ -496,7 +496,7 @@ bcViewGrid::bcViewGrid()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcViewGrid::~bcViewGrid()noexcept
+bcViewGrid::~bcViewGrid()noexcept(true)
 {
 	SetView(nullptr);
 	InvalidateData();
@@ -506,12 +506,12 @@ bcViewGrid::~bcViewGrid()noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool bcViewGrid::GetVerticalColumn(void)const noexcept
+bool bcViewGrid::GetVerticalColumn(void)const noexcept(true)
 {
 	return fGridXRow;
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::SetVerticalColumn(bool Value)noexcept
+void bcViewGrid::SetVerticalColumn(bool Value)noexcept(true)
 {
 	if(fGridXRow==Value)
 		return;
@@ -520,17 +520,17 @@ void bcViewGrid::SetVerticalColumn(bool Value)noexcept
 	SetNeedUpdateGridLayout();
 }
 //---------------------------------------------------------------------------
-Float32 bcViewGrid::GetRowOffset(void)const noexcept
+Float32 bcViewGrid::GetRowOffset(void)const noexcept(true)
 {
 	return fScrollOffset[!fGridXRow];
 }
 //---------------------------------------------------------------------------
-Float32 bcViewGrid::GetColumnOffset(void)const noexcept
+Float32 bcViewGrid::GetColumnOffset(void)const noexcept(true)
 {
 	return fScrollOffset[fGridYColumn];
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::SetGridOffset(Float32 RowOffset,Float32 ColumnOffset)noexcept
+void bcViewGrid::SetGridOffset(Float32 RowOffset,Float32 ColumnOffset)noexcept(true)
 {
 	Float32 Offset[2];
 	Offset[!fGridXRow]=RowOffset;
@@ -538,21 +538,21 @@ void bcViewGrid::SetGridOffset(Float32 RowOffset,Float32 ColumnOffset)noexcept
 	SetScrollOffset({Offset[0],Offset[1]});
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::FindRowIndexAt(Float32 RowPosition)noexcept
+ufInt32 bcViewGrid::FindRowIndexAt(Float32 RowPosition)noexcept(true)
 {
 	ufInt32 RowIndex;
 	FindColumnIndexAt(RowPosition,RowIndex);
 	return RowIndex;
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::FindColumnIndexAt(Float32 ColumnPosition)noexcept
+ufInt32 bcViewGrid::FindColumnIndexAt(Float32 ColumnPosition)noexcept(true)
 {
 	ufInt32 ColIndex;
 	FindColumnIndexAt(ColumnPosition,ColIndex);
 	return ColIndex;
 }
 //---------------------------------------------------------------------------
-bool bcViewGrid::FindRowIndexAt(Float32 RowPosition,ufInt32 &RowIndex)noexcept
+bool bcViewGrid::FindRowIndexAt(Float32 RowPosition,ufInt32 &RowIndex)noexcept(true)
 {
 	ufInt32 DisplayRowIndex;
 	bool Ret=ViewGridDisplayRowFindAt(RowPosition,DisplayRowIndex);
@@ -560,7 +560,7 @@ bool bcViewGrid::FindRowIndexAt(Float32 RowPosition,ufInt32 &RowIndex)noexcept
 	return Ret;
 }
 //---------------------------------------------------------------------------
-bool bcViewGrid::FindColumnIndexAt(Float32 ColumnPosition,ufInt32 &ColumnIndex)noexcept
+bool bcViewGrid::FindColumnIndexAt(Float32 ColumnPosition,ufInt32 &ColumnIndex)noexcept(true)
 {
 	ufInt32 DisplayColIndex;
 	bool Ret=ViewGridDisplayColumnFindAt(ColumnPosition,DisplayColIndex);
@@ -568,7 +568,7 @@ bool bcViewGrid::FindColumnIndexAt(Float32 ColumnPosition,ufInt32 &ColumnIndex)n
 	return Ret;
 }
 //---------------------------------------------------------------------------
-bool bcViewGrid::IsRowVisible(ufInt32 RowIndex)const noexcept
+bool bcViewGrid::IsRowVisible(ufInt32 RowIndex)const noexcept(true)
 {
 	auto RowPair=fRowMap.GetPair(RowIndex);
 	if(RowPair==nullptr){
@@ -578,7 +578,7 @@ bool bcViewGrid::IsRowVisible(ufInt32 RowIndex)const noexcept
 	return RowPair->Value->IsVisible();
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::SetNeedUpdateGridViews(void)noexcept
+void bcViewGrid::SetNeedUpdateGridViews(void)noexcept(true)
 {
 	if(fInLayout || fNeedUpdateGridViews)
 		return;
@@ -587,7 +587,7 @@ void bcViewGrid::SetNeedUpdateGridViews(void)noexcept
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::SetNeedUpdateGridLayout(void)noexcept
+void bcViewGrid::SetNeedUpdateGridLayout(void)noexcept(true)
 {
 	if(fInLayout || fNeedUpdateGridLayout)
 		return;
@@ -596,27 +596,27 @@ void bcViewGrid::SetNeedUpdateGridLayout(void)noexcept
 	SetNeedUpdateContentLayout();
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::ViewGridDisplayRowIndexToRowIndex(ufInt32 DisplayRowIndex)noexcept
+ufInt32 bcViewGrid::ViewGridDisplayRowIndexToRowIndex(ufInt32 DisplayRowIndex)noexcept(true)
 {
 	return DisplayRowIndex;
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::ViewGridRowIndexToDisplayRowIndex(ufInt32 RowIndex)noexcept
+ufInt32 bcViewGrid::ViewGridRowIndexToDisplayRowIndex(ufInt32 RowIndex)noexcept(true)
 {
 	return RowIndex;
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::ViewGridDisplayColumnIndexToColumnIndex(ufInt32 DisplayColumnIndex)noexcept
+ufInt32 bcViewGrid::ViewGridDisplayColumnIndexToColumnIndex(ufInt32 DisplayColumnIndex)noexcept(true)
 {
 	return DisplayColumnIndex;
 }
 //---------------------------------------------------------------------------
-ufInt32 bcViewGrid::ViewGridColumnIndexToDisplayColumnIndex(ufInt32 ColumnIndex)noexcept
+ufInt32 bcViewGrid::ViewGridColumnIndexToDisplayColumnIndex(ufInt32 ColumnIndex)noexcept(true)
 {
 	return ColumnIndex;
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::ScrollContentUpdateContentLayout(void)noexcept
+void bcViewGrid::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	fInLayout=true;
 	cScrollViewContainer::ScrollContentUpdateContentLayout();
@@ -859,7 +859,7 @@ void bcViewGrid::ScrollContentUpdateContentLayout(void)noexcept
 	fInLayout=false;
 }
 //---------------------------------------------------------------------------
-aClsRef<bcViewGrid::cRow> bcViewGrid::QueryRow(ufInt32 RowIndex)noexcept
+aClsRef<bcViewGrid::cRow> bcViewGrid::QueryRow(ufInt32 RowIndex)noexcept(true)
 {
 	aClsRef<bcViewGrid::cRow> RetRow;
 	auto &CacheRow=fRowMap[RowIndex];
@@ -878,7 +878,7 @@ aClsRef<bcViewGrid::cRow> bcViewGrid::QueryRow(ufInt32 RowIndex)noexcept
 	return RetRow;
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::RowDeleted(cRow *Row)noexcept
+void bcViewGrid::RowDeleted(cRow *Row)noexcept(true)
 {
 	auto Pair=fRowMap.GetPair(Row->fRowIndex);
 	if(Pair!=nullptr){
@@ -887,7 +887,7 @@ void bcViewGrid::RowDeleted(cRow *Row)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::PositRow(cRow *Row)noexcept
+void bcViewGrid::PositRow(cRow *Row)noexcept(true)
 {
 	cUIRectangle RowRect;
 
@@ -918,7 +918,7 @@ void bcViewGrid::PositRow(cRow *Row)noexcept
 		
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::PositCell(cCell *Cell)noexcept
+void bcViewGrid::PositCell(cCell *Cell)noexcept(true)
 {
 	cUIRectangle CellRect;
 	ufInt32 DisplayRowIndex=ViewGridRowIndexToDisplayRowIndex(Cell->fOwner->fRowIndex);
@@ -953,12 +953,12 @@ void bcViewGrid::PositCell(cCell *Cell)noexcept
 	ViewItemSetRectangle(Cell,CellRect);
 }
 //---------------------------------------------------------------------------
-bcViewGrid::cRow::cRow()noexcept
+bcViewGrid::cRow::cRow()noexcept(true)
 	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-bcViewGrid::cRow::~cRow()noexcept
+bcViewGrid::cRow::~cRow()noexcept(true)
 {
 	for(auto CellPair : fCellMap){
 		CellPair.Value->ClearOwner();
@@ -968,7 +968,7 @@ bcViewGrid::cRow::~cRow()noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cRow::SetupOwner(bcViewGrid *Owner,ufInt32 RowIndex)noexcept
+void bcViewGrid::cRow::SetupOwner(bcViewGrid *Owner,ufInt32 RowIndex)noexcept(true)
 {
 	fOwner=Owner;
 	fRowIndex=RowIndex;
@@ -978,7 +978,7 @@ void bcViewGrid::cRow::SetupOwner(bcViewGrid *Owner,ufInt32 RowIndex)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cRow::ClearOwner(void)noexcept
+void bcViewGrid::cRow::ClearOwner(void)noexcept(true)
 {
 	for(auto CellPair : fCellMap){
 		fOwner->ViewItemDetach(CellPair.Value);
@@ -987,21 +987,21 @@ void bcViewGrid::cRow::ClearOwner(void)noexcept
 	fOwner=nullptr;
 }
 //---------------------------------------------------------------------------
-iViewReference* bcViewGrid::cRow::GetViewReference(void)const noexcept
+iViewReference* bcViewGrid::cRow::GetViewReference(void)const noexcept(true)
 {
 	if(fOwner==nullptr)
 		return nullptr;
 	return fOwner->ViewItemGetViewReference(this);
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cRow::SetViewReference(iViewReference *ViewRef)noexcept
+void bcViewGrid::cRow::SetViewReference(iViewReference *ViewRef)noexcept(true)
 {
 	if(fOwner==nullptr)
 		return;
 	fOwner->ViewItemSetViewReference(this,ViewRef);
 }
 //---------------------------------------------------------------------------
-aClsRef<bcViewGrid::cCell> bcViewGrid::cRow::QueryCell(ufInt32 ColumnIndex)noexcept
+aClsRef<bcViewGrid::cCell> bcViewGrid::cRow::QueryCell(ufInt32 ColumnIndex)noexcept(true)
 {
 	if(fOwner==nullptr)
 		return nullptr;
@@ -1026,7 +1026,7 @@ aClsRef<bcViewGrid::cCell> bcViewGrid::cRow::QueryCell(ufInt32 ColumnIndex)noexc
 	return RetCell;
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cRow::CellDeleted(cCell *Cell)noexcept
+void bcViewGrid::cRow::CellDeleted(cCell *Cell)noexcept(true)
 {
 	auto Pair=fCellMap.GetPair(Cell->fColumnIndex);
 	if(Pair!=nullptr){
@@ -1035,30 +1035,30 @@ void bcViewGrid::cRow::CellDeleted(cCell *Cell)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bcViewGrid::cCell::cCell()noexcept
+bcViewGrid::cCell::cCell()noexcept(true)
 	: fOwner(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-bcViewGrid::cCell::~cCell()noexcept
+bcViewGrid::cCell::~cCell()noexcept(true)
 {
 	if(fOwner!=nullptr){
 		fOwner->CellDeleted(this);
 	}
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cCell::SetupOwner(cRow *Owner,ufInt32 ColumnIndex)noexcept
+void bcViewGrid::cCell::SetupOwner(cRow *Owner,ufInt32 ColumnIndex)noexcept(true)
 {
 	fOwner=Owner;
 	fColumnIndex=ColumnIndex;
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cCell::ClearOwner(void)noexcept
+void bcViewGrid::cCell::ClearOwner(void)noexcept(true)
 {
 	fOwner=nullptr;
 }
 //---------------------------------------------------------------------------
-iViewReference* bcViewGrid::cCell::GetViewReference(void)const noexcept
+iViewReference* bcViewGrid::cCell::GetViewReference(void)const noexcept(true)
 {
 	if(fOwner==nullptr)
 		return nullptr;
@@ -1067,7 +1067,7 @@ iViewReference* bcViewGrid::cCell::GetViewReference(void)const noexcept
 	return fOwner->fOwner->ViewItemGetViewReference(this);
 }
 //---------------------------------------------------------------------------
-void bcViewGrid::cCell::SetViewReference(iViewReference *ViewRef)noexcept
+void bcViewGrid::cCell::SetViewReference(iViewReference *ViewRef)noexcept(true)
 {
 	if(fOwner==nullptr)
 		return;
@@ -1076,21 +1076,21 @@ void bcViewGrid::cCell::SetViewReference(iViewReference *ViewRef)noexcept
 	fOwner->fOwner->ViewItemSetViewReference(this,ViewRef);
 }
 //---------------------------------------------------------------------------
-cControlList::cControlList()noexcept
+cControlList::cControlList()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cControlList::~cControlList()noexcept
+cControlList::~cControlList()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-iControlListSource* cControlList::GetControlSource(void)const noexcept
+iControlListSource* cControlList::GetControlSource(void)const noexcept(true)
 {
 	return fControlSource;
 }
 //---------------------------------------------------------------------------
-void cControlList::SetControlSource(iControlListSource *Source)noexcept
+void cControlList::SetControlSource(iControlListSource *Source)noexcept(true)
 {
 	if(fControlSource!=nullptr){
 		fControlSource->ControlListNotifySet.Remove(fListNotifyToken);
@@ -1106,7 +1106,7 @@ void cControlList::SetControlSource(iControlListSource *Source)noexcept
 	SetNeedUpdateListViews();
 }
 //---------------------------------------------------------------------------
-void cControlList::ApplyControlSource(void)noexcept
+void cControlList::ApplyControlSource(void)noexcept(true)
 {
 	if(ItemSize==0){
 		fScrollLowwerLimit[!fListXItem]=0;
@@ -1122,7 +1122,7 @@ void cControlList::ApplyControlSource(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cControlList::ScrollContentUpdateContentLayout(void)noexcept
+void cControlList::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	bcViewList::ScrollContentUpdateContentLayout();
 
@@ -1141,7 +1141,7 @@ void cControlList::ScrollContentUpdateContentLayout(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIRange cControlList::ViewListDisplayQueryRange(ufInt32 DisplayIndex)noexcept
+cUIRange cControlList::ViewListDisplayQueryRange(ufInt32 DisplayIndex)noexcept(true)
 {
 	cUIRange Range;
 	Range.Begin=DisplayIndex*(ItemSize+ItemBorder)+ItemBorder;
@@ -1149,7 +1149,7 @@ cUIRange cControlList::ViewListDisplayQueryRange(ufInt32 DisplayIndex)noexcept
 	return Range;
 }
 //---------------------------------------------------------------------------
-bool cControlList::ViewListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)noexcept
+bool cControlList::ViewListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)noexcept(true)
 {
 	if(Position<=1){
 		DisplayIndex=0;
@@ -1169,7 +1169,7 @@ bool cControlList::ViewListDisplayFindAt(Float32 Position,ufInt32 &DisplayIndex)
 	return Pos%ItemTotalSizeInt!=0;
 }
 //---------------------------------------------------------------------------
-void cControlList::ViewListDisplaySetupItems(ufInt32 ItemIndex,ufInt32 ItemEndIndex)noexcept
+void cControlList::ViewListDisplaySetupItems(ufInt32 ItemIndex,ufInt32 ItemEndIndex)noexcept(true)
 {
 	if(fListItemCount<ItemEndIndex){
 		fListItemCount=ItemEndIndex;
@@ -1194,22 +1194,22 @@ void cControlList::ViewListDisplaySetupItems(ufInt32 ItemIndex,ufInt32 ItemEndIn
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cControlGrid::cControlGrid()noexcept
+cControlGrid::cControlGrid()noexcept(true)
 {
 	fControlSource=nullptr;
 }
 //---------------------------------------------------------------------------
-cControlGrid::~cControlGrid()noexcept
+cControlGrid::~cControlGrid()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-iControlGridSource* cControlGrid::GetControlSource(void)const noexcept
+iControlGridSource* cControlGrid::GetControlSource(void)const noexcept(true)
 {
 	return fControlSource;
 }
 //---------------------------------------------------------------------------
-void cControlGrid::SetControlSource(iControlGridSource *Source)noexcept
+void cControlGrid::SetControlSource(iControlGridSource *Source)noexcept(true)
 {
 	if(fControlSource!=nullptr){
 		fControlSource->ControlGridNotifySet.Remove(fGridNotifyToken);
@@ -1225,7 +1225,7 @@ void cControlGrid::SetControlSource(iControlGridSource *Source)noexcept
 	SetNeedUpdateGridViews();
 }
 //---------------------------------------------------------------------------
-void cControlGrid::ApplyControlSource(void)noexcept
+void cControlGrid::ApplyControlSource(void)noexcept(true)
 {
 	auto ColCount=fControlSource->GridColumnCount();
 		
@@ -1261,7 +1261,7 @@ void cControlGrid::ApplyControlSource(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cControlGrid::ScrollContentUpdateContentLayout(void)noexcept
+void cControlGrid::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	bcViewGrid::ScrollContentUpdateContentLayout();
 
@@ -1280,7 +1280,7 @@ void cControlGrid::ScrollContentUpdateContentLayout(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIRange cControlGrid::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)noexcept
+cUIRange cControlGrid::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)noexcept(true)
 {
 	if(RowSize==0)
 		return UIRangeZero;
@@ -1290,7 +1290,7 @@ cUIRange cControlGrid::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)noex
 	return Range;
 }
 //---------------------------------------------------------------------------
-cUIRange cControlGrid::ViewGridDisplayColumnQueryRange(ufInt32 ColumnIndex)noexcept
+cUIRange cControlGrid::ViewGridDisplayColumnQueryRange(ufInt32 ColumnIndex)noexcept(true)
 {
 	if(ColumnIndex>=fGridColumns.GetCount())
 		return UIRangeZero;
@@ -1299,7 +1299,7 @@ cUIRange cControlGrid::ViewGridDisplayColumnQueryRange(ufInt32 ColumnIndex)noexc
 	return Col.Range;
 }
 //---------------------------------------------------------------------------
-bool cControlGrid::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &DisplayRowIndex)noexcept
+bool cControlGrid::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &DisplayRowIndex)noexcept(true)
 {
 	if(RowSize==0 || RowPosition<=1){
 		DisplayRowIndex=0;
@@ -1311,7 +1311,7 @@ bool cControlGrid::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &Display
 	return Pos%static_cast<ufInt32>(RowSize+RowBorder)!=0;
 }
 //---------------------------------------------------------------------------
-bool cControlGrid::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt32 &ColumnIndex)noexcept
+bool cControlGrid::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt32 &ColumnIndex)noexcept(true)
 {
 	if(ColumnPosition<=1){
 		ColumnIndex=0;
@@ -1329,7 +1329,7 @@ bool cControlGrid::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt32 &C
 	return Found;
 }
 //---------------------------------------------------------------------------
-void cControlGrid::ViewGridDisplaySetupRows(bool,ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)noexcept
+void cControlGrid::ViewGridDisplaySetupRows(bool,ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)noexcept(true)
 {
 	if(fGridRowCount<RowEndIndex){
 		fGridRowCount=RowEndIndex;
@@ -1358,23 +1358,23 @@ void cControlGrid::ViewGridDisplaySetupRows(bool,ufInt32 RowIndex,ufInt32 RowEnd
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cControlGridList::cControlGridList()noexcept
+cControlGridList::cControlGridList()noexcept(true)
 	: fColumnCount(1)
 {
 	fControlSource=nullptr;
 }
 //---------------------------------------------------------------------------
-cControlGridList::~cControlGridList()noexcept
+cControlGridList::~cControlGridList()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-iControlListSource* cControlGridList::GetControlSource(void)const noexcept
+iControlListSource* cControlGridList::GetControlSource(void)const noexcept(true)
 {
 	return fControlSource;
 }
 //---------------------------------------------------------------------------
-void cControlGridList::SetControlSource(iControlListSource *Source)noexcept
+void cControlGridList::SetControlSource(iControlListSource *Source)noexcept(true)
 {
 	if(fControlSource!=nullptr){
 		fControlSource->ControlListNotifySet.Remove(fListNotifyToken);
@@ -1390,7 +1390,7 @@ void cControlGridList::SetControlSource(iControlListSource *Source)noexcept
 	SetNeedUpdateGridViews();
 }
 //---------------------------------------------------------------------------
-void cControlGridList::ApplyControlSource(void)noexcept
+void cControlGridList::ApplyControlSource(void)noexcept(true)
 {
 	if(RowSize==0){
 		fScrollLowwerLimit[!fGridXRow]=0;
@@ -1408,12 +1408,12 @@ void cControlGridList::ApplyControlSource(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-ufInt32 cControlGridList::GetColumnCount(void)const noexcept
+ufInt32 cControlGridList::GetColumnCount(void)const noexcept(true)
 {
 	return fColumnCount;
 }
 //---------------------------------------------------------------------------
-void cControlGridList::RectangleChanged(bool Moved,bool Sized)noexcept
+void cControlGridList::RectangleChanged(bool Moved,bool Sized)noexcept(true)
 {
 	bcViewGrid::RectangleChanged(Moved,Sized);
 
@@ -1442,7 +1442,7 @@ void cControlGridList::RectangleChanged(bool Moved,bool Sized)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIRange cControlGridList::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)noexcept
+cUIRange cControlGridList::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)noexcept(true)
 {
 	cUIRange Range;
 	Range.Begin=DisplayRowIndex*(RowSize+RowBorder)+RowBorder;
@@ -1450,7 +1450,7 @@ cUIRange cControlGridList::ViewGridDisplayRowQueryRange(ufInt32 DisplayRowIndex)
 	return Range;
 }
 //---------------------------------------------------------------------------
-cUIRange cControlGridList::ViewGridDisplayColumnQueryRange(ufInt32 DisplayColumnIndex)noexcept
+cUIRange cControlGridList::ViewGridDisplayColumnQueryRange(ufInt32 DisplayColumnIndex)noexcept(true)
 {
 	cUIRange Range;
 	Range.Begin=DisplayColumnIndex*(ColumnSize+ColumnBorder)+ColumnBorder;
@@ -1458,7 +1458,7 @@ cUIRange cControlGridList::ViewGridDisplayColumnQueryRange(ufInt32 DisplayColumn
 	return Range;
 }
 //---------------------------------------------------------------------------
-bool cControlGridList::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &DisplayRowIndex)noexcept
+bool cControlGridList::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &DisplayRowIndex)noexcept(true)
 {
 	if(RowPosition<=1){
 		DisplayRowIndex=0;
@@ -1470,7 +1470,7 @@ bool cControlGridList::ViewGridDisplayRowFindAt(Float32 RowPosition,ufInt32 &Dis
 	return Pos%static_cast<ufInt32>(RowSize+1)!=0;
 }
 //---------------------------------------------------------------------------
-bool cControlGridList::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt32 &DisplayColumnIndex)noexcept
+bool cControlGridList::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt32 &DisplayColumnIndex)noexcept(true)
 {
 	if(ColumnPosition<=1){
 		DisplayColumnIndex=0;
@@ -1482,7 +1482,7 @@ bool cControlGridList::ViewGridDisplayColumnFindAt(Float32 ColumnPosition,ufInt3
 	return Pos%static_cast<ufInt32>(ColumnSize+1)!=0;
 }
 //---------------------------------------------------------------------------
-void cControlGridList::ScrollContentUpdateContentLayout(void)noexcept
+void cControlGridList::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	bcViewGrid::ScrollContentUpdateContentLayout();
 
@@ -1503,7 +1503,7 @@ void cControlGridList::ScrollContentUpdateContentLayout(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cControlGridList::ViewGridDisplaySetupRows(bool,ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)noexcept
+void cControlGridList::ViewGridDisplaySetupRows(bool,ufInt32 RowIndex,ufInt32 RowEndIndex,ufInt32 ColIndex,ufInt32 ColEndIndex)noexcept(true)
 {
 	if(fControlSource==nullptr)
 		return;

@@ -6,24 +6,24 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUITouchFilter::cUITouchFilter()noexcept
+cUITouchFilter::cUITouchFilter()noexcept(true)
 {
 	fViewTouch=nullptr;
 }
 //---------------------------------------------------------------------------
-cUITouchFilter::~cUITouchFilter()noexcept
+cUITouchFilter::~cUITouchFilter()noexcept(true)
 {
 	if(fViewTouch!=nullptr){
 		fViewTouch->RemoveTouchFilter(this);
 	}
 }
 //---------------------------------------------------------------------------
-iUIView* cUITouchFilter::GetView(void)noexcept
+iUIView* cUITouchFilter::GetView(void)noexcept(true)
 {
 	return fView;
 }
 //---------------------------------------------------------------------------
-void cUITouchFilter::SetView(iUIView *View)noexcept
+void cUITouchFilter::SetView(iUIView *View)noexcept(true)
 {
 	if(fViewTouch!=nullptr){
 		fViewTouch->RemoveTouchFilter(this);
@@ -37,7 +37,7 @@ void cUITouchFilter::SetView(iUIView *View)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cUITouchDistanceDetect::Begin(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept
+bool cUITouchDistanceDetect::Begin(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept(true)
 {
 	if(TouchEvent->GetPosition(Relative,Pos)==false)
 		return false;
@@ -50,7 +50,7 @@ bool cUITouchDistanceDetect::Begin(sInt32 Distance,iUITouchEvent *TouchEvent,cUI
 	}
 }
 //---------------------------------------------------------------------------
-bool cUITouchDistanceDetect::Move(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept
+bool cUITouchDistanceDetect::Move(sInt32 Distance,iUITouchEvent *TouchEvent,cUIPoint &Pos,iUIArea *Relative)noexcept(true)
 {
 	if(Distance==0){
 		return true;
@@ -67,28 +67,28 @@ bool cUITouchDistanceDetect::Move(sInt32 Distance,iUITouchEvent *TouchEvent,cUIP
 	return false;
 }
 //---------------------------------------------------------------------------
-void cUITouchDistanceDetect::End(iUITouchEvent *TouchEvent)noexcept
+void cUITouchDistanceDetect::End(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	fBeginMap.Remove(TouchEvent->GetTouchID());
 }
 //---------------------------------------------------------------------------
-void cUITouchDistanceDetect::Clear(void)noexcept
+void cUITouchDistanceDetect::Clear(void)noexcept(true)
 {
 	fBeginMap.Clear();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUITouchActionTap::cUITouchActionTap()noexcept
+cUITouchActionTap::cUITouchActionTap()noexcept(true)
 	: fTapTime(0)
 	, fTouchID(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cUITouchActionTap::~cUITouchActionTap(void)noexcept
+cUITouchActionTap::~cUITouchActionTap(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cUITouchActionTap::TouchDown(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionTap::TouchDown(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fTouchID!=0)
 		return;
@@ -97,7 +97,7 @@ void cUITouchActionTap::TouchDown(iUITouchEvent *TouchEvent)noexcept
 	TouchEvent->GetPosition(fView,TapPos);
 }
 //---------------------------------------------------------------------------
-void cUITouchActionTap::TouchUp(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionTap::TouchUp(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
@@ -128,7 +128,7 @@ void cUITouchActionTap::TouchUp(iUITouchEvent *TouchEvent)noexcept
 	fTouchID=nullptr;
 }
 //---------------------------------------------------------------------------
-void cUITouchActionTap::TouchLost(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionTap::TouchLost(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
@@ -137,24 +137,24 @@ void cUITouchActionTap::TouchLost(iUITouchEvent *TouchEvent)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUITouchActionLongPress::cUITouchActionLongPress()noexcept
+cUITouchActionLongPress::cUITouchActionLongPress()noexcept(true)
 {
 	auto UIDispatch=cnSystem::CurrentUIThread::GetDispatch(false);
 	fPressTimer=UIDispatch->CreateTimer(nullptr,&fTimerProcedure);
 	DurationNS=Time_1s;
 }
 //---------------------------------------------------------------------------
-cUITouchActionLongPress::~cUITouchActionLongPress(void)noexcept
+cUITouchActionLongPress::~cUITouchActionLongPress(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cnLib_FUNC cUITouchActionLongPress::cTimerProcedure::Execute(void)noexcept
+void cnLib_FUNC cUITouchActionLongPress::cTimerProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cUITouchActionLongPress::fTimerProcedure);
 	Host->TimerHit();
 }
 //---------------------------------------------------------------------------
-void cUITouchActionLongPress::TimerHit(void)noexcept
+void cUITouchActionLongPress::TimerHit(void)noexcept(true)
 {
 	if(fTouchID==nullptr){
 		return;
@@ -164,7 +164,7 @@ void cUITouchActionLongPress::TimerHit(void)noexcept
 		OnPress();
 }
 //---------------------------------------------------------------------------
-void cUITouchActionLongPress::TouchDown(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionLongPress::TouchDown(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fTouchID!=nullptr){
 		return;
@@ -176,7 +176,7 @@ void cUITouchActionLongPress::TouchDown(iUITouchEvent *TouchEvent)noexcept
 	fPressTimer->Start(TimeNow+DurationNS,0);
 }
 //---------------------------------------------------------------------------
-void cUITouchActionLongPress::TouchUp(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionLongPress::TouchUp(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
@@ -185,7 +185,7 @@ void cUITouchActionLongPress::TouchUp(iUITouchEvent *TouchEvent)noexcept
 	fTouchID=nullptr;
 }
 //---------------------------------------------------------------------------
-void cUITouchActionLongPress::TouchLost(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionLongPress::TouchLost(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
@@ -194,7 +194,7 @@ void cUITouchActionLongPress::TouchLost(iUITouchEvent *TouchEvent)noexcept
 	fTouchID=nullptr;
 }
 //---------------------------------------------------------------------------
-void cUITouchActionLongPress::TouchMove(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionLongPress::TouchMove(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(TouchEvent->GetTouchID()!=fTouchID){
 		return;
@@ -214,15 +214,15 @@ void cUITouchActionLongPress::TouchMove(iUITouchEvent *TouchEvent)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUITouchActionPan::cUITouchActionPan()noexcept
+cUITouchActionPan::cUITouchActionPan()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cUITouchActionPan::~cUITouchActionPan()noexcept
+cUITouchActionPan::~cUITouchActionPan()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::Start(iUITouchEvent *TouchEvent,const cUIPoint &Pos)noexcept
+void cUITouchActionPan::Start(iUITouchEvent *TouchEvent,const cUIPoint &Pos)noexcept(true)
 {
 	if(OnStart!=nullptr){
 		if(OnStart(Pos)==false){
@@ -236,7 +236,7 @@ void cUITouchActionPan::Start(iUITouchEvent *TouchEvent,const cUIPoint &Pos)noex
 	fViewTouch->TouchAcquireExclusive(this);
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::Stop(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionPan::Stop(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	fViewTouch->TouchReleaseExclusive(this);
 	fPointMoveDetect.End(TouchEvent);
@@ -247,7 +247,7 @@ void cUITouchActionPan::Stop(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::TouchDown(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionPan::TouchDown(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fPanTouchID!=nullptr)
 		return;
@@ -258,17 +258,17 @@ void cUITouchActionPan::TouchDown(iUITouchEvent *TouchEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::TouchUp(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionPan::TouchUp(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	Stop(TouchEvent);
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::TouchLost(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionPan::TouchLost(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	Stop(TouchEvent);
 }
 //---------------------------------------------------------------------------
-void cUITouchActionPan::TouchMove(iUITouchEvent *TouchEvent)noexcept
+void cUITouchActionPan::TouchMove(iUITouchEvent *TouchEvent)noexcept(true)
 {
 	if(fPanTouchID==nullptr){
 		cUIPoint Pos;
@@ -284,7 +284,7 @@ void cUITouchActionPan::TouchMove(iUITouchEvent *TouchEvent)noexcept
 		OnPan();
 }
 //---------------------------------------------------------------------------
-void* cUITouchActionPan::GetTouchID(void)noexcept
+void* cUITouchActionPan::GetTouchID(void)noexcept(true)
 {
 	return fPanTouchID;
 }

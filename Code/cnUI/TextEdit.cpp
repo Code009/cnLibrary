@@ -3,31 +3,31 @@
 using namespace cnLibrary;
 using namespace cnUI;
 
-rPtr<viControl> (*cnUI::gCreateDefaultTextCaretVisual)(viTextCaretData *Data)noexcept=vTextCaret::Create;
+rPtr<viControl> (*cnUI::gCreateDefaultTextCaretVisual)(viTextCaretData *Data)noexcept(true)=vTextCaret::Create;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vTextCaret::vTextCaret(viTextCaretData *Data)noexcept
+vTextCaret::vTextCaret(viTextCaretData *Data)noexcept(true)
 	: fData(Data)
 {
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vTextCaret::~vTextCaret()noexcept
+vTextCaret::~vTextCaret()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vTextCaret::Create(viTextCaretData *Data)noexcept
+rPtr<viControl> vTextCaret::Create(viTextCaretData *Data)noexcept(true)
 {
 	return rCreate< bwvControl<vTextCaret> >(Data);
 }
 //---------------------------------------------------------------------------
-viTextCaretData* vTextCaret::GetData(void)const noexcept
+viTextCaretData* vTextCaret::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vTextCaret::SetData(viTextCaretData *Data)noexcept
+void vTextCaret::SetData(viTextCaretData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -37,7 +37,7 @@ void vTextCaret::SetData(viTextCaretData *Data)noexcept
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-void vTextCaret::DataInsertCallback(void)noexcept
+void vTextCaret::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fTextCaretNotifyToken=fData->TextCaretNotifySet.Insert([this]{
@@ -46,20 +46,20 @@ void vTextCaret::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vTextCaret::DataRemoveCallback(void)noexcept
+void vTextCaret::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->TextCaretNotifySet.Remove(fTextCaretNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vTextCaret::Update(void)noexcept
+void vTextCaret::Update(void)noexcept(true)
 {
 	if(fViewContent!=nullptr)
 		fViewContent->QueryUpdate();
 }
 //---------------------------------------------------------------------------
-void vTextCaret::Paint(iUISimplePaintContext *Context)noexcept
+void vTextCaret::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	if(fData==nullptr)
 		return;
@@ -73,7 +73,7 @@ void vTextCaret::Paint(iUISimplePaintContext *Context)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTextDocumentEdit::bcTextDocumentEdit()noexcept
+bcTextDocumentEdit::bcTextDocumentEdit()noexcept(true)
 {
 	fControlFocused=false;
 	fControlHot=false;
@@ -88,14 +88,14 @@ bcTextDocumentEdit::bcTextDocumentEdit()noexcept
 	InsertAnnotator(&fCompositionAnnotator);
 }
 //---------------------------------------------------------------------------
-bcTextDocumentEdit::~bcTextDocumentEdit()noexcept
+bcTextDocumentEdit::~bcTextDocumentEdit()noexcept(true)
 {
 	SetView(nullptr);
 	viTextCaretData::InvalidateData();
 	viControlStateData::InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::EnableCompositionAnnotator(bool Enable)noexcept
+void bcTextDocumentEdit::EnableCompositionAnnotator(bool Enable)noexcept(true)
 {
 	if(Enable){
 		InsertAnnotator(&fCompositionAnnotator);
@@ -105,7 +105,7 @@ void bcTextDocumentEdit::EnableCompositionAnnotator(bool Enable)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::UpdateZIndex(void)noexcept
+void bcTextDocumentEdit::UpdateZIndex(void)noexcept(true)
 {
 	bcTextDocument::UpdateZIndex();
 	if(fCaretContent!=nullptr){
@@ -113,14 +113,14 @@ void bcTextDocumentEdit::UpdateZIndex(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ControlCaretContentSetDefault(void)noexcept
+void bcTextDocumentEdit::ControlCaretContentSetDefault(void)noexcept(true)
 {
 	if(gCreateDefaultTextCaretVisual!=nullptr){
 		SetCaretContent(gCreateDefaultTextCaretVisual(this));
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::SetCaretContent(rPtr<viControl> Content)noexcept
+void bcTextDocumentEdit::SetCaretContent(rPtr<viControl> Content)noexcept(true)
 {
 	if(fCaretContent!=nullptr){
 		fCaretContent->SetView(nullptr);
@@ -132,7 +132,7 @@ void bcTextDocumentEdit::SetCaretContent(rPtr<viControl> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ViewSetup(void)noexcept
+void bcTextDocumentEdit::ViewSetup(void)noexcept(true)
 {
 	bcTextDocument::ViewSetup();
 
@@ -154,7 +154,7 @@ void bcTextDocumentEdit::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ViewClear(void)noexcept
+void bcTextDocumentEdit::ViewClear(void)noexcept(true)
 {
 	auto ViewKey=iCast<iUIKeyControl>(fView);
 	if(ViewKey!=nullptr){
@@ -173,17 +173,17 @@ void bcTextDocumentEdit::ViewClear(void)noexcept
 	bcTextDocument::ViewClear();
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ControlHot(void)noexcept
+bool bcTextDocumentEdit::ControlHot(void)noexcept(true)
 {
 	return fControlHot;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ControlFocused(void)noexcept
+bool bcTextDocumentEdit::ControlFocused(void)noexcept(true)
 {
 	return fControlFocused;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ControlDisabled(void)noexcept
+bool bcTextDocumentEdit::ControlDisabled(void)noexcept(true)
 {
 	if(fView!=nullptr){
 		return !fView->IsEnabled();
@@ -191,31 +191,31 @@ bool bcTextDocumentEdit::ControlDisabled(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ControlStateChanged(void)noexcept
+void bcTextDocumentEdit::ControlStateChanged(void)noexcept(true)
 {
 	ControlStateNotifySet();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::MouseEnter(iUIMouseEvent*)noexcept
+void bcTextDocumentEdit::MouseEnter(iUIMouseEvent*)noexcept(true)
 {
 	fControlHot=true;
 
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::MouseLeave(iUIMouseEvent*)noexcept
+void bcTextDocumentEdit::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fControlHot=false;
 	fLBtnDown=false;
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-iInterface* bcTextDocumentEdit::MouseGetCursor(iUIMouseEvent*)noexcept
+iInterface* bcTextDocumentEdit::MouseGetCursor(iUIMouseEvent*)noexcept(true)
 {
 	return MouseCursor;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void bcTextDocumentEdit::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -227,7 +227,7 @@ void bcTextDocumentEdit::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTextDocumentEdit::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -241,7 +241,7 @@ void bcTextDocumentEdit::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTextDocumentEdit::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -252,7 +252,7 @@ void bcTextDocumentEdit::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)n
 	fLBtnDown=false;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::KeyFocusEnter(iUIKeyEvent *KeyEvent)noexcept
+void bcTextDocumentEdit::KeyFocusEnter(iUIKeyEvent *KeyEvent)noexcept(true)
 {UnusedParameter(KeyEvent);
 	fControlFocused=true;
 	
@@ -262,7 +262,7 @@ void bcTextDocumentEdit::KeyFocusEnter(iUIKeyEvent *KeyEvent)noexcept
 	CaretChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::KeyFocusLeave(iUIKeyEvent *KeyEvent)noexcept
+void bcTextDocumentEdit::KeyFocusLeave(iUIKeyEvent *KeyEvent)noexcept(true)
 {UnusedParameter(KeyEvent);
 	fControlFocused=false;
 
@@ -274,7 +274,7 @@ void bcTextDocumentEdit::KeyFocusLeave(iUIKeyEvent *KeyEvent)noexcept
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void bcTextDocumentEdit::KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {UnusedParameter(KeyEvent,KeyCode);
 	switch(KeyCode){
 	case KeyCode::Shift:
@@ -283,7 +283,7 @@ void bcTextDocumentEdit::KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void bcTextDocumentEdit::KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {UnusedParameter(KeyEvent,KeyCode);
 	switch(KeyCode){
 	case KeyCode::Shift:
@@ -292,7 +292,7 @@ void bcTextDocumentEdit::KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void bcTextDocumentEdit::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {
 	bool ShiftPressed=KeyEvent->IsKeyDown(KeyCode::Shift);
 	bool CtrlPressed=KeyEvent->IsKeyDown(KeyCode::Ctrl);
@@ -377,17 +377,17 @@ void bcTextDocumentEdit::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcep
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextInput(const uChar16 *Text,uIntn Length)noexcept
+void bcTextDocumentEdit::TextInput(const uChar16 *Text,uIntn Length)noexcept(true)
 {
 	ActionInputText(Text,Length);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextCompositionStarted(void)noexcept
+void bcTextDocumentEdit::TextCompositionStarted(void)noexcept(true)
 {
 	fCompositionState=true;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextCompositionFinished(void)noexcept
+void bcTextDocumentEdit::TextCompositionFinished(void)noexcept(true)
 {
 	fCompositionState=false;
 	fCompositionString.Clear();
@@ -396,7 +396,7 @@ void bcTextDocumentEdit::TextCompositionFinished(void)noexcept
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextCompositionUpdate(sfInt32 CaretPos,const uChar16 *Text,uIntn TextLength)noexcept
+void bcTextDocumentEdit::TextCompositionUpdate(sfInt32 CaretPos,const uChar16 *Text,uIntn TextLength)noexcept(true)
 {
 	fCompositionCaretPos=CaretPos;
 
@@ -412,19 +412,19 @@ void bcTextDocumentEdit::TextCompositionUpdate(sfInt32 CaretPos,const uChar16 *T
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-sfInt32 bcTextDocumentEdit::GetCompositionCaretPos(void)noexcept
+sfInt32 bcTextDocumentEdit::GetCompositionCaretPos(void)noexcept(true)
 {
 	return fCompositionCaretPos;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextCompositionViewRect(cUIPoint &Position,cUIPoint &Size,Float32 &LineHeight)noexcept
+void bcTextDocumentEdit::TextCompositionViewRect(cUIPoint &Position,cUIPoint &Size,Float32 &LineHeight)noexcept(true)
 {
 	Position={0,0};
 	Size=fView->GetSize();
 	LineHeight=GetLineHeight(fCaretLineIndex);
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocumentEdit::CalculateCompositionCaretTextContentX(uIntn LineIndex,uIntn CompositionTextIndex)noexcept
+Float32 bcTextDocumentEdit::CalculateCompositionCaretTextContentX(uIntn LineIndex,uIntn CompositionTextIndex)noexcept(true)
 {
 	auto LineItem=QueryCacheLine(LineIndex);
 	if(LineItem==nullptr)
@@ -459,7 +459,7 @@ Float32 bcTextDocumentEdit::CalculateCompositionCaretTextContentX(uIntn LineInde
 	return CurCompositionPartPos;
 }
 //---------------------------------------------------------------------------
-cUIPoint bcTextDocumentEdit::TextCompositionCaretPosition(uIntn CompositionTextIndex)noexcept
+cUIPoint bcTextDocumentEdit::TextCompositionCaretPosition(uIntn CompositionTextIndex)noexcept(true)
 {
 	cUIPoint CaretPos;
 	// caret posit at text
@@ -471,7 +471,7 @@ cUIPoint bcTextDocumentEdit::TextCompositionCaretPosition(uIntn CompositionTextI
 	return CaretPos;
 }
 //---------------------------------------------------------------------------
-cIndexPoint bcTextDocumentEdit::GetCaretPos(void)noexcept
+cIndexPoint bcTextDocumentEdit::GetCaretPos(void)noexcept(true)
 {
 	cIndexPoint p;
 	p.y=fCaretLineIndex;
@@ -479,12 +479,12 @@ cIndexPoint bcTextDocumentEdit::GetCaretPos(void)noexcept
 	return p;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::SetCaretPos(cIndexPoint CaretPos,bool KeepSelection)noexcept
+void bcTextDocumentEdit::SetCaretPos(cIndexPoint CaretPos,bool KeepSelection)noexcept(true)
 {
 	SetCaretCorrectedPosition(ClipCaretPosition(CaretPos),KeepSelection);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::PositCaret(cUIPoint Pos,bool KeepSelection)noexcept
+void bcTextDocumentEdit::PositCaret(cUIPoint Pos,bool KeepSelection)noexcept(true)
 {
 	if(fContent!=nullptr){
 		auto CaretPos=HitTest(Pos.x,Pos.y);
@@ -492,7 +492,7 @@ void bcTextDocumentEdit::PositCaret(cUIPoint Pos,bool KeepSelection)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::GetSelection(cIndexPoint &Begin,cIndexPoint &End)const noexcept
+bool bcTextDocumentEdit::GetSelection(cIndexPoint &Begin,cIndexPoint &End)const noexcept(true)
 {
 	auto SelectionPoint=TextEditGetSelectionPoint();
 	uIntn SelectionLineIndex=SelectionPoint.y;
@@ -530,7 +530,7 @@ bool bcTextDocumentEdit::GetSelection(cIndexPoint &Begin,cIndexPoint &End)const 
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::GetLineSelection(uIntn LineIndex,uIntn &Left,uIntn &Right)noexcept
+void bcTextDocumentEdit::GetLineSelection(uIntn LineIndex,uIntn &Left,uIntn &Right)noexcept(true)
 {
 	auto SelectionPoint=TextEditGetSelectionPoint();
 	uIntn SelectionLineIndex=SelectionPoint.y;
@@ -603,7 +603,7 @@ void bcTextDocumentEdit::GetLineSelection(uIntn LineIndex,uIntn &Left,uIntn &Rig
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::SelectAll(void)noexcept
+void bcTextDocumentEdit::SelectAll(void)noexcept(true)
 {
 	uIntn LastLineIndex=TextEditGetLineCount();
 	if(LastLineIndex==0)
@@ -615,25 +615,25 @@ void bcTextDocumentEdit::SelectAll(void)noexcept
 	TextEditMoveCaretAndSelectionPoint(LastLineIndex,LastLineLength,0,0);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ScrollContentUpdateContentLayout(void)noexcept
+void bcTextDocumentEdit::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	bcTextDocument::ScrollContentUpdateContentLayout();
 
 	CaretChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextEditApplyCompositionPartStyle(cUITextStyle &Style)noexcept
+void bcTextDocumentEdit::TextEditApplyCompositionPartStyle(cUITextStyle &Style)noexcept(true)
 {
 	Style.BackgroundColor=UIColorFromUInt32(0xFFCCCCCC);
 	Style.TextColor=UIColorFromUInt32(0xFF000000);
 }
 //---------------------------------------------------------------------------
-bcTextDocumentEdit* bcTextDocumentEdit::cCompositionAnnotator::GetHost(void)noexcept
+bcTextDocumentEdit* bcTextDocumentEdit::cCompositionAnnotator::GetHost(void)noexcept(true)
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&bcTextDocumentEdit::fCompositionAnnotator);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::cCompositionAnnotator::Setup(uIntn LineIndex)noexcept
+void bcTextDocumentEdit::cCompositionAnnotator::Setup(uIntn LineIndex)noexcept(true)
 {
 	auto Host=GetHost();
 	fEnumDone=true;
@@ -644,12 +644,12 @@ void bcTextDocumentEdit::cCompositionAnnotator::Setup(uIntn LineIndex)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::cCompositionAnnotator::Clear(void)noexcept
+void bcTextDocumentEdit::cCompositionAnnotator::Clear(void)noexcept(true)
 {
 	fEnumDone=true;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::cCompositionAnnotator::Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)noexcept
+bool bcTextDocumentEdit::cCompositionAnnotator::Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	if(fEnumDone){
 		return false;
@@ -670,7 +670,7 @@ bool bcTextDocumentEdit::cCompositionAnnotator::Process(uIntn LineTextIndex,cTex
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::cCompositionAnnotator::Fetch(uIntn &AnnotateIndex,cTextDocumentLinePart &TextPart)noexcept
+bool bcTextDocumentEdit::cCompositionAnnotator::Fetch(uIntn &AnnotateIndex,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	if(fEnumDone){
 		return false;
@@ -687,12 +687,12 @@ bool bcTextDocumentEdit::cCompositionAnnotator::Fetch(uIntn &AnnotateIndex,cText
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CaretChanged(void)noexcept
+void bcTextDocumentEdit::CaretChanged(void)noexcept(true)
 {
 	TextCaretNotifySet();
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::TextCaretVisualPosition(cUIPoint &CaretPos,cUIPoint &CaretSize)noexcept
+bool bcTextDocumentEdit::TextCaretVisualPosition(cUIPoint &CaretPos,cUIPoint &CaretSize)noexcept(true)
 {
 	if(fControlFocused==false)
 		return false;
@@ -738,7 +738,7 @@ bool bcTextDocumentEdit::TextCaretVisualPosition(cUIPoint &CaretPos,cUIPoint &Ca
 	return true;
 }
 //---------------------------------------------------------------------------
-cIndexPoint bcTextDocumentEdit::ClipCaretPosition(cIndexPoint CaretPos)noexcept
+cIndexPoint bcTextDocumentEdit::ClipCaretPosition(cIndexPoint CaretPos)noexcept(true)
 {
 	if(CaretPos.y<=0){
 		CaretPos.y=0;
@@ -766,7 +766,7 @@ cIndexPoint bcTextDocumentEdit::ClipCaretPosition(cIndexPoint CaretPos)noexcept
 	return CaretPos;
 }
 //---------------------------------------------------------------------------
-cIndexPoint bcTextDocumentEdit::TextEditGetSelectionPoint(void)const noexcept
+cIndexPoint bcTextDocumentEdit::TextEditGetSelectionPoint(void)const noexcept(true)
 {
 	// return empty selection point
 	cIndexPoint Point;
@@ -775,7 +775,7 @@ cIndexPoint bcTextDocumentEdit::TextEditGetSelectionPoint(void)const noexcept
 	return Point;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex,uIntn CaretTextIndex,uIntn,uIntn)noexcept
+void bcTextDocumentEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex,uIntn CaretTextIndex,uIntn,uIntn)noexcept(true)
 {
 	// move caret without selection
 	fCaretLineIndex=CaretLineIndex;
@@ -786,7 +786,7 @@ void bcTextDocumentEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex
 	CaretChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::SetCaretCorrectedPosition(cIndexPoint NewCaretPos,bool KeepSelection)noexcept
+void bcTextDocumentEdit::SetCaretCorrectedPosition(cIndexPoint NewCaretPos,bool KeepSelection)noexcept(true)
 {
 	cIndexPoint SelectionPoint;
 	if(KeepSelection){
@@ -804,7 +804,7 @@ void bcTextDocumentEdit::SetCaretCorrectedPosition(cIndexPoint NewCaretPos,bool 
 	TextEditMoveCaretAndSelectionPoint(NewCaretPos.y,NewCaretPos.x,SelectionPoint.y,SelectionPoint.x);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CaretMoveLine(bool Upward,bool WithSelection)noexcept
+void bcTextDocumentEdit::CaretMoveLine(bool Upward,bool WithSelection)noexcept(true)
 {
 	cIndexPoint NewCaretPos;
 	if(Upward){
@@ -817,7 +817,7 @@ void bcTextDocumentEdit::CaretMoveLine(bool Upward,bool WithSelection)noexcept
 	SetCaretPos(NewCaretPos,WithSelection);
 }
 //---------------------------------------------------------------------------
-cIndexPoint bcTextDocumentEdit::GetTextPosByOffset(sIntn Offset)noexcept
+cIndexPoint bcTextDocumentEdit::GetTextPosByOffset(sIntn Offset)noexcept(true)
 {
 	cIndexPoint TextPos;
 	TextPos.y=fCaretLineIndex;
@@ -858,7 +858,7 @@ cIndexPoint bcTextDocumentEdit::GetTextPosByOffset(sIntn Offset)noexcept
 	return TextPos;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CaretMoveText(bool Backward,bool WithSelection)noexcept
+void bcTextDocumentEdit::CaretMoveText(bool Backward,bool WithSelection)noexcept(true)
 {
 	cIndexPoint NewCaretPos;
 	if(Backward){
@@ -870,7 +870,7 @@ void bcTextDocumentEdit::CaretMoveText(bool Backward,bool WithSelection)noexcept
 	SetCaretCorrectedPosition(NewCaretPos,WithSelection);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CaretMoveTextEnd(bool Backward,bool WithSelection)noexcept
+void bcTextDocumentEdit::CaretMoveTextEnd(bool Backward,bool WithSelection)noexcept(true)
 {
 	cIndexPoint NewCaretPos;
 	NewCaretPos.y=fCaretLineIndex;
@@ -885,7 +885,7 @@ void bcTextDocumentEdit::CaretMoveTextEnd(bool Backward,bool WithSelection)noexc
 	SetCaretCorrectedPosition(NewCaretPos,WithSelection);
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CaretMoveLineEnd(bool Upward,bool WithSelection)noexcept
+void bcTextDocumentEdit::CaretMoveLineEnd(bool Upward,bool WithSelection)noexcept(true)
 {
 	cIndexPoint NewCaretPos;
 	NewCaretPos.x=0;
@@ -905,7 +905,7 @@ void bcTextDocumentEdit::CaretMoveLineEnd(bool Upward,bool WithSelection)noexcep
 	SetCaretCorrectedPosition(NewCaretPos,WithSelection);
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::CopyToClipboardValidated(cIndexPoint Begin,cIndexPoint End)noexcept
+bool bcTextDocumentEdit::CopyToClipboardValidated(cIndexPoint Begin,cIndexPoint End)noexcept(true)
 {
 	auto LineCount=static_cast<sIntn>(TextEditGetLineCount());
 	if(LineCount==0){
@@ -1011,7 +1011,7 @@ bool bcTextDocumentEdit::CopyToClipboardValidated(cIndexPoint Begin,cIndexPoint 
 	return ClipboardResult;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CopyToClipboard(void)noexcept
+void bcTextDocumentEdit::CopyToClipboard(void)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	if(GetSelection(SelStart,SelEnd)){
@@ -1019,7 +1019,7 @@ void bcTextDocumentEdit::CopyToClipboard(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::CutToClipboard(void)noexcept
+void bcTextDocumentEdit::CutToClipboard(void)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	if(GetSelection(SelStart,SelEnd)){
@@ -1029,7 +1029,7 @@ void bcTextDocumentEdit::CutToClipboard(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::PasteFromClipboard(void)noexcept
+void bcTextDocumentEdit::PasteFromClipboard(void)noexcept(true)
 {
 	auto ClipboardReader=cnSystem::QueryClipboardReader(fView);
 	auto *TextReadBuffer=ClipboardReader->QueryText();
@@ -1068,8 +1068,8 @@ void bcTextDocumentEdit::PasteFromClipboard(void)noexcept
 	else{
 		// multiple lines
 		uIntn FetchIndex=0;
-		cFunction<bool (cArray<const uChar16>&)noexcept> FetchProc=
-			[&PasteLines,&FetchIndex](cArray<const uChar16> &InsertLine)noexcept
+		cFunction<bool (cArray<const uChar16>&)noexcept(true)> FetchProc=
+			[&PasteLines,&FetchIndex](cArray<const uChar16> &InsertLine)noexcept(true)
 		{
 			if(FetchIndex<PasteLines.GetCount()){
 				InsertLine=PasteLines[FetchIndex++].Storage();
@@ -1082,7 +1082,7 @@ void bcTextDocumentEdit::PasteFromClipboard(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ActionDelete(bool Backward)noexcept
+bool bcTextDocumentEdit::ActionDelete(bool Backward)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	if(GetSelection(SelStart,SelEnd)){
@@ -1143,7 +1143,7 @@ bool bcTextDocumentEdit::ActionDelete(bool Backward)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ActionInputText(const uChar16 *InputText,uIntn InputTextLength)noexcept
+bool bcTextDocumentEdit::ActionInputText(const uChar16 *InputText,uIntn InputTextLength)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	cIndexPoint NewCaretPos;
@@ -1172,7 +1172,7 @@ bool bcTextDocumentEdit::ActionInputText(const uChar16 *InputText,uIntn InputTex
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ActionInsertLines(iFetchLineProcedure *Procedure)noexcept
+bool bcTextDocumentEdit::ActionInsertLines(iFetchLineProcedure *Procedure)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	if(GetSelection(SelStart,SelEnd)==false){
@@ -1194,13 +1194,13 @@ bool bcTextDocumentEdit::ActionInsertLines(iFetchLineProcedure *Procedure)noexce
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocumentEdit::ActionNewLine(void)noexcept
+bool bcTextDocumentEdit::ActionNewLine(void)noexcept(true)
 {
 	cIndexPoint SelStart,SelEnd;
 	GetSelection(SelStart,SelEnd);
 	// replace
-	cFunction<bool (cArray<const uChar16>&)noexcept> FetchProc=
-		[FetchIndex=2](cArray<const uChar16> &InsertLine)mutable noexcept
+	cFunction<bool (cArray<const uChar16>&)noexcept(true)> FetchProc=
+		[FetchIndex=2](cArray<const uChar16> &InsertLine)mutable noexcept(true)
 	{
 		InsertLine.Pointer=nullptr;
 		InsertLine.Length=0;
@@ -1224,14 +1224,14 @@ bool bcTextDocumentEdit::ActionNewLine(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcTextDocumentEdit::ScrollToCaret(void)noexcept
+void bcTextDocumentEdit::ScrollToCaret(void)noexcept(true)
 {
 	//UpdateScrollLayout();
 	ScrollTextToVisible(fCaretLineIndex,fCaretTextIndex);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcStringListEdit::bcStringListEdit()noexcept
+bcStringListEdit::bcStringListEdit()noexcept(true)
 {
 	fSelectionLineIndex=0;
 	fSelectionTextIndex=0;
@@ -1242,11 +1242,11 @@ bcStringListEdit::bcStringListEdit()noexcept
 	InsertAnnotator(&fSelectionAnnotator);
 }
 //---------------------------------------------------------------------------
-bcStringListEdit::~bcStringListEdit()noexcept
+bcStringListEdit::~bcStringListEdit()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::EnableSelectionAnnotator(bool Enable)noexcept
+void bcStringListEdit::EnableSelectionAnnotator(bool Enable)noexcept(true)
 {
 	if(Enable){
 		InsertAnnotator(&fSelectionAnnotator);
@@ -1256,18 +1256,18 @@ void bcStringListEdit::EnableSelectionAnnotator(bool Enable)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::Update(void)noexcept
+void bcStringListEdit::Update(void)noexcept(true)
 {
 	ClearCache();
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::TextDocumentLineEnumReset(void)noexcept
+void bcStringListEdit::TextDocumentLineEnumReset(void)noexcept(true)
 {
 	fEnumLineIndex=IndexNotFound;
 }
 //---------------------------------------------------------------------------
-bool bcStringListEdit::TextDocumentLineEnum(uIntn LineIndex)noexcept
+bool bcStringListEdit::TextDocumentLineEnum(uIntn LineIndex)noexcept(true)
 {
 	fEnumLineHeight=StringListGetLineHeight();
 
@@ -1279,7 +1279,7 @@ bool bcStringListEdit::TextDocumentLineEnum(uIntn LineIndex)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcStringListEdit::TextDocumentLineEnumNext(void)noexcept
+bool bcStringListEdit::TextDocumentLineEnumNext(void)noexcept(true)
 {
 	auto LineCount=TextEditGetLineCount();
 	if(fEnumLineIndex>=LineCount)
@@ -1289,18 +1289,18 @@ bool bcStringListEdit::TextDocumentLineEnumNext(void)noexcept
 	return fEnumLineIndex!=LineCount;
 }
 //---------------------------------------------------------------------------
-Float32 bcStringListEdit::TextDocumentLineEnumHeight(void)noexcept
+Float32 bcStringListEdit::TextDocumentLineEnumHeight(void)noexcept(true)
 {
 	return fEnumLineHeight;
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::TextDocumentLineEnumPartEnum(void)noexcept
+void bcStringListEdit::TextDocumentLineEnumPartEnum(void)noexcept(true)
 {
 	fEnumLineFetchIndex=0;
 	fEnumLineFetchString=StringListGetLine(fEnumLineIndex);
 }
 //---------------------------------------------------------------------------
-bool bcStringListEdit::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept
+bool bcStringListEdit::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	if(fEnumLineFetchIndex>=fEnumLineFetchString.Length){
 		return false;
@@ -1318,7 +1318,7 @@ bool bcStringListEdit::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &Text
 	return true;
 }
 //---------------------------------------------------------------------------
-Float32 bcStringListEdit::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept
+Float32 bcStringListEdit::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept(true)
 {
 	switch(TextAlign&Alignment::VCenter){
 	default:
@@ -1335,7 +1335,7 @@ Float32 bcStringListEdit::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-Float32 bcStringListEdit::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept
+Float32 bcStringListEdit::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept(true)
 {
 	Float32 AlignRight=fScrollViewportSize[0];
 	if(AlignRight<fScrollTotalSize[0]){
@@ -1356,12 +1356,12 @@ Float32 bcStringListEdit::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bcStringListEdit* bcStringListEdit::cSelectionAnnotator::GetHost(void)noexcept
+bcStringListEdit* bcStringListEdit::cSelectionAnnotator::GetHost(void)noexcept(true)
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&bcStringListEdit::fSelectionAnnotator);
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::cSelectionAnnotator::Setup(uIntn LineIndex)noexcept
+void bcStringListEdit::cSelectionAnnotator::Setup(uIntn LineIndex)noexcept(true)
 {
 	auto Host=GetHost();
 	fLineIndex=LineIndex;
@@ -1370,12 +1370,12 @@ void bcStringListEdit::cSelectionAnnotator::Setup(uIntn LineIndex)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::cSelectionAnnotator::Clear(void)noexcept
+void bcStringListEdit::cSelectionAnnotator::Clear(void)noexcept(true)
 {
 	fSelLeft=fSelRight=0;
 }
 //---------------------------------------------------------------------------
-bool bcStringListEdit::cSelectionAnnotator::Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)noexcept
+bool bcStringListEdit::cSelectionAnnotator::Process(uIntn LineTextIndex,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	auto Host=GetHost();
 	if(GetHost()->SelectionAnnotation==false || LineTextIndex>=fSelRight || fSelLeft>=fSelRight){
@@ -1401,12 +1401,12 @@ bool bcStringListEdit::cSelectionAnnotator::Process(uIntn LineTextIndex,cTextDoc
 	return false;
 }
 //---------------------------------------------------------------------------
-bool bcStringListEdit::cSelectionAnnotator::Fetch(uIntn&,cTextDocumentLinePart&)noexcept
+bool bcStringListEdit::cSelectionAnnotator::Fetch(uIntn&,cTextDocumentLinePart&)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-uIntn bcStringListEdit::TextEditCopyLineText(uIntn LineIndex,uIntn TextIndex,uChar16 *Dest,uIntn Length)noexcept
+uIntn bcStringListEdit::TextEditCopyLineText(uIntn LineIndex,uIntn TextIndex,uChar16 *Dest,uIntn Length)noexcept(true)
 {
 	auto LineText=StringListGetLine(LineIndex);
 	if(TextIndex>=LineText.Length)
@@ -1420,7 +1420,7 @@ uIntn bcStringListEdit::TextEditCopyLineText(uIntn LineIndex,uIntn TextIndex,uCh
 	return CopyLength;
 }
 //---------------------------------------------------------------------------
-cIndexPoint bcStringListEdit::TextEditGetSelectionPoint(void)const noexcept
+cIndexPoint bcStringListEdit::TextEditGetSelectionPoint(void)const noexcept(true)
 {
 	cIndexPoint SelectionPoint;
 	SelectionPoint.y=fSelectionLineIndex;
@@ -1428,7 +1428,7 @@ cIndexPoint bcStringListEdit::TextEditGetSelectionPoint(void)const noexcept
 	return SelectionPoint;
 }
 //---------------------------------------------------------------------------
-void bcStringListEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex,uIntn CaretTextIndex,uIntn SelectionLineIndex,uIntn SelectionTextIndex)noexcept
+void bcStringListEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex,uIntn CaretTextIndex,uIntn SelectionLineIndex,uIntn SelectionTextIndex)noexcept(true)
 {
 	cIndexPoint PreviousSelectionBegin;
 	cIndexPoint PreviousSelectionEnd;
@@ -1479,7 +1479,7 @@ void bcStringListEdit::TextEditMoveCaretAndSelectionPoint(uIntn CaretLineIndex,u
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTextListEdit::bcTextListEdit()noexcept
+bcTextListEdit::bcTextListEdit()noexcept(true)
 {
 	gApplyDefaultTextStyle(TextStyle);
 	SelectedTextColor=UIColorFromUInt32(0xFFFFFFFF);
@@ -1489,11 +1489,11 @@ bcTextListEdit::bcTextListEdit()noexcept
 	SelectedBlurBackgroundColor=UIColorFromUInt32(0xFFD9D9D9);
 }
 //---------------------------------------------------------------------------
-bcTextListEdit::~bcTextListEdit()noexcept
+bcTextListEdit::~bcTextListEdit()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-Float32 bcTextListEdit::StringListGetLineHeight(void)noexcept
+Float32 bcTextListEdit::StringListGetLineHeight(void)noexcept(true)
 {
 	Float32 Value=LineHeight;
 	if(Value==0){
@@ -1502,7 +1502,7 @@ Float32 bcTextListEdit::StringListGetLineHeight(void)noexcept
 	return Value;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextListEdit::StringListApplyTextStyle(cUITextStyle &Style,uIntn LineIndex,uIntn TextIndex,bool Selected)noexcept
+uIntn bcTextListEdit::StringListApplyTextStyle(cUITextStyle &Style,uIntn LineIndex,uIntn TextIndex,bool Selected)noexcept(true)
 {
 	Style=TextStyle;
 
@@ -1532,21 +1532,21 @@ uIntn bcTextListEdit::StringListApplyTextStyle(cUITextStyle &Style,uIntn LineInd
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextListEdit::cTextListEdit()noexcept
+cTextListEdit::cTextListEdit()noexcept(true)
 {
 	TextList.Append();
 }
 //---------------------------------------------------------------------------
-cTextListEdit::~cTextListEdit()noexcept
+cTextListEdit::~cTextListEdit()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cTextListEdit::TextEditGetLineCount(void)noexcept
+uIntn cTextListEdit::TextEditGetLineCount(void)noexcept(true)
 {
 	return TextList.GetCount();
 }
 //---------------------------------------------------------------------------
-uIntn cTextListEdit::TextEditGetLineLength(uIntn LineIndex)noexcept
+uIntn cTextListEdit::TextEditGetLineLength(uIntn LineIndex)noexcept(true)
 {
 	if(LineIndex>=TextList.GetCount()){
 		return 0;
@@ -1555,7 +1555,7 @@ uIntn cTextListEdit::TextEditGetLineLength(uIntn LineIndex)noexcept
 	return TextList[LineIndex]->Length;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cTextListEdit::StringListGetLine(uIntn LineIndex)noexcept
+cArray<const uChar16> cTextListEdit::StringListGetLine(uIntn LineIndex)noexcept(true)
 {
 	if(LineIndex>=TextList.GetCount()){
 		cArray<const uChar16> EmptyArray;
@@ -1567,7 +1567,7 @@ cArray<const uChar16> cTextListEdit::StringListGetLine(uIntn LineIndex)noexcept
 	return TextList[LineIndex].Storage();
 }
 //---------------------------------------------------------------------------
-bool cTextListEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,uIntn ReplacementLength,const uChar16 *Replacement)noexcept
+bool cTextListEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,uIntn ReplacementLength,const uChar16 *Replacement)noexcept(true)
 {
 	if(ReadOnly)
 		return false;
@@ -1594,7 +1594,7 @@ bool cTextListEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEn
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cTextListEdit::TextEditReplaceWithLines(cIndexPoint &InsertEndPos,uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,iFetchLineProcedure *FetchProcedure)noexcept
+bool cTextListEdit::TextEditReplaceWithLines(cIndexPoint &InsertEndPos,uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,iFetchLineProcedure *FetchProcedure)noexcept(true)
 {
 	if(ReadOnly)
 		return false;
@@ -1660,20 +1660,20 @@ bool cTextListEdit::TextEditReplaceWithLines(cIndexPoint &InsertEndPos,uIntn Lin
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextEdit::cTextEdit()noexcept
+cTextEdit::cTextEdit()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cTextEdit::~cTextEdit()noexcept
+cTextEdit::~cTextEdit()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cTextEdit::TextEditGetLineCount(void)noexcept
+uIntn cTextEdit::TextEditGetLineCount(void)noexcept(true)
 {
 	return 1;
 }
 //---------------------------------------------------------------------------
-uIntn cTextEdit::TextEditGetLineLength(uIntn LineIndex)noexcept
+uIntn cTextEdit::TextEditGetLineLength(uIntn LineIndex)noexcept(true)
 {
 	if(LineIndex!=0){
 		return 0;
@@ -1682,7 +1682,7 @@ uIntn cTextEdit::TextEditGetLineLength(uIntn LineIndex)noexcept
 	return Text->Length;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cTextEdit::StringListGetLine(uIntn LineIndex)noexcept
+cArray<const uChar16> cTextEdit::StringListGetLine(uIntn LineIndex)noexcept(true)
 {
 	if(LineIndex!=0){
 		cArray<const uChar16> EmptyArray;
@@ -1694,7 +1694,7 @@ cArray<const uChar16> cTextEdit::StringListGetLine(uIntn LineIndex)noexcept
 	return Text.Storage();
 }
 //---------------------------------------------------------------------------
-bool cTextEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,uIntn ReplacementLength,const uChar16 *Replacement)noexcept
+bool cTextEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,uIntn ReplacementLength,const uChar16 *Replacement)noexcept(true)
 {
 	if(ReadOnly)
 		return false;
@@ -1709,7 +1709,7 @@ bool cTextEdit::TextEditReplace(uIntn LineIndex,uIntn TextIndex,uIntn LineEndInd
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cTextEdit::TextEditReplaceWithLines(cIndexPoint &InsertEndPos,uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,iFetchLineProcedure *FetchProcedure)noexcept
+bool cTextEdit::TextEditReplaceWithLines(cIndexPoint &InsertEndPos,uIntn LineIndex,uIntn TextIndex,uIntn LineEndIndex,uIntn TextEndIndex,iFetchLineProcedure *FetchProcedure)noexcept(true)
 {
 	if(ReadOnly)
 		return false;

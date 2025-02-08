@@ -8,12 +8,12 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cBSTROwnerOperator::Release(BSTR Token)noexcept
+void cBSTROwnerOperator::Release(BSTR Token)noexcept(true)
 {
 	::SysFreeString(Token);
 }
 //---------------------------------------------------------------------------
-apBSTR cnRTL::MakeBSTR(const wchar_t *Text)noexcept
+apBSTR cnRTL::MakeBSTR(const wchar_t *Text)noexcept(true)
 {
 	BSTR Str=::SysAllocString(Text);
 	if(Str==nullptr)
@@ -22,28 +22,28 @@ apBSTR cnRTL::MakeBSTR(const wchar_t *Text)noexcept
 	return apBSTR::TakeFromManual(Str);
 }
 //---------------------------------------------------------------------------
-BSTR* cnRTL::apBSTRRetPtr(apBSTR &Ptr)noexcept
+BSTR* cnRTL::apBSTRRetPtr(apBSTR &Ptr)noexcept(true)
 {
 	Ptr=nullptr;
 	return &Ptr.Pointer();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEModule::cOLEModule(const wchar_t *ModuleName)noexcept
+cOLEModule::cOLEModule(const wchar_t *ModuleName)noexcept(true)
 	: fModuleName(ModuleName)
 {
 	fModuleHandle=nullptr;
 	fLoadFailed=false;
 }
 //---------------------------------------------------------------------------
-cOLEModule::~cOLEModule()noexcept
+cOLEModule::~cOLEModule()noexcept(true)
 {
 	if(fModuleHandle!=nullptr){
 		::FreeLibrary(fModuleHandle);
 	}
 }
 //---------------------------------------------------------------------------
-bool cOLEModule::SetupModule(void)noexcept
+bool cOLEModule::SetupModule(void)noexcept(true)
 {
 	if(fModuleHandle!=nullptr){
 		return true;
@@ -67,7 +67,7 @@ bool cOLEModule::SetupModule(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEModule::QueryFactory(REFCLSID rclsid,IClassFactory **Factory)noexcept
+HRESULT cOLEModule::QueryFactory(REFCLSID rclsid,IClassFactory **Factory)noexcept(true)
 {
 	if(SetupModule()==false)
 		return E_NOTIMPL;
@@ -75,7 +75,7 @@ HRESULT cOLEModule::QueryFactory(REFCLSID rclsid,IClassFactory **Factory)noexcep
 	return fGetClassObjectProc(rclsid,IID_IClassFactory,reinterpret_cast<void**>(Factory));
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEModule::CreateObject(REFCLSID rclsid,IUnknown *pUnkOuter, REFIID riid,LPVOID *ppvObj)noexcept
+HRESULT cOLEModule::CreateObject(REFCLSID rclsid,IUnknown *pUnkOuter, REFIID riid,LPVOID *ppvObj)noexcept(true)
 {
 	COMPtr<IClassFactory> Factory;
 	HRESULT hr;
@@ -86,7 +86,7 @@ HRESULT cOLEModule::CreateObject(REFCLSID rclsid,IUnknown *pUnkOuter, REFIID rii
 	return Factory->CreateInstance(pUnkOuter,riid,ppvObj);
 }
 //---------------------------------------------------------------------------
-COMPtr<IClassFactory> cOLEModule::QueryFactory(REFCLSID rclsid)noexcept
+COMPtr<IClassFactory> cOLEModule::QueryFactory(REFCLSID rclsid)noexcept(true)
 {
 	HRESULT hr;
 
@@ -99,48 +99,48 @@ COMPtr<IClassFactory> cOLEModule::QueryFactory(REFCLSID rclsid)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCOMApartmentThreading::cCOMApartmentThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept
+cCOMApartmentThreading::cCOMApartmentThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept(true)
 	: fTLS(TLS)
 	, fDispatch(Dispatch)
 {
 	fRefCount=1;
 }
 //---------------------------------------------------------------------------
-cCOMApartmentThreading::~cCOMApartmentThreading()noexcept
+cCOMApartmentThreading::~cCOMApartmentThreading()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreading::IncreaseReference(void)noexcept
+void cCOMApartmentThreading::IncreaseReference(void)noexcept(true)
 {
 	fRefCount.Free++;
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreading::DecreaseReference(void)noexcept
+void cCOMApartmentThreading::DecreaseReference(void)noexcept(true)
 {
 	if(--fRefCount.Free==0){
 		fDispatch->Execute(nullptr,this);
 	}
 }
 //---------------------------------------------------------------------------
-iDispatch* cCOMApartmentThreading::GetDispatch(void)noexcept
+iDispatch* cCOMApartmentThreading::GetDispatch(void)noexcept(true)
 {
 	return fDispatch;
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreading::OnDelete(void)noexcept
+void cCOMApartmentThreading::OnDelete(void)noexcept(true)
 {
 	fTLS->Set(nullptr);
 	::CoUninitialize();
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreading::Execute(void)noexcept
+void cCOMApartmentThreading::Execute(void)noexcept(true)
 {
 	OnDelete();
 	delete this;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCOMApartmentThreadingModule::cThreading::cThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept
+cCOMApartmentThreadingModule::cThreading::cThreading(aCls<cWinTLS> *TLS,iDispatch *Dispatch)noexcept(true)
 	: cCOMApartmentThreading(cnVar::MoveCast(TLS),Dispatch)
 {
 }
@@ -155,33 +155,33 @@ void cCOMApartmentThreadingModule::cThreading::DecreaseReference(void)noexcept(t
 	return cCOMApartmentThreading::DecreaseReference();
 }
 //---------------------------------------------------------------------------
-iDispatch* cCOMApartmentThreadingModule::cThreading::GetDispatch(void)noexcept
+iDispatch* cCOMApartmentThreadingModule::cThreading::GetDispatch(void)noexcept(true)
 {
 	return cCOMApartmentThreading::GetDispatch();
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreadingModule::cThreading::Execute(void)noexcept
+void cCOMApartmentThreadingModule::cThreading::Execute(void)noexcept(true)
 {
 	OnDelete();
 	delete this;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCOMApartmentThreadingModule::cCOMApartmentThreadingModule()noexcept
+cCOMApartmentThreadingModule::cCOMApartmentThreadingModule()noexcept(true)
 {
 	fTLS=aClsCreate<cWinTLS>();
 }
 //---------------------------------------------------------------------------
-cCOMApartmentThreadingModule::~cCOMApartmentThreadingModule()noexcept
+cCOMApartmentThreadingModule::~cCOMApartmentThreadingModule()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cCOMApartmentThreadingModule::cThreading* cCOMApartmentThreadingModule::Get(void)noexcept
+cCOMApartmentThreadingModule::cThreading* cCOMApartmentThreadingModule::Get(void)noexcept(true)
 {
 	return static_cast<cThreading*>(fTLS->Get());
 }
 //---------------------------------------------------------------------------
-void cCOMApartmentThreadingModule::cDispatchInitialize::Execute(void)noexcept
+void cCOMApartmentThreadingModule::cDispatchInitialize::Execute(void)noexcept(true)
 {
 	HRESULT hr=::CoInitializeEx(nullptr,COINIT_APARTMENTTHREADED);
 	if(FAILED(hr)){
@@ -192,7 +192,7 @@ void cCOMApartmentThreadingModule::cDispatchInitialize::Execute(void)noexcept
 	TLS->Set(NewModule);
 }
 //---------------------------------------------------------------------------
-rPtr<cCOMApartmentThreadingModule::cThreading> cCOMApartmentThreadingModule::Query(iDispatch *Dispatch)noexcept
+rPtr<cCOMApartmentThreadingModule::cThreading> cCOMApartmentThreadingModule::Query(iDispatch *Dispatch)noexcept(true)
 {
 	void *pThreadModule=fTLS->Get();
 	if(pThreadModule!=nullptr){
@@ -222,45 +222,45 @@ rPtr<cCOMApartmentThreadingModule::cThreading> cCOMApartmentThreadingModule::Que
 	return rPtr<cThreading>::TakeFromManual(NewModule);
 }
 //---------------------------------------------------------------------------
-cCOMApartmentThreading* cCOMApartmentThreadingModule::GetThreading(void)noexcept
+cCOMApartmentThreading* cCOMApartmentThreadingModule::GetThreading(void)noexcept(true)
 {
 	return Get();
 }
 //---------------------------------------------------------------------------
-rPtr<cCOMApartmentThreading> cCOMApartmentThreadingModule::QueryThreading(iDispatch *Dispatch)noexcept
+rPtr<cCOMApartmentThreading> cCOMApartmentThreadingModule::QueryThreading(iDispatch *Dispatch)noexcept(true)
 {
 	return Query(Dispatch);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWinRegisterInstaller::cWinRegisterInstaller()noexcept
+cWinRegisterInstaller::cWinRegisterInstaller()noexcept(true)
 	: fKey(nullptr)
 	, fErrorCode(ERROR_SUCCESS)
 {
 
 }
 //---------------------------------------------------------------------------
-cWinRegisterInstaller::~cWinRegisterInstaller()noexcept
+cWinRegisterInstaller::~cWinRegisterInstaller()noexcept(true)
 {
 	CloseTree();
 }
 //---------------------------------------------------------------------------
-cWinRegisterInstaller::operator HKEY()const noexcept
+cWinRegisterInstaller::operator HKEY()const noexcept(true)
 {
 	return fKey;
 }
 //---------------------------------------------------------------------------
-DWORD cWinRegisterInstaller::GetMakeError(void)const noexcept
+DWORD cWinRegisterInstaller::GetMakeError(void)const noexcept(true)
 {
 	return fErrorCode;
 }
 //---------------------------------------------------------------------------
-bool cWinRegisterInstaller::WasnotCreated(void)const noexcept
+bool cWinRegisterInstaller::WasnotCreated(void)const noexcept(true)
 {
 	return fErrorCode==ERROR_ALREADY_EXISTS;
 }
 //---------------------------------------------------------------------------
-LSTATUS cWinRegisterInstaller::Create(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired)noexcept
+LSTATUS cWinRegisterInstaller::Create(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired)noexcept(true)
 {
 	if(fKey!=nullptr)
 		return ERROR_ALREADY_EXISTS;
@@ -278,7 +278,7 @@ LSTATUS cWinRegisterInstaller::Create(HKEY BaseKey,cString<wchar_t> Path,REGSAM 
 	return ret;
 }
 //---------------------------------------------------------------------------
-LSTATUS cWinRegisterInstaller::Open(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired)noexcept
+LSTATUS cWinRegisterInstaller::Open(HKEY BaseKey,cString<wchar_t> Path,REGSAM samDesired)noexcept(true)
 {
 	if(fKey!=nullptr)
 		return ERROR_ALREADY_EXISTS;
@@ -292,7 +292,7 @@ LSTATUS cWinRegisterInstaller::Open(HKEY BaseKey,cString<wchar_t> Path,REGSAM sa
 	return ERROR_SUCCESS;
 }
 //---------------------------------------------------------------------------
-LSTATUS cWinRegisterInstaller::Create(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired)noexcept
+LSTATUS cWinRegisterInstaller::Create(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired)noexcept(true)
 {
 	if(fKey!=nullptr)
 		return ERROR_ALREADY_EXISTS;
@@ -311,7 +311,7 @@ LSTATUS cWinRegisterInstaller::Create(cWinRegisterInstaller &Parent,cString<wcha
 	return ret;
 }
 //---------------------------------------------------------------------------
-LSTATUS cWinRegisterInstaller::Open(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired)noexcept
+LSTATUS cWinRegisterInstaller::Open(cWinRegisterInstaller &Parent,cString<wchar_t> Path,REGSAM samDesired)noexcept(true)
 {
 	if(fKey!=nullptr)
 		return ERROR_ALREADY_EXISTS;
@@ -327,30 +327,30 @@ LSTATUS cWinRegisterInstaller::Open(cWinRegisterInstaller &Parent,cString<wchar_
 }
 //---------------------------------------------------------------------------
 template<>
-void cWinRegisterInstaller::Make<false>(HKEY BaseKey,cString<wchar_t> Path)noexcept
+void cWinRegisterInstaller::Make<false>(HKEY BaseKey,cString<wchar_t> Path)noexcept(true)
 {
 	fErrorCode=Open(BaseKey,Path);
 }
 //---------------------------------------------------------------------------
 template<>
-void cWinRegisterInstaller::Make<true>(HKEY BaseKey,cString<wchar_t> Path)noexcept
+void cWinRegisterInstaller::Make<true>(HKEY BaseKey,cString<wchar_t> Path)noexcept(true)
 {
 	fErrorCode=Create(BaseKey,Path);
 }
 //---------------------------------------------------------------------------
 template<>
-void cWinRegisterInstaller::Make<false>(cWinRegisterInstaller &Parent,cString<wchar_t> Path)noexcept
+void cWinRegisterInstaller::Make<false>(cWinRegisterInstaller &Parent,cString<wchar_t> Path)noexcept(true)
 {
 	fErrorCode=Open(Parent,Path);
 }
 //---------------------------------------------------------------------------
 template<>
-void cWinRegisterInstaller::Make<true>(cWinRegisterInstaller &Parent,cString<wchar_t> Path)noexcept
+void cWinRegisterInstaller::Make<true>(cWinRegisterInstaller &Parent,cString<wchar_t> Path)noexcept(true)
 {
 	fErrorCode=Create(Parent,Path);
 }
 //---------------------------------------------------------------------------
-void cWinRegisterInstaller::CloseTree(void)noexcept
+void cWinRegisterInstaller::CloseTree(void)noexcept(true)
 {
 	if(fKey==nullptr){
 		return;
@@ -367,7 +367,7 @@ void cWinRegisterInstaller::CloseTree(void)noexcept
 	fPath=nullptr;
 }
 //---------------------------------------------------------------------------
-bool cWinRegisterInstaller::DeleteTree(void)noexcept
+bool cWinRegisterInstaller::DeleteTree(void)noexcept(true)
 {
 	if(fKey==nullptr){
 		switch(fErrorCode){

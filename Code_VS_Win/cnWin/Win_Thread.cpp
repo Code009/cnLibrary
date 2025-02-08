@@ -13,22 +13,22 @@ static constexpr DWORD CurrentThreadExitCode=0;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThread::cThread()noexcept
+cThread::cThread()noexcept(true)
 	: fSystemObserver(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cThread::~cThread()noexcept
+cThread::~cThread()noexcept(true)
 {
 	::CloseHandle(fThreadHandle);
 }
 //---------------------------------------------------------------------------
-void cThread::TLSSetExitNotify(void)noexcept
+void cThread::TLSSetExitNotify(void)noexcept(true)
 {
 	gTLS->SetThreadExitNotify(cnVar::StaticInitializedSinglton<cThreadExitNotifyProc>());
 }
 //---------------------------------------------------------------------------
-void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *pThread)noexcept
+void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *pThread)noexcept(true)
 {
 	auto Thread=static_cast<cThread*>(pThread);
 	Thread->fThreadRunning=false;
@@ -36,7 +36,7 @@ void cThread::cThreadExitNotifyProc::Execute(rPtr<iReference> Reference,void *pT
 		Thread->fSystemObserver->Close();
 }
 //---------------------------------------------------------------------------
-iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)noexcept
+iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)noexcept(true)
 {
 	auto NewThread=iCreate<cThread>();
 	NewThread->fThreadRunning=true;
@@ -54,7 +54,7 @@ iPtr<cThread> cThread::StartThread(iProcedure *ThreadProcedure)noexcept
 	return NewThread;
 }
 //---------------------------------------------------------------------------
-DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept
+DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept(true)
 {
 	iPtr<cThread> Thread;
 	iProcedure *Procedure;
@@ -87,7 +87,7 @@ DWORD WINAPI cThread::ThreadEntry(LPVOID Parameter)noexcept
 	return 0;
 }
 //---------------------------------------------------------------------------
-cThread* cThread::QueryCurrent(void)noexcept
+cThread* cThread::QueryCurrent(void)noexcept(true)
 {
 	auto CurrentThreadObject=gTLS->Get();
 	if(CurrentThreadObject!=nullptr){
@@ -111,7 +111,7 @@ cThread* cThread::QueryCurrent(void)noexcept
 	return NewThread;
 }
 //---------------------------------------------------------------------------
-bool cThread::IsRunning(void)noexcept
+bool cThread::IsRunning(void)noexcept(true)
 {
 	return fThreadRunning;
 }
@@ -126,7 +126,7 @@ rPtr<iLibraryReference> cThread::RegisterSystemObserver(void)noexcept(true)
 	return Reference;
 }
 //---------------------------------------------------------------------------
-rPtr<iStringReference> cThread::CreateDescription(void)noexcept
+rPtr<iStringReference> cThread::CreateDescription(void)noexcept(true)
 {
 	cString<uChar16> Temp=cnRTL::CreateStringFormat(u"cThreadHandle - ThreadID = %d(0x%x), Handle=%x",fThreadID,fThreadID,(uIntn)fThreadHandle);
 	return cnVar::MoveCast(Temp.Token());
@@ -138,7 +138,7 @@ void cThread::cSystemShutdownNotifyProcedure::Execute(void)noexcept(true)
 	Host->ShutdownNotify();
 }
 //---------------------------------------------------------------------------
-void cThread::ShutdownNotify(void)noexcept
+void cThread::ShutdownNotify(void)noexcept(true)
 {
 	auto CurrentThreadObject=gTLS->Get();
 	if(CurrentThreadObject!=nullptr){
@@ -147,36 +147,36 @@ void cThread::ShutdownNotify(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cErrorReportRecord::cErrorReportRecord()noexcept
+cErrorReportRecord::cErrorReportRecord()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cErrorReportRecord::~cErrorReportRecord()noexcept
+cErrorReportRecord::~cErrorReportRecord()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iErrorReport* cErrorReportRecord::ParentReport(void)noexcept
+iErrorReport* cErrorReportRecord::ParentReport(void)noexcept(true)
 {
 	return Parent;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cErrorReportRecord::FunctionName(void)noexcept
+cArray<const uChar16> cErrorReportRecord::FunctionName(void)noexcept(true)
 {
 	return FuncName.GetArray();
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cErrorReportRecord::ErrorMessage(void)noexcept
+cArray<const uChar16> cErrorReportRecord::ErrorMessage(void)noexcept(true)
 {
 	return ErrorMsg.GetArray();
 }
 //---------------------------------------------------------------------------
-cArray<const cErrorInfo> cErrorReportRecord::Errors(void)noexcept
+cArray<const cErrorInfo> cErrorReportRecord::Errors(void)noexcept(true)
 {
 	return ErrorList.Storage();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cnSystem::ErrorReportMaker::Submit(void)noexcept
+void cnSystem::ErrorReportMaker::Submit(void)noexcept(true)
 {
 	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
 
@@ -187,14 +187,14 @@ void cnSystem::ErrorReportMaker::Submit(void)noexcept
 	cErrorReportRecord::gTLSRecord->Set(cnVar::MoveCast(fReport),Record);
 }
 //---------------------------------------------------------------------------
-void cnSystem::ErrorReportMaker::SetMessage(const uChar16 *Name,uIntn Length)noexcept
+void cnSystem::ErrorReportMaker::SetMessage(const uChar16 *Name,uIntn Length)noexcept(true)
 {
 	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
 	
 	Record->ErrorMsg.SetString(Name,Length);
 }
 //---------------------------------------------------------------------------
-void cnSystem::ErrorReportMaker::Append(const cErrorInfo *ErrorInfo)noexcept
+void cnSystem::ErrorReportMaker::Append(const cErrorInfo *ErrorInfo)noexcept(true)
 {
 	auto Record=static_cast<cErrorReportRecord*>(fReport.Pointer());
 	
@@ -205,14 +205,14 @@ void cnSystem::ErrorReportMaker::Append(const cErrorInfo *ErrorInfo)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cnSystem::ErrorReportMaker cnSystem::ErrorReportManager::MakeReport(const uChar16 *Name,uIntn Length)noexcept
+cnSystem::ErrorReportMaker cnSystem::ErrorReportManager::MakeReport(const uChar16 *Name,uIntn Length)noexcept(true)
 {
 	auto Record=rQuerySharedObject<cErrorReportRecord>();
 	Record->FuncName.SetString(Name,Length);
 	return cnSystem::ErrorReportMaker(Record);
 }
 //---------------------------------------------------------------------------
-rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept
+rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept(true)
 {
 	auto *TLSObject=cErrorReportRecord::gTLSRecord->Get();
 	if(TLSObject==nullptr)
@@ -226,16 +226,16 @@ rPtr<iErrorReport> cnSystem::ErrorReportManager::Fetch(void)noexcept
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //- Thread pool -------------------------------------------------------------
 //- Thread pool -------------------------------------------------------------
-cDefaultThreadPool::cDefaultThreadPool()noexcept
+cDefaultThreadPool::cDefaultThreadPool()noexcept(true)
 	: bcNT6ThreadPoolEnvironment(nullptr)
 {
 }
 //- Thread pool -------------------------------------------------------------
-cDefaultThreadPool::~cDefaultThreadPool()noexcept
+cDefaultThreadPool::~cDefaultThreadPool()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept> *Callback)noexcept
+rPtr<iThreadPoolHandleWaiter> cDefaultThreadPool::CreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)noexcept(true)> *Callback)noexcept(true)
 {
 	return rCreate<cHandleWaiter>(nullptr,Reference,Callback);
 }

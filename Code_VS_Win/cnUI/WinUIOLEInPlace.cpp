@@ -5,7 +5,7 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cOLEInPlaceFrameConfiguration::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
+void cOLEInPlaceFrameConfiguration::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true)
 {
 	lpFrameInfo->fMDIApp=false;
 	lpFrameInfo->cAccelEntries=0;
@@ -13,7 +13,7 @@ void cOLEInPlaceFrameConfiguration::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)
 	lpFrameInfo->hwndFrame=nullptr;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceFrameInfo::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
+void cOLEInPlaceFrameInfo::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true)
 {
 	lpFrameInfo->fMDIApp=IsMDIApp;
 	lpFrameInfo->cAccelEntries=AcceleratorEntries;
@@ -22,7 +22,7 @@ void cOLEInPlaceFrameInfo::FrameInfo(LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEInPlaceControl::cOLEInPlaceControl()noexcept
+cOLEInPlaceControl::cOLEInPlaceControl()noexcept(true)
 {
 	fActiveState=OLEInPlaceActiveState::Inactive;
 	ActivateWhenBackground=false;
@@ -32,12 +32,12 @@ cOLEInPlaceControl::cOLEInPlaceControl()noexcept
 	DisableUIActivation=false;
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceControl::~cOLEInPlaceControl()noexcept
+cOLEInPlaceControl::~cOLEInPlaceControl()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-RECT cOLEInPlaceControl::OLEGetInPlaceRect(void)noexcept
+RECT cOLEInPlaceControl::OLEGetInPlaceRect(void)noexcept(true)
 {
 	if(fView==nullptr)
 		return {0,0,0,0};
@@ -54,35 +54,35 @@ RECT cOLEInPlaceControl::OLEGetInPlaceRect(void)noexcept
 	return RetRC;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::ViewSetup(void)noexcept
+void cOLEInPlaceControl::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 	fView->InsertStateHandler(this);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::ViewClear(void)noexcept
+void cOLEInPlaceControl::ViewClear(void)noexcept(true)
 {
 	fView->RemoveStateHandler(this);
 	ViewControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-IOleInPlaceObject* cOLEInPlaceControl::GetInPlaceObject(void)noexcept
+IOleInPlaceObject* cOLEInPlaceControl::GetInPlaceObject(void)noexcept(true)
 {
 	return fInPlaceObject;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLESetInPlaceObject(COMPtr<IOleInPlaceObject> InPlaceObject)noexcept
+void cOLEInPlaceControl::OLESetInPlaceObject(COMPtr<IOleInPlaceObject> InPlaceObject)noexcept(true)
 {
 	fInPlaceObject=cnVar::MoveCast(InPlaceObject);
 	fActiveState=OLEInPlaceActiveState::Inactive;
 }
 //---------------------------------------------------------------------------
-eOLEInPlaceActiveState cOLEInPlaceControl::GetActiveState(void)const noexcept
+eOLEInPlaceActiveState cOLEInPlaceControl::GetActiveState(void)const noexcept(true)
 {
 	return fActiveState;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::SetActiveState(eOLEInPlaceActiveState State)noexcept
+void cOLEInPlaceControl::SetActiveState(eOLEInPlaceActiveState State)noexcept(true)
 {
 	sIntn Offset=static_cast<sIntn>(State)-static_cast<sIntn>(fActiveState);
 	if(Offset==0)
@@ -95,7 +95,7 @@ void cOLEInPlaceControl::SetActiveState(eOLEInPlaceActiveState State)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::IncOLEState(uIntn Count)noexcept
+void cOLEInPlaceControl::IncOLEState(uIntn Count)noexcept(true)
 {
 	cnLib_ASSERT(Count!=0);
 	switch(fActiveState){
@@ -114,7 +114,7 @@ void cOLEInPlaceControl::IncOLEState(uIntn Count)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::DecOLEState(uIntn Count)noexcept
+void cOLEInPlaceControl::DecOLEState(uIntn Count)noexcept(true)
 {
 	cnLib_ASSERT(Count!=0);
 	switch(fActiveState){
@@ -134,7 +134,7 @@ void cOLEInPlaceControl::DecOLEState(uIntn Count)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::UIStarted(void)noexcept
+void cOLEInPlaceControl::UIStarted(void)noexcept(true)
 {
 	fHostWindowHandle=GetWindowHandleFromUIView(fView);
 
@@ -143,27 +143,27 @@ void cOLEInPlaceControl::UIStarted(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::UIShow(void)noexcept
+void cOLEInPlaceControl::UIShow(void)noexcept(true)
 {
 	if(ActivateWhenShow && OLEActivation!=nullptr){
 		AutoActive();
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::UIHide(void)noexcept
+void cOLEInPlaceControl::UIHide(void)noexcept(true)
 {
 	if(DeactivateWhenHide){
 		OLEDeactivate();
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::UIStopped(void)noexcept
+void cOLEInPlaceControl::UIStopped(void)noexcept(true)
 {
 	OLEDeactivate();
 	fHostWindowHandle=nullptr;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::UpdateObjectState(void)noexcept
+void cOLEInPlaceControl::UpdateObjectState(void)noexcept(true)
 {
 	if(fView==nullptr)
 		return;
@@ -183,12 +183,12 @@ void cOLEInPlaceControl::UpdateObjectState(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::RectangleChanged(bool,bool)noexcept
+void cOLEInPlaceControl::RectangleChanged(bool,bool)noexcept(true)
 {
 	SetupInPlaceRect();
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::SetupInPlaceRect(void)noexcept
+void cOLEInPlaceControl::SetupInPlaceRect(void)noexcept(true)
 {
 	if(fInPlaceObject==nullptr){
 		return;
@@ -199,7 +199,7 @@ void cOLEInPlaceControl::SetupInPlaceRect(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::AutoActive(void)noexcept
+void cOLEInPlaceControl::AutoActive(void)noexcept(true)
 {
 	if(UIActivateOnEvent && !DisableUIActivation){
 		if(fActiveState<OLEInPlaceActiveState::UIActive){
@@ -213,12 +213,12 @@ void cOLEInPlaceControl::AutoActive(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-HWND cOLEInPlaceControl::OLEGetWindowHandle(void)noexcept
+HWND cOLEInPlaceControl::OLEGetWindowHandle(void)noexcept(true)
 {
 	return fHostWindowHandle;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceControl::OLEGetWindowContext(IOleInPlaceFrame **ppFrame,IOleInPlaceUIWindow **ppDoc,LPRECT lprcPosRect,LPRECT lprcClipRect,LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept
+HRESULT cOLEInPlaceControl::OLEGetWindowContext(IOleInPlaceFrame **ppFrame,IOleInPlaceUIWindow **ppDoc,LPRECT lprcPosRect,LPRECT lprcClipRect,LPOLEINPLACEFRAMEINFO lpFrameInfo)noexcept(true)
 {
 	*ppDoc=nullptr;
 	*ppFrame=nullptr;
@@ -251,7 +251,7 @@ HRESULT cOLEInPlaceControl::OLEGetWindowContext(IOleInPlaceFrame **ppFrame,IOleI
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEDeactivate(void)noexcept
+void cOLEInPlaceControl::OLEDeactivate(void)noexcept(true)
 {
 	if(fInPlaceObject==nullptr){
 		return;
@@ -266,7 +266,7 @@ void cOLEInPlaceControl::OLEDeactivate(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEUIDeactivate(void)noexcept
+void cOLEInPlaceControl::OLEUIDeactivate(void)noexcept(true)
 {
 	if(fInPlaceObject==nullptr){
 		return;
@@ -277,7 +277,7 @@ void cOLEInPlaceControl::OLEUIDeactivate(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceControl::OLECanInPlaceActivate(void)noexcept
+bool cOLEInPlaceControl::OLECanInPlaceActivate(void)noexcept(true)
 {
 	if(fInPlaceObject==nullptr)
 		return false;
@@ -291,27 +291,27 @@ bool cOLEInPlaceControl::OLECanInPlaceActivate(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEOnInPlaceActivate(void)noexcept
+void cOLEInPlaceControl::OLEOnInPlaceActivate(void)noexcept(true)
 {
 	fActiveState=OLEInPlaceActiveState::InPlaceActive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEOnUIActivate(void)noexcept
+void cOLEInPlaceControl::OLEOnUIActivate(void)noexcept(true)
 {
 	fActiveState=OLEInPlaceActiveState::UIActive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEOnUIDeactivate(void)noexcept
+void cOLEInPlaceControl::OLEOnUIDeactivate(void)noexcept(true)
 {
 	fActiveState=OLEInPlaceActiveState::InPlaceActive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEOnInPlaceDeactivate(void)noexcept
+void cOLEInPlaceControl::OLEOnInPlaceDeactivate(void)noexcept(true)
 {
 	fActiveState=OLEInPlaceActiveState::Inactive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceControl::OLEOnPosRectChange(LPCRECT lprcPosRect)noexcept
+void cOLEInPlaceControl::OLEOnPosRectChange(LPCRECT lprcPosRect)noexcept(true)
 {
 	cUIPoint Pos;
 	Pos.x=lprcPosRect->left;
@@ -323,18 +323,18 @@ void cOLEInPlaceControl::OLEOnPosRectChange(LPCRECT lprcPosRect)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cOLEInPlaceWindowlessControl::cOLEInPlaceWindowlessControl()noexcept
+cOLEInPlaceWindowlessControl::cOLEInPlaceWindowlessControl()noexcept(true)
 {
 	fDCViewContent=cnWindows::CreateDCViewContent(&fOLEWindowlessPainter);
 	fDCViewContent->SetVisible(false);
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceWindowlessControl::~cOLEInPlaceWindowlessControl()noexcept
+cOLEInPlaceWindowlessControl::~cOLEInPlaceWindowlessControl()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::ViewSetup(void)noexcept
+void cOLEInPlaceWindowlessControl::ViewSetup(void)noexcept(true)
 {
 	cOLEInPlaceControl::ViewSetup();
 
@@ -345,7 +345,7 @@ void cOLEInPlaceWindowlessControl::ViewSetup(void)noexcept
 	fDCViewContent->SetView(fView);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::ViewClear(void)noexcept
+void cOLEInPlaceWindowlessControl::ViewClear(void)noexcept(true)
 {
 	fDCViewContent->SetView(nullptr);
 	//if(fWindowViewport!=nullptr){
@@ -356,7 +356,7 @@ void cOLEInPlaceWindowlessControl::ViewClear(void)noexcept
 	cOLEInPlaceControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivate(void)noexcept
+void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivate(void)noexcept(true)
 {
 	fDCViewContent->SetVisible(false);
 	fInPlaceObjectWindowless=nullptr;
@@ -364,7 +364,7 @@ void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivate(void)noexcept
 	fActiveState=OLEInPlaceActiveState::Inactive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::OLEOnInPlaceActivateEx(BOOL *pfNoRedraw,DWORD dwFlags)noexcept
+void cOLEInPlaceWindowlessControl::OLEOnInPlaceActivateEx(BOOL *pfNoRedraw,DWORD dwFlags)noexcept(true)
 {
 	if(dwFlags&ACTIVATE_WINDOWLESS){
 		if(fInPlaceObject!=nullptr){
@@ -378,7 +378,7 @@ void cOLEInPlaceWindowlessControl::OLEOnInPlaceActivateEx(BOOL *pfNoRedraw,DWORD
 	fActiveState=OLEInPlaceActiveState::InPlaceActive;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivateEx(BOOL fNoRedraw)noexcept
+void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivateEx(BOOL fNoRedraw)noexcept(true)
 {fNoRedraw;
 	fDCViewContent->SetVisible(false);
 	fInPlaceObjectWindowless=nullptr;
@@ -386,7 +386,7 @@ void cOLEInPlaceWindowlessControl::OLEOnInPlaceDeactivateEx(BOOL fNoRedraw)noexc
 	fActiveState=OLEInPlaceActiveState::Inactive;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceWindowlessControl::OLERequestUIActivate(void)noexcept
+bool cOLEInPlaceWindowlessControl::OLERequestUIActivate(void)noexcept(true)
 {
 	if(DisableUIActivation){
 		return false;
@@ -394,13 +394,13 @@ bool cOLEInPlaceWindowlessControl::OLERequestUIActivate(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cOLEInPlaceWindowlessControl::OLECanWindowlessActivate(void)noexcept
+bool cOLEInPlaceWindowlessControl::OLECanWindowlessActivate(void)noexcept(true)
 {
 	//return fWindowViewport!=nullptr;
 	return false;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetCapture(void)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetCapture(void)noexcept(true)
 {
 	auto MouseControl=iCast<iUIMouseControl>(fView);
 	if(MouseControl!=nullptr){
@@ -410,7 +410,7 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetCapture(void)noexcept
 	return S_FALSE;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetCapture(BOOL fCapture)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetCapture(BOOL fCapture)noexcept(true)
 {
 	auto MouseControl=iCast<iUIMouseControl>(fView);
 	if(fCapture){
@@ -428,7 +428,7 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetCapture(BOOL fCapture)noex
 	}
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetFocus(void)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetFocus(void)noexcept(true)
 {
 	auto KeyControl=iCast<iUIKeyControl>(fView);
 	if(KeyControl!=nullptr){
@@ -439,7 +439,7 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetFocus(void)noexcept
 	return S_FALSE;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetFocus(BOOL fFocus)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetFocus(BOOL fFocus)noexcept(true)
 {
 	auto KeyControl=iCast<iUIKeyControl>(fView);
 	if(KeyControl!=nullptr){
@@ -453,7 +453,7 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessSetFocus(BOOL fFocus)noexcept
 	return E_FAIL;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetDC(LPCRECT pRect,DWORD grfFlags,HDC *phDC)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetDC(LPCRECT pRect,DWORD grfFlags,HDC *phDC)noexcept(true)
 {
 /*	if(grfFlags&OLEDC_NODRAW){
 	}
@@ -465,19 +465,19 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessGetDC(LPCRECT pRect,DWORD grf
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessReleaseDC(HDC hDC)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessReleaseDC(HDC hDC)noexcept(true)
 {
 	fDCViewContent->ReleaseDC(hDC);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessInvalidateRect(LPCRECT pRect,BOOL fErase)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessInvalidateRect(LPCRECT pRect,BOOL fErase)noexcept(true)
 {fErase;
 	fDCViewContent->InvalidateRect(pRect);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessInvalidateRgn(HRGN hRGN,BOOL fErase)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessInvalidateRgn(HRGN hRGN,BOOL fErase)noexcept(true)
 {hRGN,fErase;
 	// no region function, just invalidate all
 	auto crc=OLEGetInPlaceRect();
@@ -485,14 +485,14 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessInvalidateRgn(HRGN hRGN,BOOL 
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessScrollRect(INT dx,INT dy,LPCRECT pRectScroll,LPCRECT pRectClip)noexcept
+HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessScrollRect(INT dx,INT dy,LPCRECT pRectScroll,LPCRECT pRectClip)noexcept(true)
 {
 	::ScrollWindow(fHostWindowHandle,dx,dy,pRectScroll,pRectClip);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
 HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessAdjustRect( 
-    /* [out][in] */ __RPC__inout LPRECT prc)noexcept
+    /* [out][in] */ __RPC__inout LPRECT prc)noexcept(true)
 {
 	return S_OK;
 }
@@ -504,16 +504,16 @@ HRESULT cOLEInPlaceWindowlessControl::OLEWindowlessOnDefWindowMessage(
     _In_  WPARAM wParam,
     /* [annotation][in] */ 
     _In_  LPARAM lParam,
-    /* [out] */ __RPC__out LRESULT *plResult)noexcept
+    /* [out] */ __RPC__out LRESULT *plResult)noexcept(true)
 {
 	*plResult=::DefWindowProcW(fHostWindowHandle,msg,wParam,lParam);
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::WindowAttached(void)noexcept
+void cOLEInPlaceWindowlessControl::WindowAttached(void)noexcept(true)
 {
 }
-void cOLEInPlaceWindowlessControl::WindowDetached(void)noexcept
+void cOLEInPlaceWindowlessControl::WindowDetached(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
@@ -563,12 +563,12 @@ static const cOleInPlaceObjectWindowlessMessageInfo gOleInPlaceObjectWindowlessM
 	{WM_IME_KEYUP,			},	// 291
 };
 //---------------------------------------------------------------------------
-bool cOLEInPlaceWindowlessControl::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)noexcept
+bool cOLEInPlaceWindowlessControl::WindowMessage(LRESULT &MsgResult,const cWindowMessageParam &Message)noexcept(true)
 {MsgResult,Message;
 	return false;
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)noexcept
+void cOLEInPlaceWindowlessControl::WindowMessageProcessed(LRESULT,const cWindowMessageParam &Message)noexcept(true)
 {
 	if(fInPlaceObjectWindowless){
 		uIntn MessageIndex;
@@ -595,25 +595,25 @@ void cOLEInPlaceWindowlessControl::WindowMessageProcessed(LRESULT,const cWindowM
 	}
 }
 //---------------------------------------------------------------------------
-cOLEInPlaceWindowlessControl *cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::GetHost()noexcept
+cOLEInPlaceWindowlessControl *cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::GetHost()noexcept(true)
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cOLEInPlaceWindowlessControl::fOLEWindowlessPainter);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintStarted(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintShow(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintResume(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintPaused(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintHide(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintStopped(void)noexcept{}
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintRectChanged(void)noexcept{}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintStarted(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintShow(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintResume(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintPaused(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintHide(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintStopped(void)noexcept(true){}
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::PaintRectChanged(void)noexcept(true){}
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::Paint(HDC DC,HRGN)noexcept
+void cOLEInPlaceWindowlessControl::cOLEWindowlessPainter::Paint(HDC DC,HRGN)noexcept(true)
 {
 	return GetHost()->WindowlessObjectDraw(DC);
 }
 //---------------------------------------------------------------------------
-void cOLEInPlaceWindowlessControl::WindowlessObjectDraw(HDC DC)noexcept
+void cOLEInPlaceWindowlessControl::WindowlessObjectDraw(HDC DC)noexcept(true)
 {
 	if(fViewObjectWindowless==nullptr)
 		return;

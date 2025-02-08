@@ -12,7 +12,7 @@ static constexpr REFERENCE_TIME RefTime_Second=1'000'000'0;
 static constexpr REFERENCE_TIME RefTime_ToNanoSecond=100;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCoreAudioRenderEndpoint::cCoreAudioRenderEndpoint(COMPtr<IAudioClient> AudioClient,COMPtr<IAudioRenderClient> RenderClient,const WAVEFORMATEX &wf)noexcept
+cCoreAudioRenderEndpoint::cCoreAudioRenderEndpoint(COMPtr<IAudioClient> AudioClient,COMPtr<IAudioRenderClient> RenderClient,const WAVEFORMATEX &wf)noexcept(true)
 	: fAudioClient(cnVar::MoveCast(AudioClient))
 	, fRenderClient(cnVar::MoveCast(RenderClient))
 {
@@ -33,11 +33,11 @@ cCoreAudioRenderEndpoint::cCoreAudioRenderEndpoint(COMPtr<IAudioClient> AudioCli
 	fAsyncTimer=cnSystem::DefaultThreadPool->CreateTimer(&fInnerReference,&fQueueWaveTimerProcedure);
 }
 //---------------------------------------------------------------------------
-cCoreAudioRenderEndpoint::~cCoreAudioRenderEndpoint()noexcept
+cCoreAudioRenderEndpoint::~cCoreAudioRenderEndpoint()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iPtr<cCoreAudioRenderEndpoint> cCoreAudioRenderEndpoint::CreateEndpoint(IMMDevice *Device,const WAVEFORMATEX *WaveFormat,ufInt32 BufferDurationNS)noexcept
+iPtr<cCoreAudioRenderEndpoint> cCoreAudioRenderEndpoint::CreateEndpoint(IMMDevice *Device,const WAVEFORMATEX *WaveFormat,ufInt32 BufferDurationNS)noexcept(true)
 {
 	HRESULT hr;
 
@@ -67,67 +67,67 @@ iPtr<cCoreAudioRenderEndpoint> cCoreAudioRenderEndpoint::CreateEndpoint(IMMDevic
 	return iCreate<cCoreAudioRenderEndpoint>(cnVar::MoveCast(AudioClient),cnVar::MoveCast(RenderClient),*WaveFormat);
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::VirtualStopped(void)noexcept
+void cCoreAudioRenderEndpoint::VirtualStopped(void)noexcept(true)
 {
 	RenderStop();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::Close(void)noexcept
+void cCoreAudioRenderEndpoint::Close(void)noexcept(true)
 {
 	CloseQueue();
 }
 //---------------------------------------------------------------------------
-iWriteQueue* cCoreAudioRenderEndpoint::GetWriteQueue(void)noexcept
+iWriteQueue* cCoreAudioRenderEndpoint::GetWriteQueue(void)noexcept(true)
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::RenderStart(void)noexcept
+void cCoreAudioRenderEndpoint::RenderStart(void)noexcept(true)
 {
 	fAudioClient->Start();
 	uInt64 TimeNow=cnSystem::GetSystemTimeNow();
 	fAsyncTimer->Start(TimeNow+fBufferHalfTimeNS,fBufferHalfTimeNS);
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::RenderStop(void)noexcept
+void cCoreAudioRenderEndpoint::RenderStop(void)noexcept(true)
 {
 	fAsyncTimer->Stop();
 	fAudioClient->Stop();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::RenderReset(void)noexcept
+void cCoreAudioRenderEndpoint::RenderReset(void)noexcept(true)
 {
 	fAudioClient->Reset();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::Start(void)noexcept
+void cCoreAudioRenderEndpoint::Start(void)noexcept(true)
 {
 	RenderStart();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::Stop(void)noexcept
+void cCoreAudioRenderEndpoint::Stop(void)noexcept(true)
 {
 	RenderStop();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::Reset(void)noexcept
+void cCoreAudioRenderEndpoint::Reset(void)noexcept(true)
 {
 	RenderReset();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::cQueueWaveTimerProcedure::Execute(void)noexcept
+void cCoreAudioRenderEndpoint::cQueueWaveTimerProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cCoreAudioRenderEndpoint::fQueueWaveTimerProcedure);
 	Host->QueueWaveTimer();
 }
 //---------------------------------------------------------------------------
-iReference* cCoreAudioRenderEndpoint::NotificationInnerReference(void)noexcept
+iReference* cCoreAudioRenderEndpoint::NotificationInnerReference(void)noexcept(true)
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::QueueWaveTimer(void)noexcept
+void cCoreAudioRenderEndpoint::QueueWaveTimer(void)noexcept(true)
 {
     HRESULT hr;
     // See how much buffer space is available.
@@ -145,12 +145,12 @@ void cCoreAudioRenderEndpoint::QueueWaveTimer(void)noexcept
 	WriteQueueReportBufferAvailable(false);
 }
 //---------------------------------------------------------------------------
-uIntn cCoreAudioRenderEndpoint::GetMaxWriteBufferSize(void)noexcept
+uIntn cCoreAudioRenderEndpoint::GetMaxWriteBufferSize(void)noexcept(true)
 {
 	return fBufferFrameCount*fFrameSize;
 }
 //---------------------------------------------------------------------------
-cMemory cCoreAudioRenderEndpoint::ReserveWriteBuffer(uIntn)noexcept
+cMemory cCoreAudioRenderEndpoint::ReserveWriteBuffer(uIntn)noexcept(true)
 {
     HRESULT hr;
     // See how much buffer space is available.
@@ -186,7 +186,7 @@ cMemory cCoreAudioRenderEndpoint::ReserveWriteBuffer(uIntn)noexcept
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioRenderEndpoint::CommitWriteBuffer(uIntn Size)noexcept
+void cCoreAudioRenderEndpoint::CommitWriteBuffer(uIntn Size)noexcept(true)
 {
 	uInt32 FrameCopyied=static_cast<uInt32>(Size/fFrameSize);
 
@@ -204,7 +204,7 @@ void cCoreAudioRenderEndpoint::CommitWriteBuffer(uIntn Size)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCoreAudioCaptureEndpoint::cCoreAudioCaptureEndpoint(COMPtr<IAudioClient> AudioClient,COMPtr<IAudioCaptureClient> CaptureClient,const WAVEFORMATEX &wf)noexcept
+cCoreAudioCaptureEndpoint::cCoreAudioCaptureEndpoint(COMPtr<IAudioClient> AudioClient,COMPtr<IAudioCaptureClient> CaptureClient,const WAVEFORMATEX &wf)noexcept(true)
 	: fAudioClient(cnVar::MoveCast(AudioClient))
 	, fCaptureClient(cnVar::MoveCast(CaptureClient))
 {
@@ -224,11 +224,11 @@ cCoreAudioCaptureEndpoint::cCoreAudioCaptureEndpoint(COMPtr<IAudioClient> AudioC
 	fAsyncTimer=cnSystem::DefaultThreadPool->CreateTimer(&fInnerReference,&fQueueWaveTimerProcedure);
 }
 //---------------------------------------------------------------------------
-cCoreAudioCaptureEndpoint::~cCoreAudioCaptureEndpoint()noexcept
+cCoreAudioCaptureEndpoint::~cCoreAudioCaptureEndpoint()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iPtr<cCoreAudioCaptureEndpoint> cCoreAudioCaptureEndpoint::CreateEndpoint(IMMDevice *Device,const WAVEFORMATEX *WaveFormat,ufInt32 BufferDurationNS)noexcept
+iPtr<cCoreAudioCaptureEndpoint> cCoreAudioCaptureEndpoint::CreateEndpoint(IMMDevice *Device,const WAVEFORMATEX *WaveFormat,ufInt32 BufferDurationNS)noexcept(true)
 {
 	HRESULT hr;
     COMPtr<IAudioClient> AudioClient;
@@ -258,62 +258,62 @@ iPtr<cCoreAudioCaptureEndpoint> cCoreAudioCaptureEndpoint::CreateEndpoint(IMMDev
 	return iCreate<cCoreAudioCaptureEndpoint>(cnVar::MoveCast(AudioClient),cnVar::MoveCast(CaptureClient),*WaveFormat);
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::VirtualStopped(void)noexcept
+void cCoreAudioCaptureEndpoint::VirtualStopped(void)noexcept(true)
 {
 	CaptureStop();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::Close(void)noexcept
+void cCoreAudioCaptureEndpoint::Close(void)noexcept(true)
 {
 	return CloseQueue();
 }
 //---------------------------------------------------------------------------
-iReadQueue* cCoreAudioCaptureEndpoint::GetReadQueue(void)noexcept
+iReadQueue* cCoreAudioCaptureEndpoint::GetReadQueue(void)noexcept(true)
 {
 	return this;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::Start(void)noexcept
+void cCoreAudioCaptureEndpoint::Start(void)noexcept(true)
 {
 	return CaptureStart();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::Stop(void)noexcept
+void cCoreAudioCaptureEndpoint::Stop(void)noexcept(true)
 {
 	return CaptureStop();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::Reset(void)noexcept
+void cCoreAudioCaptureEndpoint::Reset(void)noexcept(true)
 {
 	return CaptureReset();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::CaptureStart(void)noexcept
+void cCoreAudioCaptureEndpoint::CaptureStart(void)noexcept(true)
 {
 	uInt64 TimeNow=cnSystem::GetSystemTimeNow();
 	fAsyncTimer->Start(TimeNow+fBufferHalfTimeNS,fBufferHalfTimeNS);
 	fAudioClient->Start();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::CaptureStop(void)noexcept
+void cCoreAudioCaptureEndpoint::CaptureStop(void)noexcept(true)
 {
 	fAudioClient->Stop();
 	fAsyncTimer->Stop();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::CaptureReset(void)noexcept
+void cCoreAudioCaptureEndpoint::CaptureReset(void)noexcept(true)
 {
 	fAudioClient->Reset();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::cQueueWaveTimerProcedure::Execute(void)noexcept
+void cCoreAudioCaptureEndpoint::cQueueWaveTimerProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cCoreAudioCaptureEndpoint::fQueueWaveTimerProcedure);
 	return Host->QueueWaveTimer();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::QueueWaveTimer(void)noexcept
+void cCoreAudioCaptureEndpoint::QueueWaveTimer(void)noexcept(true)
 {
 	HRESULT hr;
 	UINT32 PacketLength=0;
@@ -330,17 +330,17 @@ void cCoreAudioCaptureEndpoint::QueueWaveTimer(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iReference* cCoreAudioCaptureEndpoint::NotificationInnerReference(void)noexcept
+iReference* cCoreAudioCaptureEndpoint::NotificationInnerReference(void)noexcept(true)
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-uIntn cCoreAudioCaptureEndpoint::GetMaxReadBufferSize(void)noexcept
+uIntn cCoreAudioCaptureEndpoint::GetMaxReadBufferSize(void)noexcept(true)
 {
 	return fBufferFrameCount*fFrameSize;
 }
 //---------------------------------------------------------------------------
-cConstMemory cCoreAudioCaptureEndpoint::GatherReadBuffer(uIntn)noexcept
+cConstMemory cCoreAudioCaptureEndpoint::GatherReadBuffer(uIntn)noexcept(true)
 {
 	HRESULT hr;
 	UINT32 PacketLength;
@@ -389,7 +389,7 @@ cConstMemory cCoreAudioCaptureEndpoint::GatherReadBuffer(uIntn)noexcept
 	return Buffer;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioCaptureEndpoint::DismissReadBuffer(uIntn Size)noexcept
+void cCoreAudioCaptureEndpoint::DismissReadBuffer(uIntn Size)noexcept(true)
 {
 	uIntn FramesRead=Size/fFrameSize;
 	HRESULT hr;
@@ -406,16 +406,16 @@ void cCoreAudioCaptureEndpoint::DismissReadBuffer(uIntn Size)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCoreAudioDevice::cCoreAudioDevice(COMPtr<IMMDevice> Device)noexcept
+cCoreAudioDevice::cCoreAudioDevice(COMPtr<IMMDevice> Device)noexcept(true)
 	:fDevice(MoveCast(Device))
 {
 }
 //---------------------------------------------------------------------------
-cCoreAudioDevice::~cCoreAudioDevice()noexcept
+cCoreAudioDevice::~cCoreAudioDevice()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioOutputEndpoint> cCoreAudioDevice::OpenOutput(iInterface *Format,uInt32 BufferDurationNS)noexcept
+iPtr<iAudioOutputEndpoint> cCoreAudioDevice::OpenOutput(iInterface *Format,uInt32 BufferDurationNS)noexcept(true)
 {
 	auto WaveFormat=iCast<iWaveFormat>(Format);
 	if(WaveFormat==nullptr){
@@ -425,7 +425,7 @@ iPtr<iAudioOutputEndpoint> cCoreAudioDevice::OpenOutput(iInterface *Format,uInt3
 	return cCoreAudioRenderEndpoint::CreateEndpoint(fDevice,wf,BufferDurationNS);
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioInputEndpoint> cCoreAudioDevice::OpenInput(iInterface *Format,uInt32 BufferDurationNS)noexcept
+iPtr<iAudioInputEndpoint> cCoreAudioDevice::OpenInput(iInterface *Format,uInt32 BufferDurationNS)noexcept(true)
 {
 	auto WaveFormat=iCast<iWaveFormat>(Format);
 	if(WaveFormat==nullptr){
@@ -436,31 +436,31 @@ iPtr<iAudioInputEndpoint> cCoreAudioDevice::OpenInput(iInterface *Format,uInt32 
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCoreAudioDefaultDeviceWatcher::cCoreAudioDefaultDeviceWatcher(COMPtr<IMMDeviceEnumerator> DeviceEnum,EDataFlow DataFlow)noexcept
+cCoreAudioDefaultDeviceWatcher::cCoreAudioDefaultDeviceWatcher(COMPtr<IMMDeviceEnumerator> DeviceEnum,EDataFlow DataFlow)noexcept(true)
 	: fDeviceEnum(cnVar::MoveCast(DeviceEnum))
 	, fDataFlow(DataFlow)
 	, fCallback(nullptr)
 {
 }
 //---------------------------------------------------------------------------
-cCoreAudioDefaultDeviceWatcher::~cCoreAudioDefaultDeviceWatcher()noexcept
+cCoreAudioDefaultDeviceWatcher::~cCoreAudioDefaultDeviceWatcher()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::VirtualStarted(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::VirtualStarted(void)noexcept(true)
 {
 	InnerActivate('self');
 	//fDeviceEnum->RegisterEndpointNotificationCallback(this);
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::VirtualStopped(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::VirtualStopped(void)noexcept(true)
 {
 	CloseQueue();
 
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-bool cCoreAudioDefaultDeviceWatcher::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept
+bool cCoreAudioDefaultDeviceWatcher::StartNotify(iReference *Reference,iAsyncNotificationCallback *Callback)noexcept(true)
 {
 	if(PrepareStartNotify()==false)
 		return false;
@@ -473,24 +473,24 @@ bool cCoreAudioDefaultDeviceWatcher::StartNotify(iReference *Reference,iAsyncNot
 	return true;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::StopNotify(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::StopNotify(void)noexcept(true)
 {
 	if(bcAsyncQueue::StopNotify()){
 		UpdateQueueState(false);
 	}
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::NotifyCallback(bool IdleNotify)noexcept
+void cCoreAudioDefaultDeviceWatcher::NotifyCallback(bool IdleNotify)noexcept(true)
 {
 	return NotifyQueue(IdleNotify);
 }
 //---------------------------------------------------------------------------
-bool cCoreAudioDefaultDeviceWatcher::IsClosed(void)noexcept
+bool cCoreAudioDefaultDeviceWatcher::IsClosed(void)noexcept(true)
 {
 	return IsNotificationClosed();
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioDevice> cCoreAudioDefaultDeviceWatcher::GetDevice(void)noexcept
+iPtr<iAudioDevice> cCoreAudioDefaultDeviceWatcher::GetDevice(void)noexcept(true)
 {
 	HRESULT hr;
 	COMPtr<IMMDevice> Device;
@@ -502,12 +502,12 @@ iPtr<iAudioDevice> cCoreAudioDefaultDeviceWatcher::GetDevice(void)noexcept
 	return iCreate<cCoreAudioDevice>(cnVar::MoveCast(Device));
 }
 //---------------------------------------------------------------------------
-iReference* cCoreAudioDefaultDeviceWatcher::NotificationInnerReference(void)noexcept
+iReference* cCoreAudioDefaultDeviceWatcher::NotificationInnerReference(void)noexcept(true)
 {
 	return &fInnerReference;
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::NotificationStarted(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::NotificationStarted(void)noexcept(true)
 {
 	bcAsyncQueue::NotificationStarted();
 	
@@ -515,7 +515,7 @@ void cCoreAudioDefaultDeviceWatcher::NotificationStarted(void)noexcept
 	fCallback->AsyncStarted();
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::NotificationStopped(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::NotificationStopped(void)noexcept(true)
 {
 	auto Reference=cnVar::MoveCast(fCallbackReference);
 	auto Callback=fCallback;
@@ -526,35 +526,35 @@ void cCoreAudioDefaultDeviceWatcher::NotificationStopped(void)noexcept
 	rDecReference(this,'auqu');
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::NotificationClosed(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::NotificationClosed(void)noexcept(true)
 {
 	bcAsyncQueue::NotificationClosed();
 
 	//fDeviceEnum->UnregisterEndpointNotificationCallback(this);
 }
 //---------------------------------------------------------------------------
-void cCoreAudioDefaultDeviceWatcher::AsyncQueueNotify(void)noexcept
+void cCoreAudioDefaultDeviceWatcher::AsyncQueueNotify(void)noexcept(true)
 {
 	fCallback->AsyncNotify();
 }
 //---------------------------------------------------------------------------
-cCoreAudioDefaultDeviceWatcher::CycleState cCoreAudioDefaultDeviceWatcher::NotificationCheckState(void)noexcept
+cCoreAudioDefaultDeviceWatcher::CycleState cCoreAudioDefaultDeviceWatcher::NotificationCheckState(void)noexcept(true)
 {
 	return CycleState::Normal;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cCoreAudioMappingDevice::cCoreAudioMappingDevice(COMPtr<IMMDevice> OutputDevice,COMPtr<IMMDevice> InputDevice)noexcept
+cCoreAudioMappingDevice::cCoreAudioMappingDevice(COMPtr<IMMDevice> OutputDevice,COMPtr<IMMDevice> InputDevice)noexcept(true)
 	: fOutputDevice(cnVar::MoveCast(OutputDevice))
 	, fInputDevice(cnVar::MoveCast(InputDevice))
 {
 }
 //---------------------------------------------------------------------------
-cCoreAudioMappingDevice::~cCoreAudioMappingDevice()noexcept
+cCoreAudioMappingDevice::~cCoreAudioMappingDevice()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioOutputEndpoint> cCoreAudioMappingDevice::OpenOutput(iInterface *Format,uInt32 BufferDurationNS)noexcept
+iPtr<iAudioOutputEndpoint> cCoreAudioMappingDevice::OpenOutput(iInterface *Format,uInt32 BufferDurationNS)noexcept(true)
 {
 	if(fOutputDevice==nullptr)
 		return nullptr;
@@ -567,7 +567,7 @@ iPtr<iAudioOutputEndpoint> cCoreAudioMappingDevice::OpenOutput(iInterface *Forma
 	return cCoreAudioRenderEndpoint::CreateEndpoint(fOutputDevice,wf,BufferDurationNS);
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioInputEndpoint> cCoreAudioMappingDevice::OpenInput(iInterface *Format,uInt32 BufferDurationNS)noexcept
+iPtr<iAudioInputEndpoint> cCoreAudioMappingDevice::OpenInput(iInterface *Format,uInt32 BufferDurationNS)noexcept(true)
 {
 	if(fInputDevice==nullptr)
 		return nullptr;
@@ -579,7 +579,7 @@ iPtr<iAudioInputEndpoint> cCoreAudioMappingDevice::OpenInput(iInterface *Format,
 	return cCoreAudioCaptureEndpoint::CreateEndpoint(fInputDevice,wf,BufferDurationNS);
 }
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher> cnWinRTL::CoreAudioQueryDefaultDeviceWatcher(EDataFlow DataFlow)noexcept
+rPtr<iAudioDeviceWatcher> cnWinRTL::CoreAudioQueryDefaultDeviceWatcher(EDataFlow DataFlow)noexcept(true)
 {
 	HRESULT hr;
 	
@@ -592,7 +592,7 @@ rPtr<iAudioDeviceWatcher> cnWinRTL::CoreAudioQueryDefaultDeviceWatcher(EDataFlow
 	return rCreate<cCoreAudioDefaultDeviceWatcher>(cnVar::MoveCast(DeviceEnum),DataFlow);
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioDevice> cnWinRTL::CoreAudioQueryMainDevice(void)noexcept
+iPtr<iAudioDevice> cnWinRTL::CoreAudioQueryMainDevice(void)noexcept(true)
 {
 	HRESULT hr;
 	

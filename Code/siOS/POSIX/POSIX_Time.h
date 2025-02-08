@@ -5,7 +5,6 @@
 #ifndef __cnLib_siOS_POSIX_Time_H__
 #define __cnLib_siOS_POSIX_Time_H__
 
-#include <time.h>
 #include <siOS/POSIX/POSIXHeader.h>
 
 #include <cnRTL/cnRTLCore.h>

@@ -10,7 +10,7 @@ using namespace jCPP;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cJNIInitialization::operator +=(cCallback *Initialization)noexcept
+void cJNIInitialization::operator +=(cCallback *Initialization)noexcept(true)
 {
 	if(Initialization==nullptr)
 		return;
@@ -25,7 +25,7 @@ void cJNIInitialization::operator +=(cCallback *Initialization)noexcept
 	fTail=Initialization;
 }
 //---------------------------------------------------------------------------
-void cJNIInitialization::operator ()(JNIEnv *env)const noexcept
+void cJNIInitialization::operator ()(JNIEnv *env)const noexcept(true)
 {
 	cCallback *Callback=fHead;
 	while(Callback!=nullptr){
@@ -36,16 +36,16 @@ void cJNIInitialization::operator ()(JNIEnv *env)const noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cJNIFinalization::cJNIFinalization()noexcept
+cJNIFinalization::cJNIFinalization()noexcept(true)
 	: fMutex(cnSystem::CreateRecursiveLock())
 {
 }
 //---------------------------------------------------------------------------
-cJNIFinalization::~cJNIFinalization()noexcept
+cJNIFinalization::~cJNIFinalization()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cJNIFinalization::operator +=(cCallback *Finalization)noexcept
+void cJNIFinalization::operator +=(cCallback *Finalization)noexcept(true)
 {
 	if(Finalization==nullptr)
 		return;
@@ -54,7 +54,7 @@ void cJNIFinalization::operator +=(cCallback *Finalization)noexcept
 	fTop=Finalization;
 }
 //---------------------------------------------------------------------------
-void cJNIFinalization::operator ()(JNIEnv *env)noexcept
+void cJNIFinalization::operator ()(JNIEnv *env)noexcept(true)
 {
 	cCallback *Callback=fTop;
 	fTop=nullptr;
@@ -66,7 +66,7 @@ void cJNIFinalization::operator ()(JNIEnv *env)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-lockPtr<iMutex> cJNIFinalization::operator !(void)const noexcept
+lockPtr<iMutex> cJNIFinalization::operator !(void)const noexcept(true)
 {
 	return fMutex;
 }

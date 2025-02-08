@@ -37,15 +37,15 @@ public:
 	
 	cLayout GetClientLayout(void)noexcept(true);
 
-	sfInt32n AllowSpaceLeft=0;
-	sfInt32n AllowSpaceTop=0;
-	sfInt32n AllowSpaceRight=0;
-	sfInt32n AllowSpaceBottom=0;
+	sfInt32 AllowSpaceLeft=0;
+	sfInt32 AllowSpaceTop=0;
+	sfInt32 AllowSpaceRight=0;
+	sfInt32 AllowSpaceBottom=0;
 protected:
-	sfInt32n fSpaceLeft=0;
-	sfInt32n fSpaceTop=0;
-	sfInt32n fSpaceRight=0;
-	sfInt32n fSpaceBottom=0;
+	sfInt32 fSpaceLeft=0;
+	sfInt32 fSpaceTop=0;
+	sfInt32 fSpaceRight=0;
+	sfInt32 fSpaceBottom=0;
 
 	HWND fHostWindowHandle;
 

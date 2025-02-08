@@ -7,15 +7,15 @@ using namespace cnWinRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32DebugTextOutput::cWin32DebugTextOutput()noexcept
+cWin32DebugTextOutput::cWin32DebugTextOutput()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cWin32DebugTextOutput::~cWin32DebugTextOutput()noexcept
+cWin32DebugTextOutput::~cWin32DebugTextOutput()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)noexcept
+uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)noexcept(true)
 {
 	auto CurrentCodePage=GetACP();
 	arPtr<cWin32CodePageConvertBuffer> Converter;
@@ -277,21 +277,21 @@ uIntn cWin32DebugTextOutput::Print(const uChar16 *Text,uIntn Length)noexcept
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32ConsoleOutput::cWin32ConsoleOutput(HANDLE OutputHandle)noexcept
+cWin32ConsoleOutput::cWin32ConsoleOutput(HANDLE OutputHandle)noexcept(true)
 	: fOutputHandle(OutputHandle)
 {
 }
 //---------------------------------------------------------------------------
-cWin32ConsoleOutput::~cWin32ConsoleOutput()noexcept
+cWin32ConsoleOutput::~cWin32ConsoleOutput()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-HANDLE cWin32ConsoleOutput::GetOutputHandle(void)const noexcept
+HANDLE cWin32ConsoleOutput::GetOutputHandle(void)const noexcept(true)
 {
 	return fOutputHandle;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWin32ConsoleOutput::GetPageSize(void)noexcept
+cUIPoint cWin32ConsoleOutput::GetPageSize(void)noexcept(true)
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)){
@@ -303,14 +303,14 @@ cUIPoint cWin32ConsoleOutput::GetPageSize(void)noexcept
 	return UIPointZero;
 }
 //---------------------------------------------------------------------------
-uIntn cWin32ConsoleOutput::Print(const uChar16 *Text,uIntn Length)noexcept
+uIntn cWin32ConsoleOutput::Print(const uChar16 *Text,uIntn Length)noexcept(true)
 {
 	DWORD LengthWritten=0;
 	::WriteConsoleW(fOutputHandle,Text,Length,&LengthWritten,nullptr);
 	return LengthWritten;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWin32ConsoleOutput::GetCursorPos(void)noexcept
+cUIPoint cWin32ConsoleOutput::GetCursorPos(void)noexcept(true)
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)){
@@ -322,7 +322,7 @@ cUIPoint cWin32ConsoleOutput::GetCursorPos(void)noexcept
 	return UIPointZero;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)noexcept
+bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)noexcept(true)
 {
 	COORD CurPos;
 	CurPos.X=static_cast<SHORT>(Pos.x);
@@ -332,7 +332,7 @@ bool cWin32ConsoleOutput::SetCursorPos(cUIPoint Pos)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::GetCursorVisible(void)noexcept
+bool cWin32ConsoleOutput::GetCursorVisible(void)noexcept(true)
 {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	CursorInfo.dwSize=sizeof(CONSOLE_CURSOR_INFO);
@@ -342,7 +342,7 @@ bool cWin32ConsoleOutput::GetCursorVisible(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)noexcept
+bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)noexcept(true)
 {
 	CONSOLE_CURSOR_INFO CursorInfo;
 	CursorInfo.dwSize=sizeof(CONSOLE_CURSOR_INFO);
@@ -353,16 +353,16 @@ bool cWin32ConsoleOutput::SetCursorVisible(bool Visible)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::MoveCursor(eDirection Direction,ufInt16 Count)noexcept
+void cWin32ConsoleOutput::MoveCursor(eDirection Direction,ufInt16 Count)noexcept(true)
 {
 
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::MoveCursorLineHead(bool Up,ufInt16 Count)noexcept
+void cWin32ConsoleOutput::MoveCursorLineHead(bool Up,ufInt16 Count)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::EraseLine(void)noexcept
+void cWin32ConsoleOutput::EraseLine(void)noexcept(true)
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)==FALSE){
@@ -377,7 +377,7 @@ void cWin32ConsoleOutput::EraseLine(void)noexcept
 	::FillConsoleOutputCharacterW(fOutputHandle,L' ',WriteLength,WriteCoord,&CharWritten);
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)noexcept
+void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)noexcept(true)
 {
 	CONSOLE_SCREEN_BUFFER_INFO Info;
 	if(::GetConsoleScreenBufferInfo(fOutputHandle,&Info)==FALSE){
@@ -399,31 +399,31 @@ void cWin32ConsoleOutput::EraseLinePart(bool AfterCursor)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWin32ConsoleInput::cWin32ConsoleInput(HANDLE InputHandle,iDispatch *Dispatch)noexcept
+cWin32ConsoleInput::cWin32ConsoleInput(HANDLE InputHandle,iDispatch *Dispatch)noexcept(true)
 	: fInputHandle(InputHandle)
 	, fDispatch(Dispatch)
 {
 }
 //---------------------------------------------------------------------------
-cWin32ConsoleInput::~cWin32ConsoleInput()noexcept
+cWin32ConsoleInput::~cWin32ConsoleInput()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::VirtualStarted(void)noexcept
+void cWin32ConsoleInput::VirtualStarted(void)noexcept(true)
 {
 	cDualReference::VirtualStarted();
 	fConsoleInputWaiter=cnWindows::DefaultThreadPool->CreateHandleWaiter(&fInnerReference,&fConsoleHandleWaitProcedure);
 	fConsoleProcessWork=fDispatch->CreateWork(&fInnerReference,&fConsoleInputProcessProcedure);
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::VirtualStopped(void)noexcept
+void cWin32ConsoleInput::VirtualStopped(void)noexcept(true)
 {
 	fConsoleInputWaiter=nullptr;
 	fConsoleProcessWork=nullptr;
 	cDualReference::VirtualStopped();
 }
 //---------------------------------------------------------------------------
-HANDLE cWin32ConsoleInput::GetInputHandle(void)const noexcept
+HANDLE cWin32ConsoleInput::GetInputHandle(void)const noexcept(true)
 {
 	return fInputHandle;
 }
@@ -463,19 +463,19 @@ void cWin32ConsoleInput::StopHandle(void)noexcept(true)
 	NotifyConsoleInputProcess();
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::cConsoleHandleWaitProcedure::Execute(DWORD WaitResult)noexcept
+void cWin32ConsoleInput::cConsoleHandleWaitProcedure::Execute(DWORD WaitResult)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWin32ConsoleInput::fConsoleHandleWaitProcedure);
 	return Host->NotifyConsoleInputProcess();
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::cConsoleInputProcessProcedure::Execute(void)noexcept
+void cWin32ConsoleInput::cConsoleInputProcessProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWin32ConsoleInput::fConsoleInputProcessProcedure);
 	return Host->ConsoleInputProcessThread();
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::NotifyConsoleInputProcess(void)noexcept
+void cWin32ConsoleInput::NotifyConsoleInputProcess(void)noexcept(true)
 {
 	if(fInputThreadExclusiveFlag.Acquire()==false)
 		return;
@@ -486,7 +486,7 @@ void cWin32ConsoleInput::NotifyConsoleInputProcess(void)noexcept
 	fConsoleProcessWork->Start();
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::ConsoleInputProcessThread(void)noexcept
+void cWin32ConsoleInput::ConsoleInputProcessThread(void)noexcept(true)
 {
 	do{
 		while(fHandler!=nullptr){
@@ -498,7 +498,7 @@ void cWin32ConsoleInput::ConsoleInputProcessThread(void)noexcept
 	}while(fInputThreadExclusiveFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleInput::ConsoleInputProcess(void)noexcept
+bool cWin32ConsoleInput::ConsoleInputProcess(void)noexcept(true)
 {
 	if(fHandler==nullptr){
 		return false;
@@ -527,7 +527,7 @@ bool cWin32ConsoleInput::ConsoleInputProcess(void)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWin32ConsoleInput::HandleInput(void)noexcept
+bool cWin32ConsoleInput::HandleInput(void)noexcept(true)
 {
 	DWORD TotalEvent=0;
 	if(::GetNumberOfConsoleInputEvents(fInputHandle,&TotalEvent)==false){
@@ -578,7 +578,7 @@ bool cWin32ConsoleInput::HandleInput(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_EVENT_RECORD &Record)noexcept
+void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_EVENT_RECORD &Record)noexcept(true)
 {
 	if(Record.bKeyDown){
 		for(uIntn i=0;i<Record.wRepeatCount;i++){
@@ -596,37 +596,37 @@ void cWin32ConsoleInput::HandleInputRecordKey(iConsoleInputHandler *Handler,KEY_
 	}
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordMouse(iConsoleInputHandler *Handler,MOUSE_EVENT_RECORD &Record)noexcept
+void cWin32ConsoleInput::HandleInputRecordMouse(iConsoleInputHandler *Handler,MOUSE_EVENT_RECORD &Record)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWin32ConsoleInput::HandleInputRecordWindowBufferSize(iConsoleInputHandler *Handler,WINDOW_BUFFER_SIZE_RECORD &Record)noexcept
+void cWin32ConsoleInput::HandleInputRecordWindowBufferSize(iConsoleInputHandler *Handler,WINDOW_BUFFER_SIZE_RECORD &Record)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWindowsConsoleHost::cWindowsConsoleHost(HANDLE OutputHandle,HANDLE InputHandle,iDispatch *Dispatch)noexcept
+cWindowsConsoleHost::cWindowsConsoleHost(HANDLE OutputHandle,HANDLE InputHandle,iDispatch *Dispatch)noexcept(true)
 	: fOutput(rCreate<cWin32ConsoleOutput>(OutputHandle))
 	, fInput(rCreate<cWin32ConsoleInput>(InputHandle,Dispatch))
 {
 }
 //---------------------------------------------------------------------------
-cWindowsConsoleHost::~cWindowsConsoleHost()noexcept
+cWindowsConsoleHost::~cWindowsConsoleHost()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iConsoleOutput* cWindowsConsoleHost::GetOutput(void)noexcept
+iConsoleOutput* cWindowsConsoleHost::GetOutput(void)noexcept(true)
 {
 	return fOutput;
 }
 //---------------------------------------------------------------------------
-iConsoleInput* cWindowsConsoleHost::GetInput(void)noexcept
+iConsoleInput* cWindowsConsoleHost::GetInput(void)noexcept(true)
 {
 	return fInput;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<iWindowsConsoleHost> cnWinRTL::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept
+rPtr<iWindowsConsoleHost> cnWinRTL::CreateWindowsConsoleHost(iDispatch *Dispatch)noexcept(true)
 {
 	auto InputHandle=::GetStdHandle(STD_INPUT_HANDLE);
 	auto OutputHandle=::GetStdHandle(STD_OUTPUT_HANDLE);

@@ -15,19 +15,19 @@ rcNativeCaller_WPFUICore::rcNativeCaller_WPFUICore(void *CPP)
 {
 }
 //---------------------------------------------------------------------------
-bool mcWPFInput::mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept
+bool mcWPFInput::mKeyboardEventIsKeyDown(eKeyCode KeyCode)noexcept(true)
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyDown(Key);
 }
 //---------------------------------------------------------------------------
-bool mcWPFInput::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept
+bool mcWPFInput::mKeyboardEventIsKeyToggled(eKeyCode KeyCode)noexcept(true)
 {
 	auto Key=System::Windows::Input::KeyInterop::KeyFromVirtualKey(static_cast<int>(KeyCode));
 	return System::Windows::Input::Keyboard::IsKeyToggled(Key);
 }
 //---------------------------------------------------------------------------
-bool mcWPFInput::mMouseGetPosition(const cGCHandle &UIViewVisualHandle,cUIPoint &Position)noexcept
+bool mcWPFInput::mMouseGetPosition(const cGCHandle &UIViewVisualHandle,cUIPoint &Position)noexcept(true)
 {
 	auto Visual=UIViewVisualHandle.DynamicCast<System::Windows::Media::Visual>();
 	if(Visual!=nullptr){
@@ -36,7 +36,7 @@ bool mcWPFInput::mMouseGetPosition(const cGCHandle &UIViewVisualHandle,cUIPoint 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFInput::MouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
+bool mcWPFInput::MouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept(true)
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
 	if(RelativeElement==nullptr)
@@ -48,7 +48,7 @@ bool mcWPFInput::MouseGetPosition(System::Windows::Media::Visual ^Visual,cUIPoin
 	return true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFInput::mMouseEventIsButtonDown(eMouseButton Button)noexcept
+bool mcWPFInput::mMouseEventIsButtonDown(eMouseButton Button)noexcept(true)
 {
 	System::Windows::Input::MouseButtonState BtnState;
 	switch(Button){
@@ -71,7 +71,7 @@ bool mcWPFInput::mMouseEventIsButtonDown(eMouseButton Button)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mSetup(mbcWPFUIThread *UIDispatch,bool HighPriority)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mSetup(mbcWPFUIThread *UIDispatch,bool HighPriority)noexcept(true)
 {
 	fPriority=rcWPFUIThread::ToDispatcherPriority(HighPriority);
 
@@ -90,7 +90,7 @@ void mcWPFUIThreadAsyncTimerExecutor::mSetup(mbcWPFUIThread *UIDispatch,bool Hig
 
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mClear(void)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mClear(void)noexcept(true)
 {
 	fScheduleAction.Free();
 	fHitAction.Free();
@@ -125,32 +125,32 @@ void rcNativeCaller_WPFUICore::mcWPFUIThreadAsyncTimerExecutor_Cleanup(void)
 	static_cast<mcWPFUIThreadAsyncTimerExecutor*>(CPP)->TimerCleanup();
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mSchedule(void)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mSchedule(void)noexcept(true)
 {
 	auto Timer=fTimer.Get();
 	Timer->Dispatcher->BeginInvoke(fScheduleAction.Get());
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mHit(void)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mHit(void)noexcept(true)
 {
 	auto Timer=fTimer.Get();
 	Timer->Dispatcher->BeginInvoke(fHitAction.Get());
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mStart(uInt64 Interval)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mStart(uInt64 Interval)noexcept(true)
 {
 	auto Timer=fTimer.Get();
 	Timer->Interval=System::TimeSpan(static_cast<long long>(Interval/100));
 	Timer->Start();
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mStop(void)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mStop(void)noexcept(true)
 {
 	auto Timer=fTimer.Get();
 	Timer->Stop();
 }
 //---------------------------------------------------------------------------
-void mcWPFUIThreadAsyncTimerExecutor::mStopCleanup(void)noexcept
+void mcWPFUIThreadAsyncTimerExecutor::mStopCleanup(void)noexcept(true)
 {
 	auto Timer=fTimer.Get();
 	Timer->Stop();
@@ -224,13 +224,13 @@ System::Windows::Threading::Dispatcher^ rcWPFUIThread::QueryFallbackDispatcher(v
 //---------------------------------------------------------------------------
 void rcWPFUIThread::FallbackDispatcherProcedure(void)
 {
-	System::Windows::Threading::DispatcherFrame DispatchFrame;
-	auto Dispatcher=DispatchFrame.Dispatcher;
+	System::Windows::Threading::DispatcherFrame FallbackDispatchFrame;
+	auto FallbackDispatcher=FallbackDispatchFrame.Dispatcher;
 	bool LockTaken=false;
 	try{
 		gFallbackLock.Enter(LockTaken);
 
-		gFallbackDispatcher=Dispatcher;
+		gFallbackDispatcher=FallbackDispatcher;
 
 	}
 	finally{
@@ -238,7 +238,7 @@ void rcWPFUIThread::FallbackDispatcherProcedure(void)
 			gFallbackLock.Exit();
 	}
 	gFallbackCreateCompleteEvent->Set();
-	Dispatcher->PushFrame(%DispatchFrame);
+	FallbackDispatcher->PushFrame(%FallbackDispatchFrame);
 }
 //---------------------------------------------------------------------------
 System::Windows::Threading::Dispatcher^ rcWPFUIThread::SetupFallbackDispatcher(void)
@@ -277,20 +277,20 @@ void rcWPFUIThread::ClearFallbackDispatcher(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mSetup(mcWPFDispatcherReference &DispatcherReference)noexcept
+void mbcWPFUIThread::mSetup(mcWPFDispatcherReference &DispatcherReference)noexcept(true)
 {
 	auto WPFThread=gcnew rcWPFUIThread(DispatcherReference.Dispatcher,DispatcherReference.Procedure,this);
 	fUIThreadHandle.Alloc(WPFThread);
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mClear(void)noexcept
+void mbcWPFUIThread::mClear(void)noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	WPFThread->CPPDispose();
 	fUIThreadHandle.Free();
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mCPPClose(void)noexcept
+void mbcWPFUIThread::mCPPClose(void)noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	auto Dispatcher=WPFThread->Dispatcher;
@@ -310,18 +310,18 @@ void mbcWPFUIThread::mCPPClose(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-rcWPFUIThread^ mbcWPFUIThread::GetWPFThread(void)const noexcept
+rcWPFUIThread^ mbcWPFUIThread::GetWPFThread(void)const noexcept(true)
 {
 	return fUIThreadHandle.Get();
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIThread::IsShutdown(void)const noexcept
+bool mbcWPFUIThread::IsShutdown(void)const noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	return WPFThread->Dispatcher->HasShutdownStarted;
 }
 //---------------------------------------------------------------------------
-bool mbcWPFUIThread::mIsCurrent(void)const noexcept
+bool mbcWPFUIThread::mIsCurrent(void)const noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	if(WPFThread->Dispatcher==nullptr)
@@ -329,7 +329,7 @@ bool mbcWPFUIThread::mIsCurrent(void)const noexcept
 	return WPFThread->Dispatcher->CheckAccess();
 }
 //---------------------------------------------------------------------------
-mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(void)noexcept
+mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(void)noexcept(true)
 {
 	if(rcWPFUIThread::gTLS->IsValueCreated){
 		auto WPFUIThread=rcWPFUIThread::gTLS->Value;
@@ -339,7 +339,7 @@ mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(void)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(iFunction<void (mcWPFDispatcherReference&)noexcept(true)> *MakeObject)noexcept
+mbcWPFUIThread* mbcWPFUIThread::mCurrentUIThread(iFunction<void (mcWPFDispatcherReference&)noexcept(true)> *MakeObject)noexcept(true)
 {
 	if(rcWPFUIThread::gTLS->IsValueCreated){
 		auto WPFUIThread=rcWPFUIThread::gTLS->Value;
@@ -375,7 +375,7 @@ void rcWPFUIThread::rcDelegateExecutor::OnAborted(System::Object^,System::EventA
 	Aborted();
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::ExecuteDelegate(System::Windows::Threading::DispatcherPriority Priority,System::Action ^Procedure)noexcept
+void mbcWPFUIThread::ExecuteDelegate(System::Windows::Threading::DispatcherPriority Priority,System::Action ^Procedure)noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	auto Executor=gcnew rcWPFUIThread::rcDelegateExecutor();
@@ -392,15 +392,15 @@ void mbcWPFUIThread::ExecuteDelegate(System::Windows::Threading::DispatcherPrior
 	}
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mExecuteDelegate(bool HighPriority,mbcActionDelegate &Delegate)noexcept
+void mbcWPFUIThread::mExecuteDelegate(bool HighPriority,mbcActionDelegate &Delegate)noexcept(true)
 {
 	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
 	return ExecuteDelegate(dp,Delegate.GetAction());
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept
+void mbcWPFUIThread::mDispatchExecute(bool HighPriority,iProcedure *Procedure)noexcept(true)
 {
-	auto WPFThread=fUIThreadHandle.Get();
+	//auto WPFThread=fUIThreadHandle.Get();
 	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
 	auto Caller=gcnew rcNativeCaller_CLICommon(Procedure);
 	return ExecuteDelegate(dp,gcnew System::Action(Caller,&rcNativeCaller_CLICommon::iProcedure_Execute));
@@ -417,7 +417,7 @@ void rcNativeCaller_WPFUICore::iProcedure_ExecuteFallback(void)
 	static_cast<iProcedure*>(CPP)->Execute();
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept
+void mbcWPFUIThread::mDispatchExecuteSync(bool HighPriority,iProcedure *Procedure)noexcept(true)
 {
 	auto WPFThread=fUIThreadHandle.Get();
 	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
@@ -435,9 +435,9 @@ void rcWPFUIThread::rcReferencedProcedureExecutor::Execute(void)
 	CPP->nExecuteProcedureReference(Reference,Procedure);
 }
 //---------------------------------------------------------------------------
-void mbcWPFUIThread::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept
+void mbcWPFUIThread::mDispatchExecuteReferenced(bool HighPriority,iReference *Reference,iProcedure *Procedure)noexcept(true)
 {
-	auto WPFThread=fUIThreadHandle.Get();
+	//auto WPFThread=fUIThreadHandle.Get();
 	auto dp=rcWPFUIThread::ToDispatcherPriority(HighPriority);
 	auto Executor=gcnew rcWPFUIThread::rcReferencedProcedureExecutor();
 	Executor->CPP=this;
@@ -447,7 +447,7 @@ void mbcWPFUIThread::mDispatchExecuteReferenced(bool HighPriority,iReference *Re
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rcWPFUIThreadDispatcherProcedure::rcWPFUIThreadDispatcherProcedure(iFunction<void (mcWPFDispatcherReference*)noexcept> *Callback)
+rcWPFUIThreadDispatcherProcedure::rcWPFUIThreadDispatcherProcedure(iFunction<void (mcWPFDispatcherReference*)noexcept(true)> *Callback)
 	: fCallback(Callback)
 {
 }
@@ -473,7 +473,7 @@ void rcWPFUIThreadDispatcherProcedure::NotifyExit(void)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cnWin::WPFUIThreadNewThread(iFunction<void (mcWPFDispatcherReference*)noexcept> *Callback)noexcept
+void cnWin::WPFUIThreadNewThread(iFunction<void (mcWPFDispatcherReference*)noexcept(true)> *Callback)noexcept(true)
 {
 	auto ThreadProcedure=gcnew rcWPFUIThreadDispatcherProcedure(Callback);
 	auto Thread=gcnew System::Threading::Thread(gcnew System::Threading::ThreadStart(ThreadProcedure,&rcWPFUIThreadDispatcherProcedure::ThreadProcedure));
@@ -482,23 +482,23 @@ void cnWin::WPFUIThreadNewThread(iFunction<void (mcWPFDispatcherReference*)noexc
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFDispatchFrame::mSetup(void)noexcept
+void mcWPFDispatchFrame::mSetup(void)noexcept(true)
 {
 	fDispatchFrameRef.Alloc(gcnew System::Windows::Threading::DispatcherFrame());
 }
 //---------------------------------------------------------------------------
-void mcWPFDispatchFrame::mClear(void)noexcept
+void mcWPFDispatchFrame::mClear(void)noexcept(true)
 {
 	fDispatchFrameRef.Free();
 }
 //---------------------------------------------------------------------------
-void mcWPFDispatchFrame::mNotifyStopRun(void)noexcept
+void mcWPFDispatchFrame::mNotifyStopRun(void)noexcept(true)
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=false;
 }
 //---------------------------------------------------------------------------
-void mcWPFDispatchFrame::mUIMain(void)noexcept
+void mcWPFDispatchFrame::mUIMain(void)noexcept(true)
 {
 	auto DispatchFrame=fDispatchFrameRef.Get();
 	DispatchFrame->Continue=true;
@@ -506,44 +506,44 @@ void mcWPFDispatchFrame::mUIMain(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFKeyEventArgs::mCancelEvent(void)noexcept
+void mcWPFKeyEventArgs::mCancelEvent(void)noexcept(true)
 {
 	EventArgs->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFKeyEventArgs::mIsCancelled(void)noexcept
+bool mcWPFKeyEventArgs::mIsCancelled(void)noexcept(true)
 {
 	return EventArgs->Handled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void mcWPFMouseEventArgs::mCancelEvent(void)noexcept
+void mcWPFMouseEventArgs::mCancelEvent(void)noexcept(true)
 {
 	EventArgs->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFMouseEventArgs::mIsCancelled(void)noexcept
+bool mcWPFMouseEventArgs::mIsCancelled(void)noexcept(true)
 {
 	return EventArgs->Handled;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void* mcWPFTouchEventArgs::mGetTouchID(void)noexcept
+void* mcWPFTouchEventArgs::mGetTouchID(void)noexcept(true)
 {
 	return reinterpret_cast<void*>(static_cast<uIntn>(EventArgs->TouchDevice->Id));
 }
 //---------------------------------------------------------------------------
-void mcWPFTouchEventArgs::mCancelEvent(void)noexcept
+void mcWPFTouchEventArgs::mCancelEvent(void)noexcept(true)
 {
 	EventArgs->Handled=true;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mIsCancelled(void)noexcept
+bool mcWPFTouchEventArgs::mIsCancelled(void)noexcept(true)
 {
 	return EventArgs->Handled;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mGetPosition(const cGCHandle &UIElementHandle,cUIPoint &Position)noexcept
+bool mcWPFTouchEventArgs::mGetPosition(const cGCHandle &UIElementHandle,cUIPoint &Position)noexcept(true)
 {
 	System::Object^ RelativeObject=UIElementHandle;
 	auto Visual=dynamic_cast<System::Windows::Media::Visual^>(RelativeObject);
@@ -553,7 +553,7 @@ bool mcWPFTouchEventArgs::mGetPosition(const cGCHandle &UIElementHandle,cUIPoint
 	return false;
 }
 //---------------------------------------------------------------------------
-bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept
+bool mcWPFTouchEventArgs::mGetPosition(System::Windows::Media::Visual ^Visual,cUIPoint &Position)noexcept(true)
 {
 	auto RelativeElement=dynamic_cast<System::Windows::IInputElement^>(Visual);
 	if(RelativeElement==nullptr)

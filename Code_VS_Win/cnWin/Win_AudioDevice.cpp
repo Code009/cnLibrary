@@ -13,17 +13,17 @@ using namespace cnWinNT6;
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher>	AudioDevice::QueryAudioDefaultInputDeviceWatcher(void)
+rPtr<iAudioDeviceWatcher>	AudioDevice::QueryAudioDefaultInputDeviceWatcher(void)noexcept(true)
 {
 	return cnWinRTL::CoreAudioQueryDefaultDeviceWatcher(EDataFlow::eCapture);
 }
 //---------------------------------------------------------------------------
-rPtr<iAudioDeviceWatcher>	AudioDevice::QueryAudioDefaultOutputDeviceWatcher(void)
+rPtr<iAudioDeviceWatcher>	AudioDevice::QueryAudioDefaultOutputDeviceWatcher(void)noexcept(true)
 {
 	return cnWinRTL::CoreAudioQueryDefaultDeviceWatcher(EDataFlow::eRender);
 }
 //---------------------------------------------------------------------------
-iPtr<iAudioDevice>			AudioDevice::QueryAudioMainDevice(void)
+iPtr<iAudioDevice>			AudioDevice::QueryAudioMainDevice(void)noexcept(true)
 {
 	return cnWinRTL::CoreAudioQueryMainDevice();
 }

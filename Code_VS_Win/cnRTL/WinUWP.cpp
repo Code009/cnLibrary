@@ -21,7 +21,7 @@ public:
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary::cnRTL::UWP
 //---------------------------------------------------------------------------
-void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept
+void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept(true)
 {
 	typedef cnClass::RecyclableLifeCycleSharedManager< cCOMReleaseProcedure,cnClass::RecyclableObjectAllocator<cCOMReleaseProcedure> > tLifeCycleManager;
 
@@ -34,23 +34,23 @@ void UWP::COMRelaseAsync(COMPtr<IUnknown> Interface)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cHStringReference::operator HSTRING()noexcept
+cHStringReference::operator HSTRING()noexcept(true)
 {
 	return Handle;
 }
 //---------------------------------------------------------------------------
-HRESULT cHStringReference::Create(const wchar_t *String,uIntn Length)noexcept
+HRESULT cHStringReference::Create(const wchar_t *String,uIntn Length)noexcept(true)
 {
 	return ::WindowsCreateStringReference(String,Length,&Header,&Handle);
 }
 //---------------------------------------------------------------------------
-HRESULT cHStringReference::Create(const wchar_t *String)noexcept
+HRESULT cHStringReference::Create(const wchar_t *String)noexcept(true)
 {
 	uIntn Length=cnString::FindLength(String);
 	return ::WindowsCreateStringReference(String,Length,&Header,&Handle);
 }
 //---------------------------------------------------------------------------
-cStringBuffer<uChar16> UWP::CreateStringFromHandle(HSTRING StringHandle)noexcept
+cStringBuffer<uChar16> UWP::CreateStringFromHandle(HSTRING StringHandle)noexcept(true)
 {
 	cStringBuffer<uChar16> RetString;
 	UINT StringLength;
@@ -61,7 +61,7 @@ cStringBuffer<uChar16> UWP::CreateStringFromHandle(HSTRING StringHandle)noexcept
 	return RetString;
 }
 //---------------------------------------------------------------------------
-cStringBuffer<wchar_t> UWP::CreateWStringFromHandle(HSTRING StringHandle)noexcept
+cStringBuffer<wchar_t> UWP::CreateWStringFromHandle(HSTRING StringHandle)noexcept(true)
 {
 	cStringBuffer<wchar_t> RetString;
 	UINT StringLength;
@@ -74,7 +74,7 @@ cStringBuffer<wchar_t> UWP::CreateWStringFromHandle(HSTRING StringHandle)noexcep
 //---------------------------------------------------------------------------
 #if WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION >=0x50000
 //---------------------------------------------------------------------------
-uInt8* UWP::GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept
+uInt8* UWP::GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept(true)
 {
 	HRESULT hr;
 	byte *DataPtr;
@@ -91,7 +91,7 @@ uInt8* UWP::GetBufferPtr(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcep
 	return DataPtr;
 }
 //---------------------------------------------------------------------------
-cConstMemory UWP::GetBufferData(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept
+cConstMemory UWP::GetBufferData(ABI::Windows::Storage::Streams::IBuffer *Buffer)noexcept(true)
 {
 	HRESULT hr;
 	UINT32 DataLen;
@@ -111,7 +111,7 @@ cConstMemory UWP::GetBufferData(ABI::Windows::Storage::Streams::IBuffer *Buffer)
 	return Memory;
 }
 //---------------------------------------------------------------------------
-COMPtr<ABI::Windows::Storage::Streams::IBuffer> UWP::MakeBufferFromData(const void *Data,uIntn Size)noexcept
+COMPtr<ABI::Windows::Storage::Streams::IBuffer> UWP::MakeBufferFromData(const void *Data,uIntn Size)noexcept(true)
 {
 	HRESULT hr;
 	COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter;
@@ -134,16 +134,16 @@ COMPtr<ABI::Windows::Storage::Streams::IBuffer> UWP::MakeBufferFromData(const vo
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cUWPMemoryBufferWriteStreamBuffer::cUWPMemoryBufferWriteStreamBuffer(COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter)noexcept
+cUWPMemoryBufferWriteStreamBuffer::cUWPMemoryBufferWriteStreamBuffer(COMPtr<ABI::Windows::Storage::Streams::IDataWriter> DataWriter)noexcept(true)
 	: fDataWriter(cnVar::MoveCast(DataWriter))
 {
 }
 //---------------------------------------------------------------------------
-cUWPMemoryBufferWriteStreamBuffer::~cUWPMemoryBufferWriteStreamBuffer()noexcept
+cUWPMemoryBufferWriteStreamBuffer::~cUWPMemoryBufferWriteStreamBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cMemory cUWPMemoryBufferWriteStreamBuffer::ReserveWriteBuffer(uIntn Length)noexcept
+cMemory cUWPMemoryBufferWriteStreamBuffer::ReserveWriteBuffer(uIntn Length)noexcept(true)
 {
 	if(fBuffer.Length<Length){
 		fBuffer.SetLength(Length);
@@ -152,13 +152,13 @@ cMemory cUWPMemoryBufferWriteStreamBuffer::ReserveWriteBuffer(uIntn Length)noexc
 	return fBuffer;
 }
 //---------------------------------------------------------------------------
-void cUWPMemoryBufferWriteStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept
+void cUWPMemoryBufferWriteStreamBuffer::CommitWriteBuffer(uIntn Length)noexcept(true)
 {
 	fDataWriter->WriteBytes(Length,static_cast<BYTE*>(fBuffer.Pointer));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetWeakReference( /* [retval][out] */ __RPC__deref_out_opt IWeakReference **weakReference)noexcept
+HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetWeakReference( /* [retval][out] */ __RPC__deref_out_opt IWeakReference **weakReference)noexcept(true)
 {
 	auto WeakRef=COMCreate<cCOMWeakReference<cUWPMemoryBuffer> >();
 	WeakRef->fFakeWeakRef=this;
@@ -168,48 +168,48 @@ HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetWeakReference( /* [retval][out] *
 //---------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetIids( 
     /* [out] */ __RPC__out ULONG *iidCount,
-    /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids)noexcept
+    /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids)noexcept(true)
 {
 	*iidCount=0;
 	return S_OK;
 }
 HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetRuntimeClassName( 
-    /* [out] */ __RPC__deref_out_opt HSTRING *className)noexcept
+    /* [out] */ __RPC__deref_out_opt HSTRING *className)noexcept(true)
 {
 	return WindowsCreateString(InterfaceName_Windows_Storage_Streams_IBuffer,ArrayLength(InterfaceName_Windows_Storage_Streams_IBuffer)-1,className);
 }
 HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::GetTrustLevel( 
-    /* [out] */ __RPC__out TrustLevel *trustLevel)noexcept
+    /* [out] */ __RPC__out TrustLevel *trustLevel)noexcept(true)
 {
 	*trustLevel=BaseTrust;
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::get_Capacity(/* [out][retval] */ __RPC__out UINT32 *value)noexcept
+HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::get_Capacity(/* [out][retval] */ __RPC__out UINT32 *value)noexcept(true)
 {
 	*value=static_cast<UINT32>(Data.GetCapacity());
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::get_Length(/* [out][retval] */ __RPC__out UINT32 *value)noexcept
+HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::get_Length(/* [out][retval] */ __RPC__out UINT32 *value)noexcept(true)
 {
 	*value=static_cast<UINT32>(Data.GetSize());
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::put_Length(/* [in] */ UINT32 value)noexcept
+HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::put_Length(/* [in] */ UINT32 value)noexcept(true)
 {
 	Data.SetSize(static_cast<uIntn>(value));
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::Buffer(byte **value)noexcept
+HRESULT STDMETHODCALLTYPE cUWPMemoryBuffer::Buffer(byte **value)noexcept(true)
 {
 	*value=reinterpret_cast<byte*>(Data.GetPointer());
 	return S_OK;
 }
 //---------------------------------------------------------------------------
-cMemory cUWPMemoryBuffer::ReserveWriteBuffer(uIntn Length)noexcept
+cMemory cUWPMemoryBuffer::ReserveWriteBuffer(uIntn Length)noexcept(true)
 {
 	uIntn Capacity=Data.GetCapacity();
 	uIntn Size=Data.GetSize();
@@ -224,7 +224,7 @@ cMemory cUWPMemoryBuffer::ReserveWriteBuffer(uIntn Length)noexcept
 	return RetMem;
 }
 //---------------------------------------------------------------------------
-void cUWPMemoryBuffer::CommitWriteBuffer(uIntn Length)noexcept
+void cUWPMemoryBuffer::CommitWriteBuffer(uIntn Length)noexcept(true)
 {
 	uIntn Capacity=Data.GetCapacity();
 	uIntn Size=Data.GetSize();

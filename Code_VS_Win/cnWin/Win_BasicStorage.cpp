@@ -6,12 +6,12 @@ using namespace cnWin;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDefaultMemoryHeap::cDefaultMemoryHeap()
+cDefaultMemoryHeap::cDefaultMemoryHeap()noexcept(true)
 	: bcWinMemoryHeap(HeapCreate(0,0,0))
 {
 }
 //---------------------------------------------------------------------------
-cDefaultMemoryHeap::~cDefaultMemoryHeap()
+cDefaultMemoryHeap::~cDefaultMemoryHeap()noexcept(true)
 {
 	::HeapDestroy(fHeap);
 }

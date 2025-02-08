@@ -567,10 +567,6 @@ protected:
 	T* fPointer;
 };
 //---------------------------------------------------------------------------
-struct cPtrWeakReferenceNoNotification
-{
-};
-//---------------------------------------------------------------------------
 //TPointerWeakReferenceOperator
 //{
 //  typedef tRegistration;

@@ -5,7 +5,7 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vTextDocument::vTextDocument(viTextDocumentData *Data)noexcept
+vTextDocument::vTextDocument(viTextDocumentData *Data)noexcept(true)
 	: fData(Data)
 {
 	fCacheLineIndex=0;
@@ -13,22 +13,22 @@ vTextDocument::vTextDocument(viTextDocumentData *Data)noexcept
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vTextDocument::~vTextDocument()noexcept
+vTextDocument::~vTextDocument()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viTextDocument> vTextDocument::Create(viTextDocumentData *Data)noexcept
+rPtr<viTextDocument> vTextDocument::Create(viTextDocumentData *Data)noexcept(true)
 {
 	return rCreate< bwvTextDocument<vTextDocument> >(Data);
 }
 //---------------------------------------------------------------------------
-viTextDocumentData* vTextDocument::GetData(void)const noexcept
+viTextDocumentData* vTextDocument::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vTextDocument::SetData(viTextDocumentData *Data)noexcept
+void vTextDocument::SetData(viTextDocumentData *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -40,7 +40,7 @@ void vTextDocument::SetData(viTextDocumentData *Data)noexcept
 	Update();
 }
 //---------------------------------------------------------------------------
-void vTextDocument::DataInsertCallback(void)noexcept
+void vTextDocument::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fTextDocumentNotifyToken=fData->TextDocumentNotifySet.Insert([this]{
@@ -49,14 +49,14 @@ void vTextDocument::DataInsertCallback(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vTextDocument::DataRemoveCallback(void)noexcept
+void vTextDocument::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
 		fData->TextDocumentNotifySet.Remove(fTextDocumentNotifyToken);
 	}
 }
 //---------------------------------------------------------------------------
-void vTextDocument::Update(void)noexcept
+void vTextDocument::Update(void)noexcept(true)
 {
 	fCacheLineIndex=0;
 	fCacheLineList.Clear();
@@ -64,7 +64,7 @@ void vTextDocument::Update(void)noexcept
 		fViewContent->QueryUpdate();
 }
 //---------------------------------------------------------------------------
-void vTextDocument::Paint(iUISimplePaintContext *Context)noexcept
+void vTextDocument::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	if(fData==nullptr)
 		return;
@@ -102,7 +102,7 @@ void vTextDocument::Paint(iUISimplePaintContext *Context)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept
+void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept(true)
 {
 	auto Device=fViewContent->QueryDevice();
 
@@ -177,7 +177,7 @@ void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vTextDocument::SetupCacheLine(iUISimplePaintDevice *Device,cTextLineCache &LineCache,uIntn LineIndex)noexcept
+void vTextDocument::SetupCacheLine(iUISimplePaintDevice *Device,cTextLineCache &LineCache,uIntn LineIndex)noexcept(true)
 {
 	LineCache.LineSize.x=0;
 	LineCache.LineSize.y=0;
@@ -219,30 +219,30 @@ void vTextDocument::SetupCacheLine(iUISimplePaintDevice *Device,cTextLineCache &
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTextDocument::bcTextDocument()noexcept
+bcTextDocument::bcTextDocument()noexcept(true)
 	: fScrollTotalSize{0,0}
 {
 }
 //---------------------------------------------------------------------------
-bcTextDocument::~bcTextDocument()noexcept
+bcTextDocument::~bcTextDocument()noexcept(true)
 {
 	SetView(nullptr);
 	InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::UpdateZIndex(void)noexcept
+void bcTextDocument::UpdateZIndex(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetContentZPosition(ContentZPosition);
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ControlContentSetDefault(void)noexcept
+void bcTextDocument::ControlContentSetDefault(void)noexcept(true)
 {
 	SetContent(vTextDocument::Create(this));
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::SetContent(rPtr<viTextDocument> Content)noexcept
+void bcTextDocument::SetContent(rPtr<viTextDocument> Content)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -254,7 +254,7 @@ void bcTextDocument::SetContent(rPtr<viTextDocument> Content)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ViewSetup(void)noexcept
+void bcTextDocument::ViewSetup(void)noexcept(true)
 {
 	cScrollContent::ViewSetup();
 
@@ -266,7 +266,7 @@ void bcTextDocument::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ViewClear(void)noexcept
+void bcTextDocument::ViewClear(void)noexcept(true)
 {
 	if(fContent!=nullptr){
 		fContent->SetView(nullptr);
@@ -275,16 +275,16 @@ void bcTextDocument::ViewClear(void)noexcept
 	cScrollContent::ViewClear();
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ClearCache(void)noexcept
+void bcTextDocument::ClearCache(void)noexcept(true)
 {
 	fCacheLines.Clear();
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::TextDocumentVerticalAlign(Float32)noexcept{	return 0;	}
-Float32 bcTextDocument::TextDocumentHorizontalAlign(Float32)noexcept{	return 0;	}
-cUIColor bcTextDocument::TextDocumentGetLineColor(uIntn)noexcept{			return UIColorFromUInt32(0);	}
+Float32 bcTextDocument::TextDocumentVerticalAlign(Float32)noexcept(true){	return 0;	}
+Float32 bcTextDocument::TextDocumentHorizontalAlign(Float32)noexcept(true){	return 0;	}
+cUIColor bcTextDocument::TextDocumentGetLineColor(uIntn)noexcept(true){			return UIColorFromUInt32(0);	}
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::ContentItemGetCount(bool Vertical)noexcept
+uIntn bcTextDocument::ContentItemGetCount(bool Vertical)noexcept(true)
 {
 	if(Vertical){
 		return fVisibleLineList.GetCount();
@@ -294,7 +294,7 @@ uIntn bcTextDocument::ContentItemGetCount(bool Vertical)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cUIRange bcTextDocument::ContentItemGetAllRange(bool Vertical)noexcept
+cUIRange bcTextDocument::ContentItemGetAllRange(bool Vertical)noexcept(true)
 {
 	cUIRange Range;
 	if(Vertical){
@@ -308,7 +308,7 @@ cUIRange bcTextDocument::ContentItemGetAllRange(bool Vertical)noexcept
 	return Range;
 }
 //---------------------------------------------------------------------------
-cUIRange bcTextDocument::ContentItemGetRange(bool Vertical,uIntn Index)noexcept
+cUIRange bcTextDocument::ContentItemGetRange(bool Vertical,uIntn Index)noexcept(true)
 {
 	cUIRange Range;
 	if(Vertical){
@@ -327,7 +327,7 @@ cUIRange bcTextDocument::ContentItemGetRange(bool Vertical,uIntn Index)noexcept
 	return Range;
 }
 //---------------------------------------------------------------------------
-cAnyObject bcTextDocument::ContentItemGetObject(bool Vertical,uIntn Index)noexcept
+cAnyObject bcTextDocument::ContentItemGetObject(bool Vertical,uIntn Index)noexcept(true)
 {
 	if(Vertical){
 		return fVisibleLineIndex+Index;
@@ -337,12 +337,12 @@ cAnyObject bcTextDocument::ContentItemGetObject(bool Vertical,uIntn Index)noexce
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::GetDefaultTextStyle(cUITextStyle &Style)noexcept
+void bcTextDocument::GetDefaultTextStyle(cUITextStyle &Style)noexcept(true)
 {
 	gApplyDefaultTextStyle(Style);
 }
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::GetLineLength(uIntn LineIndex)noexcept
+uIntn bcTextDocument::GetLineLength(uIntn LineIndex)noexcept(true)
 {
 	auto CacheLine=QueryCacheLine(LineIndex);
 	if(CacheLine==nullptr){
@@ -351,7 +351,7 @@ uIntn bcTextDocument::GetLineLength(uIntn LineIndex)noexcept
 	return CacheLine->ContentLength;
 }
 //---------------------------------------------------------------------------
-cString<uChar16> bcTextDocument::GetLineText(uIntn LineIndex)noexcept
+cString<uChar16> bcTextDocument::GetLineText(uIntn LineIndex)noexcept(true)
 {
 	cStringBuffer<uChar16> Text;
 	auto CacheLine=QueryCacheLine(LineIndex);
@@ -365,7 +365,7 @@ cString<uChar16> bcTextDocument::GetLineText(uIntn LineIndex)noexcept
 	return cnVar::MoveCast(Text);
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::UpdateLinePosition(uIntn LineIndex)noexcept
+void bcTextDocument::UpdateLinePosition(uIntn LineIndex)noexcept(true)
 {
 	uIntn LinePosCacheIndex=fLinePosCache.GetCount()-1;
 	if(LinePosCacheIndex>LineIndex)
@@ -392,7 +392,7 @@ void bcTextDocument::UpdateLinePosition(uIntn LineIndex)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::UpdateVisibleLineRange(Float32 StartPos,Float32 EndPos)noexcept
+void bcTextDocument::UpdateVisibleLineRange(Float32 StartPos,Float32 EndPos)noexcept(true)
 {
 	//uIntn CacheLineIndex=fVisibleLineIndex;
 
@@ -436,31 +436,31 @@ void bcTextDocument::UpdateVisibleLineRange(Float32 StartPos,Float32 EndPos)noex
 	}
 }
 //---------------------------------------------------------------------------
-bool bcTextDocument::InsertAnnotator(iAnnotator *Annotator,sIntn Order)noexcept
+bool bcTextDocument::InsertAnnotator(iAnnotator *Annotator,sIntn Order)noexcept(true)
 {UnusedParameter(Order);
 	return fAnnotators.Insert(Annotator);
 }
 //---------------------------------------------------------------------------
-bool bcTextDocument::RemoveAnnotator(iAnnotator *Annotator)noexcept
+bool bcTextDocument::RemoveAnnotator(iAnnotator *Annotator)noexcept(true)
 {
 	return fAnnotators.Remove(Annotator);
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::AnnotationSetup(uIntn LineIndex)noexcept
+void bcTextDocument::AnnotationSetup(uIntn LineIndex)noexcept(true)
 {
 	for(auto *Annotator : fAnnotators){
 		Annotator->Setup(LineIndex);
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::AnnotationClear(void)noexcept
+void bcTextDocument::AnnotationClear(void)noexcept(true)
 {
 	for(auto *Annotator : fAnnotators){
 		Annotator->Clear();
 	}
 }
 //---------------------------------------------------------------------------
-aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLine(uIntn LineIndex)noexcept
+aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLine(uIntn LineIndex)noexcept(true)
 {
 	// lookup visible line
 	//if(IsNeededResetScrollContent()==false)
@@ -496,7 +496,7 @@ aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLine(uIntn LineIndex)
 	return RetItem;
 }
 //---------------------------------------------------------------------------
-aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLineInEnumeration(uIntn LineIndex)noexcept
+aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLineInEnumeration(uIntn LineIndex)noexcept(true)
 {
 	// lookup cache line
 	for(auto &CacheLine : fCacheLines){
@@ -517,7 +517,7 @@ aCls<bcTextDocument::cLineItem>* bcTextDocument::QueryCacheLineInEnumeration(uIn
 	return RetItem;
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::LineItemAppendTextLayout(cLineItem *LineItem,const cTextDocumentLinePart &TextPart)noexcept
+void bcTextDocument::LineItemAppendTextLayout(cLineItem *LineItem,const cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	// append text layout
 	LineItem->TextDistances.SetCount(LineItem->TotalLength+TextPart.Length);
@@ -535,7 +535,7 @@ void bcTextDocument::LineItemAppendTextLayout(cLineItem *LineItem,const cTextDoc
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::CacheLineAppendPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart)noexcept
+void bcTextDocument::CacheLineAppendPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	auto *NewPartItem=NewItem->LineParts.Append();
 	NewPartItem->ContentTextIndex=ContentIndex;
@@ -564,7 +564,7 @@ void bcTextDocument::CacheLineAppendPart(cLineItem *NewItem,uIntn ContentIndex,v
 
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::CacheLineInsertPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart)noexcept
+void bcTextDocument::CacheLineInsertPart(cLineItem *NewItem,uIntn ContentIndex,void *Annotator,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	uIntn InsertPartIndex=0;
 	uIntn TotalIndex;
@@ -656,7 +656,7 @@ Start:
 	NewItem->Width=CurPos;
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::AnnotateProcess(cLineItem *NewItem,cTextDocumentLinePart &TextPart)noexcept
+void bcTextDocument::AnnotateProcess(cLineItem *NewItem,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	// part annotator
 	uIntn ProcessContentIndex=0;
@@ -717,7 +717,7 @@ void bcTextDocument::AnnotateProcess(cLineItem *NewItem,cTextDocumentLinePart &T
 	NewItem->ContentLength+=TextPart.Length;
 }
 //---------------------------------------------------------------------------
-aClsRef<bcTextDocument::cLineItem> bcTextDocument::CreateEnumCacheLine(void)noexcept
+aClsRef<bcTextDocument::cLineItem> bcTextDocument::CreateEnumCacheLine(void)noexcept(true)
 {
 	// setup line data
 	auto NewItem=aClsCreate<cLineItem>();
@@ -752,11 +752,11 @@ aClsRef<bcTextDocument::cLineItem> bcTextDocument::CreateEnumCacheLine(void)noex
 	return NewItem;
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::SetNeedUpdateTextContent(void)noexcept
+void bcTextDocument::SetNeedUpdateTextContent(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ScrollContentUpdateContentLayout(void)noexcept
+void bcTextDocument::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
 	cScrollContent::ScrollContentUpdateContentLayout();
 	// layout texts
@@ -799,7 +799,7 @@ void bcTextDocument::ScrollContentUpdateContentLayout(void)noexcept
 	TextDocumentNotifySet();
 }
 //---------------------------------------------------------------------------
-bcTextDocument::cVisualInfo bcTextDocument::TextDocumentVisualInfo(void)noexcept
+bcTextDocument::cVisualInfo bcTextDocument::TextDocumentVisualInfo(void)noexcept(true)
 {
 	cVisualInfo VisualInfo;
 	VisualInfo.LineIndex=fVisibleLineIndex;
@@ -811,7 +811,7 @@ bcTextDocument::cVisualInfo bcTextDocument::TextDocumentVisualInfo(void)noexcept
 	return VisualInfo;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocument::TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)noexcept
+bool bcTextDocument::TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &LineInfo)noexcept(true)
 {
 	if(LineIndex<fVisibleLineIndex)
 		return false;
@@ -830,7 +830,7 @@ bool bcTextDocument::TextDocumentVisualLine(ufInt16 LineIndex,cVisualLineInfo &L
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcTextDocument::TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)noexcept
+bool bcTextDocument::TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIndex,cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	if(LineIndex<fVisibleLineIndex)
 		return false;
@@ -857,7 +857,7 @@ bool bcTextDocument::TextDocumentVisualLinePart(ufInt16 LineIndex,ufInt16 PartIn
 	return true;
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::AlignDocumentVertical(Float32 TotalHeight)noexcept
+Float32 bcTextDocument::AlignDocumentVertical(Float32 TotalHeight)noexcept(true)
 {
 	Float32 ContentY;
 	if(TotalHeight<fScrollViewportSize[1]){
@@ -872,7 +872,7 @@ Float32 bcTextDocument::AlignDocumentVertical(Float32 TotalHeight)noexcept
 	return ContentY;
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::AlignLineHorizontal(Float32 LineWidth)noexcept
+Float32 bcTextDocument::AlignLineHorizontal(Float32 LineWidth)noexcept(true)
 {
 	if(LineWidth<fScrollViewportSize[0]){
 		return TextDocumentHorizontalAlign(LineWidth);
@@ -882,7 +882,7 @@ Float32 bcTextDocument::AlignLineHorizontal(Float32 LineWidth)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextDocument::ScrollTextToVisible(uIntn LineIndex,uIntn TextIndex)noexcept
+void bcTextDocument::ScrollTextToVisible(uIntn LineIndex,uIntn TextIndex)noexcept(true)
 {
 	if(fContent==nullptr)
 		return;
@@ -910,7 +910,7 @@ void bcTextDocument::ScrollTextToVisible(uIntn LineIndex,uIntn TextIndex)noexcep
 	ScrollRangeToVisible(TextRange.Begin,LinePos,TextRange.End,LineEndPos);
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::GetLineHeight(uIntn LineIndex)noexcept
+Float32 bcTextDocument::GetLineHeight(uIntn LineIndex)noexcept(true)
 {
 	uIntn VisibleLineIndex=LineIndex-fVisibleLineIndex;
 	if(VisibleLineIndex<fVisibleLineList.GetCount()){
@@ -927,7 +927,7 @@ Float32 bcTextDocument::GetLineHeight(uIntn LineIndex)noexcept
 	return Line->Height;
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::GetLineWidth(uIntn LineIndex)noexcept
+Float32 bcTextDocument::GetLineWidth(uIntn LineIndex)noexcept(true)
 {
 	uIntn VisibleLineIndex=LineIndex-fVisibleLineIndex;
 	if(VisibleLineIndex<fVisibleLineList.GetCount()){
@@ -944,28 +944,28 @@ Float32 bcTextDocument::GetLineWidth(uIntn LineIndex)noexcept
 	return Line->Width;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::GetVisibleLineIndex(void)const noexcept
+uIntn bcTextDocument::GetVisibleLineIndex(void)const noexcept(true)
 {
 	return fVisibleLineIndex;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::GetVisibleLineCount(void)const noexcept
+uIntn bcTextDocument::GetVisibleLineCount(void)const noexcept(true)
 {
 	return fVisibleLineList.GetCount();
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::GetDocumentContentX(void)noexcept
+Float32 bcTextDocument::GetDocumentContentX(void)noexcept(true)
 {
 	Float32 Offset=fScrollOffset[0];
 	return -Offset;
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::GetDocumentContentY(void)noexcept
+Float32 bcTextDocument::GetDocumentContentY(void)noexcept(true)
 {
 	return AlignDocumentVertical(fScrollTotalSize[1]);
 }
 //---------------------------------------------------------------------------
-Float32 bcTextDocument::GetLineContentY(uIntn LineIndex)const noexcept
+Float32 bcTextDocument::GetLineContentY(uIntn LineIndex)const noexcept(true)
 {
 	Float32 Pos;
 	if(LineIndex>=fLinePosCache.GetCount()){
@@ -977,7 +977,7 @@ Float32 bcTextDocument::GetLineContentY(uIntn LineIndex)const noexcept
 	return Pos;
 }
 //---------------------------------------------------------------------------
-cUIRange bcTextDocument::GetLineContentRange(uIntn StartIndex,uIntn EndIndex)noexcept
+cUIRange bcTextDocument::GetLineContentRange(uIntn StartIndex,uIntn EndIndex)noexcept(true)
 {
 	if(EndIndex<StartIndex){
 		EndIndex=StartIndex;
@@ -1002,7 +1002,7 @@ cUIRange bcTextDocument::GetLineContentRange(uIntn StartIndex,uIntn EndIndex)noe
 	return Range;
 }
 //---------------------------------------------------------------------------
-cUIRange bcTextDocument::GetTextContentRange(uIntn LineIndex,uIntn TextIndex,uIntn TextEndIndex)noexcept
+cUIRange bcTextDocument::GetTextContentRange(uIntn LineIndex,uIntn TextIndex,uIntn TextEndIndex)noexcept(true)
 {
 	auto LineItem=QueryCacheLine(LineIndex);
 	if(LineItem==nullptr){
@@ -1061,7 +1061,7 @@ FindEndPart:
 	return Range;
 }
 //---------------------------------------------------------------------------
-sIntn bcTextDocument::FindLineInContent(Float32 ContentY)noexcept
+sIntn bcTextDocument::FindLineInContent(Float32 ContentY)noexcept(true)
 {
 	uIntn LineCount=fLinePosCache.GetCount();
 	if(LineCount==0){
@@ -1079,7 +1079,7 @@ sIntn bcTextDocument::FindLineInContent(Float32 ContentY)noexcept
 	return LineCount;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::LineItemFindTextIndex(cLineItem *LineItem,Float32 LineX)noexcept
+uIntn bcTextDocument::LineItemFindTextIndex(cLineItem *LineItem,Float32 LineX)noexcept(true)
 {
 	uIntn TextIndex;
 	if(cnMemory::ViewBinarySearch(TextIndex,LineItem->TextPosition,LineItem->TotalLength,[LineX](const Float32 &TextPos){
@@ -1098,7 +1098,7 @@ uIntn bcTextDocument::LineItemFindTextIndex(cLineItem *LineItem,Float32 LineX)no
 	return TextIndex;
 }
 //---------------------------------------------------------------------------
-uIntn bcTextDocument::LineItemFindTextPartIndex(cLineItem *LineItem,uIntn &TextIndex)noexcept
+uIntn bcTextDocument::LineItemFindTextPartIndex(cLineItem *LineItem,uIntn &TextIndex)noexcept(true)
 {
 	// look for text index in part
 	for(uIntn PartIndex=0,PartCount=LineItem->LineParts.GetCount();PartIndex<PartCount;PartIndex++){
@@ -1166,7 +1166,7 @@ uIntn bcTextDocument::FindTextInContent(uIntn LineIndex,Float32 ContentX,bool &I
 }
 #endif // 0
 //---------------------------------------------------------------------------
-cIndexPoint bcTextDocument::HitTest(Float32 x,Float32 y)noexcept
+cIndexPoint bcTextDocument::HitTest(Float32 x,Float32 y)noexcept(true)
 {
 	Float32 HitX=x+fScrollOffset[0];
 	Float32 HitY=y+fScrollOffset[1];
@@ -1238,7 +1238,7 @@ ufInt32 bcTextList::GenerateLineID(void)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcTextList::bcTextList()noexcept
+bcTextList::bcTextList()noexcept(true)
 {
 	fFocused=false;
 	fHot=false;
@@ -1246,13 +1246,13 @@ bcTextList::bcTextList()noexcept
 	//fLineIDSeed=0;
 }
 //---------------------------------------------------------------------------
-bcTextList::~bcTextList()noexcept
+bcTextList::~bcTextList()noexcept(true)
 {
 	SetView(nullptr);
 	viControlStateData::InvalidateData();
 }
 //---------------------------------------------------------------------------
-void bcTextList::ViewSetup(void)noexcept
+void bcTextList::ViewSetup(void)noexcept(true)
 {
 	bcTextDocument::ViewSetup();
 
@@ -1261,7 +1261,7 @@ void bcTextList::ViewSetup(void)noexcept
 	ViewInsertTouchHandler(fView,this);
 }
 //---------------------------------------------------------------------------
-void bcTextList::ViewClear(void)noexcept
+void bcTextList::ViewClear(void)noexcept(true)
 {
 	ViewRemoveKeyHandler(fView,this);
 	ViewRemoveMouseHandler(fView,this);
@@ -1270,28 +1270,28 @@ void bcTextList::ViewClear(void)noexcept
 	bcTextDocument::ViewClear();
 }
 //---------------------------------------------------------------------------
-bool bcTextList::ControlHot(void)noexcept
+bool bcTextList::ControlHot(void)noexcept(true)
 {
 	return fHot;
 }
 //---------------------------------------------------------------------------
-bool bcTextList::ControlFocused(void)noexcept
+bool bcTextList::ControlFocused(void)noexcept(true)
 {
 	return fFocused;
 }
 //---------------------------------------------------------------------------
-bool bcTextList::ControlDisabled(void)noexcept
+bool bcTextList::ControlDisabled(void)noexcept(true)
 {
 	return !fView->IsEnabled();
 }
 //---------------------------------------------------------------------------
-void bcTextList::Update(void)noexcept
+void bcTextList::Update(void)noexcept(true)
 {
 	ClearCache();
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-Float32 bcTextList::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept
+Float32 bcTextList::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept(true)
 {
 	switch(TextAlign&Alignment::VCenter){
 	default:
@@ -1308,7 +1308,7 @@ Float32 bcTextList::TextDocumentVerticalAlign(Float32 TotalHeight)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-Float32 bcTextList::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept
+Float32 bcTextList::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept(true)
 {
 	Float32 AlignRight=fScrollViewportSize[0];
 	if(AlignRight<fScrollTotalSize[0]){
@@ -1329,19 +1329,19 @@ Float32 bcTextList::TextDocumentHorizontalAlign(Float32 LineWidth)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextList::ControlStateChanged(void)noexcept
+void bcTextList::ControlStateChanged(void)noexcept(true)
 {
 	ControlStateNotifySet();
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseEnter(iUIMouseEvent *MouseEvent)noexcept
+void bcTextList::MouseEnter(iUIMouseEvent *MouseEvent)noexcept(true)
 {UnusedParameter(MouseEvent);
 	fHot=true;
 
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseLeave(iUIMouseEvent *MouseEvent)noexcept
+void bcTextList::MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)
 {UnusedParameter(MouseEvent);
 	fHot=false;
 
@@ -1351,7 +1351,7 @@ void bcTextList::MouseLeave(iUIMouseEvent *MouseEvent)noexcept
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void bcTextList::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -1370,7 +1370,7 @@ void bcTextList::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTextList::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -1383,7 +1383,7 @@ void bcTextList::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcep
 	}
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void bcTextList::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	cUIPoint Pos;
 	MouseEvent->GetPosition(fView,Pos);
@@ -1399,26 +1399,26 @@ void bcTextList::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	fLBtnDown=false;
 }
 //---------------------------------------------------------------------------
-void bcTextList::MouseWheel(iUIMouseEvent*,Float32 ScrollX,Float32 ScrollY)noexcept
+void bcTextList::MouseWheel(iUIMouseEvent*,Float32 ScrollX,Float32 ScrollY)noexcept(true)
 {
 	auto Offset=GetScrollOffset();
 	SetScrollOffset(Offset.x-ScrollX/3,Offset.y-ScrollY/3);
 }
 //---------------------------------------------------------------------------
-void bcTextList::KeyFocusEnterRange(iUIKeyEvent*)noexcept
+void bcTextList::KeyFocusEnterRange(iUIKeyEvent*)noexcept(true)
 {
 	fFocused=true;
 	
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextList::KeyFocusLeaveRange(iUIKeyEvent*)noexcept
+void bcTextList::KeyFocusLeaveRange(iUIKeyEvent*)noexcept(true)
 {
 	fFocused=false;
 	ControlStateChanged();
 }
 //---------------------------------------------------------------------------
-void bcTextList::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void bcTextList::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {
 	bool ShiftPressed=KeyEvent->IsKeyDown(KeyCode::Shift);
 	//bool CtrlPressed=KeyEvent->IsKeyDown(KeyCode::Ctrl);
@@ -1453,7 +1453,7 @@ void bcTextList::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextList::cTextList()noexcept
+cTextList::cTextList()noexcept(true)
 {
 	fEnumLineIndex=IndexNotFound;
 
@@ -1470,12 +1470,12 @@ cTextList::cTextList()noexcept
 	fSelectedLineIndex=-1;
 }
 //---------------------------------------------------------------------------
-cTextList::~cTextList()noexcept
+cTextList::~cTextList()noexcept(true)
 {
 	SetView(nullptr);
 }
 //---------------------------------------------------------------------------
-cUIColor cTextList::TextDocumentGetLineColor(uIntn LineIndex)noexcept
+cUIColor cTextList::TextDocumentGetLineColor(uIntn LineIndex)noexcept(true)
 {
 	if(static_cast<sIntn>(LineIndex)==fSelectedLineIndex){
 		return UIColorFromUInt32(0xFFD77800);
@@ -1487,12 +1487,12 @@ cUIColor cTextList::TextDocumentGetLineColor(uIntn LineIndex)noexcept
 	return UIColorFromUInt32(0);
 }
 //---------------------------------------------------------------------------
-void cTextList::TextDocumentLineEnumReset(void)noexcept
+void cTextList::TextDocumentLineEnumReset(void)noexcept(true)
 {
 	fEnumLineIndex=IndexNotFound;
 }
 //---------------------------------------------------------------------------
-bool cTextList::TextDocumentLineEnum(uIntn LineIndex)noexcept
+bool cTextList::TextDocumentLineEnum(uIntn LineIndex)noexcept(true)
 {
 	fEnumLineHeight=LineHeight;
 	if(fEnumLineHeight==0){
@@ -1511,7 +1511,7 @@ bool cTextList::TextDocumentLineEnum(uIntn LineIndex)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cTextList::TextDocumentLineEnumNext(void)noexcept
+bool cTextList::TextDocumentLineEnumNext(void)noexcept(true)
 {
 	if(fEnumLineIndex+1>=TextList.GetCount())
 		return false;
@@ -1520,17 +1520,17 @@ bool cTextList::TextDocumentLineEnumNext(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-Float32 cTextList::TextDocumentLineEnumHeight(void)noexcept
+Float32 cTextList::TextDocumentLineEnumHeight(void)noexcept(true)
 {
 	return fEnumLineHeight;
 }
 //---------------------------------------------------------------------------
-void cTextList::TextDocumentLineEnumPartEnum(void)noexcept
+void cTextList::TextDocumentLineEnumPartEnum(void)noexcept(true)
 {
 	fEnumLinePartDone=false;
 }
 //---------------------------------------------------------------------------
-bool cTextList::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept
+bool cTextList::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)noexcept(true)
 {
 	if(fEnumLinePartDone){
 		return false;
@@ -1546,7 +1546,7 @@ bool cTextList::TextDocumentLineEnumPartFetch(cTextDocumentLinePart &TextPart)no
 	return true;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cTextList::TextListEditGetLine(uIntn LineIndex)noexcept
+cArray<const uChar16> cTextList::TextListEditGetLine(uIntn LineIndex)noexcept(true)
 {
 	if(LineIndex>=TextList.GetCount()){
 		return NullArray;
@@ -1555,17 +1555,17 @@ cArray<const uChar16> cTextList::TextListEditGetLine(uIntn LineIndex)noexcept
 	return TextList[LineIndex].Storage();
 }
 //---------------------------------------------------------------------------
-void cTextList::TextListSetHotLine(sIntn LineIndex)noexcept
+void cTextList::TextListSetHotLine(sIntn LineIndex)noexcept(true)
 {
 	fHotLineIndex=LineIndex;
 }
 //---------------------------------------------------------------------------
-sIntn cTextList::GetSelectIndex(void)noexcept
+sIntn cTextList::GetSelectIndex(void)noexcept(true)
 {
 	return fSelectedLineIndex;
 }
 //---------------------------------------------------------------------------
-void cTextList::SetSelectIndex(sIntn Index)noexcept
+void cTextList::SetSelectIndex(sIntn Index)noexcept(true)
 {
 	fSelectedLineIndex=Index;
 
@@ -1581,7 +1581,7 @@ void cTextList::SetSelectIndex(sIntn Index)noexcept
 	SetNeedUpdateTextContent();
 }
 //---------------------------------------------------------------------------
-void cTextList::TextListSelectLine(sIntn LineIndex)noexcept
+void cTextList::TextListSelectLine(sIntn LineIndex)noexcept(true)
 {
 	if(fSelectedLineIndex!=LineIndex){
 		fSelectedLineIndex=LineIndex;
@@ -1591,7 +1591,7 @@ void cTextList::TextListSelectLine(sIntn LineIndex)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cTextList::TextListMoveLine(bool Down)noexcept
+void cTextList::TextListMoveLine(bool Down)noexcept(true)
 {
 	if(Down){
 		if(static_cast<uIntn>(fSelectedLineIndex+1)>=TextList.GetCount()){
@@ -1614,7 +1614,7 @@ void cTextList::TextListMoveLine(bool Down)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-vTextSelectBox::vTextSelectBox(viButtonData *ButtonData,viTextControlData *TextData)noexcept
+vTextSelectBox::vTextSelectBox(viButtonData *ButtonData,viTextControlData *TextData)noexcept(true)
 {
 	fButtonData=ButtonData;
 	fTextData=TextData;
@@ -1630,18 +1630,18 @@ vTextSelectBox::vTextSelectBox(viButtonData *ButtonData,viTextControlData *TextD
 	fUpdateText=true;
 }
 //---------------------------------------------------------------------------
-vTextSelectBox::~vTextSelectBox()noexcept
+vTextSelectBox::~vTextSelectBox()noexcept(true)
 {
 	fButtonData->ButtonNotifySet.Remove(fButtonDataNotifyToken);
 	fTextData->ControlTextNotifySet.Remove(fTextControlNotifyToken);
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vTextSelectBox::Create(viButtonData *ButtonData,viTextControlData *TextData)noexcept
+rPtr<viControl> vTextSelectBox::Create(viButtonData *ButtonData,viTextControlData *TextData)noexcept(true)
 {
 	return rCreate< bwvControl<vTextSelectBox> >(ButtonData,TextData);
 }
 //---------------------------------------------------------------------------
-void vTextSelectBox::SetupTextCache(void)noexcept
+void vTextSelectBox::SetupTextCache(void)noexcept(true)
 {
 	if(fUpdateText==false){
 		return;
@@ -1664,7 +1664,7 @@ void vTextSelectBox::SetupTextCache(void)noexcept
 	fTextGraphSize=fCacheTextGraph->GetSize();
 }
 //---------------------------------------------------------------------------
-void vTextSelectBox::Paint(iUISimplePaintContext *Context)noexcept
+void vTextSelectBox::Paint(iUISimplePaintContext *Context)noexcept(true)
 {
 	SetupTextCache();
 
@@ -1707,7 +1707,7 @@ void vTextSelectBox::Paint(iUISimplePaintContext *Context)noexcept
 
 }
 //---------------------------------------------------------------------------
-void vTextSelectBox::Update(void)noexcept
+void vTextSelectBox::Update(void)noexcept(true)
 {
 	fUpdateText=true;
 	fCacheTextGraph=nullptr;
@@ -1716,7 +1716,7 @@ void vTextSelectBox::Update(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void vTextSelectBox::UpdateState(void)noexcept
+void vTextSelectBox::UpdateState(void)noexcept(true)
 {
 	if(fViewContent!=nullptr){
 		fViewContent->QueryUpdate();
@@ -1724,7 +1724,7 @@ void vTextSelectBox::UpdateState(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTextSelectBox::cTextSelectBox()noexcept
+cTextSelectBox::cTextSelectBox()noexcept(true)
 {
 	fPopupWindowControl=cnSystem::CreatePopupWindowControl();
 	fPopupWindowControl->SetCallback(this);
@@ -1747,27 +1747,27 @@ cTextSelectBox::cTextSelectBox()noexcept
 	};
 }
 //---------------------------------------------------------------------------
-cTextSelectBox::~cTextSelectBox()noexcept
+cTextSelectBox::~cTextSelectBox()noexcept(true)
 {
 	fPopupWindowControl->SetCallback(nullptr);
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::ButtonContentSetDefault(void)noexcept
+void cTextSelectBox::ButtonContentSetDefault(void)noexcept(true)
 {
 	SetContent(vTextSelectBox::Create(this,this));
 }
 //---------------------------------------------------------------------------
-bool cTextSelectBox::ButtonMouseAllowButton(eMouseButton Button)noexcept
+bool cTextSelectBox::ButtonMouseAllowButton(eMouseButton Button)noexcept(true)
 {
 	return Button==MouseButton::Left;
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::ButtonClick(const cUIPoint &)noexcept
+void cTextSelectBox::ButtonClick(const cUIPoint &)noexcept(true)
 {
 	PopupSelectWindow();
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::PopupSelectWindow(void)noexcept
+void cTextSelectBox::PopupSelectWindow(void)noexcept(true)
 {
 	auto PopupWindow=fPopupWindowControl->GetUIWindow();
 	fPopupWindowControl->SetupOwner(fView);
@@ -1783,7 +1783,7 @@ void cTextSelectBox::PopupSelectWindow(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void cTextSelectBox::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {
 	bcTextButton::KeyInput(KeyEvent,KeyCode);
 	switch(KeyCode){
@@ -1798,7 +1798,7 @@ void cTextSelectBox::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-const uChar16* cTextSelectBox::ControlTextString(void)noexcept
+const uChar16* cTextSelectBox::ControlTextString(void)noexcept(true)
 {
 	auto SelIndex=fPopupList.GetSelectIndex();
 	if(static_cast<uIntn>(SelIndex)>=fPopupList.TextList.GetCount()){
@@ -1807,7 +1807,7 @@ const uChar16* cTextSelectBox::ControlTextString(void)noexcept
 	return fPopupList.TextList[SelIndex]->Pointer;
 }
 //---------------------------------------------------------------------------
-uIntn cTextSelectBox::ControlTextLength(void)noexcept
+uIntn cTextSelectBox::ControlTextLength(void)noexcept(true)
 {
 	auto SelIndex=fPopupList.GetSelectIndex();
 	if(static_cast<uIntn>(SelIndex)>=fPopupList.TextList.GetCount()){
@@ -1816,34 +1816,34 @@ uIntn cTextSelectBox::ControlTextLength(void)noexcept
 	return fPopupList.TextList[SelIndex]->Length;
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::PopupOnShow(void)noexcept
+void cTextSelectBox::PopupOnShow(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::PopupOnHide(void)noexcept
+void cTextSelectBox::PopupOnHide(void)noexcept(true)
 {
 	auto Key=iCast<iUIKeyControl>(fView);
 	Key->SetFocus(false);
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::SelectConfirm(void)noexcept
+void cTextSelectBox::SelectConfirm(void)noexcept(true)
 {
 	fPopupWindowControl->HidePopup();
 	ControlTextNotifySet();
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::SelectCancel(void)noexcept
+void cTextSelectBox::SelectCancel(void)noexcept(true)
 {
 	fPopupWindowControl->HidePopup();
 	ControlTextNotifySet();
 }
 //---------------------------------------------------------------------------
-cTextSelectBox* cTextSelectBox::cSelectList::GetHost(void)noexcept
+cTextSelectBox* cTextSelectBox::cSelectList::GetHost(void)noexcept(true)
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&cTextSelectBox::fPopupList);
 }
 //---------------------------------------------------------------------------
-void cTextSelectBox::cSelectList::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
+void cTextSelectBox::cSelectList::KeyInput(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {
 	cTextList::KeyInput(KeyEvent,KeyCode);
 	switch(KeyCode){

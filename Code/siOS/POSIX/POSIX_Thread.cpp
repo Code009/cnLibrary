@@ -10,152 +10,152 @@ using namespace siPOSIX;
 #ifdef	siOS_POSIX_ENABLE_THREAD
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-c_pthread_mutex::c_pthread_mutex(pthread_mutexattr_t *attr)noexcept
+c_pthread_mutex::c_pthread_mutex(pthread_mutexattr_t *attr)noexcept(true)
 {
 	pthread_mutex_init(&f_mutex,attr);
 }
 //---------------------------------------------------------------------------
-c_pthread_mutex::~c_pthread_mutex()noexcept
+c_pthread_mutex::~c_pthread_mutex()noexcept(true)
 {
 	pthread_mutex_destroy(&f_mutex);
 }
 //---------------------------------------------------------------------------
-c_pthread_mutex::operator pthread_mutex_t* ()noexcept
+c_pthread_mutex::operator pthread_mutex_t* ()noexcept(true)
 {
 	return &f_mutex;
 }
 //---------------------------------------------------------------------------
-void c_pthread_mutex::lock(void)noexcept
+void c_pthread_mutex::lock(void)noexcept(true)
 {
 	pthread_mutex_lock(&f_mutex);
 }
 //---------------------------------------------------------------------------
-bool c_pthread_mutex::trylock(void)noexcept
+bool c_pthread_mutex::trylock(void)noexcept(true)
 {
 	return pthread_mutex_trylock(&f_mutex)==0;
 }
 //---------------------------------------------------------------------------
-void c_pthread_mutex::unlock(void)noexcept
+void c_pthread_mutex::unlock(void)noexcept(true)
 {
 	pthread_mutex_unlock(&f_mutex);
 }
 //---------------------------------------------------------------------------
-void c_pthread_mutex::Acquire(void)noexcept{	return lock();	}
-bool c_pthread_mutex::TryAcquire(void)noexcept{	return trylock();	}
-void c_pthread_mutex::Release(void)noexcept{	return unlock();	}
+void c_pthread_mutex::Acquire(void)noexcept(true){	return lock();	}
+bool c_pthread_mutex::TryAcquire(void)noexcept(true){	return trylock();	}
+void c_pthread_mutex::Release(void)noexcept(true){	return unlock();	}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-c_pthread_rwlock::c_pthread_rwlock(pthread_rwlockattr_t *attr)noexcept
+c_pthread_rwlock::c_pthread_rwlock(pthread_rwlockattr_t *attr)noexcept(true)
 {
 	pthread_rwlock_init(&f_lock,attr);
 }
 //---------------------------------------------------------------------------
-c_pthread_rwlock::~c_pthread_rwlock()noexcept
+c_pthread_rwlock::~c_pthread_rwlock()noexcept(true)
 {
 	pthread_rwlock_destroy(&f_lock);
 }
 //---------------------------------------------------------------------------
-c_pthread_rwlock::operator pthread_rwlock_t* ()noexcept
+c_pthread_rwlock::operator pthread_rwlock_t* ()noexcept(true)
 {
 	return &f_lock;
 }
 //---------------------------------------------------------------------------
-void c_pthread_rwlock::rdlock(void)noexcept
+void c_pthread_rwlock::rdlock(void)noexcept(true)
 {
 	pthread_rwlock_rdlock(&f_lock);
 }
 //---------------------------------------------------------------------------
-bool c_pthread_rwlock::tryrdlock(void)noexcept
+bool c_pthread_rwlock::tryrdlock(void)noexcept(true)
 {
 	return pthread_rwlock_tryrdlock(&f_lock)==0;
 }
 //---------------------------------------------------------------------------
-void c_pthread_rwlock::wrlock(void)noexcept
+void c_pthread_rwlock::wrlock(void)noexcept(true)
 {
 	pthread_rwlock_wrlock(&f_lock);
 }
 //---------------------------------------------------------------------------
-bool c_pthread_rwlock::trywrlock(void)noexcept
+bool c_pthread_rwlock::trywrlock(void)noexcept(true)
 {
 	return pthread_rwlock_trywrlock(&f_lock)==0;
 }
 //---------------------------------------------------------------------------
-void c_pthread_rwlock::unlock(void)noexcept
+void c_pthread_rwlock::unlock(void)noexcept(true)
 {
 	pthread_rwlock_unlock(&f_lock);
 }
 //---------------------------------------------------------------------------
-void c_pthread_rwlock::Acquire(void)noexcept{	return wrlock();	}
-bool c_pthread_rwlock::TryAcquire(void)noexcept{	return trywrlock();	}
-void c_pthread_rwlock::Release(void)noexcept{	return unlock();	}
+void c_pthread_rwlock::Acquire(void)noexcept(true){	return wrlock();	}
+bool c_pthread_rwlock::TryAcquire(void)noexcept(true){	return trywrlock();	}
+void c_pthread_rwlock::Release(void)noexcept(true){	return unlock();	}
 
-void c_pthread_rwlock::AcquireShared(void)noexcept{	return rdlock();	}
-bool c_pthread_rwlock::TryAcquireShared(void)noexcept{	return tryrdlock();	}
-void c_pthread_rwlock::ReleaseShared(void)noexcept{	return unlock();	}
+void c_pthread_rwlock::AcquireShared(void)noexcept(true){	return rdlock();	}
+bool c_pthread_rwlock::TryAcquireShared(void)noexcept(true){	return tryrdlock();	}
+void c_pthread_rwlock::ReleaseShared(void)noexcept(true){	return unlock();	}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-c_pthread_cond::c_pthread_cond(pthread_condattr_t *attr)noexcept
+c_pthread_cond::c_pthread_cond(pthread_condattr_t *attr)noexcept(true)
 {
 	pthread_cond_init(&f_cond,attr);
 }
 //---------------------------------------------------------------------------
-c_pthread_cond::~c_pthread_cond()noexcept
+c_pthread_cond::~c_pthread_cond()noexcept(true)
 {
 	pthread_cond_destroy(&f_cond);
 }
 //---------------------------------------------------------------------------
-void c_pthread_cond::signal(void)noexcept
+void c_pthread_cond::signal(void)noexcept(true)
 {
 	pthread_cond_signal(&f_cond);
 }
 //---------------------------------------------------------------------------
-void c_pthread_cond::broadcast(void)noexcept
+void c_pthread_cond::broadcast(void)noexcept(true)
 {
 	pthread_cond_broadcast(&f_cond);
 }
 //---------------------------------------------------------------------------
-int c_pthread_cond::wait(pthread_mutex_t *mutex)noexcept
+int c_pthread_cond::wait(pthread_mutex_t *mutex)noexcept(true)
 {
 	return pthread_cond_wait(&f_cond,mutex);
 }
 //---------------------------------------------------------------------------
-int c_pthread_cond::timedwait(pthread_mutex_t *mutex,const struct timespec &tv)noexcept
+int c_pthread_cond::timedwait(pthread_mutex_t *mutex,const struct timespec &tv)noexcept(true)
 {
 	return pthread_cond_timedwait(&f_cond,mutex,&tv);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-c_pthread_key::c_pthread_key(void (*destructor)(void*)noexcept)noexcept
+c_pthread_key::c_pthread_key(void (*destructor)(void*)noexcept(true))noexcept(true)
 {
 	pthread_key_create(&f_key,destructor);
 }
 //---------------------------------------------------------------------------
-c_pthread_key::~c_pthread_key()noexcept
+c_pthread_key::~c_pthread_key()noexcept(true)
 {
 	pthread_key_delete(f_key);
 }
 //---------------------------------------------------------------------------
-void* c_pthread_key::getspecific(void)noexcept
+void* c_pthread_key::getspecific(void)noexcept(true)
 {
 	return pthread_getspecific(f_key);
 }
 //---------------------------------------------------------------------------
-bool c_pthread_key::setspecific(void *v)noexcept
+bool c_pthread_key::setspecific(void *v)noexcept(true)
 {
 	return pthread_setspecific(f_key,v)==0;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cThreadLocalVariable::cThreadLocalVariable()noexcept
+cThreadLocalVariable::cThreadLocalVariable()noexcept(true)
 	: fTS(PThreadKeyDestructor)
 {
 }
 //---------------------------------------------------------------------------
-cThreadLocalVariable::~cThreadLocalVariable()noexcept
+cThreadLocalVariable::~cThreadLocalVariable()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cThreadLocalVariable::Clear(void)noexcept
+void cThreadLocalVariable::Clear(void)noexcept(true)
 {
 	void *pData=fTS.getspecific();
 	if(pData==nullptr){
@@ -170,7 +170,7 @@ void cThreadLocalVariable::Clear(void)noexcept
 	ThreadData->NotifyProc=nullptr;
 }
 //---------------------------------------------------------------------------
-void* cThreadLocalVariable::Get(void)noexcept
+void* cThreadLocalVariable::Get(void)noexcept(true)
 {
 	void *ThreadData=fTS.getspecific();
 	if(ThreadData==nullptr)
@@ -178,7 +178,7 @@ void* cThreadLocalVariable::Get(void)noexcept
 	return static_cast<cThreadData*>(ThreadData)->Object;
 }
 //---------------------------------------------------------------------------
-void cThreadLocalVariable::Set(iReference *Reference,void *Value)noexcept
+void cThreadLocalVariable::Set(iReference *Reference,void *Value)noexcept(true)
 {
 	void *pData=fTS.getspecific();
 	cThreadData *ThreadData;
@@ -205,7 +205,7 @@ void cThreadLocalVariable::Set(iReference *Reference,void *Value)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept
+void cThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc)noexcept(true)
 {
 	void *pData=fTS.getspecific();
 	cThreadData *ThreadData;
@@ -225,7 +225,7 @@ void cThreadLocalVariable::SetThreadExitNotify(iThreadExitNotifyProc *NotifyProc
 	ThreadData->NotifyProc=NotifyProc;
 }
 //---------------------------------------------------------------------------
-void cThreadLocalVariable::PThreadKeyDestructor(void *pThreadData)noexcept
+void cThreadLocalVariable::PThreadKeyDestructor(void *pThreadData)noexcept(true)
 {
 	if(pThreadData==nullptr)
 		return;
@@ -244,7 +244,7 @@ void cThreadLocalVariable::PThreadKeyDestructor(void *pThreadData)noexcept
 //---------------------------------------------------------------------------
 #ifdef	siOS_POSIX_ENABLE_THREAD_PRIORITY
 //---------------------------------------------------------------------------
-void cPOSIXThreadPriorityConverter::Setup(void)noexcept
+void cPOSIXThreadPriorityConverter::Setup(void)noexcept(true)
 {
 	if(fPriorityRange==0){
 		fPriorityMin=sched_get_priority_min(SCHED_OTHER);
@@ -252,7 +252,7 @@ void cPOSIXThreadPriorityConverter::Setup(void)noexcept
 		fPriorityRange=fPriorityMax-fPriorityMin;
 	}
 }
-sInt8 cPOSIXThreadPriorityConverter::POSIX2cnLib(int POSIXPriority)noexcept
+sInt8 cPOSIXThreadPriorityConverter::POSIX2cnLib(int POSIXPriority)noexcept(true)
 {
 	Setup();
 	if(POSIXPriority>=fPriorityMax)
@@ -264,7 +264,7 @@ sInt8 cPOSIXThreadPriorityConverter::POSIX2cnLib(int POSIXPriority)noexcept
 	sInt8 Priority=static_cast<sInt8>(pRange)-128;
 	return Priority;
 }
-int cPOSIXThreadPriorityConverter::cnLib2POSIX(sInt8 Priority)noexcept
+int cPOSIXThreadPriorityConverter::cnLib2POSIX(sInt8 Priority)noexcept(true)
 {
 	Setup();
 	int POSIXPriority=Priority;
@@ -278,31 +278,31 @@ cPOSIXThreadPriorityConverter siPOSIX::gPOSIXThreadPriorityConverter;
 #endif	// siOS_POSIX_ENABLE_THREAD_PRIORITY
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cPOSIXThread::cModule::cModule()noexcept
+cPOSIXThread::cModule::cModule()noexcept(true)
 	: ThreadObject(ThreadObjectDestructor)
 {
 }
 //---------------------------------------------------------------------------
-cPOSIXThread::cModule::~cModule()noexcept
+cPOSIXThread::cModule::~cModule()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cPOSIXThread::ThreadObjectDestructor(void *data)noexcept
+void cPOSIXThread::ThreadObjectDestructor(void *data)noexcept(true)
 {
 	auto Thread=iTake(static_cast<cPOSIXThread*>(data),'thsp');
 	Thread->OnExit();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cPOSIXThread::cPOSIXThread()noexcept
+cPOSIXThread::cPOSIXThread()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cPOSIXThread::~cPOSIXThread()noexcept
+cPOSIXThread::~cPOSIXThread()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iPtr<cPOSIXThread> cPOSIXThread::StartThread(iProcedure *Procedure)noexcept
+iPtr<cPOSIXThread> cPOSIXThread::StartThread(iProcedure *Procedure)noexcept(true)
 {
 	auto NewThread=iCreate<cPOSIXThread>();
 	auto *CreateParam=new pthread_param;
@@ -320,7 +320,7 @@ iPtr<cPOSIXThread> cPOSIXThread::StartThread(iProcedure *Procedure)noexcept
 	return NewThread;
 }
 //---------------------------------------------------------------------------
-void* cPOSIXThread::POSIXThreadMainRoutine(void* data)noexcept
+void* cPOSIXThread::POSIXThreadMainRoutine(void* data)noexcept(true)
 {
 	auto CreateParam=static_cast<pthread_param*>(data);
 	auto ThreadObject=iExtract(CreateParam->Thread,'thsp');
@@ -333,11 +333,11 @@ void* cPOSIXThread::POSIXThreadMainRoutine(void* data)noexcept
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cPOSIXThread::OnExit(void)noexcept
+void cPOSIXThread::OnExit(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cPOSIXThread* cPOSIXThread::CurrentThread(void)noexcept
+cPOSIXThread* cPOSIXThread::CurrentThread(void)noexcept(true)
 {
 	auto pThreadObject=gModule.ThreadObject.getspecific();
 	if(pThreadObject!=nullptr){
@@ -354,13 +354,13 @@ cPOSIXThread* cPOSIXThread::CurrentThread(void)noexcept
 
 }
 //---------------------------------------------------------------------------
-cPOSIXThread* cPOSIXThread::GetCurrentThread(void)noexcept
+cPOSIXThread* cPOSIXThread::GetCurrentThread(void)noexcept(true)
 {
 	auto pThread=gModule.ThreadObject.getspecific();
 	return static_cast<cPOSIXThread*>(pThread);
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SleepUntilWake(void)noexcept
+bool cPOSIXThread::SleepUntilWake(void)noexcept(true)
 {
 	fSleepMutex.lock();
 
@@ -375,7 +375,7 @@ bool cPOSIXThread::SleepUntilWake(void)noexcept
 	return ByAlarm;
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SleepUntil(const timespec &time)noexcept
+bool cPOSIXThread::SleepUntil(const timespec &time)noexcept(true)
 {
 	fSleepMutex.lock();
 
@@ -396,7 +396,7 @@ bool cPOSIXThread::SleepUntil(const timespec &time)noexcept
 	return ByAlarm;
 }
 //---------------------------------------------------------------------------
-void cPOSIXThread::Wake(bool *ResetVal)noexcept
+void cPOSIXThread::Wake(bool *ResetVal)noexcept(true)
 {
 	fSleepMutex.lock();
 	fPendingWake=true;
@@ -407,14 +407,14 @@ void cPOSIXThread::Wake(bool *ResetVal)noexcept
 	fSleepMutex.unlock();
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::IsCurrentThread(void)noexcept
+bool cPOSIXThread::IsCurrentThread(void)noexcept(true)
 {
 	return pthread_self()==fThread;
 }
 //---------------------------------------------------------------------------
 #ifdef	siOS_POSIX_ENABLE_THREAD_PRIORITY
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SetPriority(pthread_t Thread,sInt8 Priority)noexcept
+bool cPOSIXThread::SetPriority(pthread_t Thread,sInt8 Priority)noexcept(true)
 {
 	sched_param TS_param={0};
 
@@ -422,7 +422,7 @@ bool cPOSIXThread::SetPriority(pthread_t Thread,sInt8 Priority)noexcept
 	return pthread_setschedparam(Thread,SCHED_RR,&TS_param)==0;
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::GetPriority(pthread_t Thread,sInt8 &Priority)noexcept
+bool cPOSIXThread::GetPriority(pthread_t Thread,sInt8 &Priority)noexcept(true)
 {
 	int TS_Policy;
 	sched_param TS_param;
@@ -437,30 +437,30 @@ bool cPOSIXThread::GetPriority(pthread_t Thread,sInt8 &Priority)noexcept
 #else
 // !siOS_POSIX_ENABLE_THREAD_PRIORITY
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SetPriority(pthread_t Thread,sInt8 Priority)noexcept
+bool cPOSIXThread::SetPriority(pthread_t Thread,sInt8 Priority)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::GetPriority(pthread_t Thread,sInt8 &Priority)noexcept
+bool cPOSIXThread::GetPriority(pthread_t Thread,sInt8 &Priority)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
 #endif	// !siOS_POSIX_ENABLE_THREAD_PRIORITY
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SetPriority(sInt8 Priority)noexcept
+bool cPOSIXThread::SetPriority(sInt8 Priority)noexcept(true)
 {
 	return SetPriority(fThread,Priority);
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::GetPriority(sInt8 &Priority)noexcept
+bool cPOSIXThread::GetPriority(sInt8 &Priority)noexcept(true)
 {
 	return GetPriority(fThread,Priority);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void CurrentPOSIXThread::SuspendFor(uInt64 DelayNS)noexcept
+void CurrentPOSIXThread::SuspendFor(uInt64 DelayNS)noexcept(true)
 {
 	timespec ts;
 	ts.tv_sec=DelayNS/Time_1s;
@@ -472,7 +472,7 @@ void CurrentPOSIXThread::SuspendFor(uInt64 DelayNS)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool CurrentPOSIXThread::SleepUntil(uInt64 SystemTime)noexcept
+bool CurrentPOSIXThread::SleepUntil(uInt64 SystemTime)noexcept(true)
 {
 	auto ThreadObject=cPOSIXThread::CurrentThread();
 	if(SystemTime==SystemTime_Never){
@@ -484,17 +484,17 @@ bool CurrentPOSIXThread::SleepUntil(uInt64 SystemTime)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void CurrentPOSIXThread::SwitchThread(void)noexcept
+void CurrentPOSIXThread::SwitchThread(void)noexcept(true)
 {
 	sched_yield();
 }
 //---------------------------------------------------------------------------
-bool CurrentPOSIXThread::SetPriority(sInt8 Priority)noexcept
+bool CurrentPOSIXThread::SetPriority(sInt8 Priority)noexcept(true)
 {
 	return cPOSIXThread::SetPriority(pthread_self(),Priority);
 }
 //---------------------------------------------------------------------------
-sInt8 CurrentPOSIXThread::GetPriority(void)noexcept
+sInt8 CurrentPOSIXThread::GetPriority(void)noexcept(true)
 {
 	sInt8 Priority;
 	if(cPOSIXThread::GetPriority(pthread_self(),Priority))
@@ -502,32 +502,32 @@ sInt8 CurrentPOSIXThread::GetPriority(void)noexcept
 	return 0;
 }
 //---------------------------------------------------------------------------
-cPOSIXThreadExecutionPool::cPOSIXThreadExecutionPool()noexcept
+cPOSIXThreadExecutionPool::cPOSIXThreadExecutionPool()noexcept(true)
     : fWaitingThreads(0)
 	, fWorkingThreads(0)
 {
 }
 //---------------------------------------------------------------------------
-cPOSIXThreadExecutionPool::~cPOSIXThreadExecutionPool()noexcept
+cPOSIXThreadExecutionPool::~cPOSIXThreadExecutionPool()noexcept(true)
 {
 	cnLib_ASSERT(fProcQueue.IsEmpty());
 	auto Items=fProcItemRecycler.Swap(nullptr);
 	DeleteProcItems(Items);
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::VirtualStarted(void)noexcept
+void cPOSIXThreadExecutionPool::VirtualStarted(void)noexcept(true)
 {
 	InnerActivate('self');
 	MakeThread();
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::VirtualStopped(void)noexcept
+void cPOSIXThreadExecutionPool::VirtualStopped(void)noexcept(true)
 {
 	Close();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::Close(void)noexcept
+void cPOSIXThreadExecutionPool::Close(void)noexcept(true)
 {
 	if(fClose)
 		return;
@@ -543,7 +543,7 @@ void cPOSIXThreadExecutionPool::Close(void)noexcept
 	fCloseNotification.Finish();
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::MakeThread(void)noexcept
+void cPOSIXThreadExecutionPool::MakeThread(void)noexcept(true)
 {
 	InnerIncReference('wktd');
 
@@ -557,7 +557,7 @@ void cPOSIXThreadExecutionPool::MakeThread(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::Post(iProcedure *Procedure)noexcept
+void cPOSIXThreadExecutionPool::Post(iProcedure *Procedure)noexcept(true)
 {
 	if(fClose)
 		return;
@@ -575,13 +575,13 @@ void cPOSIXThreadExecutionPool::Post(iProcedure *Procedure)noexcept
 	fThreadWaitMutex.unlock();
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::cWorkThreadProcedure::Execute(void)noexcept
+void cPOSIXThreadExecutionPool::cWorkThreadProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cPOSIXThreadExecutionPool::fWorkThreadProcedure);
     Host->WorkThreadProcedure();
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
+void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept(true)
 {
 	ufInt32 WaitingThreadCount=fWaitingThreads.Acquire.Load();
 	for(;;){
@@ -639,7 +639,7 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept
 	InnerDecReference('wktd');
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::DeleteProcItems(cProcItem *Items)noexcept
+void cPOSIXThreadExecutionPool::DeleteProcItems(cProcItem *Items)noexcept(true)
 {
 	while(Items==nullptr){
 		auto DeleteItem=Items;
@@ -649,7 +649,7 @@ void cPOSIXThreadExecutionPool::DeleteProcItems(cProcItem *Items)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cPOSIXThreadExecutionPool::CompactRecycler(uIntn LeastCount)noexcept
+void cPOSIXThreadExecutionPool::CompactRecycler(uIntn LeastCount)noexcept(true)
 {
 	auto SaveItems=fProcItemRecycler.Swap(nullptr);
 	if(SaveItems==nullptr)

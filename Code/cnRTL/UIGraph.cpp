@@ -7,30 +7,30 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cUIFontInfo::SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle,Float32 Weight)noexcept
+void cUIFontInfo::SetFontInfo(cString<uChar16> &&Name,eUIFontStyle FontStyle,Float32 Weight)noexcept(true)
 {
 	fName=cnVar::MoveCast(Name);
 	fFontStyle=FontStyle;
 	fWeight=Weight;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cUIFontInfo::GetName(void)noexcept
+cArray<const uChar16> cUIFontInfo::GetName(void)noexcept(true)
 {
 	return fName.GetArray();
 }
 //---------------------------------------------------------------------------
-eUIFontStyle cUIFontInfo::GetStyle(void)noexcept
+eUIFontStyle cUIFontInfo::GetStyle(void)noexcept(true)
 {
 	return fFontStyle;
 }
 //---------------------------------------------------------------------------
-Float32 cUIFontInfo::GetWeight(void)noexcept
+Float32 cUIFontInfo::GetWeight(void)noexcept(true)
 {
 	return fWeight;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-sfInt8 cSortableUIPoint::Compare(const cUIPoint &Cmp)const noexcept
+sfInt8 cSortableUIPoint::Compare(const cUIPoint &Cmp)const noexcept(true)
 {
 	if(x<Cmp.x)
 		return -1;
@@ -44,12 +44,12 @@ sfInt8 cSortableUIPoint::Compare(const cUIPoint &Cmp)const noexcept
 	return 1;
 }
 //---------------------------------------------------------------------------
-bool cSortableUIPoint::operator ==(const cUIPoint &Src)const noexcept
+bool cSortableUIPoint::operator ==(const cUIPoint &Src)const noexcept(true)
 {
 	return x==Src.x && y==Src.y;
 }
 //---------------------------------------------------------------------------
-bool cSortableUIPoint::operator !=(const cUIPoint &Src)const noexcept
+bool cSortableUIPoint::operator !=(const cUIPoint &Src)const noexcept(true)
 {
 	return x!=Src.x || y!=Src.y;
 }
@@ -59,16 +59,16 @@ const cUIRect cnRTL::UIRectZero={{0,0},{0,0}};
 const cUIRectangle cnRTL::UIRectangleZero={0,0,0,0};
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapSourceRGBASampler::cBitmapSourceRGBASampler()noexcept
+cBitmapSourceRGBASampler::cBitmapSourceRGBASampler()noexcept(true)
 {
 	fSamplingPixelData=nullptr;
 }
 //---------------------------------------------------------------------------
-cBitmapSourceRGBASampler::~cBitmapSourceRGBASampler()noexcept
+cBitmapSourceRGBASampler::~cBitmapSourceRGBASampler()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cBitmapSourceRGBASampler::BeginSample(cUIPoint Size)noexcept
+void cBitmapSourceRGBASampler::BeginSample(cUIPoint Size)noexcept(true)
 {
 	if(QuerySource!=nullptr){
 		fSamplingBitmap=QuerySource(Size);
@@ -112,7 +112,7 @@ void cBitmapSourceRGBASampler::BeginSample(cUIPoint Size)noexcept
 	fSampler->ImageSize=fSamplingBitmap->GetImageSize();
 }
 //---------------------------------------------------------------------------
-void cBitmapSourceRGBASampler::EndSample(void)noexcept
+void cBitmapSourceRGBASampler::EndSample(void)noexcept(true)
 {
 	if(fSamplingBitmap!=nullptr){
 		fSamplingBitmap->ReleasePixels();
@@ -123,22 +123,22 @@ void cBitmapSourceRGBASampler::EndSample(void)noexcept
 	fSampler->~cSampling();
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return fSampler->SampleUNorm8(x,y);
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return fSampler->SampleUNorm16(x,y);
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return fSampler->SampleFloat32(x,y);
 }
 //---------------------------------------------------------------------------
-void cBitmapSourceRGBASampler::SetupSampling8(const cBitmapPixelFormat &PixelFormat)noexcept
+void cBitmapSourceRGBASampler::SetupSampling8(const cBitmapPixelFormat &PixelFormat)noexcept(true)
 {
 	ufInt8 SourceChannelCount=PixelFormat.ChannelCount;
 	switch(PixelFormat.ChannelType){
@@ -191,7 +191,7 @@ void cBitmapSourceRGBASampler::SetupSampling8(const cBitmapPixelFormat &PixelFor
 	fSampler->ChannelCount=SourceChannelCount;
 }
 //---------------------------------------------------------------------------
-void cBitmapSourceRGBASampler::SetupSampling16(const cBitmapPixelFormat &PixelFormat)noexcept
+void cBitmapSourceRGBASampler::SetupSampling16(const cBitmapPixelFormat &PixelFormat)noexcept(true)
 {
 	ufInt8 SourceChannelCount=PixelFormat.ChannelCount;
 	switch(PixelFormat.ChannelType){
@@ -244,7 +244,7 @@ void cBitmapSourceRGBASampler::SetupSampling16(const cBitmapPixelFormat &PixelFo
 	fSampler->ChannelCount=SourceChannelCount;
 }
 //---------------------------------------------------------------------------
-void cBitmapSourceRGBASampler::SetupSampling32(const cBitmapPixelFormat &PixelFormat)noexcept
+void cBitmapSourceRGBASampler::SetupSampling32(const cBitmapPixelFormat &PixelFormat)noexcept(true)
 {
 	ufInt8 SourceChannelCount=PixelFormat.ChannelCount;
 	switch(PixelFormat.ChannelType){
@@ -300,33 +300,33 @@ void cBitmapSourceRGBASampler::SetupSampling32(const cBitmapPixelFormat &PixelFo
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapSourceRGBASampler::cSampling::~cSampling()noexcept
+cBitmapSourceRGBASampler::cSampling::~cSampling()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSampling::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
-{
-	return VectorZeroValue;
-}
-//---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSampling::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSampling::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return VectorZeroValue;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSampling::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSampling::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
+{
+	return VectorZeroValue;
+}
+//---------------------------------------------------------------------------
+cVector<Float32,4> cBitmapSourceRGBASampler::cSampling::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return VectorZeroValue;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	return IntegerVectorMake<4>(RowPixel+x*ChannelCount);
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	alignas(cIntegerVector<uInt16,4>) uInt16 RetColor[4];
@@ -340,7 +340,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::Sample
 	return IntegerVectorMake<4>(RetColor);
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -355,7 +355,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8x4::SampleFloat3
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -368,7 +368,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUNo
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -385,7 +385,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -403,7 +403,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm8::SampleFloat32(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -421,7 +421,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUNo
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -441,7 +441,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -462,7 +462,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm8::SampleFloat32(
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -474,7 +474,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -488,7 +488,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -503,7 +503,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm8::SampleFloat32
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -518,7 +518,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNorm
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -536,7 +536,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleUNor
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -556,7 +556,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm8::SampleFloat32(sf
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -570,13 +570,13 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::Sample
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	return IntegerVectorMake<4>(RowPixel+x*ChannelCount);
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -592,7 +592,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16x4::SampleFloat
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -607,7 +607,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -622,7 +622,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -640,7 +640,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAUNorm16::SampleFloat32
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -658,7 +658,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -678,7 +678,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -699,7 +699,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAUNorm16::SampleFloat32
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -711,7 +711,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -725,7 +725,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::Sample
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -740,7 +740,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaUNorm16::SampleFloat3
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -755,7 +755,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNor
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt16>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -775,7 +775,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleUNo
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const uInt8>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -795,7 +795,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAUNorm16::SampleFloat32(s
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -809,7 +809,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::Sample
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -823,14 +823,14 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::Sampl
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32x4::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	return VectorMake<4>(RowPixel+x*ChannelCount);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -845,7 +845,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -862,7 +862,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -878,7 +878,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingRGBAFloat32::SampleFloat32
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -892,7 +892,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleUN
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -912,7 +912,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -933,7 +933,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingBGRAFloat32::SampleFloat32
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -942,7 +942,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleU
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -956,7 +956,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::Sample
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -971,7 +971,7 @@ cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingAlphaFloat32::SampleFloat3
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt8,4> RetColor;
@@ -986,7 +986,7 @@ cIntegerVector<uInt8,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNor
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cIntegerVector<uInt16,4> RetColor;
@@ -1004,7 +1004,7 @@ cIntegerVector<uInt16,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleUNo
 	return RetColor;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapSourceRGBASampler::cSamplingLAFloat32::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto RowPixel=cnMemory::CastPointerAddByteOffset<const Float32>(PixelData,y*Pitch);
 	cVector<Float32,4> RetColor;
@@ -1066,17 +1066,17 @@ bool cBitmapRGBAResampleSource::SetBlendProcess(iBitmapDataSource *Source,eImage
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cBitmapRGBAFloatRender::BeginSample(cUIPoint Size)noexcept
+void cBitmapRGBAFloatRender::BeginSample(cUIPoint Size)noexcept(true)
 {
 	SourceSampler->BeginSample(Size);
 }
 //---------------------------------------------------------------------------
-void cBitmapRGBAFloatRender::EndSample(void)noexcept
+void cBitmapRGBAFloatRender::EndSample(void)noexcept(true)
 {
 	SourceSampler->EndSample();
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt8,4> cBitmapRGBAFloatRender::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt8,4> cBitmapRGBAFloatRender::SampleUNorm8(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto Pixel=Sample(x,y);
 	Pixel*=VectorFillValue(255.f);
@@ -1090,7 +1090,7 @@ cIntegerVector<uInt8,4> cBitmapRGBAFloatRender::SampleUNorm8(sfInt32 x,sfInt32 y
 	return RetValue;
 }
 //---------------------------------------------------------------------------
-cIntegerVector<uInt16,4> cBitmapRGBAFloatRender::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept
+cIntegerVector<uInt16,4> cBitmapRGBAFloatRender::SampleUNorm16(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto Pixel=Sample(x,y);
 	Pixel*=VectorFillValue(65535.f);
@@ -1104,12 +1104,12 @@ cIntegerVector<uInt16,4> cBitmapRGBAFloatRender::SampleUNorm16(sfInt32 x,sfInt32
 	return RetValue;
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapRGBAFloatRender::SampleFloat32(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapRGBAFloatRender::SampleFloat32(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	return Sample(x,y);
 }
 //---------------------------------------------------------------------------
-cVector<Float32,4> cBitmapRGBAFloatRender::Sample(sfInt32 x,sfInt32 y)noexcept
+cVector<Float32,4> cBitmapRGBAFloatRender::Sample(sfInt32 x,sfInt32 y)noexcept(true)
 {
 	auto SourcePixel=SourceSampler->SampleFloat32(x,y);
 
@@ -1121,7 +1121,7 @@ cVector<Float32,4> cBitmapRGBAFloatRender::Sample(sfInt32 x,sfInt32 y)noexcept
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-static ufInt8 CalcAdd255(ufInt8 v1,ufInt8 v2)noexcept
+static ufInt8 CalcAdd255(ufInt8 v1,ufInt8 v2)noexcept(true)
 {
 	// dest += constant
 	if(static_cast<sInt8>(v1)<0 && static_cast<sInt8>(v2)<0){
@@ -1133,7 +1133,7 @@ static ufInt8 CalcAdd255(ufInt8 v1,ufInt8 v2)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-static ufInt8 CalcMulDiv255(ufInt32 v1,ufInt32 v2)noexcept
+static ufInt8 CalcMulDiv255(ufInt32 v1,ufInt32 v2)noexcept(true)
 {
 	ufInt32 t=v1*v2;
 	t=(t<<8)+t+0x100;
@@ -2266,7 +2266,7 @@ const cBitmapPixelFormat cnRTL::BitmapPixelFormatR8G8B8A8={
 
 
 //---------------------------------------------------------------------------
-bool cnRTL::BitmapColorHasAlpha(eBitmapChannelColor Color)noexcept
+bool cnRTL::BitmapColorHasAlpha(eBitmapChannelColor Color)noexcept(true)
 {
 	switch(Color){
 	default:
@@ -2281,7 +2281,7 @@ bool cnRTL::BitmapColorHasAlpha(eBitmapChannelColor Color)noexcept
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bool cnRTL::UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept
+bool cnRTL::UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept(true)
 {
 	if(Rect1.Size.x!=Rect2.Size.x)
 		return false;
@@ -2294,7 +2294,7 @@ bool cnRTL::UIRectIsEqual(const cUIRect &Rect1,const cUIRect &Rect2)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-bool cnRTL::UIRectangleIsEqual(const cUIRectangle &Rect1,const cUIRectangle &Rect2)noexcept
+bool cnRTL::UIRectangleIsEqual(const cUIRectangle &Rect1,const cUIRectangle &Rect2)noexcept(true)
 {
 	if(Rect1.Left!=Rect2.Left)
 		return false;
@@ -2337,18 +2337,18 @@ bool cnRTL::UIRectangleIsEqual(const cUIRectangle &Rect1,const cUIRectangle &Rec
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapBuffer::cBitmapBuffer()noexcept
+cBitmapBuffer::cBitmapBuffer()noexcept(true)
 {
 	fWidth=0;
 	fHeight=0;
 	fPixelFormat=BitmapPixelFormatUnknow;
 }
 //---------------------------------------------------------------------------
-cBitmapBuffer::~cBitmapBuffer()noexcept
+cBitmapBuffer::~cBitmapBuffer()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cBitmapBuffer::SetParameter(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,bool TopDown)noexcept
+bool cBitmapBuffer::SetParameter(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,bool TopDown)noexcept(true)
 {
 	if(fBufferLockCount!=0)	// in use
 		return false;
@@ -2362,7 +2362,7 @@ bool cBitmapBuffer::SetParameter(cBitmapPixelFormat PixelFormat,sfInt32 Width,sf
 	return true;
 }
 //---------------------------------------------------------------------------
-cUIPoint cBitmapBuffer::GetImageSize(void)noexcept
+cUIPoint cBitmapBuffer::GetImageSize(void)noexcept(true)
 {
 	cUIPoint Ret;
 	Ret.x=static_cast<Float32>(fWidth);
@@ -2370,7 +2370,7 @@ cUIPoint cBitmapBuffer::GetImageSize(void)noexcept
 	return Ret;
 }
 //---------------------------------------------------------------------------
-void cBitmapBuffer::ResetFrameBuffer(void)noexcept
+void cBitmapBuffer::ResetFrameBuffer(void)noexcept(true)
 {
 	uIntn PixelSize=fPixelFormat.ChannelCount*fPixelFormat.ChannelSize;
 	fPixelBufferPitch=fWidth*PixelSize;
@@ -2385,12 +2385,12 @@ void cBitmapBuffer::ResetFrameBuffer(void)noexcept
 	cnMemory::ZeroFill(fPixelBuffer.Pointer,fPixelBuffer.Length);
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cBitmapBuffer::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cBitmapBuffer::GetPixelFormat(void)noexcept(true)
 {
 	return fPixelFormat;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cBitmapBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 	if(Offset>fPixelBuffer.Length){
 		return 0;
@@ -2404,7 +2404,7 @@ uIntn cBitmapBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noex
 	return CopySize;
 }
 //---------------------------------------------------------------------------
-const void* cBitmapBuffer::AcquirePixels(void)noexcept
+const void* cBitmapBuffer::AcquirePixels(void)noexcept(true)
 {
 	if(fBufferLockCount==0xFFFF){
 		return nullptr;
@@ -2413,46 +2413,46 @@ const void* cBitmapBuffer::AcquirePixels(void)noexcept
 	return fPixelBuffer.Pointer;
 }
 //---------------------------------------------------------------------------
-void cBitmapBuffer::ReleasePixels(void)noexcept
+void cBitmapBuffer::ReleasePixels(void)noexcept(true)
 {
 	if(fBufferLockCount!=0){
 		fBufferLockCount--;
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapBuffer::GetDataPitch(void)noexcept
+uIntn cBitmapBuffer::GetDataPitch(void)noexcept(true)
 {
 	return fPixelBufferPitch;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapBuffer::GetDataSize(void)const noexcept
+uIntn cBitmapBuffer::GetDataSize(void)const noexcept(true)
 {
 	return fPixelBuffer.Length;
 }
 //---------------------------------------------------------------------------
-void* cBitmapBuffer::GetDataBuffer(void)const noexcept
+void* cBitmapBuffer::GetDataBuffer(void)const noexcept(true)
 {
 	return fPixelBuffer.Pointer;
 }
 //---------------------------------------------------------------------------
-bool cBitmapBuffer::IsTopDown(void)noexcept
+bool cBitmapBuffer::IsTopDown(void)noexcept(true)
 {
 	return fTopDown;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapDataSourceFromMemory::cBitmapDataSourceFromMemory()noexcept
+cBitmapDataSourceFromMemory::cBitmapDataSourceFromMemory()noexcept(true)
 {
 	fWidth=0;
 	fHeight=0;
 	fPixelFormat=BitmapPixelFormatUnknow;
 }
 //---------------------------------------------------------------------------
-cBitmapDataSourceFromMemory::~cBitmapDataSourceFromMemory()noexcept
+cBitmapDataSourceFromMemory::~cBitmapDataSourceFromMemory()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cBitmapDataSourceFromMemory::SetData(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitch,const void *PixelData,bool TopDown)noexcept
+bool cBitmapDataSourceFromMemory::SetData(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitch,const void *PixelData,bool TopDown)noexcept(true)
 {
 	if(fBufferLockCount!=0)	// in use
 		return false;
@@ -2471,12 +2471,12 @@ bool cBitmapDataSourceFromMemory::SetData(cBitmapPixelFormat PixelFormat,sfInt32
 	return true;
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cBitmapDataSourceFromMemory::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cBitmapDataSourceFromMemory::GetPixelFormat(void)noexcept(true)
 {
 	return fPixelFormat;
 }
 //---------------------------------------------------------------------------
-cUIPoint cBitmapDataSourceFromMemory::GetImageSize(void)noexcept
+cUIPoint cBitmapDataSourceFromMemory::GetImageSize(void)noexcept(true)
 {
 	cUIPoint Ret;
 	Ret.x=static_cast<Float32>(fWidth);
@@ -2484,7 +2484,7 @@ cUIPoint cBitmapDataSourceFromMemory::GetImageSize(void)noexcept
 	return Ret;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromMemory::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cBitmapDataSourceFromMemory::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 	if(Offset>fPixelDataSize)
 		return 0;
@@ -2497,7 +2497,7 @@ uIntn cBitmapDataSourceFromMemory::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn
 	return CopySize;
 }
 //---------------------------------------------------------------------------
-const void* cBitmapDataSourceFromMemory::AcquirePixels(void)noexcept
+const void* cBitmapDataSourceFromMemory::AcquirePixels(void)noexcept(true)
 {
 	if(fBufferLockCount==0xFFFF){
 		return nullptr;
@@ -2506,34 +2506,34 @@ const void* cBitmapDataSourceFromMemory::AcquirePixels(void)noexcept
 	return fPixelData;
 }
 //---------------------------------------------------------------------------
-void cBitmapDataSourceFromMemory::ReleasePixels(void)noexcept
+void cBitmapDataSourceFromMemory::ReleasePixels(void)noexcept(true)
 {
 	if(fBufferLockCount!=0){
 		fBufferLockCount--;
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromMemory::GetDataPitch(void)noexcept
+uIntn cBitmapDataSourceFromMemory::GetDataPitch(void)noexcept(true)
 {
 	return fPixelDataPitch;
 }
 //---------------------------------------------------------------------------
-const void* cBitmapDataSourceFromMemory::GetDataBuffer(void)const noexcept
+const void* cBitmapDataSourceFromMemory::GetDataBuffer(void)const noexcept(true)
 {
 	return fPixelData;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapDataSourceFromMemory::GetDataSize(void)const noexcept
+uIntn cBitmapDataSourceFromMemory::GetDataSize(void)const noexcept(true)
 {
 	return fPixelDataSize;
 }
 //---------------------------------------------------------------------------
-bool cBitmapDataSourceFromMemory::IsTopDown(void)noexcept
+bool cBitmapDataSourceFromMemory::IsTopDown(void)noexcept(true)
 {
 	return fTopDown;
 }
 //---------------------------------------------------------------------------
-iPtr<cBitmapDataSourceFromMemory> cnRTL::CreateBitmapFromMemory(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitchSize,const void *PixelData,bool TopDown)noexcept
+iPtr<cBitmapDataSourceFromMemory> cnRTL::CreateBitmapFromMemory(cBitmapPixelFormat PixelFormat,sfInt32 Width,sfInt32 Height,uIntn PixelDataPitchSize,const void *PixelData,bool TopDown)noexcept(true)
 {
 	auto BitmapMemSource=iCreate<cBitmapDataSourceFromMemory>();
 	if(BitmapMemSource->SetData(PixelFormat,Width,Height,PixelDataPitchSize,PixelData,TopDown)==false)
@@ -2542,19 +2542,19 @@ iPtr<cBitmapDataSourceFromMemory> cnRTL::CreateBitmapFromMemory(cBitmapPixelForm
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::cSampler::Start(sfInt32,sfInt32)noexcept
+void cBitmapResampleBuffer::cSampler::Start(sfInt32,sfInt32)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::cSampler::Close(void)noexcept
+void cBitmapResampleBuffer::cSampler::Close(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::cSampler::Pixel(void*)noexcept
+void cBitmapResampleBuffer::cSampler::Pixel(void*)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::cSampler::SetPixelFormat(cBitmapPixelFormat &Format)noexcept
+void cBitmapResampleBuffer::cSampler::SetPixelFormat(cBitmapPixelFormat &Format)noexcept(true)
 {
 	Format.ChannelCount=0;
 	Format.ChannelSize=0;
@@ -2562,7 +2562,7 @@ void cBitmapResampleBuffer::cSampler::SetPixelFormat(cBitmapPixelFormat &Format)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cBitmapResampleBuffer::cBitmapResampleBuffer()noexcept
+cBitmapResampleBuffer::cBitmapResampleBuffer()noexcept(true)
 {
 	fUpdate=false;
 	fBufferImageWidth=0;
@@ -2571,12 +2571,12 @@ cBitmapResampleBuffer::cBitmapResampleBuffer()noexcept
 	fSampler.ConstructAs<cSampler>();
 }
 //---------------------------------------------------------------------------
-cBitmapResampleBuffer::~cBitmapResampleBuffer()noexcept
+cBitmapResampleBuffer::~cBitmapResampleBuffer()noexcept(true)
 {
 	fSampler->~cSampler();
 }
 //---------------------------------------------------------------------------
-cUIPoint cBitmapResampleBuffer::GetImageSize(void)noexcept
+cUIPoint cBitmapResampleBuffer::GetImageSize(void)noexcept(true)
 {
 	cUIPoint Ret;
 	Ret.x=static_cast<Float32>(fBufferImageWidth);
@@ -2584,12 +2584,12 @@ cUIPoint cBitmapResampleBuffer::GetImageSize(void)noexcept
 	return Ret;
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cBitmapResampleBuffer::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cBitmapResampleBuffer::GetPixelFormat(void)noexcept(true)
 {
 	return fBufferPixelFormat;
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapResampleBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cBitmapResampleBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 	if(fBufferLockCount==0){
 		ProcessSource();
@@ -2605,7 +2605,7 @@ uIntn cBitmapResampleBuffer::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestS
 	return CopySize;
 }
 //---------------------------------------------------------------------------
-const void* cBitmapResampleBuffer::AcquirePixels(void)noexcept
+const void* cBitmapResampleBuffer::AcquirePixels(void)noexcept(true)
 {
 	if(fBufferLockCount==0){
 		ProcessSource();
@@ -2614,24 +2614,24 @@ const void* cBitmapResampleBuffer::AcquirePixels(void)noexcept
 	return fBufferPixelData.Pointer;
 }
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::ReleasePixels(void)noexcept
+void cBitmapResampleBuffer::ReleasePixels(void)noexcept(true)
 {
 	if(fBufferLockCount!=0){
 		fBufferLockCount--;
 	}
 }
 //---------------------------------------------------------------------------
-uIntn cBitmapResampleBuffer::GetDataPitch(void)noexcept
+uIntn cBitmapResampleBuffer::GetDataPitch(void)noexcept(true)
 {
 	return fBufferPitch;
 }
 //---------------------------------------------------------------------------
-bool cBitmapResampleBuffer::IsTopDown(void)noexcept
+bool cBitmapResampleBuffer::IsTopDown(void)noexcept(true)
 {
 	return TopDown;
 }
 //---------------------------------------------------------------------------
-void cBitmapResampleBuffer::ProcessSource(void)noexcept
+void cBitmapResampleBuffer::ProcessSource(void)noexcept(true)
 {
 	if(fUpdate==false)
 		return;

@@ -159,8 +159,8 @@ struct cPixelLayout
 	cPixelLayout Client(const cUIRectangle &Margin)const noexcept(true);
 	cPixelLayout Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept(true);
 
-	Float32 DivideWidth(ufInt32n Count,Float32 PartMargin=0,Float32 MarginLeft=0,Float32 MarginRight=0)const noexcept(true);
-	Float32 DivideHeight(ufInt32n Count,Float32 PartMargin=0,Float32 MarginTop=0,Float32 MarginBottom=0)const noexcept(true);
+	Float32 DivideWidth(ufInt32 Count,Float32 PartMargin=0,Float32 MarginLeft=0,Float32 MarginRight=0)const noexcept(true);
+	Float32 DivideHeight(ufInt32 Count,Float32 PartMargin=0,Float32 MarginTop=0,Float32 MarginBottom=0)const noexcept(true);
 
 	cPixelLayout LayoutLeft(Float32 Width,Float32 MarginLeft=0,Float32 MarginRight=0)noexcept(true);
 	cPixelLayout LayoutRight(Float32 Width,Float32 MarginRight=0,Float32 MarginLeft=0)noexcept(true);
@@ -223,8 +223,8 @@ struct cLayout : cPixelLayout
 	cLayout Client(const cUIRectangle &Margin)const noexcept(true);
 	cLayout Align(eAlignment Alignment,Float32 Width,Float32 Height)const noexcept(true);
 
-	Float32 DivideWidth(ufInt32n Count,Float32 PartMargin=0,Float32 MarginLeft=0,Float32 MarginRight=0)const noexcept(true);
-	Float32 DivideHeight(ufInt32n Count,Float32 PartMargin=0,Float32 MarginTop=0,Float32 MarginBottom=0)const noexcept(true);
+	Float32 DivideWidth(ufInt32 Count,Float32 PartMargin=0,Float32 MarginLeft=0,Float32 MarginRight=0)const noexcept(true);
+	Float32 DivideHeight(ufInt32 Count,Float32 PartMargin=0,Float32 MarginTop=0,Float32 MarginBottom=0)const noexcept(true);
 
 	cLayout LayoutLeft(Float32 Width,Float32 MarginLeft=0,Float32 MarginRight=0)noexcept(true);
 	cLayout LayoutRight(Float32 Width,Float32 MarginRight=0,Float32 MarginLeft=0)noexcept(true);

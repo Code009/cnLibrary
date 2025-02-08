@@ -5,19 +5,19 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void aMouseClick::MouseLeave(iUIMouseEvent*)noexcept
+void aMouseClick::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fClickButton=MouseButton::None;
 }
 //---------------------------------------------------------------------------
-void aMouseClick::MouseDown(iUIMouseEvent*,eMouseButton Button)noexcept
+void aMouseClick::MouseDown(iUIMouseEvent*,eMouseButton Button)noexcept(true)
 {
 	if(ActionButton==Button){
 		fClickButton=Button;
 	}
 }
 //---------------------------------------------------------------------------
-void aMouseClick::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMouseClick::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(fClickButton==Button){
 		// release
@@ -35,25 +35,25 @@ void aMouseClick::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void aMouseTap::MouseLeave(iUIMouseEvent*)noexcept
+void aMouseTap::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	TapCount=0;
 	fClickButton=MouseButton::Left;
 }
 //---------------------------------------------------------------------------
-void aMouseTap::ActionTap(void)noexcept
+void aMouseTap::ActionTap(void)noexcept(true)
 {
 	if(OnTap!=nullptr){
 		OnTap();
 	}
 }
 //---------------------------------------------------------------------------
-cUIPoint aMouseTap::GetTapPos(void)const noexcept
+cUIPoint aMouseTap::GetTapPos(void)const noexcept(true)
 {
 	return fDownPos;
 }
 //---------------------------------------------------------------------------
-void aMouseTap::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMouseTap::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(ActionButton==Button){
 		fClickButton=Button;
@@ -98,7 +98,7 @@ void aMouseTap::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void aMouseTap::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMouseTap::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(fClickButton==Button){
 		// release
@@ -133,27 +133,27 @@ void aMouseTap::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void aMouseHover::ViewSetup(void)noexcept
+void aMouseHover::ViewSetup(void)noexcept(true)
 {
 	MouseAction::ViewSetup();
 	auto UIDispatch=cnSystem::CurrentUIThread::GetDispatch(false);
 	fHoverTimer=UIDispatch->CreateTimer(nullptr,&fMouseHoverTimerProc);
 }
 //---------------------------------------------------------------------------
-void aMouseHover::ViewClear(void)noexcept
+void aMouseHover::ViewClear(void)noexcept(true)
 {
 	fHoverTimer->Stop();
 	fHoverTimer=nullptr;
 	MouseAction::ViewClear();
 }
 //---------------------------------------------------------------------------
-void aMouseHover::MouseLeave(iUIMouseEvent*)noexcept
+void aMouseHover::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
 	fHoverTimer->Stop();
 	fHoverStarted=false;
 }
 //---------------------------------------------------------------------------
-void aMouseHover::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void aMouseHover::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	cUIPoint CurPos;
 	if(MouseEvent->GetPosition(fView,CurPos)==false)
@@ -178,13 +178,13 @@ void aMouseHover::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void aMouseHover::cMouseHoverTimerProc::Execute(void)noexcept
+void aMouseHover::cMouseHoverTimerProc::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&aMouseHover::fMouseHoverTimerProc);
 	Host->ActionHover();
 }
 //---------------------------------------------------------------------------
-void aMouseHover::ActionHover(void)noexcept
+void aMouseHover::ActionHover(void)noexcept(true)
 {
 	fHoverStarted=false;
 	if(OnHover!=nullptr)
@@ -192,12 +192,12 @@ void aMouseHover::ActionHover(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void aMousePan::MouseLeaveRange(iUIMouseEvent*)noexcept
+void aMousePan::MouseLeaveRange(iUIMouseEvent*)noexcept(true)
 {
 	fDownButton=MouseButton::None;
 }
 //---------------------------------------------------------------------------
-void aMousePan::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void aMousePan::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	auto MouseControl=iCast<iUIMouseControl>(fView);
 	if(fDownButton!=MouseButton::None){
@@ -220,7 +220,7 @@ void aMousePan::MouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void aMousePan::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMousePan::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(Button==ActionButton){
 		cUIPoint Pos;
@@ -243,27 +243,27 @@ void aMousePan::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void aMousePan::MouseUp(iUIMouseEvent*,eMouseButton)noexcept
+void aMousePan::MouseUp(iUIMouseEvent*,eMouseButton)noexcept(true)
 {
 	fDownButton=MouseButton::None;
 }
 //---------------------------------------------------------------------------
-aMousePan* aMousePan::cExclusiveHandler::GetHost(void)noexcept
+aMousePan* aMousePan::cExclusiveHandler::GetHost(void)noexcept(true)
 {
 	return cnMemory::GetObjectFromMemberPointer(this,&aMousePan::fExclusiveHandler);
 }
 //---------------------------------------------------------------------------
-void aMousePan::cExclusiveHandler::MouseMove(iUIMouseEvent *MouseEvent)noexcept
+void aMousePan::cExclusiveHandler::MouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	GetHost()->ExclusiveMouseMove(MouseEvent);
 }
 //---------------------------------------------------------------------------
-void aMousePan::cExclusiveHandler::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMousePan::cExclusiveHandler::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	GetHost()->ExclusiveMouseUp(MouseEvent,Button);
 }
 //---------------------------------------------------------------------------
-void aMousePan::ExclusiveMouseMove(iUIMouseEvent *MouseEvent)noexcept
+void aMousePan::ExclusiveMouseMove(iUIMouseEvent *MouseEvent)noexcept(true)
 {
 	//auto MouseControl=iCast<iUIMouseControl>(fView);
 	if(fDownButton!=MouseButton::None){
@@ -275,7 +275,7 @@ void aMousePan::ExclusiveMouseMove(iUIMouseEvent *MouseEvent)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void aMousePan::ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept
+void aMousePan::ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 {
 	if(Button==fDownButton){
 		auto MouseControl=iCast<iUIMouseControl>(fView);
@@ -292,11 +292,11 @@ void aMousePan::ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)n
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-afMouseActiveContent::afMouseActiveContent()noexcept
+afMouseActiveContent::afMouseActiveContent()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-afMouseActiveContent::~afMouseActiveContent()noexcept
+afMouseActiveContent::~afMouseActiveContent()noexcept(true)
 {
 	SetView(nullptr);
 	if(fActiveView!=nullptr){
@@ -304,7 +304,7 @@ afMouseActiveContent::~afMouseActiveContent()noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::SetActiveView(iUIView *View)noexcept
+void afMouseActiveContent::SetActiveView(iUIView *View)noexcept(true)
 {
 	if(fActiveView!=nullptr){
 		ViewRemoveKeyHandler(fActiveView,this);
@@ -318,7 +318,7 @@ void afMouseActiveContent::SetActiveView(iUIView *View)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::ViewSetup(void)noexcept
+void afMouseActiveContent::ViewSetup(void)noexcept(true)
 {
 	ViewControl::ViewSetup();
 
@@ -330,7 +330,7 @@ void afMouseActiveContent::ViewSetup(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::ViewClear(void)noexcept
+void afMouseActiveContent::ViewClear(void)noexcept(true)
 {
 	fHot=false;
 	fActiveFocus=false;
@@ -340,7 +340,7 @@ void afMouseActiveContent::ViewClear(void)noexcept
 	ViewControl::ViewClear();
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::MouseEnterRange(iUIMouseEvent*)noexcept
+void afMouseActiveContent::MouseEnterRange(iUIMouseEvent*)noexcept(true)
 {
 	fHot=true;
 	if(fActiveView!=nullptr){
@@ -348,7 +348,7 @@ void afMouseActiveContent::MouseEnterRange(iUIMouseEvent*)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::MouseLeaveRange(iUIMouseEvent*)noexcept
+void afMouseActiveContent::MouseLeaveRange(iUIMouseEvent*)noexcept(true)
 {
 	fHot=false;
 	if(fActiveView!=nullptr){
@@ -356,7 +356,7 @@ void afMouseActiveContent::MouseLeaveRange(iUIMouseEvent*)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::MouseDown(iUIMouseEvent*,eMouseButton)noexcept
+void afMouseActiveContent::MouseDown(iUIMouseEvent*,eMouseButton)noexcept(true)
 {
 	if(AutoFocus && fActiveView!=nullptr){
 		auto KeyControl=iCast<iUIKeyControl>(fActiveView);
@@ -366,18 +366,18 @@ void afMouseActiveContent::MouseDown(iUIMouseEvent*,eMouseButton)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::KeyFocusEnterRange(iUIKeyEvent*)noexcept
+void afMouseActiveContent::KeyFocusEnterRange(iUIKeyEvent*)noexcept(true)
 {
 	fActiveFocus=true;
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::KeyFocusLeaveRange(iUIKeyEvent*)noexcept
+void afMouseActiveContent::KeyFocusLeaveRange(iUIKeyEvent*)noexcept(true)
 {
 	fActiveFocus=false;
 	ApplyActiveViewVisible();
 }
 //---------------------------------------------------------------------------
-void afMouseActiveContent::ApplyActiveViewVisible(void)noexcept
+void afMouseActiveContent::ApplyActiveViewVisible(void)noexcept(true)
 {
 	if(fActiveFocus || fHot){
 		fActiveView->SetVisible(true);

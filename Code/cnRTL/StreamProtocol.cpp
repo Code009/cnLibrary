@@ -6,23 +6,23 @@ using namespace cnRTL;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcProtocolProcessor::bcProtocolProcessor(void)noexcept
+bcProtocolProcessor::bcProtocolProcessor(void)noexcept(true)
 	: fProtocolProvider(nullptr)
 	, fActiveMutex(false)
 	, fProtocolActive(false)
 {
 }
 //---------------------------------------------------------------------------
-bcProtocolProcessor::~bcProtocolProcessor()noexcept
+bcProtocolProcessor::~bcProtocolProcessor()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iProtocolProvider* bcProtocolProcessor::GetProvider(void)const noexcept
+iProtocolProvider* bcProtocolProcessor::GetProvider(void)const noexcept(true)
 {
 	return fProtocolProvider;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolProcessor::SetProvider(iProtocolProvider *ProtocolProvider,bool SingleThreaded)noexcept
+bool bcProtocolProcessor::SetProvider(iProtocolProvider *ProtocolProvider,bool SingleThreaded)noexcept(true)
 {
 	if(fActiveMutex.Acquire.Xchg(true)==true){
 		return false;
@@ -36,12 +36,12 @@ bool bcProtocolProcessor::SetProvider(iProtocolProvider *ProtocolProvider,bool S
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolProcessor::IsActive(void)const noexcept
+bool bcProtocolProcessor::IsActive(void)const noexcept(true)
 {
 	return fProtocolActive;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolProcessor::Start(iReference *Reference)noexcept
+bool bcProtocolProcessor::Start(iReference *Reference)noexcept(true)
 {
 	if(fProtocolProvider==nullptr){
 		return false;
@@ -62,7 +62,7 @@ bool bcProtocolProcessor::Start(iReference *Reference)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcProtocolProcessor::Stop(void)noexcept
+void bcProtocolProcessor::Stop(void)noexcept(true)
 {
 	if(fProtocolActive){
 		if(fProtocolProvider!=nullptr){
@@ -71,7 +71,7 @@ void bcProtocolProcessor::Stop(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolProcessor::Terminate(void)noexcept
+void bcProtocolProcessor::Terminate(void)noexcept(true)
 {
 	if(fProtocolActive){
 		if(fProtocolProvider!=nullptr){
@@ -80,13 +80,13 @@ void bcProtocolProcessor::Terminate(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolProcessor::ProtocolStarted(void)noexcept
+void bcProtocolProcessor::ProtocolStarted(void)noexcept(true)
 {
 	fProtocolActive=true;
 	fActiveMutex.Release.Store(false);
 }
 //---------------------------------------------------------------------------
-void bcProtocolProcessor::ProtocolStopped(void)noexcept
+void bcProtocolProcessor::ProtocolStopped(void)noexcept(true)
 {
 	fProtocolActive=false;
 }
@@ -513,7 +513,7 @@ void cProtocolProviderFromStream::WriteQueueProcess(void)
 #endif // 0
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cProtocolProviderFromRWQueue::cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept
+cProtocolProviderFromRWQueue::cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept(true)
 	: fProtocolProcessor(nullptr)
 	, fConnection(cnVar::MoveCast(Connection))
 	, fReadQueue(cnVar::MoveCast(ReadQueue))
@@ -531,11 +531,11 @@ cProtocolProviderFromRWQueue::cProtocolProviderFromRWQueue(iPtr<iConnection> Con
 {
 }
 //---------------------------------------------------------------------------
-cProtocolProviderFromRWQueue::~cProtocolProviderFromRWQueue()noexcept
+cProtocolProviderFromRWQueue::~cProtocolProviderFromRWQueue()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::VirtualStarted(void)noexcept
+void cProtocolProviderFromRWQueue::VirtualStarted(void)noexcept(true)
 {
 	InnerActivate('self');
 
@@ -564,13 +564,13 @@ void cProtocolProviderFromRWQueue::VirtualStarted(void)noexcept
 	fRWQueueConnected=true;
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::VirtualStopped(void)noexcept
+void cProtocolProviderFromRWQueue::VirtualStopped(void)noexcept(true)
 {
 	CloseProvider();
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::CloseProvider(void)noexcept
+void cProtocolProviderFromRWQueue::CloseProvider(void)noexcept(true)
 {
 	if(fRWQueueTerminate.Acquire.Xchg(true)==false){
 		if(fProcessorSingleThreaded){
@@ -583,12 +583,12 @@ void cProtocolProviderFromRWQueue::CloseProvider(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iConnection* cProtocolProviderFromRWQueue::GetConnecton(void)noexcept
+iConnection* cProtocolProviderFromRWQueue::GetConnecton(void)noexcept(true)
 {
 	return fConnection;
 }
 //---------------------------------------------------------------------------
-bool cProtocolProviderFromRWQueue::StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept
+bool cProtocolProviderFromRWQueue::StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)
 {
 	if(fRWQueueConnected==false)
 		return false;
@@ -604,7 +604,7 @@ bool cProtocolProviderFromRWQueue::StartProcessor(iReference *Reference,iProtoco
 	return true;
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::StopProcessor(bool Terminate)noexcept
+void cProtocolProviderFromRWQueue::StopProcessor(bool Terminate)noexcept(true)
 {
 	if(Terminate){
 		CloseProvider();
@@ -614,7 +614,7 @@ void cProtocolProviderFromRWQueue::StopProcessor(bool Terminate)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ProcessorStateProcedure(void)noexcept
+void cProtocolProviderFromRWQueue::ProcessorStateProcedure(void)noexcept(true)
 {
 	if(fProcessorStateFlag.Acquire()==false)
 		return;
@@ -628,7 +628,7 @@ void cProtocolProviderFromRWQueue::ProcessorStateProcedure(void)noexcept
 	InnerDecReference('stat');
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ProcessorStateProcess(void)noexcept
+void cProtocolProviderFromRWQueue::ProcessorStateProcess(void)noexcept(true)
 {
 	if(fRWQueueConnected){
 		if(fReadActive || fWriteActive){
@@ -668,7 +668,7 @@ void cProtocolProviderFromRWQueue::ProcessorStateProcess(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::SingleThreadStateProcedure(void)noexcept
+void cProtocolProviderFromRWQueue::SingleThreadStateProcedure(void)noexcept(true)
 {
 	if(fWriteStateFlag.Acquire()==false){
 		return;
@@ -682,7 +682,7 @@ void cProtocolProviderFromRWQueue::SingleThreadStateProcedure(void)noexcept
 	}while(fWriteStateFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ReadThreadStateProcedure(void)noexcept
+void cProtocolProviderFromRWQueue::ReadThreadStateProcedure(void)noexcept(true)
 {
 	if(fReadStateFlag.Acquire()==false){
 		return;
@@ -695,7 +695,7 @@ void cProtocolProviderFromRWQueue::ReadThreadStateProcedure(void)noexcept
 	}while(fReadStateFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::WriteThreadStateProcedure(void)noexcept
+void cProtocolProviderFromRWQueue::WriteThreadStateProcedure(void)noexcept(true)
 {
 	if(fWriteStateFlag.Acquire()==false){
 		return;
@@ -708,7 +708,7 @@ void cProtocolProviderFromRWQueue::WriteThreadStateProcedure(void)noexcept
 	}while(fWriteStateFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::NotifyInput(void)noexcept
+void cProtocolProviderFromRWQueue::NotifyInput(void)noexcept(true)
 {
 	if(fRWQueueConnected){
 		if(fProcessorSingleThreaded){
@@ -720,7 +720,7 @@ void cProtocolProviderFromRWQueue::NotifyInput(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::NotifyInput(uIntn LeastSizeNeeded)noexcept
+void cProtocolProviderFromRWQueue::NotifyInput(uIntn LeastSizeNeeded)noexcept(true)
 {
 	fInputNeedSize=LeastSizeNeeded;
 	if(LeastSizeNeeded==0){
@@ -729,7 +729,7 @@ void cProtocolProviderFromRWQueue::NotifyInput(uIntn LeastSizeNeeded)noexcept
 	NotifyInput();
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::NotifyOutput(void)noexcept
+void cProtocolProviderFromRWQueue::NotifyOutput(void)noexcept(true)
 {
 	if(fRWQueueConnected){
 		if(fProcessorSingleThreaded){
@@ -741,7 +741,7 @@ void cProtocolProviderFromRWQueue::NotifyOutput(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::NotifyOutput(uIntn LeastSizeNeeded)noexcept
+void cProtocolProviderFromRWQueue::NotifyOutput(uIntn LeastSizeNeeded)noexcept(true)
 {
 	fOutputNeedSize=LeastSizeNeeded;
 	if(LeastSizeNeeded==0){
@@ -750,7 +750,7 @@ void cProtocolProviderFromRWQueue::NotifyOutput(uIntn LeastSizeNeeded)noexcept
 	NotifyOutput();
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::SetEndOfOutput(void)noexcept
+void cProtocolProviderFromRWQueue::SetEndOfOutput(void)noexcept(true)
 {
 	if(fSetWriteEnd==false){
 		fSetWriteEnd=true;
@@ -758,51 +758,51 @@ void cProtocolProviderFromRWQueue::SetEndOfOutput(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cProtocolProviderFromRWQueue::IsInputEnded(void)noexcept
+bool cProtocolProviderFromRWQueue::IsInputEnded(void)noexcept(true)
 {
 	return fReadEnded;
 }
 //---------------------------------------------------------------------------
-bool cProtocolProviderFromRWQueue::IsOutputEnded(void)noexcept
+bool cProtocolProviderFromRWQueue::IsOutputEnded(void)noexcept(true)
 {
 	return fWriteEnded;
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ReadStarted(void)noexcept
+void cProtocolProviderFromRWQueue::ReadStarted(void)noexcept(true)
 {
 	cnLib_ASSERT(fReadActive==true);
 	fReadQueue->NotifyRead(1);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ReadStopped(void)noexcept
+void cProtocolProviderFromRWQueue::ReadStopped(void)noexcept(true)
 {
 	fReadActive=false;
 	ProcessorStateProcedure();
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ReadNotify(void)noexcept
+void cProtocolProviderFromRWQueue::ReadNotify(void)noexcept(true)
 {
 	NotifyInput();
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::WriteStarted(void)noexcept
+void cProtocolProviderFromRWQueue::WriteStarted(void)noexcept(true)
 {
 	cnLib_ASSERT(fWriteActive==true);
 	fWriteQueue->NotifyWrite(false);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::WriteStopped(void)noexcept
+void cProtocolProviderFromRWQueue::WriteStopped(void)noexcept(true)
 {
 	fWriteActive=false;
 	ProcessorStateProcedure();
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::WriteNotify(void)noexcept
+void cProtocolProviderFromRWQueue::WriteNotify(void)noexcept(true)
 {
 	NotifyOutput();
 }
 //---------------------------------------------------------------------------
-bool cProtocolProviderFromRWQueue::QueryReadBuffer(cConstMemory &Buffer)noexcept
+bool cProtocolProviderFromRWQueue::QueryReadBuffer(cConstMemory &Buffer)noexcept(true)
 {
 	auto PackBuffer=fInputPacker.GetReadBuffer();
 	if(PackBuffer.Length>fInputNeedSize){
@@ -852,7 +852,7 @@ bool cProtocolProviderFromRWQueue::QueryReadBuffer(cConstMemory &Buffer)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::AdvanceReadBuffer(uIntn Size)noexcept
+void cProtocolProviderFromRWQueue::AdvanceReadBuffer(uIntn Size)noexcept(true)
 {
 	auto PackBuffer=fInputPacker.GetReadBuffer();
 	if(PackBuffer.Length==0){
@@ -863,7 +863,7 @@ void cProtocolProviderFromRWQueue::AdvanceReadBuffer(uIntn Size)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::ReadQueueProcess(void)noexcept
+void cProtocolProviderFromRWQueue::ReadQueueProcess(void)noexcept(true)
 {
 	if(fReadStopped)
 		return;
@@ -903,7 +903,7 @@ void cProtocolProviderFromRWQueue::ReadQueueProcess(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-bool cProtocolProviderFromRWQueue::QueryWriteBuffer(cMemory &Buffer)noexcept
+bool cProtocolProviderFromRWQueue::QueryWriteBuffer(cMemory &Buffer)noexcept(true)
 {
 	Buffer=fWriteQueue->ReserveWriteBuffer(fOutputNeedSize);
 	if(Buffer.Length==0){
@@ -924,12 +924,12 @@ bool cProtocolProviderFromRWQueue::QueryWriteBuffer(cMemory &Buffer)noexcept
 	return false;
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::AdvanceWriteBuffer(uIntn Size)noexcept
+void cProtocolProviderFromRWQueue::AdvanceWriteBuffer(uIntn Size)noexcept(true)
 {
 	fWriteQueue->CommitWriteBuffer(Size);
 }
 //---------------------------------------------------------------------------
-void cProtocolProviderFromRWQueue::WriteQueueProcess(void)noexcept
+void cProtocolProviderFromRWQueue::WriteQueueProcess(void)noexcept(true)
 {
 	if(fWriteStopped)
 		return;
@@ -977,13 +977,13 @@ void cProtocolProviderFromRWQueue::WriteQueueProcess(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<cProtocolProviderFromRWQueue> cnRTL::CreateProtocolProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept
+rPtr<cProtocolProviderFromRWQueue> cnRTL::CreateProtocolProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true)
 {
 	return rCreate<cProtocolProviderFromRWQueue>(Connection,Endpoint->GetReadQueue(),Endpoint->GetWriteQueue());
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcProtocolQueueProcessor::bcProtocolQueueProcessor()noexcept
+bcProtocolQueueProcessor::bcProtocolQueueProcessor()noexcept(true)
 	: fProcessorSingleThreaded(false)
 	, fQueueStateActive(false)
 	, fQueueStateConnected(false)
@@ -993,16 +993,16 @@ bcProtocolQueueProcessor::bcProtocolQueueProcessor()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcProtocolQueueProcessor::~bcProtocolQueueProcessor()noexcept
+bcProtocolQueueProcessor::~bcProtocolQueueProcessor()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-iProtocolQueueProvider* bcProtocolQueueProcessor::GetQueueProvider(void)const noexcept
+iProtocolQueueProvider* bcProtocolQueueProcessor::GetQueueProvider(void)const noexcept(true)
 {
 	return fProtocolQueueProvider;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolQueueProcessor::SetQueueProvider(iProtocolQueueProvider *QueueProvider,bool ProtocolSingleThreaded)noexcept
+bool bcProtocolQueueProcessor::SetQueueProvider(iProtocolQueueProvider *QueueProvider,bool ProtocolSingleThreaded)noexcept(true)
 {
 	if(fActiveMutex.Acquire.Xchg(true)==true){
 		return false;
@@ -1016,17 +1016,17 @@ bool bcProtocolQueueProcessor::SetQueueProvider(iProtocolQueueProvider *QueuePro
 	return true;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolQueueProcessor::IsActive(void)const noexcept
+bool bcProtocolQueueProcessor::IsActive(void)const noexcept(true)
 {
 	return fQueueStateActive;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolQueueProcessor::IsConnected(void)const noexcept
+bool bcProtocolQueueProcessor::IsConnected(void)const noexcept(true)
 {
 	return fProviderConnected;
 }
 //---------------------------------------------------------------------------
-bool bcProtocolQueueProcessor::Start(void)noexcept
+bool bcProtocolQueueProcessor::Start(void)noexcept(true)
 {
 	if(fProtocolQueueProvider==nullptr){
 		return false;
@@ -1049,7 +1049,7 @@ bool bcProtocolQueueProcessor::Start(void)noexcept
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::Stop(void)noexcept
+void bcProtocolQueueProcessor::Stop(void)noexcept(true)
 {
 	if(fQueueStateActive){
 		if(fProtocolQueueProvider!=nullptr){
@@ -1058,13 +1058,13 @@ void bcProtocolQueueProcessor::Stop(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::Terminate(void)noexcept
+void bcProtocolQueueProcessor::Terminate(void)noexcept(true)
 {
 	DiscardConnection();
 	Stop();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::DiscardConnection(void)noexcept
+void bcProtocolQueueProcessor::DiscardConnection(void)noexcept(true)
 {
 	if(fConnectionStop==false){
 		fConnectionStop=true;
@@ -1072,18 +1072,18 @@ void bcProtocolQueueProcessor::DiscardConnection(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProtocolQueueStarted(void)noexcept
+void bcProtocolQueueProcessor::ProtocolQueueStarted(void)noexcept(true)
 {
 	cnLib_ASSERT(fQueueStateActive);
 	fProtocolQueueProvider->MakeConnection();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProtocolQueueStopped(void)noexcept
+void bcProtocolQueueProcessor::ProtocolQueueStopped(void)noexcept(true)
 {
 	fQueueStateActive=false;
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProtocolQueueConnected(iProtocolProvider *Provider)noexcept
+void bcProtocolQueueProcessor::ProtocolQueueConnected(iProtocolProvider *Provider)noexcept(true)
 {
 	if(fProtocolProvider!=nullptr)
 		return;
@@ -1098,7 +1098,7 @@ void bcProtocolQueueProcessor::ProtocolQueueConnected(iProtocolProvider *Provide
 	fProtocolQueueProvider->StopQueue();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderStateProcedure(void)noexcept
+void bcProtocolQueueProcessor::ProviderStateProcedure(void)noexcept(true)
 {
 	if(fProviderStateFlag.Acquire()==false)
 		return;
@@ -1106,7 +1106,7 @@ void bcProtocolQueueProcessor::ProviderStateProcedure(void)noexcept
 	ProviderStateThreadProc();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderStateThreadProc(void)noexcept
+void bcProtocolQueueProcessor::ProviderStateThreadProc(void)noexcept(true)
 {
 	do{
 		fProviderStateFlag.Continue();
@@ -1114,7 +1114,7 @@ void bcProtocolQueueProcessor::ProviderStateThreadProc(void)noexcept
 	}while(fProviderStateFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderStateProcess(void)noexcept
+void bcProtocolQueueProcessor::ProviderStateProcess(void)noexcept(true)
 {
 	if(fQueueStateConnected){
 		cnLib_ASSERT(fProtocolProvider!=nullptr);
@@ -1148,7 +1148,7 @@ void bcProtocolQueueProcessor::ProviderStateProcess(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderNotification(void)noexcept
+void bcProtocolQueueProcessor::ProviderNotification(void)noexcept(true)
 {
 	if(fConnectionStop){
 		fProtocolProvider->StopProcessor(true);
@@ -1168,7 +1168,7 @@ void bcProtocolQueueProcessor::ProviderNotification(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProtocolStarted(void)noexcept
+void bcProtocolQueueProcessor::ProtocolStarted(void)noexcept(true)
 {
 	fProviderConnected=true;
 	fConnectionSetOutputEnded=0;
@@ -1177,14 +1177,14 @@ void bcProtocolQueueProcessor::ProtocolStarted(void)noexcept
 	ProviderStateProcedure();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProtocolStopped(void)noexcept
+void bcProtocolQueueProcessor::ProtocolStopped(void)noexcept(true)
 {
 	fProviderConnected=false;
 
 	ProviderStateProcedure();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderNotifyInput(uIntn LeastSizeNeeded)noexcept
+void bcProtocolQueueProcessor::ProviderNotifyInput(uIntn LeastSizeNeeded)noexcept(true)
 {
 	fConnectionNotifyInput=true;
 	if(fProviderStateFlag.Acquire()){
@@ -1197,7 +1197,7 @@ void bcProtocolQueueProcessor::ProviderNotifyInput(uIntn LeastSizeNeeded)noexcep
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderNotifyOutput(uIntn LeastSizeNeeded)noexcept
+void bcProtocolQueueProcessor::ProviderNotifyOutput(uIntn LeastSizeNeeded)noexcept(true)
 {
 	fConnectionNotifyOutput=true;
 	if(fProviderStateFlag.Acquire()){
@@ -1210,7 +1210,7 @@ void bcProtocolQueueProcessor::ProviderNotifyOutput(uIntn LeastSizeNeeded)noexce
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderSetEndOfOutput(void)noexcept
+void bcProtocolQueueProcessor::ProviderSetEndOfOutput(void)noexcept(true)
 {
 	if(fConnectionSetOutputEnded)
 		return;
@@ -1219,7 +1219,7 @@ void bcProtocolQueueProcessor::ProviderSetEndOfOutput(void)noexcept
 	ProviderStateProcedure();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProcessor::ProviderSetEndOfQueue(void)noexcept
+void bcProtocolQueueProcessor::ProviderSetEndOfQueue(void)noexcept(true)
 {
 	if(fProcessorSetQueueEnded)
 		return;
@@ -1231,7 +1231,7 @@ void bcProtocolQueueProcessor::ProviderSetEndOfQueue(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcProtocolQueueProvider::bcProtocolQueueProvider()noexcept
+bcProtocolQueueProvider::bcProtocolQueueProvider()noexcept(true)
 	: fProviderQueueCloseState(0)
 	, fProviderQueueIsEnded(false)
 	, fProcessorNeedConnection(false)
@@ -1239,11 +1239,11 @@ bcProtocolQueueProvider::bcProtocolQueueProvider()noexcept
 {
 }
 //---------------------------------------------------------------------------
-bcProtocolQueueProvider::~bcProtocolQueueProvider()noexcept
+bcProtocolQueueProvider::~bcProtocolQueueProvider()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool bcProtocolQueueProvider::StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)noexcept
+bool bcProtocolQueueProvider::StartQueue(iReference *Reference,iProtocolQueueProcessor *ProtocolQueueProcessor)noexcept(true)
 {
 	if(fQueueProcessor!=nullptr)
 		return false;
@@ -1256,27 +1256,27 @@ bool bcProtocolQueueProvider::StartQueue(iReference *Reference,iProtocolQueuePro
 	return true;
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::StopQueue(void)noexcept
+void bcProtocolQueueProvider::StopQueue(void)noexcept(true)
 {
 	if(fStopProcessor.Free.Xchg(true)==false){
 		ProviderQueueStateProcedure();
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::MakeConnection(void)noexcept
+void bcProtocolQueueProvider::MakeConnection(void)noexcept(true)
 {
 	fProcessorNeedConnection=true;
 	ProviderQueueStateProcedure();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::CloseQueue(void)noexcept
+void bcProtocolQueueProvider::CloseQueue(void)noexcept(true)
 {
 	if(fProviderQueueCloseState.Acquire.CmpStore(0,1)){
 		ProviderQueueStateProcedure();
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::MarkQueueEnd(void)noexcept
+void bcProtocolQueueProvider::MarkQueueEnd(void)noexcept(true)
 {
 	if(fProviderQueueIsEnded==false){
 		fProviderQueueIsEnded=true;
@@ -1284,12 +1284,12 @@ void bcProtocolQueueProvider::MarkQueueEnd(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::ProtocolQueueNotify(void)noexcept
+void bcProtocolQueueProvider::ProtocolQueueNotify(void)noexcept(true)
 {
 	ProviderQueueStateProcedure();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::ProviderQueueStateProcedure(void)noexcept
+void bcProtocolQueueProvider::ProviderQueueStateProcedure(void)noexcept(true)
 {
 	if(fProviderQueueStateFlag.Acquire()==false)
 		return;
@@ -1300,7 +1300,7 @@ void bcProtocolQueueProvider::ProviderQueueStateProcedure(void)noexcept
 	}while(fProviderQueueStateFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::ProviderQueueStateProcess(void)noexcept
+void bcProtocolQueueProvider::ProviderQueueStateProcess(void)noexcept(true)
 {
 	if(fProviderQueueCloseState){
 		if(fQueueProcessor!=nullptr){
@@ -1351,14 +1351,14 @@ void bcProtocolQueueProvider::ProviderQueueStateProcess(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::ProcessorStarted(void)noexcept
+void bcProtocolQueueProvider::ProcessorStarted(void)noexcept(true)
 {
 	fProcessorStarted=true;
 	fQueueProcessor->ProtocolQueueStarted();
 	ProtocolQueueStarted();
 }
 //---------------------------------------------------------------------------
-void bcProtocolQueueProvider::ProcessorStopped(void)noexcept
+void bcProtocolQueueProvider::ProcessorStopped(void)noexcept(true)
 {
 	fQueueProcessor->ProtocolQueueStopped();
 	fProcessorStarted=false;
@@ -1366,15 +1366,15 @@ void bcProtocolQueueProvider::ProcessorStopped(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cProtocolQueueFromEndpoints::cProtocolQueueFromEndpoints()noexcept
+cProtocolQueueFromEndpoints::cProtocolQueueFromEndpoints()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cProtocolQueueFromEndpoints::~cProtocolQueueFromEndpoints()noexcept
+cProtocolQueueFromEndpoints::~cProtocolQueueFromEndpoints()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iProtocolProvider> cProtocolQueueFromEndpoints::ProtocolQueueFetch(void)noexcept
+rPtr<iProtocolProvider> cProtocolQueueFromEndpoints::ProtocolQueueFetch(void)noexcept(true)
 {
 	auto CurItem=fEndpointQueue.Dequeue();
 	if(CurItem==nullptr){
@@ -1386,7 +1386,7 @@ rPtr<iProtocolProvider> cProtocolQueueFromEndpoints::ProtocolQueueFetch(void)noe
 	return Provider;
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromEndpoints::QueueEndpoint(iEndpoint *Endpoint)noexcept
+void cProtocolQueueFromEndpoints::QueueEndpoint(iEndpoint *Endpoint)noexcept(true)
 {
 	auto Item=new cEndpointItem;
 	Item->Endpoint=Endpoint;
@@ -1396,7 +1396,7 @@ void cProtocolQueueFromEndpoints::QueueEndpoint(iEndpoint *Endpoint)noexcept
 	ProtocolQueueNotify();
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromEndpoints::QueueEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept
+void cProtocolQueueFromEndpoints::QueueEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true)
 {
 	auto Item=new cEndpointItem;
 	Item->Endpoint=Endpoint;
@@ -1407,7 +1407,7 @@ void cProtocolQueueFromEndpoints::QueueEndpoint(iConnection *Connection,iEndpoin
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<cProtocolQueueFromEndpoints> cnRTL::CreateProtocolQueueProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept
+rPtr<cProtocolQueueFromEndpoints> cnRTL::CreateProtocolQueueProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true)
 {
 	auto Queue=rCreate<cProtocolQueueFromEndpoints>();
 	Queue->QueueEndpoint(Connection,Endpoint);
@@ -1415,29 +1415,29 @@ rPtr<cProtocolQueueFromEndpoints> cnRTL::CreateProtocolQueueProviderFromEndpoint
 	return Queue;
 }
 //---------------------------------------------------------------------------
-rPtr<cProtocolQueueFromEndpoints> cnRTL::CreateProtocolQueueProviderFromEndpoint(iEndpoint *Endpoint)noexcept
+rPtr<cProtocolQueueFromEndpoints> cnRTL::CreateProtocolQueueProviderFromEndpoint(iEndpoint *Endpoint)noexcept(true)
 {
 	return CreateProtocolQueueProviderFromEndpoint(iCast<iConnection>(Endpoint),Endpoint);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cProtocolQueueFromConnector::cProtocolQueueFromConnector(iConnectionConnector *Connector,iAddress *RemoteAddress)noexcept
+cProtocolQueueFromConnector::cProtocolQueueFromConnector(iConnectionConnector *Connector,iAddress *RemoteAddress)noexcept(true)
 	: fConnector(Connector)
 	, fRemoteAddress(RemoteAddress)
 {
 	fConnectRetryLimit=0xFF;
 }
 //---------------------------------------------------------------------------
-cProtocolQueueFromConnector::~cProtocolQueueFromConnector()noexcept
+cProtocolQueueFromConnector::~cProtocolQueueFromConnector()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::VirtualStarted(void)noexcept
+void cProtocolQueueFromConnector::VirtualStarted(void)noexcept(true)
 {
 	InnerActivate('self');
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::VirtualStopped(void)noexcept
+void cProtocolQueueFromConnector::VirtualStopped(void)noexcept(true)
 {
 	if(fConnectTask!=nullptr){
 		fConnectTask->Cancel();
@@ -1445,12 +1445,12 @@ void cProtocolQueueFromConnector::VirtualStopped(void)noexcept
 	InnerDecReference('self');
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::SetRetryLimit(ufInt8 Limit)noexcept
+void cProtocolQueueFromConnector::SetRetryLimit(ufInt8 Limit)noexcept(true)
 {
 	fConnectRetryLimit=Limit;
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::SetupConnectTask(void)noexcept
+void cProtocolQueueFromConnector::SetupConnectTask(void)noexcept(true)
 {
 	fConnectRetryCount++;
 	fConnectTask=fConnector->ConnectAsync(fRemoteAddress);
@@ -1463,19 +1463,19 @@ void cProtocolQueueFromConnector::SetupConnectTask(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::TaskCompleted(void)noexcept
+void cProtocolQueueFromConnector::TaskCompleted(void)noexcept(true)
 {
 	ProtocolQueueNotify();
 	InnerDecReference('ctsk');
 }
 //---------------------------------------------------------------------------
-void cProtocolQueueFromConnector::cConnectTaskCompleteProcedure::Execute(void)noexcept
+void cProtocolQueueFromConnector::cConnectTaskCompleteProcedure::Execute(void)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cProtocolQueueFromConnector::fConnectTaskCompleteProcedure);
 	Host->TaskCompleted();
 }
 //---------------------------------------------------------------------------
-rPtr<iProtocolProvider> cProtocolQueueFromConnector::ProtocolQueueFetch(void)noexcept
+rPtr<iProtocolProvider> cProtocolQueueFromConnector::ProtocolQueueFetch(void)noexcept(true)
 {
 	if(fConnectTask==nullptr){
 		SetupConnectTask();

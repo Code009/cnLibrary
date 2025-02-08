@@ -975,6 +975,8 @@ public:
 //---------------------------------------------------------------------------
 #endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 //---------------------------------------------------------------------------
+typedef iFunction<void (void)noexcept(true)> iProcedure;
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE iReferenceObserver
 {
 public:
@@ -988,7 +990,7 @@ public:
 	typedef iObservedReference tReferenceInterface;
 	struct tInterfaceID{	static iTypeID Value;	};
 
-	virtual	iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *NotifyReference,iFunction<void (void)noexcept(true)> *NotifyProcedure)noexcept(true)=0;
+	virtual	iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)=0;
 };
 template<> struct TInterfaceID<iObservedReference>:iObservedReference::tInterfaceID{	typedef iObservedReference Type;	};
 //---------------------------------------------------------------------------
@@ -1002,7 +1004,7 @@ struct rPointerWeakReferenceOperator<true>
 	{
 	public:
 		iReference *NotifyReference=nullptr;
-		iFunction<void (void)noexcept(true)> *NotifyProcedure=nullptr;
+		iProcedure *NotifyProcedure=nullptr;
 	private:
 		friend struct cnClass::rPointerWeakReferenceOperator<true>;
 		iReferenceObserver *Observer;
@@ -1030,7 +1032,7 @@ struct rPointerWeakReferenceOperator<true>
 
 	template<class T>
 	static rPtr<T> Reference(const tRegistration &Registration,T *Pointer)noexcept(true){
-		return Registration->Reference()?rPtr<T>::TakeFromManual(Pointer):nullptr;
+		return Registration.Observer->Reference()?rPtr<T>::TakeFromManual(Pointer):nullptr;
 	}
 };
 template<>
@@ -1075,7 +1077,7 @@ struct iPointerWeakReferenceOperator<true>
 	{
 	public:
 		iReference *NotifyReference=nullptr;
-		iFunction<void (void)noexcept(true)> *NotifyProcedure=nullptr;
+		iProcedure *NotifyProcedure=nullptr;
 	private:
 		friend struct cnClass::iPointerWeakReferenceOperator<true>;
 		iReferenceObserver *Observer;
@@ -1106,7 +1108,7 @@ struct iPointerWeakReferenceOperator<true>
 
 	template<class T>
 	static rPtr<T> Reference(const tRegistration &Registration,T *Pointer)noexcept(true){
-		return Registration->Reference()?rPtr<T>::TakeFromManual(Pointer):nullptr;
+		return Registration.Observer->Reference()?rPtr<T>::TakeFromManual(Pointer):nullptr;
 	}
 };
 template<>

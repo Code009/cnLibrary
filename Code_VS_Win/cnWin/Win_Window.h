@@ -25,14 +25,14 @@ struct cDialogEmptyTemplateData{
 	WCHAR		zero_title;
 };
 //---------------------------------------------------------------------------
-INT_PTR CALLBACK ModalDialogSubclassEmptyDlgProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ModalDialogSubclassEmptyDlgProc(HWND hWnd, UINT Message, WPARAM wParam, LPARAM lParam)noexcept(true);
 //---------------------------------------------------------------------------
 // ModalDialog
 //	modal dialog box
-INT_PTR ModalDialog(bcWindowSubclass *WindowSubclass,HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName);
+INT_PTR ModalDialog(bcWindowSubclass *WindowSubclass,HWND Parent,HINSTANCE hInstance,LPCWSTR TemplateName)noexcept(true);
 // ModalDialog
 //	modal dialog box
-INT_PTR ModalDialog(bcWindowSubclass *WindowSubclass,HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate);
+INT_PTR ModalDialog(bcWindowSubclass *WindowSubclass,HWND Parent,HINSTANCE hInstance,LPCDLGTEMPLATEW DialogTemplate)noexcept(true);
 //---------------------------------------------------------------------------
 struct cModalDialogInitParameter
 {
@@ -45,14 +45,14 @@ struct cModalDialogInitParameter
 };
 // ModalDialog
 //	modal dialog box
-INT_PTR ModalDialog(const cModalDialogInitParameter &InitParameter,HWND Parent,DWORD Style,DWORD ExStyle);
+INT_PTR ModalDialog(const cModalDialogInitParameter &InitParameter,HWND Parent,DWORD Style,DWORD ExStyle)noexcept(true);
 //---------------------------------------------------------------------------
 class cMessageThreadWindowClass : public cnRTL::cnWinRTL::cWindowClass
 {
 public:
 	static cMessageThreadWindowClass gMessageThreadWindowClass;
 
-	cMessageThreadWindowClass(const wchar_t *ClassName);
+	cMessageThreadWindowClass(const wchar_t *ClassName)noexcept(true);
 
 	static LRESULT CALLBACK MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true);
 

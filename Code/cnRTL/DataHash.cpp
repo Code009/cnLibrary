@@ -4,7 +4,7 @@ using namespace cnLibrary;
 using namespace cnRTL;
 
 //---------------------------------------------------------------------------
-uInt8 cnRTL::CRC8_LT(const void *Buffer,uIntn Size,const uInt8 *Table,uInt8 Accum)
+uInt8 cnRTL::CRC8_LT(const void *Buffer,uIntn Size,const uInt8 *Table,uInt8 Accum)noexcept(true)
 { 
 	if(Size==0)
 		return 0;
@@ -80,17 +80,17 @@ static const uInt8 CRC8R_1D_Table[256]={
 }	// namespace cnRTL
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-uInt8 cnRTL::CRC8_07(const void *Buffer,uIntn Size)
+uInt8 cnRTL::CRC8_07(const void *Buffer,uIntn Size)noexcept(true)
 {
 	return CRC_LT(Buffer,Size,CRC8_07_Table,0);
 }
 //---------------------------------------------------------------------------
-uInt8 cnRTL::CRC8_ICODE(const void *Buffer,uIntn Size)
+uInt8 cnRTL::CRC8_ICODE(const void *Buffer,uIntn Size)noexcept(true)
 {
 	return CRC_LT(Buffer,Size,CRC8_1D_Table,0xFD);
 }
 //---------------------------------------------------------------------------
-uInt8 cnRTL::CRC8_EBU(const void *Buffer,uIntn Size)
+uInt8 cnRTL::CRC8_EBU(const void *Buffer,uIntn Size)noexcept(true)
 {
 	return CRCReverse_LT(Buffer,Size,CRC8R_1D_Table,0xFF);
 }
@@ -139,12 +139,12 @@ static const uInt16 CRC16R_8005_Table[256]={
 }	// namespace cnRTL
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-uInt16 cnRTL::CRC16_ARC(const void *Buffer,uIntn Size)
+uInt16 cnRTL::CRC16_ARC(const void *Buffer,uIntn Size)noexcept(true)
 {
 	return CRCReverse_LT(Buffer,Size,CRC16R_8005_Table,0);
 }
 //---------------------------------------------------------------------------
-uInt16 cnRTL::CRC16_BUYPASS(const void *Buffer,uIntn Size) 
+uInt16 cnRTL::CRC16_BUYPASS(const void *Buffer,uIntn Size)noexcept(true)
 { 
 	return CRC_LT(Buffer,Size,CRC16_8005_Table,0);
 }
@@ -225,13 +225,13 @@ static const uInt32 CRC32R_04C11DB7_Table[256]={
 }	// namespace cnRTL
 }	// namespace cnLibrary
 //---------------------------------------------------------------------------
-uInt32 cnRTL::CRC32_04C11DB7(const void *Buffer,uIntn Size)
+uInt32 cnRTL::CRC32_04C11DB7(const void *Buffer,uIntn Size)noexcept(true)
 {
 	uInt32 c=CRCReverse_LT(Buffer,Size,CRC32R_04C11DB7_Table,0xFFFFFFFF);
 	return c^0xFFFFFFFF;
 }
 //---------------------------------------------------------------------------
-uInt32 cnRTL::CRC32_POSIX(const void *Buffer,uIntn Size)
+uInt32 cnRTL::CRC32_POSIX(const void *Buffer,uIntn Size)noexcept(true)
 {
 	uInt32 c=CRC_LT(Buffer,Size,CRC32_04C11DB7_Table,0);
 	return c^0xFFFFFFFF;

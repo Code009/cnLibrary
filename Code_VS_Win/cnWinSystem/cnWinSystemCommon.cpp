@@ -20,12 +20,12 @@ using namespace cnRTL;
 using namespace cnWin; 
 
 //---------------------------------------------------------------------------
-void cnWin::CPPInitialize(void)
+void cnWin::CPPInitialize(void)noexcept(true)
 {
 	//cnWin_Initialize();
 }
 //---------------------------------------------------------------------------
-void cnWin::CPPFinalize(void)
+void cnWin::CPPFinalize(void)noexcept(true)
 {
 	//cnWin_Finalize();
 }
@@ -33,51 +33,51 @@ void cnWin::CPPFinalize(void)
 
 //---------------------------------------------------------------------------
 
-rPtr<iAsyncTimer> WindowsInterface::DefaultThreadPoolCreateTimer(iReference *Reference,iProcedure *Procedure)
+rPtr<iAsyncTimer> WindowsInterface::DefaultThreadPoolCreateTimer(iReference *Reference,iProcedure *Procedure)noexcept(true)
 {
 	return vcDefaultThreadPool::gInstance.CreateTimer(Reference,Procedure);
 }
 
-rPtr<iThreadPoolHandleWaiter> WindowsInterface::DefaultThreadPoolCreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)
+rPtr<iThreadPoolHandleWaiter> WindowsInterface::DefaultThreadPoolCreateHandleWaiter(iReference *Reference,iFunction<void (DWORD)> *Callback)noexcept(true)
 {
 	return vcDefaultThreadPool::gInstance.CreateHandleWaiter(Reference,Callback);
 }
 
-rPtr<iThreadPoolHandleRepeatWaiter> WindowsInterface::DefaultThreadPoolCreateHandleRepeatWaiter(iReference *Reference,iProcedure *Procedure)
+rPtr<iThreadPoolHandleRepeatWaiter> WindowsInterface::DefaultThreadPoolCreateHandleRepeatWaiter(iReference *Reference,iProcedure *Procedure)noexcept(true)
 {
 	return vcDefaultThreadPool::gInstance.CreateHandleRepeatWaiter(Reference,Procedure);
 }
 
 //---------------------------------------------------------------------------
 
-iPtr<iFileStream>		WindowsInterface::Win32FileOpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iFileStream>		WindowsInterface::Win32FileOpenFileStream(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return vWin32FileSystem::OpenFileStream(FileName,AccessMode,CreateFlag);
 }
 
-iPtr<iEndpoint>			WindowsInterface::Win32FileOpenFileEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)
+iPtr<iEndpoint>			WindowsInterface::Win32FileOpenFileEndpoint(const wchar_t *FileName,eFileAccess AccessMode,eFileCreate CreateFlag)noexcept(true)
 {
 	return vWin32FileSystem::OpenFileEndpoint(FileName,AccessMode,CreateFlag);
 }
 
-iPtr<iStream>			WindowsInterface::Win32FileOpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode)
+iPtr<iStream>			WindowsInterface::Win32FileOpenDeviceStream(const wchar_t *FileName,eFileAccess AccessMode)noexcept(true)
 {
 	return vWin32FileSystem::OpenDeviceStream(FileName,AccessMode);
 }
 
-iPtr<iEndpoint>			WindowsInterface::Win32FileOpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode)
+iPtr<iEndpoint>			WindowsInterface::Win32FileOpenDeviceEndpoint(const wchar_t *FileName,eFileAccess AccessMode)noexcept(true)
 {
 	return vWin32FileSystem::OpenDeviceEndpoint(FileName,AccessMode);
 }
 
-cnRTL::cStringBuffer<wchar_t> WindowsInterface::Win32FileMakeSystemFileName(cnWindows::eSystemFile File)
+cnRTL::cStringBuffer<wchar_t> WindowsInterface::Win32FileMakeSystemFileName(cnWindows::eSystemFile File)noexcept(true)
 {
 	return vWin32FileSystem::MakeSystemFileName(File);
 }
 
 //---------------------------------------------------------------------------
 
-bool			WindowsInterface::WinSocketConnectionTypeIsSupported(iTypeID ConnectionID)
+bool			WindowsInterface::WinSocketConnectionTypeIsSupported(iTypeID ConnectionID)noexcept(true)
 {
 	return vWinSocketIO::ConnectionTypeIsSupported(ConnectionID);
 }
@@ -86,46 +86,46 @@ bool			WindowsInterface::WinSocketConnectionTypeIsSupported(iTypeID ConnectionID
 //{
 //	return vWinSocketIO::WinSocketMakeStream(Socket);
 //}
-iPtr<iConnection>			WindowsInterface::WinSocketMakeConnection(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> RemoteAddress,iPtr<iSocketAddress> LocalAddress)
+iPtr<iConnection>			WindowsInterface::WinSocketMakeConnection(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> RemoteAddress,iPtr<iSocketAddress> LocalAddress)noexcept(true)
 {
 	return vWinSocketIO::MakeConnection(Socket,ConnectionIID,cnVar::MoveCast(RemoteAddress),cnVar::MoveCast(LocalAddress));
 }
-iPtr<iConnectionTask>		WindowsInterface::WinSocketMakeConnectTask(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> RemoteAddress,iPtr<iSocketAddress> LocalAddress)
+iPtr<iConnectionTask>		WindowsInterface::WinSocketMakeConnectTask(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> RemoteAddress,iPtr<iSocketAddress> LocalAddress)noexcept(true)
 {
 	return vWinSocketIO::MakeConnectTask(Socket,ConnectionIID,cnVar::MoveCast(RemoteAddress),cnVar::MoveCast(LocalAddress));
 }
 
-iPtr<iConnectionListener>	WindowsInterface::WinSocketMakeListener(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> LocalAddress,int SocketType,int SocketProtocol)
+iPtr<iConnectionListener>	WindowsInterface::WinSocketMakeListener(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> LocalAddress,int SocketType,int SocketProtocol)noexcept(true)
 {
 	return vWinSocketIO::MakeListener(Socket,ConnectionIID,cnVar::MoveCast(LocalAddress),SocketType,SocketProtocol);
 }
-iPtr<iConnectionQueue>		WindowsInterface::WinSocketMakeListenQueue(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> LocalAddress,int SocketType,int SocketProtocol)
+iPtr<iConnectionQueue>		WindowsInterface::WinSocketMakeListenQueue(SOCKET Socket,iTypeID ConnectionIID,iPtr<iSocketAddress> LocalAddress,int SocketType,int SocketProtocol)noexcept(true)
 {
 	return vWinSocketIO::MakeListenQueue(Socket,ConnectionIID,cnVar::MoveCast(LocalAddress),SocketType,SocketProtocol);
 }
 
-iPtr<iMultipointStream>		WindowsInterface::WinSocketMakeDatagramStream(SOCKET Socket,iPtr<iSocketAddress> LocalAddress)
+iPtr<iMultipointStream>		WindowsInterface::WinSocketMakeDatagramStream(SOCKET Socket,iPtr<iSocketAddress> LocalAddress)noexcept(true)
 {
 	return vWinSocketIO::MakeDatagramStream(Socket,cnVar::MoveCast(LocalAddress));
 }
-iPtr<iMultipointQueue>		WindowsInterface::WinSocketMakeDatagramQueue(SOCKET Socket,iPtr<iSocketAddress> LocalAddress)
+iPtr<iMultipointQueue>		WindowsInterface::WinSocketMakeDatagramQueue(SOCKET Socket,iPtr<iSocketAddress> LocalAddress)noexcept(true)
 {
 	return vWinSocketIO::MakeDatagramQueue(Socket,cnVar::MoveCast(LocalAddress));
 }
 
 //---------------------------------------------------------------------------
 
-bool WindowsInterface::WindowLocalSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool WindowsInterface::WindowLocalSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vWindowSubclass::SetLocal(WindowHandle,Subclass);
 }
 
-bool WindowsInterface::WindowSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)
+bool WindowsInterface::WindowSubclass(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vWindowSubclass::SetLocal(WindowHandle,Subclass);
 }
 
-void WindowsInterface::WindowSubclassRestore(HWND WindowHandle,bcWindowSubclass *Subclass)
+void WindowsInterface::WindowSubclassRestore(HWND WindowHandle,bcWindowSubclass *Subclass)noexcept(true)
 {
 	return vWindowSubclass::Restore(WindowHandle,Subclass);
 }

@@ -15,8 +15,8 @@ namespace cnWin{
 class cDefaultMemoryHeap : public cnRTL::cnWinRTL::bcWinMemoryHeap
 {
 protected:
-	cDefaultMemoryHeap();
-	~cDefaultMemoryHeap();
+	cDefaultMemoryHeap()noexcept(true);
+	~cDefaultMemoryHeap()noexcept(true);
 };
 
 

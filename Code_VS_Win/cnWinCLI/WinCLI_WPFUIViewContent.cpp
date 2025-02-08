@@ -7,7 +7,7 @@ using namespace cnRTL;
 using namespace cnWin;
 
 //---------------------------------------------------------------------------
-iPtr<iUIFont> cnWin::DNetCreateFont(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept
+iPtr<iUIFont> cnWin::DNetCreateFont(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true)
 {
 	auto Typeface=iCreate<cWPFTypeface>();
 
@@ -17,7 +17,7 @@ iPtr<iUIFont> cnWin::DNetCreateFont(const uChar16 *Name,uIntn NameLength,eUIFont
 	return Typeface;
 }
 //---------------------------------------------------------------------------
-rPtr<iUITextLineLayout> cnWin::DNetCreateTextLineLayout(const uChar16 *Text,uIntn Length,const cUITextStyle &Style)noexcept
+rPtr<iUITextLineLayout> cnWin::DNetCreateTextLineLayout(const uChar16 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true)
 {
 	auto Layout=rCreate<cWPFTextLayout>();
 	cUTFStringConverter<4,2> Converter;
@@ -28,27 +28,27 @@ rPtr<iUITextLineLayout> cnWin::DNetCreateTextLineLayout(const uChar16 *Text,uInt
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFDrawingContext::cWPFDrawingContext()noexcept
+cWPFDrawingContext::cWPFDrawingContext()noexcept(true)
 {
 	fContext.mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFDrawingContext::~cWPFDrawingContext()noexcept
+cWPFDrawingContext::~cWPFDrawingContext()noexcept(true)
 {
 	fContext.mClear();
 }
 //---------------------------------------------------------------------------
-mcWPFDrawingContext& cWPFDrawingContext::RefDrawingContext(void)noexcept
+mcWPFDrawingContext& cWPFDrawingContext::RefDrawingContext(void)noexcept(true)
 {
 	return fContext;
 }
 //---------------------------------------------------------------------------
-bool cWPFDrawingContext::Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept
+bool cWPFDrawingContext::Fill(cUIPoint DrawPosition,cUIPoint DrawSize,cUIColor Color)noexcept(true)
 {
 	return fContext.mFill(DrawPosition,DrawSize,Color);
 }
 //---------------------------------------------------------------------------
-bool cWPFDrawingContext::Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)noexcept
+bool cWPFDrawingContext::Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph *Graph)noexcept(true)
 {
 	auto WPFSimpleGraph=iCast<miWPFUISimpleGraph>(Graph);
 	if(WPFSimpleGraph!=nullptr){
@@ -58,102 +58,102 @@ bool cWPFDrawingContext::Graph(cUIPoint DrawPosition,cUIPoint DrawSize,iUIGraph 
 	return false;
 }
 //---------------------------------------------------------------------------
-bool cWPFDrawingContext::Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator)noexcept
+bool cWPFDrawingContext::Image(cUIPoint DrawPosition,cUIPoint DrawSize,iUIBitmap *Bitmap,eImageBlendingOperator BlendingOperator)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUIBitmap::cWPFUIBitmap()noexcept
+cWPFUIBitmap::cWPFUIBitmap()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cWPFUIBitmap::~cWPFUIBitmap()noexcept
+cWPFUIBitmap::~cWPFUIBitmap()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFUIBitmap::GetSize(void)noexcept
+cUIPoint cWPFUIBitmap::GetSize(void)noexcept(true)
 {
 	return fImageSource.mGetImageSize();
 }
 //---------------------------------------------------------------------------
-void cWPFUIBitmap::TakeDrawing(cGCHandle &DrawingHandle)noexcept
+void cWPFUIBitmap::TakeDrawing(cGCHandle &DrawingHandle)noexcept(true)
 {
 	fImageSource.mTakeDrawing(DrawingHandle);
 }
 //---------------------------------------------------------------------------
-void cWPFUIBitmap::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void cWPFUIBitmap::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	return fImageSource.mDraw(ContextHandle,DrawPosition,DrawSize);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFBitmapDataSource::cWPFBitmapDataSource()noexcept
+cWPFBitmapDataSource::cWPFBitmapDataSource()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cWPFBitmapDataSource::~cWPFBitmapDataSource()noexcept
+cWPFBitmapDataSource::~cWPFBitmapDataSource()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWPFBitmapDataSource::TakeDrawing(cGCHandle &DrawingHandle,int Width,int Height)noexcept
+void cWPFBitmapDataSource::TakeDrawing(cGCHandle &DrawingHandle,int Width,int Height)noexcept(true)
 {
 	fBitmapSource.mTakeDrawing(DrawingHandle,Width,Height);
 }
 //---------------------------------------------------------------------------
-cBitmapPixelFormat cWPFBitmapDataSource::GetPixelFormat(void)noexcept
+cBitmapPixelFormat cWPFBitmapDataSource::GetPixelFormat(void)noexcept(true)
 {
 	return BitmapPixelFormatR8G8B8A8;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFBitmapDataSource::GetImageSize(void)noexcept
+cUIPoint cWPFBitmapDataSource::GetImageSize(void)noexcept(true)
 {
 	return fBitmapSource.mGetImageSize();
 }
 //---------------------------------------------------------------------------
-uIntn cWPFBitmapDataSource::GetDataPitch(void)noexcept
+uIntn cWPFBitmapDataSource::GetDataPitch(void)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-uIntn cWPFBitmapDataSource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept
+uIntn cWPFBitmapDataSource::CopyPixelBuffer(uIntn Offset,void *Dest,uIntn DestSize)noexcept(true)
 {
 	return 0;
 }
 //---------------------------------------------------------------------------
-const void* cWPFBitmapDataSource::AcquirePixels(void)noexcept
+const void* cWPFBitmapDataSource::AcquirePixels(void)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-void cWPFBitmapDataSource::ReleasePixels(void)noexcept
+void cWPFBitmapDataSource::ReleasePixels(void)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-bool cWPFBitmapDataSource::IsTopDown(void)noexcept
+bool cWPFBitmapDataSource::IsTopDown(void)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void cWPFBitmapDataSource::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void cWPFBitmapDataSource::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	return fBitmapSource.mDraw(ContextHandle,DrawPosition,DrawSize);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUISimpleBitmapCanvas::cWPFUISimpleBitmapCanvas(int Width,int Height)noexcept
+cWPFUISimpleBitmapCanvas::cWPFUISimpleBitmapCanvas(int Width,int Height)noexcept(true)
 	: fBitmapWidth(Width)
 	, fBitmapHeight(Height)
 {
 	fDrawingGroup.mSetup(false);
 }
 //---------------------------------------------------------------------------
-cWPFUISimpleBitmapCanvas::~cWPFUISimpleBitmapCanvas()noexcept
+cWPFUISimpleBitmapCanvas::~cWPFUISimpleBitmapCanvas()noexcept(true)
 {
 	fDrawingGroup.mClear();
 }
 //---------------------------------------------------------------------------
-iUISimplePaintContext* cWPFUISimpleBitmapCanvas::StartContext(cUIColor Color)noexcept
+iUISimplePaintContext* cWPFUISimpleBitmapCanvas::StartContext(cUIColor Color)noexcept(true)
 {
 	auto &Context=fContext.RefDrawingContext();
 	if(fDrawingGroup.mStartDraw(Context)==false)
@@ -171,12 +171,12 @@ iUISimplePaintContext* cWPFUISimpleBitmapCanvas::StartContext(cUIColor Color)noe
 	return &fContext;
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleBitmapCanvas::DiscardContext(void)noexcept
+void cWPFUISimpleBitmapCanvas::DiscardContext(void)noexcept(true)
 {
 	fDrawingGroup.mStopDraw(fContext.RefDrawingContext());
 }
 //---------------------------------------------------------------------------
-iPtr<iUIBitmap> cWPFUISimpleBitmapCanvas::FinishBitmap(bool CopyContent)noexcept
+iPtr<iUIBitmap> cWPFUISimpleBitmapCanvas::FinishBitmap(bool CopyContent)noexcept(true)
 {
 	if(fDrawingGroup.mStopDraw(fContext.RefDrawingContext())==false)
 		return nullptr;
@@ -185,7 +185,7 @@ iPtr<iUIBitmap> cWPFUISimpleBitmapCanvas::FinishBitmap(bool CopyContent)noexcept
 	return RetBitmap;
 }
 //---------------------------------------------------------------------------
-iPtr<iBitmapDataSource> cWPFUISimpleBitmapCanvas::FinishBitmapSource(bool CopyContent)noexcept
+iPtr<iBitmapDataSource> cWPFUISimpleBitmapCanvas::FinishBitmapSource(bool CopyContent)noexcept(true)
 {
 	if(fDrawingGroup.mStopDraw(fContext.RefDrawingContext())==false)
 		return nullptr;
@@ -196,17 +196,17 @@ iPtr<iBitmapDataSource> cWPFUISimpleBitmapCanvas::FinishBitmapSource(bool CopyCo
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFTypeface::cWPFTypeface()noexcept
+cWPFTypeface::cWPFTypeface()noexcept(true)
 {
 	fTypeface.mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFTypeface::~cWPFTypeface()noexcept
+cWPFTypeface::~cWPFTypeface()noexcept(true)
 {
 	fTypeface.mClear();
 }
 //---------------------------------------------------------------------------
-bool cWPFTypeface::Create(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept
+bool cWPFTypeface::Create(const uChar16 *Name,uIntn NameLength,eUIFontStyle FontStyle,Float32 FontWeight)noexcept(true)
 {
 	if(fTypeface.mCreate(Name,NameLength,FontStyle,FontWeight)==false){
 		return false;
@@ -218,129 +218,129 @@ bool cWPFTypeface::Create(const uChar16 *Name,uIntn NameLength,eUIFontStyle Font
 	return true;
 }
 //---------------------------------------------------------------------------
-cArray<const uChar16> cWPFTypeface::GetName(void)noexcept
+cArray<const uChar16> cWPFTypeface::GetName(void)noexcept(true)
 {
 	return fName.GetArray();
 }
 //---------------------------------------------------------------------------
-eUIFontStyle cWPFTypeface::GetStyle(void)noexcept
+eUIFontStyle cWPFTypeface::GetStyle(void)noexcept(true)
 {
 	return fFontStyle;
 }
 //---------------------------------------------------------------------------
-Float32 cWPFTypeface::GetWeight(void)noexcept
+Float32 cWPFTypeface::GetWeight(void)noexcept(true)
 {
 	return fFontWeight;
 }
 //---------------------------------------------------------------------------
-const cGCHandle& cWPFTypeface::GetObjecHandle(void)noexcept
+const cGCHandle& cWPFTypeface::GetObjecHandle(void)noexcept(true)
 {
 	return fTypeface.GetHandle();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWPFTextLayout::Calculate(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept
+void cWPFTextLayout::Calculate(const uChar32 *Text,uIntn Length,const cUITextStyle &Style)noexcept(true)
 {
 	return mCalculate(Text,Length,Style);
 }
 //---------------------------------------------------------------------------
-uIntn cWPFTextLayout::GetTextLength(void)noexcept
+uIntn cWPFTextLayout::GetTextLength(void)noexcept(true)
 {
 	return fTextDistance.GetCount();
 }
 //---------------------------------------------------------------------------
-Float32 cWPFTextLayout::GetTextHeight(void)noexcept
+Float32 cWPFTextLayout::GetTextHeight(void)noexcept(true)
 {
 	return fTextHeight;
 }
 //---------------------------------------------------------------------------
-const Float32* cWPFTextLayout::GetTextDistance(void)noexcept
+const Float32* cWPFTextLayout::GetTextDistance(void)noexcept(true)
 {
 	return fTextDistance;
 }
 //---------------------------------------------------------------------------
-void cWPFTextLayout::TextLayoutStoreTextHeight(Float32 Height)noexcept
+void cWPFTextLayout::TextLayoutStoreTextHeight(Float32 Height)noexcept(true)
 {
 	fTextHeight=Height;
 }
 //---------------------------------------------------------------------------
-void cWPFTextLayout::TextLayoutMakeTextDistance(uIntn Count)noexcept
+void cWPFTextLayout::TextLayoutMakeTextDistance(uIntn Count)noexcept(true)
 {
 	fTextDistance.SetCount(Count);
 }
 //---------------------------------------------------------------------------
-void cWPFTextLayout::TextLayoutStoreTextDistance(uIntn Index,Float32 Distance)noexcept
+void cWPFTextLayout::TextLayoutStoreTextDistance(uIntn Index,Float32 Distance)noexcept(true)
 {
 	fTextDistance[Index]=Distance;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUISimpleTextGraph::cWPFUISimpleTextGraph()noexcept
+cWPFUISimpleTextGraph::cWPFUISimpleTextGraph()noexcept(true)
 {
 	fTextGraph.mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFUISimpleTextGraph::~cWPFUISimpleTextGraph()noexcept
+cWPFUISimpleTextGraph::~cWPFUISimpleTextGraph()noexcept(true)
 {
 	fTextGraph.mClear();
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFUISimpleTextGraph::GetSize(void)noexcept
+cUIPoint cWPFUISimpleTextGraph::GetSize(void)noexcept(true)
 {
 	return fTextSize;
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleTextGraph::SetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept
+void cWPFUISimpleTextGraph::SetupText(const uChar32 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true)
 {
 	fTextSize=fTextGraph.mSetupText(Text,Length,Style,TextDistance,TextMinHeight);
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleTextGraph::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void cWPFUISimpleTextGraph::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	return fTextGraph.mDraw(ContextHandle,DrawPosition,DrawSize);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUIRichTextGraph::cWPFUIRichTextGraph()noexcept
+cWPFUIRichTextGraph::cWPFUIRichTextGraph()noexcept(true)
 {
 	fTextGraph.mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFUIRichTextGraph::~cWPFUIRichTextGraph()noexcept
+cWPFUIRichTextGraph::~cWPFUIRichTextGraph()noexcept(true)
 {
 	fTextGraph.mClear();
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFUIRichTextGraph::GetSize(void)noexcept
+cUIPoint cWPFUIRichTextGraph::GetSize(void)noexcept(true)
 {
 	return fTextSize;
 }
 //---------------------------------------------------------------------------
-void cWPFUIRichTextGraph::SetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept
+void cWPFUIRichTextGraph::SetupText(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true)
 {
 	fTextSize=fTextGraph.mSetupText(Text,Length,Style,TextDistance,TextMinHeight);
 }
 //---------------------------------------------------------------------------
-void cWPFUIRichTextGraph::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept
+void cWPFUIRichTextGraph::Draw(const cGCHandle &ContextHandle,cUIPoint DrawPosition,cUIPoint DrawSize)noexcept(true)
 {
 	return fTextGraph.mDraw(ContextHandle,DrawPosition,DrawSize);
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUISimplePaintDevice::cWPFUISimplePaintDevice()noexcept
+cWPFUISimplePaintDevice::cWPFUISimplePaintDevice()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cWPFUISimplePaintDevice::~cWPFUISimplePaintDevice()noexcept
+cWPFUISimplePaintDevice::~cWPFUISimplePaintDevice()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-rPtr<iUISimpleBitmapCanvas> cWPFUISimplePaintDevice::CreateBitmapCanvas(cUIPoint Size)noexcept
+rPtr<iUISimpleBitmapCanvas> cWPFUISimplePaintDevice::CreateBitmapCanvas(cUIPoint Size)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
-iPtr<iUITextGraph> cWPFUISimplePaintDevice::CreateTextGraph(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept
+iPtr<iUITextGraph> cWPFUISimplePaintDevice::CreateTextGraph(const uChar16 *Text,uIntn Length,const cUITextStyle &Style,const Float32* TextDistance,Float32 TextMinHeight)noexcept(true)
 {
 	cUTFStringConverter<4,2> Converter;
 	auto Text32=cnRTL::CreateStringConvertEncoding<uChar32>(Converter,Text,Length);
@@ -349,85 +349,85 @@ iPtr<iUITextGraph> cWPFUISimplePaintDevice::CreateTextGraph(const uChar16 *Text,
 	return TextGraph;
 }
 //---------------------------------------------------------------------------
-iPtr<iUIBitmap> cWPFUISimplePaintDevice::CreateBitmapCopyFromSource(iBitmapDataSource *Source)noexcept
+iPtr<iUIBitmap> cWPFUISimplePaintDevice::CreateBitmapCopyFromSource(iBitmapDataSource *Source)noexcept(true)
 {
 	return nullptr;
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFUISimpleViewContent::cWPFUISimpleViewContent(iUISimplePainter *Painter)noexcept
+cWPFUISimpleViewContent::cWPFUISimpleViewContent(iUISimplePainter *Painter)noexcept(true)
 	: fPainter(Painter)
 {
 	fNeedNotifyRect=false;
 	fWPFDrawing.mSetup(true);
 }
 //---------------------------------------------------------------------------
-cWPFUISimpleViewContent::~cWPFUISimpleViewContent()noexcept
+cWPFUISimpleViewContent::~cWPFUISimpleViewContent()noexcept(true)
 {
 	fWPFDrawing.mClear();
 }
 //---------------------------------------------------------------------------
-iUIView* cWPFUISimpleViewContent::GetView(void)noexcept
+iUIView* cWPFUISimpleViewContent::GetView(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetView();
 }
 //---------------------------------------------------------------------------
-bool cWPFUISimpleViewContent::SetView(iUIView *View)noexcept
+bool cWPFUISimpleViewContent::SetView(iUIView *View)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetView(View);
 }
 //---------------------------------------------------------------------------
-bool cWPFUISimpleViewContent::GetVisible(void)noexcept
+bool cWPFUISimpleViewContent::GetVisible(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetVisible();
 }
 //---------------------------------------------------------------------------
-bool cWPFUISimpleViewContent::SetVisible(bool Visible)noexcept
+bool cWPFUISimpleViewContent::SetVisible(bool Visible)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetVisible(Visible);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUISimpleViewContent::GetZPosition(void)noexcept
+Float32 cWPFUISimpleViewContent::GetZPosition(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetZPosition();
 }
 //---------------------------------------------------------------------------
-bool cWPFUISimpleViewContent::SetZPosition(Float32 ZPosition)noexcept
+bool cWPFUISimpleViewContent::SetZPosition(Float32 ZPosition)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFUISimpleViewContent::GetContentScale(void)noexcept
+Float32 cWPFUISimpleViewContent::GetContentScale(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetContentScale();
 }
 //---------------------------------------------------------------------------
-rPtr<iUISimplePaintDevice> cWPFUISimpleViewContent::QueryDevice(void)noexcept
+rPtr<iUISimplePaintDevice> cWPFUISimpleViewContent::QueryDevice(void)noexcept(true)
 {
 	return rCreate<cWPFUISimplePaintDevice>();
 }
 //---------------------------------------------------------------------------
-eUIState cWPFUISimpleViewContent::GetPaintState(void)noexcept
+eUIState cWPFUISimpleViewContent::GetPaintState(void)noexcept(true)
 {
 	return UIState::Null;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFUISimpleViewContent::GetPaintSize(void)noexcept
+cUIPoint cWPFUISimpleViewContent::GetPaintSize(void)noexcept(true)
 {
 	return fViewContentSize;
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::QueryUpdate(void)noexcept
+void cWPFUISimpleViewContent::QueryUpdate(void)noexcept(true)
 {
 	RenderVisual();
 }
 //---------------------------------------------------------------------------
-const cGCHandle* cWPFUISimpleViewContent::GetDrawingPointer(void)noexcept
+const cGCHandle* cWPFUISimpleViewContent::GetDrawingPointer(void)noexcept(true)
 {
 	return &fWPFDrawing.GetHandle();
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::ViewContentUpdateRect(void)noexcept
+void cWPFUISimpleViewContent::ViewContentUpdateRect(void)noexcept(true)
 {
 	//fWPFDrawing.mTransformScale(fLayoutScale);
 
@@ -448,7 +448,7 @@ void cWPFUISimpleViewContent::ViewContentUpdateRect(void)noexcept
 	ViewContentUpdateState();
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::ViewContentUpdateState(void)noexcept
+void cWPFUISimpleViewContent::ViewContentUpdateState(void)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -457,7 +457,7 @@ void cWPFUISimpleViewContent::ViewContentUpdateState(void)noexcept
 	RenderVisual();
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
+void cWPFUISimpleViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept(true)
 {
 	//if(fPainter==nullptr)
 	//	return;
@@ -470,7 +470,7 @@ void cWPFUISimpleViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
 	//Paint();
 }
 //---------------------------------------------------------------------------
-eUIState cWPFUISimpleViewContent::CheckPainterState(void)noexcept
+eUIState cWPFUISimpleViewContent::CheckPainterState(void)noexcept(true)
 {
 	auto NewState=CheckViewContentState();
 	switch(NewState){
@@ -483,14 +483,14 @@ eUIState cWPFUISimpleViewContent::CheckPainterState(void)noexcept
 	return NewState;
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::UpdatePainterState(void)noexcept
+void cWPFUISimpleViewContent::UpdatePainterState(void)noexcept(true)
 {
 	eUIState NewState=CheckPainterState();
 	NotifyPainterState(fPainter,NewState,fPainterState);
 	fPainterState=NewState;
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::NotifyPainterState(iUISimplePainter *Painter,eUIState NewState,eUIState OldState)noexcept
+void cWPFUISimpleViewContent::NotifyPainterState(iUISimplePainter *Painter,eUIState NewState,eUIState OldState)noexcept(true)
 {
 	if(NewState==OldState)
 		return;
@@ -533,7 +533,7 @@ void cWPFUISimpleViewContent::NotifyPainterState(iUISimplePainter *Painter,eUISt
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFUISimpleViewContent::RenderVisual(void)noexcept
+void cWPFUISimpleViewContent::RenderVisual(void)noexcept(true)
 {
 	if(fPainterState<UIState::Inactive)
 		return;
@@ -555,37 +555,37 @@ void cWPFUISimpleViewContent::RenderVisual(void)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFGDIThreadContext::cWPFGDIThreadContext()noexcept
+cWPFGDIThreadContext::cWPFGDIThreadContext()noexcept(true)
 {
 	Device=rCreate<cnRTL::cnWinRTL::cDCPaintDevice>();
 }
 //---------------------------------------------------------------------------
-cWPFGDIThreadContext::~cWPFGDIThreadContext()noexcept
+cWPFGDIThreadContext::~cWPFGDIThreadContext()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cWPFGDIThreadContext::NotifyDisplayChanged(void)noexcept
+void cWPFGDIThreadContext::NotifyDisplayChanged(void)noexcept(true)
 {
 	//Device->UpdateDisplaySetting();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWPFGDIModule::WPFDisplaySettingsChanged(void)noexcept
+void cWPFGDIModule::WPFDisplaySettingsChanged(void)noexcept(true)
 {
 	return NotifyDisplayChanged();
 }
 //---------------------------------------------------------------------------
-cWPFGDIModule::cWPFGDIModule()noexcept
+cWPFGDIModule::cWPFGDIModule()noexcept(true)
 {
 	mbcWPFGDI::mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFGDIModule::~cWPFGDIModule()noexcept
+cWPFGDIModule::~cWPFGDIModule()noexcept(true)
 {
 	mbcWPFGDI::mClear();
 }
 //---------------------------------------------------------------------------
-void cWPFGDIModule::NotifyDisplayChanged(void)noexcept
+void cWPFGDIModule::NotifyDisplayChanged(void)noexcept(true)
 {
 	auto AutoLock=TakeLock(&fThreadCS);
 	for(auto p : fThreadSet){
@@ -593,7 +593,7 @@ void cWPFGDIModule::NotifyDisplayChanged(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-cWPFGDIThreadContext* cWPFGDIModule::QueryThreadContext(void)noexcept
+cWPFGDIThreadContext* cWPFGDIModule::QueryThreadContext(void)noexcept(true)
 {
 	auto pContext=gTLSContext->Get();
 	if(pContext!=nullptr)
@@ -602,7 +602,7 @@ cWPFGDIThreadContext* cWPFGDIModule::QueryThreadContext(void)noexcept
 	return gModule.MakeContext();
 }
 //---------------------------------------------------------------------------
-cWPFGDIThreadContext* cWPFGDIModule::CurrentThreadContext(void)noexcept
+cWPFGDIThreadContext* cWPFGDIModule::CurrentThreadContext(void)noexcept(true)
 {
 	auto pContext=gTLSContext->Get();
 	if(pContext==nullptr)
@@ -611,13 +611,13 @@ cWPFGDIThreadContext* cWPFGDIModule::CurrentThreadContext(void)noexcept
 	return static_cast<cWPFGDIThreadContext*>(pContext);
 }
 //---------------------------------------------------------------------------
-void cWPFGDIModule::cThreadContextExitNotify::Execute(rPtr<iReference> Reference,void *Object)noexcept
+void cWPFGDIModule::cThreadContextExitNotify::Execute(rPtr<iReference> Reference,void *Object)noexcept(true)
 {
 	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cWPFGDIModule::fThreadContextExitNotify);
 	Host->DestroyContext(static_cast<cWPFGDIThreadContext*>(Object));
 }
 //---------------------------------------------------------------------------
-cWPFGDIThreadContext* cWPFGDIModule::MakeContext(void)noexcept
+cWPFGDIThreadContext* cWPFGDIModule::MakeContext(void)noexcept(true)
 {
 	auto UIThread=cWPFUIThread::CurrentUIThread();
 	if(UIThread==nullptr)
@@ -633,7 +633,7 @@ cWPFGDIThreadContext* cWPFGDIModule::MakeContext(void)noexcept
 	return NewContext;
 }
 //---------------------------------------------------------------------------
-void cWPFGDIModule::DestroyContext(cWPFGDIThreadContext *Context)noexcept
+void cWPFGDIModule::DestroyContext(cWPFGDIThreadContext *Context)noexcept(true)
 {
 	auto AutoLock=TakeLock(&fThreadCS);
 	fThreadSet.Remove(Context);
@@ -642,7 +642,7 @@ void cWPFGDIModule::DestroyContext(cWPFGDIThreadContext *Context)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFDCViewContent::cWPFDCViewContent(iDCPainter *Painter,bool OutputAlpha)noexcept
+cWPFDCViewContent::cWPFDCViewContent(iDCPainter *Painter,bool OutputAlpha)noexcept(true)
 	: fPainter(Painter)
 	, fPainterOutputAlpha(OutputAlpha)
 	, fPainterState(psNone)
@@ -650,17 +650,17 @@ cWPFDCViewContent::cWPFDCViewContent(iDCPainter *Painter,bool OutputAlpha)noexce
 	fDrawing.mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFDCViewContent::~cWPFDCViewContent()noexcept
+cWPFDCViewContent::~cWPFDCViewContent()noexcept(true)
 {
 	fDrawing.mClear();
 }
 //---------------------------------------------------------------------------
-const cGCHandle* cWPFDCViewContent::GetDrawingPointer(void)noexcept
+const cGCHandle* cWPFDCViewContent::GetDrawingPointer(void)noexcept(true)
 {
 	return &fDrawing.GetDrawingHandle();
 }
 //---------------------------------------------------------------------------
-eUIState cWPFDCViewContent::GetPaintState(void)noexcept
+eUIState cWPFDCViewContent::GetPaintState(void)noexcept(true)
 {
 	switch(fPainterState){
 	default:
@@ -673,42 +673,42 @@ eUIState cWPFDCViewContent::GetPaintState(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-iUIView* cWPFDCViewContent::GetView(void)noexcept
+iUIView* cWPFDCViewContent::GetView(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetView();
 }
 //---------------------------------------------------------------------------
-bool cWPFDCViewContent::SetView(iUIView *View)noexcept
+bool cWPFDCViewContent::SetView(iUIView *View)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetView(View);
 }
 //---------------------------------------------------------------------------
-bool cWPFDCViewContent::GetVisible(void)noexcept
+bool cWPFDCViewContent::GetVisible(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetVisible();
 }
 //---------------------------------------------------------------------------
-bool cWPFDCViewContent::SetVisible(bool Visible)noexcept
+bool cWPFDCViewContent::SetVisible(bool Visible)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetVisible(Visible);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFDCViewContent::GetZPosition(void)noexcept
+Float32 cWPFDCViewContent::GetZPosition(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetZPosition();
 }
 //---------------------------------------------------------------------------
-bool cWPFDCViewContent::SetZPosition(Float32 ZPosition)noexcept
+bool cWPFDCViewContent::SetZPosition(Float32 ZPosition)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFDCViewContent::GetContentScale(void)noexcept
+Float32 cWPFDCViewContent::GetContentScale(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetContentScale();
 }
 //---------------------------------------------------------------------------
-RECT cWPFDCViewContent::GetPaintRect(void)noexcept
+RECT cWPFDCViewContent::GetPaintRect(void)noexcept(true)
 {
 	RECT rc;
 	rc.left=0;
@@ -718,7 +718,7 @@ RECT cWPFDCViewContent::GetPaintRect(void)noexcept
 	return rc;
 }
 //---------------------------------------------------------------------------
-HDC	cWPFDCViewContent::GetDC(void)noexcept
+HDC	cWPFDCViewContent::GetDC(void)noexcept(true)
 {
 	if(fContentDC!=nullptr){
 		fContentDC->RefCount++;
@@ -734,7 +734,7 @@ HDC	cWPFDCViewContent::GetDC(void)noexcept
 	return fContentDC->MemDC;
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::ReleaseDC(HDC DC)noexcept
+void cWPFDCViewContent::ReleaseDC(HDC DC)noexcept(true)
 {
 	if(fContentDC==nullptr){
 		return;
@@ -762,7 +762,7 @@ void cWPFDCViewContent::ReleaseDC(HDC DC)noexcept
 	fContentDC=nullptr;
 }
 //---------------------------------------------------------------------------
-HDC	cWPFDCViewContent::GetIC(void)noexcept
+HDC	cWPFDCViewContent::GetIC(void)noexcept(true)
 {
 	if(fTempIC==nullptr){
 		auto GDIThreadCPP=cWPFGDIModule::QueryThreadContext();
@@ -775,7 +775,7 @@ HDC	cWPFDCViewContent::GetIC(void)noexcept
 	return fTempIC->GetHandle();
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::ReleaseIC(HDC DC)noexcept
+void cWPFDCViewContent::ReleaseIC(HDC DC)noexcept(true)
 {
 	if(fTempIC==nullptr)
 		return;
@@ -789,17 +789,17 @@ void cWPFDCViewContent::ReleaseIC(HDC DC)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::InvalidateRect(const RECT*)noexcept
+void cWPFDCViewContent::InvalidateRect(const RECT*)noexcept(true)
 {
 	SetNeedPaint();
 }
 //---------------------------------------------------------------------------
-iWindow* cWPFDCViewContent::GetWindow(void)noexcept
+iWindow* cWPFDCViewContent::GetWindow(void)noexcept(true)
 {
 	return fWindow;
 }
 //---------------------------------------------------------------------------
-cWPFDCViewContent::ePainterState cWPFDCViewContent::CheckPainterState(void)noexcept
+cWPFDCViewContent::ePainterState cWPFDCViewContent::CheckPainterState(void)noexcept(true)
 {
 	switch(CheckViewContentState()){
 	default:
@@ -816,7 +816,7 @@ cWPFDCViewContent::ePainterState cWPFDCViewContent::CheckPainterState(void)noexc
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::NotifyPainterState(iDCPainter *Painter,ePainterState NewState,ePainterState OldState)noexcept
+void cWPFDCViewContent::NotifyPainterState(iDCPainter *Painter,ePainterState NewState,ePainterState OldState)noexcept(true)
 {
 	if(NewState==OldState)
 		return;
@@ -849,14 +849,14 @@ void cWPFDCViewContent::NotifyPainterState(iDCPainter *Painter,ePainterState New
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::UpdatePainterState(void)noexcept
+void cWPFDCViewContent::UpdatePainterState(void)noexcept(true)
 {
 	ePainterState NewState=CheckPainterState();
 	NotifyPainterState(fPainter,NewState,fPainterState);
 	fPainterState=NewState;
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::ViewContentUpdateState(void)noexcept
+void cWPFDCViewContent::ViewContentUpdateState(void)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -865,7 +865,7 @@ void cWPFDCViewContent::ViewContentUpdateState(void)noexcept
 	Paint();
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
+void cWPFDCViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -878,7 +878,7 @@ void cWPFDCViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
 	Paint();
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::ViewContentUpdateRect(void)noexcept
+void cWPFDCViewContent::ViewContentUpdateRect(void)noexcept(true)
 {
 	fNeedNotifyRect=true;
 	fNeedPaint=true;
@@ -900,7 +900,7 @@ void cWPFDCViewContent::ViewContentUpdateRect(void)noexcept
 	ViewContentUpdateState();
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::Paint(void)noexcept
+void cWPFDCViewContent::Paint(void)noexcept(true)
 {
 	if(fPainterState!=psActive)
 		return;
@@ -927,7 +927,7 @@ void cWPFDCViewContent::Paint(void)noexcept
 	fDrawing.mApplyVisual(fBitmapBuffer.Section,fBitmapBuffer.Stride,fDrawWidth,fDrawHeight);
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::SetNeedPaint(void)noexcept
+void cWPFDCViewContent::SetNeedPaint(void)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -938,7 +938,7 @@ void cWPFDCViewContent::SetNeedPaint(void)noexcept
 	Paint();
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::CPPPaintStart(void *BitmapData,int Width,int Height)noexcept
+void cWPFDCViewContent::CPPPaintStart(void *BitmapData,int Width,int Height)noexcept(true)
 {
 	auto Pixels=static_cast<uInt32*>(BitmapData);
 	uIntn PixelCount=Width*Height;
@@ -951,7 +951,7 @@ void cWPFDCViewContent::CPPPaintStart(void *BitmapData,int Width,int Height)noex
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::CPPPaintFinish(void *BitmapData,int Width,int Height)noexcept
+void cWPFDCViewContent::CPPPaintFinish(void *BitmapData,int Width,int Height)noexcept(true)
 {
 	if(fPainterOutputAlpha){
 	}
@@ -964,7 +964,7 @@ void cWPFDCViewContent::CPPPaintFinish(void *BitmapData,int Width,int Height)noe
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::SetupBitmap(HDC DC)noexcept
+void cWPFDCViewContent::SetupBitmap(HDC DC)noexcept(true)
 {
 	// grow bitmap if needed
 	int NewWidth=fBitmapBuffer.Width;
@@ -985,7 +985,7 @@ void cWPFDCViewContent::SetupBitmap(HDC DC)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDCViewContent::CPPPaint(cWPFGDIThreadContext *CPP)noexcept
+void cWPFDCViewContent::CPPPaint(cWPFGDIThreadContext *CPP)noexcept(true)
 {
 	auto TempDC=CPP->Device->QueryMemDC();
 	HDC DC=TempDC->GetHandle();
@@ -1002,18 +1002,18 @@ void cWPFDCViewContent::CPPPaint(cWPFGDIThreadContext *CPP)noexcept
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cD3D9ExWindowDevice::cD3D9ExWindowDevice(iWindow *Window)noexcept
+cD3D9ExWindowDevice::cD3D9ExWindowDevice(iWindow *Window)noexcept(true)
 	: fWindow(Window)
 {
 	fWindow->InsertMessageHandler(this);
 }
 //---------------------------------------------------------------------------
-cD3D9ExWindowDevice::~cD3D9ExWindowDevice()noexcept
+cD3D9ExWindowDevice::~cD3D9ExWindowDevice()noexcept(true)
 {
 	fWindow->RemoveMessageHandler(this);
 }
 //---------------------------------------------------------------------------
-IDirect3DDevice9Ex* cD3D9ExWindowDevice::GetDevice(void)const noexcept
+IDirect3DDevice9Ex* cD3D9ExWindowDevice::GetDevice(void)const noexcept(true)
 {
 	return fDevice;
 }
@@ -1035,7 +1035,7 @@ const D3DPRESENT_PARAMETERS cD3D9ExWindowDevice::DefaultPresentParameter={
 	D3DPRESENT_INTERVAL_IMMEDIATE,// PresentationInterval;
 };
 //---------------------------------------------------------------------------
-void cD3D9ExWindowDevice::WindowAttached(void)noexcept
+void cD3D9ExWindowDevice::WindowAttached(void)noexcept(true)
 {
 	HRESULT hr;
 	
@@ -1065,44 +1065,44 @@ void cD3D9ExWindowDevice::WindowAttached(void)noexcept
 
 }
 //---------------------------------------------------------------------------
-void cD3D9ExWindowDevice::WindowDetached(void)noexcept
+void cD3D9ExWindowDevice::WindowDetached(void)noexcept(true)
 {
 	fDevice=nullptr;
 }
 //---------------------------------------------------------------------------
-bool cD3D9ExWindowDevice::WindowMessage(LRESULT&,const cWindowMessageParam&)noexcept
+bool cD3D9ExWindowDevice::WindowMessage(LRESULT&,const cWindowMessageParam&)noexcept(true)
 {
 	return false;
 }
 //---------------------------------------------------------------------------
-void cD3D9ExWindowDevice::WindowMessageProcessed(LRESULT,const cWindowMessageParam&)noexcept
+void cD3D9ExWindowDevice::WindowMessageProcessed(LRESULT,const cWindowMessageParam&)noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cWPFDXGIViewContent::cWPFDXGIViewContent(iDXGIPainter *Painter)noexcept
+cWPFDXGIViewContent::cWPFDXGIViewContent(iDXGIPainter *Painter)noexcept(true)
 	: fPainter(Painter)
 	, fPainterState(UIState::Null)
 {
 	mbcWPFD3DImageDrawing::mSetup();
 }
 //---------------------------------------------------------------------------
-cWPFDXGIViewContent::~cWPFDXGIViewContent()noexcept
+cWPFDXGIViewContent::~cWPFDXGIViewContent()noexcept(true)
 {
 	mbcWPFD3DImageDrawing::mClear();
 }
 //---------------------------------------------------------------------------
-const cGCHandle* cWPFDXGIViewContent::GetDrawingPointer(void)noexcept
+const cGCHandle* cWPFDXGIViewContent::GetDrawingPointer(void)noexcept(true)
 {
 	return &fDrawingHandle;
 }
 //---------------------------------------------------------------------------
-eUIState cWPFDXGIViewContent::GetPaintState(void)noexcept
+eUIState cWPFDXGIViewContent::GetPaintState(void)noexcept(true)
 {
 	return fPainterState;
 }
 //---------------------------------------------------------------------------
-cUIPoint cWPFDXGIViewContent::GetPaintSize(void)noexcept
+cUIPoint cWPFDXGIViewContent::GetPaintSize(void)noexcept(true)
 {
 	cUIPoint Size;
 	Size.x=fDrawWidth;
@@ -1110,53 +1110,53 @@ cUIPoint cWPFDXGIViewContent::GetPaintSize(void)noexcept
 	return Size;
 }
 //---------------------------------------------------------------------------
-bool cWPFDXGIViewContent::GetRenderBufferSharedHandle(HANDLE &SharedHandle)noexcept
+bool cWPFDXGIViewContent::GetRenderBufferSharedHandle(HANDLE &SharedHandle)noexcept(true)
 {
 	SharedHandle=fSurfaceSharedHandle;
 	return true;
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::UpdateRenderBuffer(void)noexcept
+void cWPFDXGIViewContent::UpdateRenderBuffer(void)noexcept(true)
 {
 	mPresent(fDrawWidth,fDrawHeight);
 }
 //---------------------------------------------------------------------------
-iUIView* cWPFDXGIViewContent::GetView(void)noexcept
+iUIView* cWPFDXGIViewContent::GetView(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetView();
 }
 //---------------------------------------------------------------------------
-bool cWPFDXGIViewContent::SetView(iUIView *View)noexcept
+bool cWPFDXGIViewContent::SetView(iUIView *View)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetView(View);
 }
 //---------------------------------------------------------------------------
-bool cWPFDXGIViewContent::GetVisible(void)noexcept
+bool cWPFDXGIViewContent::GetVisible(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetVisible();
 }
 //---------------------------------------------------------------------------
-bool cWPFDXGIViewContent::SetVisible(bool Visible)noexcept
+bool cWPFDXGIViewContent::SetVisible(bool Visible)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetVisible(Visible);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFDXGIViewContent::GetZPosition(void)noexcept
+Float32 cWPFDXGIViewContent::GetZPosition(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetZPosition();
 }
 //---------------------------------------------------------------------------
-bool cWPFDXGIViewContent::SetZPosition(Float32 ZPosition)noexcept
+bool cWPFDXGIViewContent::SetZPosition(Float32 ZPosition)noexcept(true)
 {
 	return bcWPFViewContentDrawing::SetZPosition(ZPosition);
 }
 //---------------------------------------------------------------------------
-Float32 cWPFDXGIViewContent::GetContentScale(void)noexcept
+Float32 cWPFDXGIViewContent::GetContentScale(void)noexcept(true)
 {
 	return bcWPFViewContentDrawing::GetContentScale();
 }
 //---------------------------------------------------------------------------
-eUIState cWPFDXGIViewContent::CheckPainterState(void)noexcept
+eUIState cWPFDXGIViewContent::CheckPainterState(void)noexcept(true)
 {
 	eUIState ContentState=CheckViewContentState();
 	if(ContentState>UIState::Background){
@@ -1167,7 +1167,7 @@ eUIState cWPFDXGIViewContent::CheckPainterState(void)noexcept
 	return ContentState;
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::UpdatePainterState(void)noexcept
+void cWPFDXGIViewContent::UpdatePainterState(void)noexcept(true)
 {
 	eUIState NewState=CheckPainterState();
 	if(fPainterState==NewState)
@@ -1218,14 +1218,14 @@ void cWPFDXGIViewContent::UpdatePainterState(void)noexcept
 	fPainterState=NewState;
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::ViewContentUpdateState(void)noexcept
+void cWPFDXGIViewContent::ViewContentUpdateState(void)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
 	UpdatePainterState();
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
+void cWPFDXGIViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -1240,7 +1240,7 @@ void cWPFDXGIViewContent::ViewContentUpdateWindow(iWindow *Window)noexcept
 	UpdatePainterState();
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::ViewContentUpdateRect(void)noexcept
+void cWPFDXGIViewContent::ViewContentUpdateRect(void)noexcept(true)
 {
 	double Scale=fLayoutScale;
 	double DrawX=fContentMargin.Left;
@@ -1267,12 +1267,12 @@ void cWPFDXGIViewContent::ViewContentUpdateRect(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::D3DFrontBufferAvailableChanged(void)noexcept
+void cWPFDXGIViewContent::D3DFrontBufferAvailableChanged(void)noexcept(true)
 {
 	UpdatePainterState();
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::SetupBackBuffer(void)noexcept
+void cWPFDXGIViewContent::SetupBackBuffer(void)noexcept(true)
 {
 	if(fSurface!=nullptr){
 		mApplyBackBuffer(fSurface,fViewWidth,fViewHeight);
@@ -1301,7 +1301,7 @@ void cWPFDXGIViewContent::SetupBackBuffer(void)noexcept
 	}
 }
 //---------------------------------------------------------------------------
-void cWPFDXGIViewContent::ClearBackBuffer(void)noexcept
+void cWPFDXGIViewContent::ClearBackBuffer(void)noexcept(true)
 {
 	fSurface=nullptr;
 	fSurfaceSharedHandle=nullptr;

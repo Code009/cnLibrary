@@ -1,4 +1,3 @@
-#include <time.h>
 #include "POSIX_Time.h"
 
 using namespace cnLibrary;
@@ -6,7 +5,7 @@ using namespace siPOSIX;
 //---------------------------------------------------------------------------
 #ifdef siOS_POSIX_ENABLE_TIME
 //---------------------------------------------------------------------------
-uInt64 siPOSIX::timespecToNanoSeconds(const timespec &tv)noexcept
+uInt64 siPOSIX::timespecToNanoSeconds(const timespec &tv)noexcept(true)
 {
 	uInt64 NanoSeconds;
 	NanoSeconds=tv.tv_nsec;
@@ -14,7 +13,7 @@ uInt64 siPOSIX::timespecToNanoSeconds(const timespec &tv)noexcept
 	return NanoSeconds;
 }
 //---------------------------------------------------------------------------
-timespec siPOSIX::timespecFromNanoSeconds(uInt64 NanoSeconds)noexcept
+timespec siPOSIX::timespecFromNanoSeconds(uInt64 NanoSeconds)noexcept(true)
 {
 	timespec ts;
 	ts.tv_sec=NanoSeconds/Time_1s;
@@ -22,27 +21,27 @@ timespec siPOSIX::timespecFromNanoSeconds(uInt64 NanoSeconds)noexcept
 	return ts;
 }
 //---------------------------------------------------------------------------
-uInt64 siPOSIX::GetSystemTimeNow(void)noexcept
+uInt64 siPOSIX::GetSystemTimeNow(void)noexcept(true)
 {
 	timespec now;
 	clock_gettime(CLOCK_REALTIME,&now);
 	return timespecToNanoSeconds(now);
 }
 //---------------------------------------------------------------------------
-cTimesepcTimepoint::cTimesepcTimepoint()noexcept
+cTimesepcTimepoint::cTimesepcTimepoint()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-cTimesepcTimepoint::cTimesepcTimepoint(sInt64 NanoSecondsSinceUnixEPoch)noexcept
+cTimesepcTimepoint::cTimesepcTimepoint(sInt64 NanoSecondsSinceUnixEPoch)noexcept(true)
 {
 	fValue=timespecFromNanoSeconds(NanoSecondsSinceUnixEPoch);
 }
 //---------------------------------------------------------------------------
-cTimesepcTimepoint::~cTimesepcTimepoint()noexcept
+cTimesepcTimepoint::~cTimesepcTimepoint()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void cTimesepcTimepoint::timespecFromTime(timespec &tv,iTimepoint *RefTime)noexcept
+void cTimesepcTimepoint::timespecFromTime(timespec &tv,iTimepoint *RefTime)noexcept(true)
 {
 	auto NanoSeconds=RefTime->SystemTime();
 
@@ -50,12 +49,12 @@ void cTimesepcTimepoint::timespecFromTime(timespec &tv,iTimepoint *RefTime)noexc
 	tv.tv_sec+=cnSystem::SystemTimeEpochSecondsSinceUnixEpoch;
 }
 //---------------------------------------------------------------------------
-sInt64 cTimesepcTimepoint::SystemTime(void)noexcept
+sInt64 cTimesepcTimepoint::SystemTime(void)noexcept(true)
 {
 	return timespecToNanoSeconds(fValue);
 }
 //---------------------------------------------------------------------------
-sInt64 cTimesepcTimepoint::SinceTime(iTimepoint *Time)noexcept
+sInt64 cTimesepcTimepoint::SinceTime(iTimepoint *Time)noexcept(true)
 {
 	timespec ref;
 	timespecFromTime(ref,Time);
