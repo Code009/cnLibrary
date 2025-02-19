@@ -119,8 +119,6 @@ void cnSystem::CurrentThread::SwitchThread(void)noexcept(true)
 
 void cnSystem::CurrentThread::SuspendFor(uInt64 Delay)noexcept(true)
 {	return ::Sleep(Delay/Time_1ms);	}
-bool cnSystem::CurrentThread::SleepUntil(uInt64 Time)noexcept(true)
-{	return CurrentThreadSleepUntil(Time);	}
 
 iThread* cnSystem::CurrentThread::GetThread(void)noexcept(true)
 {	return cThread::QueryCurrent();	}

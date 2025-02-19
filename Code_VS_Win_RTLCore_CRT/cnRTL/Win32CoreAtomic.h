@@ -39,25 +39,6 @@ struct TKRuntime::TAtomicInteger
 		return a;
 	}
 
-	static bool WatchEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
-		for(uIntn i=0;i<Count;i++){
-			::MemoryBarrier();
-			if(a==Value){
-				return true;
-			}
-		}
-		return false;
-	}
-	static bool WatchNotEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
-		for(uIntn i=0;i<Count;i++){
-			::MemoryBarrier();
-			if(a!=Value){
-				return true;
-			}
-		}
-		return false;
-	}
-
 
 	static void FreeStore(tAtomic &a,const tInteger &v){
 		return ReleaseStore(a,v);

@@ -167,8 +167,10 @@
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinUI.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h" />
     <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h" />
+    <ClInclude Include="..\..\Code\cnTK\cnTK.OS.h" />
     <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp" />
     <ClInclude Include="..\..\Code\cnTK\ObjectLifeCycle.hpp" />
+    <ClInclude Include="..\..\Code\cnTK\OS.Synchronization.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp" />
     <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp" />
@@ -285,10 +287,13 @@
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.h" />
     <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.h" />
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTThread.hpp" />
+    <ClInclude Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.h" />
     <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h" />
     <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\cnRTLCore.h" />
     <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\CRTHeader.h" />
     <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreAtomic.h" />
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreThread.h" />
     <ClInclude Include="dependency.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -357,6 +362,7 @@
     <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.cpp" />
     <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.cpp" />
+    <ClCompile Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

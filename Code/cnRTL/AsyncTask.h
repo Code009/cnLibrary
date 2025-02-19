@@ -56,7 +56,7 @@ protected:
 	TAsyncTaskPtr fTask;
 };
 //---------------------------------------------------------------------------
-class cWaitForTaskProcedure : public cThreadOneTimeNotifier, public iProcedure
+class cWaitForTaskProcedure : public cLocalSingleThreadNotification, public iProcedure
 {
 	virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 };

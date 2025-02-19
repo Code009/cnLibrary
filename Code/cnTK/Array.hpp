@@ -376,7 +376,7 @@ struct cArrayMemoryOperator
 //	static void* Allocate(uIntn Size,uIntn AlignSize)noexcept;
 //	static void Deallocate(void* *Pointer,uIntn Size,uIntn AlignSize)noexcept;
 //	static bool Resize(void *Pointer,uIntn Size,uIntn Size)noexcept;
-//	static void* Relocate(void *Pointer,uIntn Length,uIntn AlignLength,uIntn NewLength,uIntn NewAlignLength,bool &ManualCopy)noexcept;
+//	static void* Relocate(void *Pointer,uIntn Size,uIntn AlignSize,uIntn NewSize,uIntn NewAlignSize,bool &ManualCopy)noexcept;
 //};
 
 template<class TAllocationOperator,class TElement>

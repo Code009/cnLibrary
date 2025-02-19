@@ -459,6 +459,21 @@
     <ClInclude Include="..\..\Code\cnTK\ObjectLifeCycle.hpp">
       <Filter>Code\cnTK</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Code\cnTK\OS.Synchronization.hpp">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code\cnTK\cnTK.OS.h">
+      <Filter>Code\cnTK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_CLib\CRT\CRTThread.hpp">
+      <Filter>Code - CLib\CRT</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreThread.h">
+      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.h">
+      <Filter>Code - Windows\cnRTL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -655,6 +670,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.cpp">
       <Filter>Code - Windows\cnUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.cpp">
+      <Filter>Code - Windows\cnRTL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

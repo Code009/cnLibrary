@@ -105,10 +105,6 @@ public:
 	struct tInterfaceID{	static iTypeID Value;	};
 	virtual void* cnLib_FUNC CastInterface(iTypeID ID)noexcept(true) override{		return cnClass::ImplementCastInterface(this,ID);	}
 
-	// Wake
-	//	wake thread on sleep
-	// [in]ResetVal		pointer to bool value to reset zero before thread awakes
-	virtual void cnLib_FUNC Wake(bool *ResetVal)noexcept(true)=0;
 	// SetPriority
 	//	Sets the priority value for the thread
 	// [in]Priority		priority value
@@ -217,12 +213,6 @@ void cnLib_FUNC SwitchThread(void)noexcept(true);
 //	Suspends the execution of the current thread until the time passed
 // [in]Delay	nanoseconds to suspend
 void cnLib_FUNC SuspendFor(uInt64 Delay)noexcept(true);
-
-// SleepUntil
-//	Suspends the execution of the current thread until the time arraied or by other threads
-// [in]Time		wake time, -1 means never wake
-// return true if it is woke by other threads, or false if it is the time
-bool cnLib_FUNC SleepUntil(uInt64 Time)noexcept(true);
 
 // GetThread
 //	get thread interface for other thread use

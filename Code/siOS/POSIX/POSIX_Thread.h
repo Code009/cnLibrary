@@ -134,16 +134,12 @@ extern cPOSIXThreadPriorityConverter gPOSIXThreadPriorityConverter;
 class cPOSIXThread : public iThread
 {
 public:
-	bool SleepUntil(const timespec &time)noexcept(true);
-	bool SleepUntilWake(void)noexcept(true);
-
 	static iPtr<cPOSIXThread> StartThread(iProcedure *Procedure)noexcept(true);
 	static cPOSIXThread* CurrentThread(void)noexcept(true);
 	static cPOSIXThread* GetCurrentThread(void)noexcept(true);
 
 	// iThread
 
-	virtual void cnLib_FUNC Wake(bool *ResetVal)noexcept(true)override;
 	virtual bool cnLib_FUNC SetPriority(sInt8 Priority)noexcept(true)override;
 	virtual bool cnLib_FUNC GetPriority(sInt8 &Priority)noexcept(true)override;
 	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)override;
@@ -155,10 +151,6 @@ protected:
 	~cPOSIXThread()noexcept(true);
 private:
 	pthread_t fThread;
-
-	c_pthread_cond fSleepCond;
-	c_pthread_mutex fSleepMutex;
-	bool fPendingWake=false;
 
 	void OnExit(void)noexcept(true);
 
@@ -183,7 +175,6 @@ private:
 namespace CurrentPOSIXThread{
 //---------------------------------------------------------------------------
 	void SuspendFor(uInt64 DelayNS)noexcept(true);
-	bool SleepUntil(uInt64 SystemTime)noexcept(true);
 	void SwitchThread(void)noexcept(true);
 	bool SetPriority(sInt8 Priority)noexcept(true);
 	sInt8 GetPriority(void)noexcept(true);
@@ -217,7 +208,7 @@ protected:
 	bool fProcQueueAvailable=false;
 	c_pthread_mutex fThreadWaitMutex;
 	c_pthread_cond fThreadWaitCond;
-	TKRuntime::ThreadNotification fCloseNotification;
+	TKRuntime::Thread::tSingleNotification fCloseNotification;
 
     cnRTL::cAtomicVar<ufInt32> fWaitingThreads;
     cnRTL::cAtomicVar<ufInt32> fWorkingThreads;

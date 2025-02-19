@@ -86,3 +86,7 @@ struct IUnknown;
 
 #include <sql.h>
 	// WinODBC
+
+
+// compability maro for win3.x
+#undef	Yield

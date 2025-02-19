@@ -59,7 +59,7 @@ public:
 	struct cWindowMessageThreadParam
 	{
 		aClsRef<cnRTL::cnWinRTL::cWindowMessageThread> MessageThread;
-		cnRTL::cThreadOneTimeNotifier CallerNotify;
+		cnRTL::cLocalSingleThreadNotification CallerNotify;
 	};
 	static DWORD WINAPI MessageThreadProcedure(LPVOID Parameter)noexcept(true);
 

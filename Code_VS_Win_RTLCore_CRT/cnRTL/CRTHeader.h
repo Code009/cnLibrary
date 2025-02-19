@@ -5,7 +5,6 @@
 #include <string>
 #include <math.h>
 
-
 #if _MSC_VER < 1900
 
 #error "cnLibrary - CRT - need Visual C++ 2015 (14.0) Toolset v140 or later"
@@ -16,6 +15,14 @@
 #include <functional>
 #include <iterator>
 #include <algorithm>
+
+#if cnLib_WINCRT_THREAD
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <thread>
+#endif // cnLib_WINCRT_THREAD
+
 
 //	_MSC_FULL_VER : 190023506			Visual C++ 2015 (14.0)	Toolset v140 update 1
 //	_MSC_FULL_VER : 190023918			Visual C++ 2015 (14.0)	Toolset v140 update 2
@@ -62,7 +69,7 @@
 //	_MSC_VER : 1930			Visual Studio 2022 RTW 17.0
 #if _MSC_VER >= 1930
 
-#ifndef cnLib_WINCRT_WIN32ATOMIC
+#if cnLib_WINCRT_ATOMIC
 
 // atomic needs alignment to work, which is not supported before VS2022
 #include <atomic>
@@ -73,8 +80,9 @@
 
 #else
 
-#ifndef cnLib_WINCRT_WIN32ATOMIC
-#define	cnLib_WINCRT_WIN32ATOMIC	// use win32 atomic before VS2022
+#ifdef cnLib_WINCRT_ATOMIC
+#undef	cnLib_WINCRT_ATOMIC		
+#define	cnLib_WINCRT_ATOMIC		0	// use win32 atomic before VS2022
 #endif
 
 #endif // _MSC_VER >= 1930

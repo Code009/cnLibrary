@@ -133,7 +133,7 @@ public:
 	bool Write(bcNTFileOverlappedIOHandle *FileIO,const void *Buffer,uIntn Size)noexcept(true);
 
 protected:
-	cThreadOneTimeNotifier fNotifier;
+	cLocalSingleThreadNotification fNotifier;
 
 	virtual void Completed(void)noexcept(true)override;
 

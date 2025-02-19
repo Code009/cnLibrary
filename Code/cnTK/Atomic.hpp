@@ -47,9 +47,6 @@ struct TAtomicInteger;
 //	static tInteger Get(const tAtomic &a)noexcept;
 //	static void Set(tAtomic &a,tInteger v)noexcept;
 //
-//	static bool WatchEqual(tAtomic &a,tInteger Value,uIntn Count)noexcept;
-//	static bool WatchNotEqual(tAtomic &a,tInteger Value,uIntn Count)noexcept;
-//
 //	static tInteger FreeLoad(const tAtomic &a)noexcept;
 //	static tInteger AcquireLoad(const tAtomic &a)noexcept;
 //
@@ -126,13 +123,6 @@ struct TAtomicVariableOperatorByInteger
 	}
 	static void Set(tAtomic &av,const TVariable &v)noexcept(true){
 		return TIntegerAtomicOperator::Set(av,reinterpret_cast<const tInteger&>(v));
-	}
-
-	static bool WatchEqual(const tAtomic &av,const TVariable &Value,uIntn Count)noexcept(true){
-		return TIntegerAtomicOperator::WatchEqual(av,reinterpret_cast<const tInteger&>(Value),Count);
-	}
-	static bool WatchNotEqual(const tAtomic &av,const TVariable &Value,uIntn Count)noexcept(true){
-		return TIntegerAtomicOperator::WatchNotEqual(av,reinterpret_cast<const tInteger&>(Value),Count);
 	}
 
 	static TVariable FreeLoad(const tAtomic &av)noexcept(true){
@@ -281,15 +271,6 @@ union cAtomicVariable
 	//	assign value non-atomicly
 	void Set(const tVariable &Value)noexcept(true){			return tAtomicOperator::Set(_atomic_,Value);	}
 
-
-
-
-	bool WatchEqual(const tVariable &Value,uIntn Count)const noexcept(true){
-		return tAtomicOperator::WatchEqual(_atomic_,Value,Count);
-	}
-	bool WatchNotEqual(const tVariable &Value,uIntn Count)const noexcept(true){
-		return tAtomicOperator::WatchNotEqual(_atomic_,Value,Count);
-	}
 
 
 	struct Free

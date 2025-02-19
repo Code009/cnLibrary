@@ -64,7 +64,7 @@ public:
 	bool SendTo(bcNTSocketOverlappedIOHandle *SocketIO,const sockaddr *addr,socklen_t addrlen,const void *Buffer,uIntn Size)noexcept(true);
 
 protected:
-	cnRTL::cThreadOneTimeNotifier fNotifier;
+	cnRTL::cLocalSingleThreadNotification fNotifier;
 	virtual void Completed(void)noexcept(true)override;
 
 };
@@ -267,7 +267,7 @@ public:
 		bool Connect(LPFN_CONNECTEX fpConnectEx,bcNTSocketOverlappedIOHandle *SocketIO,iSocketAddress *RemoteAddress)noexcept(true);
 
 	protected:
-		cnRTL::cThreadOneTimeNotifier fNotifier;
+		cnRTL::cLocalSingleThreadNotification fNotifier;
 
 		virtual void Completed(void)noexcept(true)override;
 
@@ -328,7 +328,7 @@ public:
 		bool Accept(bcNTSocketOverlappedIOHandleConnectionListener *Owner,bcNTSocketOverlappedIOHandle *AcceptSocketIO,void *AddressBuffer,DWORD LocalAddressLength,DWORD RemoteAddressLength)noexcept(true);
 
 	protected:
-		cnRTL::cThreadOneTimeNotifier fNotifier;
+		cnRTL::cLocalSingleThreadNotification fNotifier;
 
 		virtual void Completed(void)noexcept(true)override;
 

@@ -109,7 +109,7 @@ private:
 	class cTerminationCompletionProc : public iProcedure
 	{
 	public:
-		cnRTL::cnWinRTL::cWinSingleThreadNotification Notification;
+		cnRTL::cThreadSingleNotification Notification;
 		virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 			Notification.Notify();
 		}

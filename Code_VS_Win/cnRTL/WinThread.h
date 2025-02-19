@@ -16,34 +16,6 @@ namespace cnRTL{
 //---------------------------------------------------------------------------
 namespace cnWinRTL{
 //---------------------------------------------------------------------------
-class cWinExclusiveFlag
-{
-public:
-	cWinExclusiveFlag(bool InitalRun=false)noexcept(true);
-
-	// Acquire
-	//	test if caller acquired the flag, if not ,request owner to continue
-	// return true if the flag is acquired
-	bool Acquire(void)noexcept(true);
-	// Release
-	//	release the flag if no request pending
-	//	if there was pending request, the thread should continue running
-	//	this function must run called by owner
-	// return true if the owner release the flag, false if there is pending request
-	bool Release(void)noexcept(true);
-
-	// Continue
-	//	continue execution and clear pending state
-	void Continue(void)noexcept(true);
-
-	bool IsRunning(void)const noexcept(true);
-private:
-	static constexpr char rfIdle=0;
-	static constexpr char rfExecute=1;
-	static constexpr char rfPending=2;
-	volatile char fRunFlag=rfIdle;
-};
-//---------------------------------------------------------------------------
 class cWinTLS
 {
 public:
@@ -54,46 +26,6 @@ public:
 	bool Set(void *Value)noexcept(true);
 private:
 	DWORD fTLSIndex;
-};
-//---------------------------------------------------------------------------
-class cWinWaitObject
-{
-public:
-	cWinWaitObject()noexcept(true);
-	~cWinWaitObject()noexcept(true);
-
-	void Acquire(void)noexcept(true);
-	void Release(void)noexcept(true);
-
-	bool Check(void)noexcept(true);
-	void Wait(DWORD Millisecond)noexcept(true);
-private:
-	cAtomicVar<uIntn> fRefCount;
-	HANDLE fWaitThreadHandle=nullptr;
-	bool fWaitFlag;
-
-	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR)noexcept(true);
-};
-//---------------------------------------------------------------------------
-class cWinWaitReference : public iReference, public cWinWaitObject
-{
-public:
-	cWinWaitReference()noexcept(true);
-	~cWinWaitReference()noexcept(true);
-	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true) override;
-	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
-};
-//---------------------------------------------------------------------------
-class cWinSingleThreadNotification
-{
-public:
-	void Setup(void)noexcept(true);
-	void Clear(void)noexcept(true);
-	void Wait(void)noexcept(true);
-	void Notify(void)noexcept(true);
-protected:
-	HANDLE fNotifyThreadHandle;
-	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class bcModuleReference : public bcRegisteredReference
@@ -257,7 +189,6 @@ public:
 
 	// iThread
 
-	virtual void cnLib_FUNC Wake(bool *ResetVal)noexcept(true)override;
 	virtual bool cnLib_FUNC SetPriority(sfInt8 Priority)noexcept(true)override;
 	virtual bool cnLib_FUNC GetPriority(sfInt8 &Priority)noexcept(true)override;
 	virtual bool cnLib_FUNC IsCurrentThread(void)noexcept(true)override;
@@ -265,12 +196,7 @@ protected:
 
 	HANDLE fThreadHandle;
 	DWORD fThreadID;
-
-	static VOID CALLBACK WakeAPCFunction(ULONG_PTR dwParam)noexcept(true);
 };
-//---------------------------------------------------------------------------
-bool CurrentThreadSleepUntil(uInt64 SystemTime)noexcept(true);
-bool CurrentThreadSleep(DWORD Milliseconds)noexcept(true);
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA
 //---------------------------------------------------------------------------

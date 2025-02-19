@@ -38,11 +38,11 @@ public:
 
 	bool Check(void)noexcept(true);
 	void Wait(void)noexcept(true);
-	bool WaitUntil(uInt64 SystemTime)noexcept(true);
+	bool WaitFor(uInt64 Duration)noexcept(true);
+	//bool WaitUntil(uInt64 SystemTime)noexcept(true);
 private:
 	cAtomicVar<uIntn> fRefCount=0;
-	iThread *fWaitThread=nullptr;
-	bool fWaitFlag;
+	cThreadSingleNotification fNotification;
 };
 //---------------------------------------------------------------------------
 class cWaitObjectRegistration : public cWaitObject
@@ -136,30 +136,18 @@ public:
 	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true) override;
 };
 //---------------------------------------------------------------------------
-class cThreadSingleNotification
+class cLocalSingleThreadNotification
 {
 public:
-	void Setup(void)noexcept(true);
-	void Clear(void)noexcept(true);
-	void Wait(void)noexcept(true);
-	void Notify(void)noexcept(true);
-protected:
-	iThread *fNotifyThread;
-	bool fWaiting;
-};
-//---------------------------------------------------------------------------
-class cThreadOneTimeNotifier
-{
-public:
-	cThreadOneTimeNotifier()noexcept(true);
-	~cThreadOneTimeNotifier()noexcept(true);
+	cLocalSingleThreadNotification()noexcept(true);
+	~cLocalSingleThreadNotification()noexcept(true);
 
 	void Reset(void)noexcept(true);
 	void Wait(void)noexcept(true);
+	bool Wait(ufInt64 Duration)noexcept(true);
 	void Notify(void)noexcept(true);
 protected:
-	iThread *fNotifyThread;
-	bool fWaiting;
+	TKRuntime::Thread::tSingleNotification fNotification;
 };
 //---------------------------------------------------------------------------
 class cAffixedVariableSet

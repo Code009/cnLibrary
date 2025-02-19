@@ -9,63 +9,6 @@ using namespace cnWinRTL;
 cStaticVariableOnReference<LibraryMutex::cMutex> LibraryMutex::gInstance;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-constexpr char cWinExclusiveFlag::rfIdle;
-constexpr char cWinExclusiveFlag::rfExecute;
-constexpr char cWinExclusiveFlag::rfPending;
-//---------------------------------------------------------------------------
-cWinExclusiveFlag::cWinExclusiveFlag(bool InitalRun)noexcept(true)
-{
-	if(InitalRun)
-		fRunFlag=rfPending;
-	else
-		fRunFlag=rfIdle;
-}
-//---------------------------------------------------------------------------
-bool cWinExclusiveFlag::IsRunning(void)const noexcept(true)
-{
-	return fRunFlag!=rfIdle;
-}
-//---------------------------------------------------------------------------
-bool cWinExclusiveFlag::Acquire(void)noexcept(true)
-{
-	auto PrevRunFlag=::_InterlockedExchange8(&fRunFlag,rfPending);
-	switch(PrevRunFlag){
-	case rfIdle:
-		// new start
-		return true;
-	case rfExecute:
-		// is running
-		return false;
-	default:
-		cnLib_ASSERT(0);
-	case rfPending:
-		// already requested to run
-		return false;
-	}
-}
-//---------------------------------------------------------------------------
-bool cWinExclusiveFlag::Release(void)noexcept(true)
-{
-	// decrease state
-	auto PrevRunFlag=::_InterlockedExchangeAdd8(&fRunFlag,-1);
-	switch(PrevRunFlag){
-	default:
-		cnLib_ASSERT(0);
-	case rfPending:
-		// requested to run, continue running
-		return false;
-	case rfExecute:
-		// successfully stoped
-		return true;
-	}
-}
-//---------------------------------------------------------------------------
-void cWinExclusiveFlag::Continue(void)noexcept(true)
-{
-	fRunFlag=rfExecute;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 cWinTLS::cWinTLS()noexcept(true)
 {
 	fTLSIndex=::TlsAlloc();
@@ -84,122 +27,6 @@ void* cWinTLS::Get(void)noexcept(true)
 bool cWinTLS::Set(void *Value)noexcept(true)
 {
 	return ::TlsSetValue(fTLSIndex,Value)!=FALSE;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cWinWaitObject::cWinWaitObject()noexcept(true)
-{
-	fRefCount=0;
-}
-//---------------------------------------------------------------------------
-cWinWaitObject::~cWinWaitObject()noexcept(true)
-{
-	cnLib_ASSERT(fRefCount==0);
-}
-//---------------------------------------------------------------------------
-void cWinWaitObject::Acquire(void)noexcept(true)
-{
-	fRefCount.Free++;
-}
-//---------------------------------------------------------------------------
-void cWinWaitObject::Release(void)noexcept(true)
-{
-	if(fRefCount.Free--==0){
-		if(fWaitThreadHandle!=nullptr){
-			::QueueUserAPC(WaitNotifyAPC,fWaitThreadHandle,reinterpret_cast<ULONG_PTR>(this));
-		}
-	}
-}
-//---------------------------------------------------------------------------
-bool cWinWaitObject::Check(void)noexcept(true)
-{
-	return fRefCount==0;
-}
-//---------------------------------------------------------------------------
-VOID CALLBACK cWinWaitObject::WaitNotifyAPC(ULONG_PTR Param)noexcept(true)
-{
-	auto This=reinterpret_cast<cWinWaitObject*>(Param);
-	This->fWaitFlag=false;
-}
-//---------------------------------------------------------------------------
-void cWinWaitObject::Wait(DWORD Millisecond)noexcept(true)
-{
-	if(fRefCount==0)
-		return;
-
-	HANDLE CurProc=::GetCurrentProcess();
-	if(DuplicateHandle(CurProc,::GetCurrentThread(),CurProc,&fWaitThreadHandle,THREAD_SET_CONTEXT,false,DUPLICATE_SAME_ACCESS)==FALSE){
-		return;
-	}
-	fWaitFlag=true;
-
-	if(fRefCount.Free--!=0){
-		while(fWaitFlag){
-			DWORD WaitRet=SleepEx(Millisecond,TRUE);
-			if(WaitRet==0){
-				break;
-			}
-		}
-	}
-	fRefCount.Free++;
-	::CloseHandle(fWaitThreadHandle);
-	fWaitThreadHandle=nullptr;
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cWinWaitReference::cWinWaitReference()noexcept(true)
-{
-}
-//---------------------------------------------------------------------------
-cWinWaitReference::~cWinWaitReference()noexcept(true)
-{
-}
-//---------------------------------------------------------------------------
-void cWinWaitReference::IncreaseReference(void)noexcept(true)
-{
-	Acquire();
-}
-//---------------------------------------------------------------------------
-void cWinWaitReference::DecreaseReference(void)noexcept(true)
-{
-	Release();
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-void cWinSingleThreadNotification::Setup(void)noexcept(true)
-{
-	HANDLE ProcessHandle=::GetCurrentProcess();
-	HANDLE ThreadHandle=::GetCurrentThread();
-	::DuplicateHandle(ProcessHandle,ThreadHandle,ProcessHandle,&fNotifyThreadHandle,0,FALSE,DUPLICATE_SAME_ACCESS);
-}
-//---------------------------------------------------------------------------
-void cWinSingleThreadNotification::Wait(void)noexcept(true)
-{
-	while(fNotifyThreadHandle){
-		SleepEx(INFINITE,TRUE);
-	}
-}
-//---------------------------------------------------------------------------
-void cWinSingleThreadNotification::Notify(void)noexcept(true)
-{
-	::QueueUserAPC(WaitNotifyAPC,fNotifyThreadHandle,reinterpret_cast<ULONG_PTR>(this));
-}
-//---------------------------------------------------------------------------
-void cWinSingleThreadNotification::Clear(void)noexcept(true)
-{
-	if(fNotifyThreadHandle!=nullptr){
-		::CloseHandle(fNotifyThreadHandle);
-		fNotifyThreadHandle=nullptr;
-	}
-}
-//---------------------------------------------------------------------------
-VOID CALLBACK cWinSingleThreadNotification::WaitNotifyAPC(ULONG_PTR Param)noexcept(true)
-{
-	auto This=reinterpret_cast<cWinSingleThreadNotification*>(Param);
-	if(This->fNotifyThreadHandle!=nullptr){
-		::CloseHandle(This->fNotifyThreadHandle);
-		This->fNotifyThreadHandle=nullptr;
-	}
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -454,28 +281,6 @@ sInt8 cThreadHandle::ConvertThreadPriorityTo(int Priority)noexcept(true)
 	return libProiority;
 }
 //---------------------------------------------------------------------------
-VOID CALLBACK cThreadHandle::WakeAPCFunction(ULONG_PTR dwParam)noexcept(true)
-{
-	auto pVal=reinterpret_cast<bool*>(dwParam);
-	*pVal=false;
-}
-//---------------------------------------------------------------------------
-void cThreadHandle::Wake(bool *ResetVal)noexcept(true)
-{
-	// Queue APC
-	DWORD r;
-	if(ResetVal!=nullptr){
-		r=::QueueUserAPC(WakeAPCFunction,fThreadHandle,reinterpret_cast<ULONG_PTR>(ResetVal));
-	}
-	else{
-		r=::QueueUserAPC(EmptyAPCFunction,fThreadHandle,0);
-	}
-	if(r==FALSE){
-		DWORD ErrorCode=::GetLastError();
-		cnLib_ASSERT(!ErrorCode);
-	}
-}
-//---------------------------------------------------------------------------
 bool cThreadHandle::SetPriority(HANDLE ThreadHandle,sfInt8 Priority)noexcept(true)
 {
 	return ::SetThreadPriority(ThreadHandle,ConvertThreadPriorityFrom(Priority))!=FALSE;
@@ -506,31 +311,6 @@ bool cThreadHandle::SetPriority(sfInt8 Priority)noexcept(true)
 bool cThreadHandle::GetPriority(sfInt8 &Priority)noexcept(true)
 {
 	return GetPriority(fThreadHandle,Priority);
-}
-//---------------------------------------------------------------------------
-bool cnWinRTL::CurrentThreadSleepUntil(uInt64 SystemTime)noexcept(true)
-{
-	if(SystemTime==SystemTime_Never){
-		return CurrentThreadSleep(INFINITE);
-	}
-	sInt64 SleepNanoseconds=SystemTimeSinceNTFileTimeNowNS(SystemTime);
-	if(SleepNanoseconds<0){
-		// already time out
-		return false;
-	}
-	DWORD SleepMS=static_cast<DWORD>(SleepNanoseconds/Time_1ms);
-
-	return CurrentThreadSleep(SleepMS);
-}
-//---------------------------------------------------------------------------
-bool cnWinRTL::CurrentThreadSleep(DWORD Milliseconds)noexcept(true)
-{
-	auto r=SleepEx(Milliseconds,TRUE);
-	if(r==WAIT_TIMEOUT){
-		return false;
-	}
-	//WAIT_IO_COMPLETION
-	return true;
 }
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_VISTA

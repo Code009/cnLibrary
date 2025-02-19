@@ -15,9 +15,8 @@ void cWaitObject::Acquire(void)noexcept(true)
 void cWaitObject::Release(void)noexcept(true)
 {
 	if(fRefCount.Free--==0){
-		if(fWaitThread!=nullptr){
-			fWaitThread->Wake(&fWaitFlag);
-		}
+		// reference count was 0, notification should be ready
+		fNotification.Notify();
 	}
 }
 //---------------------------------------------------------------------------
@@ -31,40 +30,34 @@ void cWaitObject::Wait(void)noexcept(true)
 	if(fRefCount==0)
 		return;
 
-	fWaitFlag=true;
-	fWaitThread=cnSystem::CurrentThread::GetThread();
+	fNotification.Setup();
 	if(fRefCount.Free--!=0){
-		while(fWaitFlag){
-			cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
-		}
+		fNotification.Wait();
 	}
 	fRefCount.Free++;
-	fWaitThread=nullptr;
+	fNotification.Clear();
 }
 //---------------------------------------------------------------------------
-bool cWaitObject::WaitUntil(uInt64 SystemTime)noexcept(true)
+bool cWaitObject::WaitFor(uInt64 Duration)noexcept(true)
 {
 	if(fRefCount==0)
 		return true;
 
-	fWaitFlag=true;
-	fWaitThread=cnSystem::CurrentThread::GetThread();
+	fNotification.Setup();
 	if(fRefCount.Free--!=0){
-		while(fWaitFlag){
-			if(cnSystem::CurrentThread::SleepUntil(SystemTime)==false){
-				// timeout
-				if(++fRefCount.Free!=0){
-					// state reseted
-					fWaitThread=nullptr;
-					return false;
-				}
-				// other thread must notifing, continue wait
-				fRefCount.Free--;
+		while(fNotification.Wait(Duration)==false){
+			// timeout
+			if(++fRefCount.Free!=0){
+				// state reseted
+				fNotification.Clear();
+				return false;
 			}
+			// other thread must notifing, continue wait
+			fRefCount.Free--;
 		}
 	}
 	fRefCount.Free++;
-	fWaitThread=nullptr;
+	fNotification.Clear();
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -88,55 +81,35 @@ void cWaitReference::DecreaseReference(void)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cThreadSingleNotification::Setup(void)noexcept(true)
+cLocalSingleThreadNotification::cLocalSingleThreadNotification()noexcept(true)
 {
-	fNotifyThread=cnSystem::CurrentThread::GetThread();
-	fWaiting=true;
+	fNotification.Setup();
 }
 //---------------------------------------------------------------------------
-void cThreadSingleNotification::Wait(void)noexcept(true)
+cLocalSingleThreadNotification::~cLocalSingleThreadNotification()noexcept(true)
 {
-	while(fWaiting){
-		cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
-	}
+	fNotification.Clear();
 }
 //---------------------------------------------------------------------------
-void cThreadSingleNotification::Notify(void)noexcept(true)
+void cLocalSingleThreadNotification::Reset(void)noexcept(true)
 {
-	fNotifyThread->Wake(&fWaiting);
+	fNotification.Clear();
+	fNotification.Setup();
 }
 //---------------------------------------------------------------------------
-void cThreadSingleNotification::Clear(void)noexcept(true)
+void cLocalSingleThreadNotification::Wait(void)noexcept(true)
 {
-	fNotifyThread=nullptr;
+	return fNotification.Wait();
 }
 //---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-cThreadOneTimeNotifier::cThreadOneTimeNotifier()noexcept(true)
+bool cLocalSingleThreadNotification::Wait(ufInt64 Duration)noexcept(true)
 {
-	Reset();
+	return fNotification.Wait(Duration);
 }
 //---------------------------------------------------------------------------
-cThreadOneTimeNotifier::~cThreadOneTimeNotifier()noexcept(true)
+void cLocalSingleThreadNotification::Notify(void)noexcept(true)
 {
-}
-//---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Reset(void)noexcept(true)
-{
-	fNotifyThread=cnSystem::CurrentThread::GetThread();
-	fWaiting=true;
-}
-//---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Wait(void)noexcept(true)
-{
-	while(fWaiting){
-		cnSystem::CurrentThread::SleepUntil(SystemTime_Never);
-	}
-}
-//---------------------------------------------------------------------------
-void cThreadOneTimeNotifier::Notify(void)noexcept(true)
-{
-	fNotifyThread->Wake(&fWaiting);
+	return fNotification.Notify();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -360,52 +360,52 @@ cPOSIXThread* cPOSIXThread::GetCurrentThread(void)noexcept(true)
 	return static_cast<cPOSIXThread*>(pThread);
 }
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SleepUntilWake(void)noexcept(true)
-{
-	fSleepMutex.lock();
-
-	bool ByAlarm=false;
-	if(fPendingWake==false){
-		int ret=fSleepCond.wait(fSleepMutex);
-		ByAlarm=ret==0;
-	}
-	fPendingWake=false;
-
-	fSleepMutex.unlock();
-	return ByAlarm;
-}
+//bool cPOSIXThread::SleepUntilWake(void)noexcept(true)
+//{
+//	fSleepMutex.lock();
+//
+//	bool ByAlarm=false;
+//	if(fPendingWake==false){
+//		int ret=fSleepCond.wait(fSleepMutex);
+//		ByAlarm=ret==0;
+//	}
+//	fPendingWake=false;
+//
+//	fSleepMutex.unlock();
+//	return ByAlarm;
+//}
 //---------------------------------------------------------------------------
-bool cPOSIXThread::SleepUntil(const timespec &time)noexcept(true)
-{
-	fSleepMutex.lock();
-
-	bool ByAlarm=false;
-	while(fPendingWake==false){
-		int ret=fSleepCond.timedwait(fSleepMutex,time);
-		if(ret==0){
-			ByAlarm=true;
-		}
-		else{
-			// time out or fail
-			break;
-		}
-	}
-	fPendingWake=false;
-
-	fSleepMutex.unlock();
-	return ByAlarm;
-}
+//bool cPOSIXThread::SleepUntil(const timespec &time)noexcept(true)
+//{
+//	fSleepMutex.lock();
+//
+//	bool ByAlarm=false;
+//	while(fPendingWake==false){
+//		int ret=fSleepCond.timedwait(fSleepMutex,time);
+//		if(ret==0){
+//			ByAlarm=true;
+//		}
+//		else{
+//			// time out or fail
+//			break;
+//		}
+//	}
+//	fPendingWake=false;
+//
+//	fSleepMutex.unlock();
+//	return ByAlarm;
+//}
 //---------------------------------------------------------------------------
-void cPOSIXThread::Wake(bool *ResetVal)noexcept(true)
-{
-	fSleepMutex.lock();
-	fPendingWake=true;
-	fSleepCond.signal();
-	if(ResetVal!=nullptr){
-		*ResetVal=false;
-	}
-	fSleepMutex.unlock();
-}
+//void cPOSIXThread::Wake(bool *ResetVal)noexcept(true)
+//{
+//	fSleepMutex.lock();
+//	fPendingWake=true;
+//	fSleepCond.signal();
+//	if(ResetVal!=nullptr){
+//		*ResetVal=false;
+//	}
+//	fSleepMutex.unlock();
+//}
 //---------------------------------------------------------------------------
 bool cPOSIXThread::IsCurrentThread(void)noexcept(true)
 {
@@ -471,18 +471,18 @@ void CurrentPOSIXThread::SuspendFor(uInt64 DelayNS)noexcept(true)
 		ret=nanosleep(&trem,&trem);
 	}
 }
-//---------------------------------------------------------------------------
-bool CurrentPOSIXThread::SleepUntil(uInt64 SystemTime)noexcept(true)
-{
-	auto ThreadObject=cPOSIXThread::CurrentThread();
-	if(SystemTime==SystemTime_Never){
-		return ThreadObject->SleepUntilWake();
-	}
-	else{
-		auto tv=timespecFromNanoSeconds(SystemTime);
-		return ThreadObject->SleepUntil(tv);
-	}
-}
+////---------------------------------------------------------------------------
+//bool CurrentPOSIXThread::SleepUntil(uInt64 SystemTime)noexcept(true)
+//{
+//	auto ThreadObject=cPOSIXThread::CurrentThread();
+//	if(SystemTime==SystemTime_Never){
+//		return ThreadObject->SleepUntilWake();
+//	}
+//	else{
+//		auto tv=timespecFromNanoSeconds(SystemTime);
+//		return ThreadObject->SleepUntil(tv);
+//	}
+//}
 //---------------------------------------------------------------------------
 void CurrentPOSIXThread::SwitchThread(void)noexcept(true)
 {
@@ -533,14 +533,14 @@ void cPOSIXThreadExecutionPool::Close(void)noexcept(true)
 		return;
 
 	fClose=true;
-	fCloseNotification.Start();
+	fCloseNotification.Setup();
 	while(fWorkingThreads.Free.Load()!=0){
 		fThreadWaitMutex.lock();
 		fThreadWaitCond.broadcast();
 		fThreadWaitMutex.unlock();
 		fCloseNotification.Wait();
 	};
-	fCloseNotification.Finish();
+	fCloseNotification.Clear();
 }
 //---------------------------------------------------------------------------
 void cPOSIXThreadExecutionPool::MakeThread(void)noexcept(true)

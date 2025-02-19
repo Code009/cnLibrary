@@ -40,24 +40,6 @@ struct TKRuntime::TAtomicInteger
 		return a.load(std::memory_order::memory_order_acquire);
 	}
 
-	static bool WatchEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
-		for(uIntn i=0;i<Count;i++){
-			if(a.load(std::memory_order::memory_order_relaxed)==Value){
-				return true;
-			}
-		}
-		return false;
-	}
-	static bool WatchNotEqual(const tAtomic &a,const tInteger &Value,uIntn Count)noexcept{
-		for(uIntn i=0;i<Count;i++){
-			if(a.load(std::memory_order::memory_order_relaxed)!=Value){
-				return true;
-			}
-		}
-		return false;
-	}
-
-
 	static void FreeStore(tAtomic &a,const tInteger &v){
 		a.store(v,std::memory_order::memory_order_relaxed);
 	}

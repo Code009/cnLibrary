@@ -224,7 +224,7 @@ private:
 		void Wait(void)noexcept(true);
 		virtual void cnLib_FUNC Execute(mcWPFDispatcherReference *DispatcherReference)noexcept(true)override;
 	private:
-		cnRTL::cThreadOneTimeNotifier fNotifier;
+		cnRTL::cLocalSingleThreadNotification fNotifier;
 	};
 
 	iPtr<cWPFKeyboard> fWPFKeyboard;

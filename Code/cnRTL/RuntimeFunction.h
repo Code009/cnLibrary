@@ -13,6 +13,13 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
+namespace cnRTL{
+//---------------------------------------------------------------------------
+using cnAsync::cSpinLock;
+typedef TKRuntime::Thread::tSingleNotification cThreadSingleNotification;
+//---------------------------------------------------------------------------
+}	// namespace cnRTL
+//---------------------------------------------------------------------------
 namespace cnMath{
 //---------------------------------------------------------------------------
 
@@ -773,36 +780,6 @@ private:
 	rPtr< cObjectRecyclePool<TItem> > fPool;
 };
 //---------------------------------------------------------------------------
-
-// Synchronization
-
-//---------------------------------------------------------------------------
-template<uIntn SpinCount=16384>
-class cSpinLock
-{
-public:
-	cnLib_CONSTEXPR_FUNC cSpinLock()noexcept(true):fOwned(false){}
-#ifdef cnLib_DEBUG
-	~cSpinLock()noexcept(true){	cnLib_ASSERT(fOwned==false);	}
-#endif // cnLib_DEBUG
-
-	void Acquire(void)noexcept(true){
-		while(fOwned.Acquire.CmpStore(false,true)==false){
-			if(fOwned.WatchEqual(false,SpinCount)==false){
-				cnSystem::CurrentThread::SwitchThread();
-			}
-		}
-	}
-	bool TryAcquire(void)noexcept(true){
-		return fOwned.Acquire.CmpStore(false,true);
-	}
-	void Release(void)noexcept(true){
-		fOwned.Release.Store(false);
-	}
-protected:
-	cAtomicVar<bool> fOwned=false;
-};
-//---------------------------------------------------------------------------
 struct cLockPointerReferenceOperator
 {
 	template<class T>	static void Acquire(T *Pointer)noexcept(true){	Pointer->Acquire();	}
@@ -893,7 +870,7 @@ protected:
 
 	cnVar::cStaticVariable<TVariable> fVariable;
 	cnRTL::cAtomicVar<uIntn> fRefCount=0;
-	cnRTL::cSpinLock<> fConstructionLock;
+	cnRTL::cSpinLock<65536> fConstructionLock;
 
 };
 //---------------------------------------------------------------------------
