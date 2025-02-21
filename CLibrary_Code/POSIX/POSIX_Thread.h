@@ -2,10 +2,10 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2012-05-28                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLib_siOS_POSIX_POSIX_Thread_H__
-#define __cnLib_siOS_POSIX_POSIX_Thread_H__
+#ifndef __cnLib_POSIX_POSIX_Thread_H__
+#define __cnLib_POSIX_POSIX_Thread_H__
 
-#include <siOS/POSIX/POSIXHeader.h>
+#include <POSIX/POSIXCommon.h>
 
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus

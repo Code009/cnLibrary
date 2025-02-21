@@ -2,10 +2,10 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2016-06-07                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLib_siOS_POSIX_POSIX_File_H__
-#define __cnLib_siOS_POSIX_POSIX_File_H__
+#ifndef __cnLib_POSIX_POSIX_File_H__
+#define __cnLib_POSIX_POSIX_File_H__
 
-#include <siOS/POSIX/POSIXHeader.h>
+#include <POSIX/POSIXCommon.h>
 #include <cnSystem/POSIX_FileSystem.h>
 
 /*-------------------------------------------------------------------------*/

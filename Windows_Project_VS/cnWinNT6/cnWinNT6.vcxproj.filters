@@ -36,10 +36,10 @@
     <ClInclude Include="cnWinSystemHeader.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystem.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystem.h">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.h">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,16 +50,16 @@
     <ClCompile Include="..\..\Code\cnSystemIID\cnSystemInterfaceID.cpp">
       <Filter>Code\cnSystemIID</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystem.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystem.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystemNT6.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystemNT6.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWindowsInterfaceID.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWindowsInterfaceID.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
   </ItemGroup>

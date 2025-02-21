@@ -2,13 +2,13 @@
 /*         Developer : Code009                                             */
 /*         Create on : 2016-07-27                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLib_siOS_POSIX_POSIX_Socket_H__
-#define __cnLib_siOS_POSIX_POSIX_Socket_H__
+#ifndef __cnLib_POSIX_POSIX_Socket_H__
+#define __cnLib_POSIX_POSIX_Socket_H__
 
 
 //#include <sys/types.h>
 
-#include <siOS/POSIX/POSIXHeader.h>
+#include <POSIX/POSIXCommon.h>
 #include <cnSystem/Socket.h>
 
 /*-------------------------------------------------------------------------*/

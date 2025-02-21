@@ -144,7 +144,7 @@ public:
 
 	void Reset(void)noexcept(true);
 	void Wait(void)noexcept(true);
-	bool Wait(ufInt64 Duration)noexcept(true);
+	bool WaitFor(ufInt64 Duration)noexcept(true);
 	void Notify(void)noexcept(true);
 protected:
 	TKRuntime::Thread::tSingleNotification fNotification;

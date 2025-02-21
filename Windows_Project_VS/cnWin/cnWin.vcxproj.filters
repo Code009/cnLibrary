@@ -36,67 +36,67 @@
     <ClInclude Include="stdafx.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\WinSDKHeader.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\WinSDKHeader.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_Socket.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_Socket.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_Thread.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_Thread.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_Common.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_Common.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\cnWin.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\cnWin.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_BasicStorage.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_BasicStorage.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_Window.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_Window.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_WindowSubclass.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_WindowSubclass.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_FileSystem.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_FileSystem.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_GDI.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_GDI.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\Win_AudioDevice.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\Win_AudioDevice.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWin\cnWinInterface.h">
+    <ClInclude Include="..\..\Windows_Code\cnWin\cnWinInterface.h">
       <Filter>Code - Windows\cnWin</Filter>
     </ClInclude>
     <ClInclude Include="dependency.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_Common.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_Common.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUICore.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUICore.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIFramework.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIFramework.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIView.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIView.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIViewContent.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIViewContent.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIWindow.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIWindow.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\cnWinCLI.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\cnWinCLI.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinCLI\cnWinWPF.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinCLI\cnWinWPF.h">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,49 +104,49 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>-\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_Thread.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_Thread.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_Common.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_Common.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_Socket.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_Socket.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_BasicStorage.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_BasicStorage.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_WindowSubclass.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_WindowSubclass.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_Window.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_Window.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_FileSystem.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_FileSystem.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_GDI.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_GDI.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWin\Win_AudioDevice.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWin\Win_AudioDevice.cpp">
       <Filter>Code - Windows\cnWin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUICore.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUICore.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIFramework.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIFramework.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIView.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIView.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIViewContent.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIViewContent.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_WPFUIWindow.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_WPFUIWindow.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinCLI\WinCLI_Common.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinCLI\WinCLI_Common.cpp">
       <Filter>Code - Windows\cnWinCLI</Filter>
     </ClCompile>
   </ItemGroup>

@@ -338,6 +338,8 @@ bcConsoleLineInputHandler::~bcConsoleLineInputHandler()noexcept(true)
 void bcConsoleLineInputHandler::KeyInput(eKeyCode KeyCode)noexcept(true)
 {
 	switch(KeyCode){
+	default:
+		break;
 	case KeyCode::Backspace:
 		{
 			uIntn BufferLength=fLineBuffer->GetLength();

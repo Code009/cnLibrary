@@ -277,6 +277,8 @@ void bcTextDocumentEdit::KeyFocusLeave(iUIKeyEvent *KeyEvent)noexcept(true)
 void bcTextDocumentEdit::KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {UnusedParameter(KeyEvent,KeyCode);
 	switch(KeyCode){
+	default:
+		break;
 	case KeyCode::Shift:
 		fKeyDown.Shift=true;
 		break;
@@ -286,6 +288,8 @@ void bcTextDocumentEdit::KeyDown(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept
 void bcTextDocumentEdit::KeyUp(iUIKeyEvent *KeyEvent,eKeyCode KeyCode)noexcept(true)
 {UnusedParameter(KeyEvent,KeyCode);
 	switch(KeyCode){
+	default:
+		break;
 	case KeyCode::Shift:
 		fKeyDown.Shift=false;
 		break;

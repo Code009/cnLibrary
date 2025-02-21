@@ -437,8 +437,8 @@ void cStreamBufferIOQueue::CommitWrite(uIntn Size)
 //---------------------------------------------------------------------------
 cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noexcept(true)
 	: fBufferSize(cAllocationOperator::RoundUpCapacity(BufferSizeLimit))
-	, fReadingItem(fBufferItem)
 	, fWritingItem(fBufferItem)
+	, fReadingItem(fBufferItem)
 	, fReadBufferOffset(0)
 	, fReadBufferMergedSize(0)
 {

@@ -36,10 +36,10 @@
     <ClInclude Include="stdafx.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystem.h">
       <Filter>System - WPF</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.h">
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.h">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClInclude>
     <ClInclude Include="cnWinSystemHeader.h">
@@ -50,27 +50,27 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>-\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystemNT6.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystemNT6.cpp">
       <Filter>System - WPF</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystem.cpp">
       <Filter>System - WPF</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Code\cnSystemIID\cnSystemInterfaceID.cpp">
       <Filter>Code\cnSystemIID</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWindowsInterfaceID.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWindowsInterfaceID.cpp">
       <Filter>Code - Windows\cnWinSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceID.cpp">
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFInterfaceID.cpp">
       <Filter>System - WPF</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceIDList.inc">
+    <None Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFInterfaceIDList.inc">
       <Filter>System - WPF</Filter>
     </None>
   </ItemGroup>

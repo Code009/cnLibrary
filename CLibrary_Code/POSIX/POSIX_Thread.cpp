@@ -603,9 +603,6 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept(true)
 		ufInt32 WaitingThreadCount=++fWaitingThreads.Acquire;
 
 		bool WaitInfinite=WaitingThreadCount==1;
-		timespec WaitTimeOut;
-		WaitTimeOut.tv_sec=30;
-		WaitTimeOut.tv_nsec=0;
 
 		int WaitRet;
 		fThreadWaitMutex.lock();
@@ -618,6 +615,9 @@ void cPOSIXThreadExecutionPool::WorkThreadProcedure(void)noexcept(true)
 				WaitRet=fThreadWaitCond.wait(fThreadWaitMutex);
 			}
 			else{
+				timespec WaitTimeOut;
+				clock_gettime(CLOCK_REALTIME, &WaitTimeOut);
+				WaitTimeOut.tv_nsec+=30;
 				WaitRet=fThreadWaitCond.timedwait(fThreadWaitMutex,WaitTimeOut);
 			}
 		}

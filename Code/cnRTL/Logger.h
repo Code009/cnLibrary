@@ -167,7 +167,7 @@ private:
 	bool fNeedAsync=false;
 	bool fAsyncInitialized=false;
 	uInt8 fRecordMissingCount=0;
-	bool fAsyncWaitFlag=false;
+	//bool fAsyncWaitFlag=false;
 	ufInt8 fTerminateState=0;
 	iProcedure *fTerminateNotifyProcedure;
 	cAtomicVar<ufInt32> fAsyncRefCount=0;

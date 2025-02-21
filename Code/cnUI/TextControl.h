@@ -192,7 +192,7 @@ protected:
 
 	// cScrollContent
 	
-	virtual void ScrollContentUpdateContentLayout(void)noexcept(true);
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 
 	// content info
 

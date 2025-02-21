@@ -719,7 +719,7 @@ struct TInteger_BitScan
 		return TInteger_BitScan<IntegerSize/2>::BitScanL(BitIndex,static_cast<tUIntH>(Src));
 	}
 	static void BitScanH(ufInt8 &BitIndex,tUInt Src)noexcept(true){
-		if(Src&((~static_cast<tUInt>(0))<<IntegerSize*ByteBitCount/2)){
+		if(Src&(static_cast<tUInt>(~static_cast<tUInt>(0))<<IntegerSize*ByteBitCount/2)){
 			BitIndex+=IntegerSize*ByteBitCount/2;
 			Src>>=(IntegerSize*ByteBitCount/2);
 		}

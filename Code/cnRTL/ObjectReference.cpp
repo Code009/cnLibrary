@@ -177,8 +177,8 @@ void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportTex
 bcRegisteredReference::cReference::cReference(bcRegisteredReference *Owner,iLibraryReferrer *Referrer)noexcept(true)
 	: fOwner(Owner)
 	, fReferrer(Referrer)
-	, fWeakRefCount(1)
 	, Released(false)
+	, fWeakRefCount(1)
 	, DescriptionUpdated(false)
 {
 }

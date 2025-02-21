@@ -165,7 +165,7 @@ protected:
 	virtual void ControlCaretContentSetDefault(void)noexcept(true);
 
 	// bcTextDocument
-	virtual void ScrollContentUpdateContentLayout(void)noexcept(true);
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 
 	// edit
 

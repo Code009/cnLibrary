@@ -42,6 +42,29 @@ public:
 //---------------------------------------------------------------------------
 }	// namespace cnWinRTL
 //---------------------------------------------------------------------------
+namespace Win32RTLCore{
+//---------------------------------------------------------------------------
+class cSingleNotification
+{
+public:
+	void Setup(void)noexcept(true);
+	void Clear(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	bool WaitFor(ufInt64 Duration)noexcept(true);
+	//bool WaitUntil(ufInt64 Duration)noexcept(true);
+	void Notify(void)noexcept(true);
+
+private:
+	HANDLE fNotifyThreadHandle;
+	volatile CHAR fNotifyFlag;
+	CHAR fAPCFlag;
+	static VOID CALLBACK WaitNotifyAPC(ULONG_PTR Param)noexcept(true);
+
+	bool WaitMS(DWORD Milliseconds)noexcept(true);
+};
+//---------------------------------------------------------------------------
+}	// namespace Win32RTLCore
+//---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary

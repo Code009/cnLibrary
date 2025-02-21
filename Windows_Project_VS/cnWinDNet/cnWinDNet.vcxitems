@@ -14,30 +14,30 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_Common.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUICore.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIFramework.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIView.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIViewContent.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIWindow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_Common.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUICore.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIFramework.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIViewContent.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_Common.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_Common.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUICore.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUICore.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIFramework.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIFramework.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIView.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIView.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIViewContent.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIViewContent.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Code_VS_Win\cnWinCLI\WinCLIM_WPFUIWindow.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\Windows_Code\cnWinCLI\WinCLIM_WPFUIWindow.cpp">
       <ForcedIncludeFiles Condition="'%(PrecompiledHeader)'=='Use'">%(PrecompiledHeaderFile);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
   </ItemGroup>

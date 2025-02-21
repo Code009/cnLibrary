@@ -514,10 +514,10 @@ void cProtocolProviderFromStream::WriteQueueProcess(void)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cProtocolProviderFromRWQueue::cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept(true)
-	: fProtocolProcessor(nullptr)
-	, fConnection(cnVar::MoveCast(Connection))
+	: fConnection(cnVar::MoveCast(Connection))
 	, fReadQueue(cnVar::MoveCast(ReadQueue))
 	, fWriteQueue(cnVar::MoveCast(WriteQueue))
+	, fProtocolProcessor(nullptr)
 	, fRWQueueTerminate(false)
 	, fRWQueueConnected(false)
 	, fProcessorSingleThreaded(false)
@@ -984,10 +984,10 @@ rPtr<cProtocolProviderFromRWQueue> cnRTL::CreateProtocolProviderFromEndpoint(iCo
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bcProtocolQueueProcessor::bcProtocolQueueProcessor()noexcept(true)
-	: fProcessorSingleThreaded(false)
+	: fQueueStateConnected(false)
 	, fQueueStateActive(false)
-	, fQueueStateConnected(false)
 	, fProcessorSetQueueEnded(0)
+	, fProcessorSingleThreaded(false)
 	, fConnectionNotifyInput(false)
 	, fConnectionNotifyOutput(false)
 {
@@ -1234,8 +1234,8 @@ void bcProtocolQueueProcessor::ProviderSetEndOfQueue(void)noexcept(true)
 bcProtocolQueueProvider::bcProtocolQueueProvider()noexcept(true)
 	: fProviderQueueCloseState(0)
 	, fProviderQueueIsEnded(false)
-	, fProcessorNeedConnection(false)
 	, fProcessorStarted(false)
+	, fProcessorNeedConnection(false)
 {
 }
 //---------------------------------------------------------------------------

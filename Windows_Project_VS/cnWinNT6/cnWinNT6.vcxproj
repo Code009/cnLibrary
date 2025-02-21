@@ -159,17 +159,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystem.h" />
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.h" />
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystem.h" />
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.h" />
     <ClInclude Include="cnWinSystemHeader.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Code\cnSystemIID\cnSystemInterfaceID.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystem.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinAPISystemNT6.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWindowsInterfaceID.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystem.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinAPISystemNT6.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWindowsInterfaceID.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

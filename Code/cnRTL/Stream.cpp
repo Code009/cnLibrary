@@ -7,10 +7,10 @@ using namespace cnRTL;
 //---------------------------------------------------------------------------
 bcReadQueue::bcReadQueue()noexcept(true)
 	: fReadCallback(nullptr)
-	, fReadQueueEnded(false)
 	, fReadQueueBufferAvailable(false)
-	, fReadQueueTerminated(false)
+	, fReadQueueEnded(false)
 	, fReadQueueCloseWhenIdle(false)
+	, fReadQueueTerminated(false)
 {
 }
 //---------------------------------------------------------------------------

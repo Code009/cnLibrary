@@ -1,42 +1,46 @@
-/*--- POSIX - Time --------------------------------------------------------*/
+/*--- POSIX - RTLCore - Synchronization -----------------------------------*/
 /*         Developer : Code009                                             */
-/*         Create on : 2016-04-15                                          */
+/*         Create on : 2025-02-20                                          */
 /*-------------------------------------------------------------------------*/
-#ifndef __cnLib_POSIX_Time_H__
-#define __cnLib_POSIX_Time_H__
+#ifndef __cnLib_POSIX_POSIXCore_Thread_H__
+#define __cnLib_POSIX_POSIXCore_Thread_H__
 
-#include <POSIX/POSIXCommon.h>
+#include <POSIX/POSIXHeader.h>
 
-#include <cnSystem/cnData.h>
+#include <cnTK/Common.hpp>
+
 /*-------------------------------------------------------------------------*/
 #ifdef	__cplusplus
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 namespace siPOSIX{
 //---------------------------------------------------------------------------
-#ifdef siOS_POSIX_ENABLE_TIME
+#ifdef	siOS_POSIX_ENABLE_THREAD
 //---------------------------------------------------------------------------
-uInt64 timespecToNanoSeconds(const timespec &tv)noexcept(true);
-timespec timespecFromNanoSeconds(uInt64 Seconds)noexcept(true);
-uInt64 GetSystemTimeNow(void)noexcept(true);
+namespace RTLCore{
 //---------------------------------------------------------------------------
-class cTimesepcTimepoint : public iTimepoint
+struct cSingleNotification
 {
-public:
-	cTimesepcTimepoint()noexcept(true);
-	cTimesepcTimepoint(sInt64 NanoSecondsSinceUnixEPoch)noexcept(true);
-	~cTimesepcTimepoint()noexcept(true);
+	pthread_mutex_t Mutex;
+	pthread_cond_t Condition;
+	struct cWaitFlag
+	{
+		bool Notified;
 
-	virtual sInt64 cnLib_FUNC SystemTime(void)noexcept(true)override;
-	virtual sInt64 cnLib_FUNC SinceTime(iTimepoint *Time)noexcept(true)override;
-
-	static void timespecFromTime(timespec &tv,iTimepoint *RefTime)noexcept(true);
-protected:
-	timespec fValue;
+		bool operator () ()noexcept(true){
+			return Notified;
+		}
+	}WaitFlag;
+	void Setup(void)noexcept(true);
+	void Clear(void)noexcept(true);
+	void Wait(void)noexcept(true);
+	bool WaitFor(ufInt64 Duration)noexcept(true);
+	void Notify(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-#endif	// siOS_POSIX_ENABLE_TIME
+}	// namespace RTLCore
 //---------------------------------------------------------------------------
+#endif	// siOS_POSIX_ENABLE_THREAD
 //---------------------------------------------------------------------------
 }	// namespace siPOSIX
 //---------------------------------------------------------------------------

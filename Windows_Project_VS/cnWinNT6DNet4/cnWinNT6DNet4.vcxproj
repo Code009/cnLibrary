@@ -163,18 +163,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.h" />
-    <ClInclude Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.h" />
+    <ClInclude Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.h" />
+    <ClInclude Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystem.h" />
     <ClInclude Include="cnWinSystemHeader.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Code\cnSystemIID\cnSystemInterfaceID.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWindowsInterfaceID.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinSystem\cnWinSystem.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceID.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystem.cpp" />
-    <ClCompile Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFSystemNT6.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWindowsInterfaceID.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinSystem\cnWinSystem.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFInterfaceID.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystem.cpp" />
+    <ClCompile Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFSystemNT6.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -183,7 +183,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Code_VS_Win\cnWinWPFSystem\cnWinWPFInterfaceIDList.inc" />
+    <None Include="..\..\Windows_Code\cnWinWPFSystem\cnWinWPFInterfaceIDList.inc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -45,7 +45,7 @@ bool cWaitObject::WaitFor(uInt64 Duration)noexcept(true)
 
 	fNotification.Setup();
 	if(fRefCount.Free--!=0){
-		while(fNotification.Wait(Duration)==false){
+		while(fNotification.WaitFor(Duration)==false){
 			// timeout
 			if(++fRefCount.Free!=0){
 				// state reseted
@@ -102,9 +102,9 @@ void cLocalSingleThreadNotification::Wait(void)noexcept(true)
 	return fNotification.Wait();
 }
 //---------------------------------------------------------------------------
-bool cLocalSingleThreadNotification::Wait(ufInt64 Duration)noexcept(true)
+bool cLocalSingleThreadNotification::WaitFor(ufInt64 Duration)noexcept(true)
 {
-	return fNotification.Wait(Duration);
+	return fNotification.WaitFor(Duration);
 }
 //---------------------------------------------------------------------------
 void cLocalSingleThreadNotification::Notify(void)noexcept(true)

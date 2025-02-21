@@ -16,682 +16,682 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Code">
-      <UniqueIdentifier>{6a36e2cd-6760-4383-9b03-e969e14cc367}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows">
-      <UniqueIdentifier>{d7dc599d-ce7d-49a1-9379-6ba689ec8aae}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code\cnRTL">
-      <UniqueIdentifier>{8822f79b-053b-4ed3-8d63-0d5f7fd4c61f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code\cnUI">
-      <UniqueIdentifier>{296b6c35-f36f-4c60-b96a-deb69bd025e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code\cnNet">
-      <UniqueIdentifier>{1b3c6a03-60bc-436b-b9ae-5dd56e921c3e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows\cnRTL">
-      <UniqueIdentifier>{21974283-8588-44e4-a007-6f07d1436a60}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows\cnUI">
-      <UniqueIdentifier>{c4d3913c-ee74-4fa7-bd7f-1274abb5b7a5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code\cnTK">
-      <UniqueIdentifier>{38b5800d-9243-4974-b6ea-a8c85c83d7cf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code\cnSystem">
-      <UniqueIdentifier>{36c5098a-9337-4166-9d79-cf774768e6c9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows\cnTK">
-      <UniqueIdentifier>{eaefec42-ba7e-4d07-9cf8-039fd486e204}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows\cnSystem">
-      <UniqueIdentifier>{5a514ce4-0b7b-4eb9-8906-bc0c43f6de13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - CLib">
-      <UniqueIdentifier>{1a67b387-308e-4baa-9c28-955d95577315}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - CLib\CRT">
-      <UniqueIdentifier>{470f8ee2-e8ed-47f4-892e-18cc59676da6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Code - Windows - cnRTLCore - CRT">
+    <Filter Include="Windows - cnRTLCore">
       <UniqueIdentifier>{ff533e5f-a2f6-4f8f-8179-2bf29d164b88}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Code - Windows - cnRTLCore - CRT\cnRTL">
+    <Filter Include="Windows - cnRTLCore\cnRTL">
       <UniqueIdentifier>{95078dc1-b577-4041-a6f8-c0b7392587a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{d7dc599d-ce7d-49a1-9379-6ba689ec8aae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\cnRTL">
+      <UniqueIdentifier>{21974283-8588-44e4-a007-6f07d1436a60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\cnUI">
+      <UniqueIdentifier>{c4d3913c-ee74-4fa7-bd7f-1274abb5b7a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\cnTK">
+      <UniqueIdentifier>{eaefec42-ba7e-4d07-9cf8-039fd486e204}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Windows\cnSystem">
+      <UniqueIdentifier>{5a514ce4-0b7b-4eb9-8906-bc0c43f6de13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CLibrary">
+      <UniqueIdentifier>{1a67b387-308e-4baa-9c28-955d95577315}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CLibrary\CRT">
+      <UniqueIdentifier>{470f8ee2-e8ed-47f4-892e-18cc59676da6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL">
+      <UniqueIdentifier>{6a36e2cd-6760-4383-9b03-e969e14cc367}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL\cnRTL">
+      <UniqueIdentifier>{8822f79b-053b-4ed3-8d63-0d5f7fd4c61f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL\cnUI">
+      <UniqueIdentifier>{296b6c35-f36f-4c60-b96a-deb69bd025e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL\cnNet">
+      <UniqueIdentifier>{1b3c6a03-60bc-436b-b9ae-5dd56e921c3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL\cnTK">
+      <UniqueIdentifier>{38b5800d-9243-4974-b6ea-a8c85c83d7cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cnRTL\cnSystem">
+      <UniqueIdentifier>{36c5098a-9337-4166-9d79-cf774768e6c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\CommandLineConsole.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\CommandLineConsole.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Database.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\Database.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\DataHash.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\DataHash.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\DataModel.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\DataModel.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\FunctionSet.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\FunctionSet.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceImplementation.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\InterfaceImplementation.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceWrapper.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\InterfaceWrapper.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Logger.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\Logger.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\NetConnection.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\ObjectReference.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\RuntimeFunction.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\Stream.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\Stream.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamAdapter.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\StreamAdapter.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamBuffer.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\StreamBuffer.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\StreamProtocol.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\StreamProtocol.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\String.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\String.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\TextProcess.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\TextProcess.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ThreadAsync.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\ThreadAsync.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\ThreadSynchronization.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\ThreadSynchronization.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\UIEvent.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\UIEvent.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\UIGraph.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\UIGraph.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\XMLParse.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\XMLParse.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\AsyncTask.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\AsyncTask.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\cnRTL.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\cnRTL.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnRTL\cnRTLHeader.h">
-      <Filter>Code\cnRTL</Filter>
+    <ClInclude Include="..\..\Code\cnRTL\cnRTLHeader.h">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\GridContainer.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\GridContainer.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ImageControl.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\ImageControl.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\MouseAction.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\MouseAction.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ScrollContainer.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\ScrollContainer.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\Shape.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\Shape.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TextControl.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\TextControl.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TextEdit.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\TextEdit.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TouchAction.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\TouchAction.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\TreeContainer.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\TreeContainer.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UICommon.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\UICommon.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UIInterface.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\UIInterface.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\UILayout.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\UILayout.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\BasicControl.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\BasicControl.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\cnUI.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\cnUI.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnUI\ControlBase.h">
-      <Filter>Code\cnUI</Filter>
+    <ClInclude Include="..\..\Code\cnUI\ControlBase.h">
+      <Filter>cnRTL\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.h">
-      <Filter>Code\cnNet</Filter>
+    <ClInclude Include="..\..\Code\cnNet\NetCommon.h">
+      <Filter>cnRTL\cnNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.h">
-      <Filter>Code\cnNet</Filter>
+    <ClInclude Include="..\..\Code\cnNet\ProtocolProcessor.h">
+      <Filter>cnRTL\cnNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnNet\cnProtocol.h">
-      <Filter>Code\cnNet</Filter>
+    <ClInclude Include="..\..\Code\cnNet\cnProtocol.h">
+      <Filter>cnRTL\cnNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinThread.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinThread.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWP.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinUWP.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPGATT.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinUWPGATT.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPSDKHeader.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinWindow.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinWindow.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\Win32Thread.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\Win32Thread.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCOM.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOM.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCOMIO.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMIO.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCommon.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCommon.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCOMShell.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMShell.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCOMWIC.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMWIC.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinConsole.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinConsole.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinCoreAudioDevice.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCoreAudioDevice.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinDateTime.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinDateTime.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinFileIO.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileIO.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinFileName.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileName.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinGDI.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinGDI.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinMemory.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinMemory.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinODBC.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinODBC.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinRTL.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinRTL.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinSocketAddress.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSDKHeader.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinSocketIO.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketAddress.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUIControl.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketIO.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUIGDI.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUIOLE.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIGDI.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUIOLEInPlace.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUITheme.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUI.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUIBase.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUI.h">
-      <Filter>Code - Windows\cnUI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIBase.h">
-      <Filter>Code - Windows\cnUI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUICommon.h">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnUI\WinUICommon.h">
+      <Filter>Windows\cnUI</Filter>
     </ClInclude>
     <ClInclude Include="dependency.h">
       <Filter>-\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\AtomicStructure.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\AtomicStructure.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\cnTK.h">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\cnTK.h">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Common.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Common.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Coroutine.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Coroutine.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\CPPFeatureCheck.h">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\CPPFeatureCheck.h">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Function.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Function.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Interface.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Interface.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\LinkStruct.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\LinkStruct.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Memory.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Memory.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Numerical.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Numerical.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Pointer.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Pointer.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\SeqStruct.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\SeqStruct.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Stream.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Stream.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\String.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\String.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\StructItem.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\StructItem.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeInfo.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\TypeInfo.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\TypeTraits.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\TypeTraits.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Variant.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Variant.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Vector.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Vector.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Array.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Array.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnTK\Atomic.hpp">
-      <Filter>Code\cnTK</Filter>
+    <ClInclude Include="..\..\Code\cnTK\Atomic.hpp">
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFileSystem.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnFileSystem.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnFundamental.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnFundamental.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMedia.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnMedia.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnMemory.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnMemory.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetwork.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnNetwork.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnNetworkProtocol.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnNetworkProtocol.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnStream.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnStream.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnSystem.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnSystem.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnThread.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnThread.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUI.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnUI.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnUIGraph.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnUIGraph.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osOpenGL.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\osOpenGL.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\osSocket.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\osSocket.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnConsole.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnConsole.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnData.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnData.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDatabase.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnDatabase.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\cnLibrary\Code\cnSystem\cnDebug.h">
-      <Filter>Code\cnSystem</Filter>
+    <ClInclude Include="..\..\Code\cnSystem\cnDebug.h">
+      <Filter>cnRTL\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnTK\cnPlatform.h">
-      <Filter>Code - Windows\cnTK</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnTK\cnPlatform.h">
+      <Filter>Windows\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinNetwork.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinNetwork.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinThread.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinThread.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinUI.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinUI.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\OpenGLES.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\OpenGLES.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\Socket.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\Socket.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinDatabase.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinDatabase.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWindows.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWindows.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\..\cnDevelop\cnLibrary\Code_VS_Win\cnSystem\cnWinFileSystem.h">
-      <Filter>Code - Windows\cnSystem</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinFileSystem.h">
+      <Filter>Windows\cnSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreRuntime.hpp">
-      <Filter>Code - CLib\CRT</Filter>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTCoreRuntime.hpp">
+      <Filter>CLibrary\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CLib\CRT\CRTCoreTemplateKit.hpp">
-      <Filter>Code - CLib\CRT</Filter>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTCoreTemplateKit.hpp">
+      <Filter>CLibrary\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CLib\CRT\CRTFeatureCheck.h">
-      <Filter>Code - CLib\CRT</Filter>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTFeatureCheck.h">
+      <Filter>CLibrary\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CLib\CRT\CRTAtomic.hpp">
-      <Filter>Code - CLib\CRT</Filter>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTAtomic.hpp">
+      <Filter>CLibrary\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\CRTHeader.h">
-      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code_RTLCore\cnRTL\CRTHeader.h">
+      <Filter>Windows - cnRTLCore\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreAtomic.h">
-      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code_RTLCore\cnRTL\Win32CoreAtomic.h">
+      <Filter>Windows - cnRTLCore\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\cnRTLCore.h">
-      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code_RTLCore\cnRTL\cnRTLCore.h">
+      <Filter>Windows - cnRTLCore\cnRTL</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Code\cnTK\Multiprecision.hpp">
-      <Filter>Code\cnTK</Filter>
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Code\cnTK\ObjectLifeCycle.hpp">
-      <Filter>Code\cnTK</Filter>
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Code\cnTK\OS.Synchronization.hpp">
-      <Filter>Code\cnTK</Filter>
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Code\cnTK\cnTK.OS.h">
-      <Filter>Code\cnTK</Filter>
+      <Filter>cnRTL\cnTK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_CLib\CRT\CRTThread.hpp">
-      <Filter>Code - CLib\CRT</Filter>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTThread.hpp">
+      <Filter>CLibrary\CRT</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win_RTLCore_CRT\cnRTL\Win32CoreThread.h">
-      <Filter>Code - Windows - cnRTLCore - CRT\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code_RTLCore\cnRTL\Win32CoreThread.h">
+      <Filter>Windows - cnRTLCore\cnRTL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.h">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\Win32Interlocked.h">
+      <Filter>Windows\cnRTL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinSDKHeader.h">
+      <Filter>Windows\cnRTL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Windows_Code\cnRTL\WinUWPSDKHeader.h">
+      <Filter>Windows\cnRTL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>-\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Database.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\Database.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\DataHash.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\DataHash.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\DataModel.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\DataModel.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\InterfaceImplementation.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\InterfaceImplementation.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Logger.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\Logger.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\NetConnection.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\NetConnection.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ObjectReference.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\ObjectReference.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\RuntimeFunction.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\RuntimeFunction.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\Stream.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\Stream.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamAdapter.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\StreamAdapter.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamBuffer.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\StreamBuffer.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\StreamProtocol.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\StreamProtocol.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\String.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\String.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\TextProcess.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\TextProcess.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ThreadAsync.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\ThreadAsync.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\ThreadSynchronization.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\ThreadSynchronization.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\UIEvent.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\UIEvent.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\UIGraph.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\UIGraph.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\XMLParse.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\XMLParse.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\AsyncTask.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\AsyncTask.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnRTL\CommandLineConsole.cpp">
-      <Filter>Code\cnRTL</Filter>
+    <ClCompile Include="..\..\Code\cnRTL\CommandLineConsole.cpp">
+      <Filter>cnRTL\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\GridContainer.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\GridContainer.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ImageControl.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\ImageControl.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\MouseAction.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\MouseAction.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ScrollContainer.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\ScrollContainer.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\Shape.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\Shape.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TextControl.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\TextControl.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TextEdit.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\TextEdit.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TouchAction.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\TouchAction.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\TreeContainer.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\TreeContainer.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UICommon.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\UICommon.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UIInterface.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\UIInterface.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\UILayout.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\UILayout.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\BasicControl.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\BasicControl.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnUI\ControlBase.cpp">
-      <Filter>Code\cnUI</Filter>
+    <ClCompile Include="..\..\Code\cnUI\ControlBase.cpp">
+      <Filter>cnRTL\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnNet\ProtocolProcessor.cpp">
-      <Filter>Code\cnNet</Filter>
+    <ClCompile Include="..\..\Code\cnNet\ProtocolProcessor.cpp">
+      <Filter>cnRTL\cnNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code\cnNet\NetCommon.cpp">
-      <Filter>Code\cnNet</Filter>
+    <ClCompile Include="..\..\Code\cnNet\NetCommon.cpp">
+      <Filter>cnRTL\cnNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWP.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinUWP.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinUWPGATT.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinUWPGATT.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinWindow.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinWindow.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\Win32Thread.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\Win32Thread.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOM.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCOM.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMIO.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCOMIO.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCommon.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCommon.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMShell.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCOMShell.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCOMWIC.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCOMWIC.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinConsole.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinConsole.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinCoreAudioDevice.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinCoreAudioDevice.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinDateTime.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinDateTime.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileIO.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinFileIO.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinFileName.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinFileName.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinGDI.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinGDI.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinMemory.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinMemory.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinODBC.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinODBC.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketAddress.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinSocketAddress.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinSocketIO.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinSocketIO.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnRTL\WinThread.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\WinThread.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIGDI.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUIGDI.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLE.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUIOLE.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIOLEInPlace.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUIOLEInPlace.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUITheme.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUITheme.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIBase.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUIBase.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUICommon.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUICommon.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\cnLibrary\Code_VS_Win\cnUI\WinUIControl.cpp">
-      <Filter>Code - Windows\cnUI</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnUI\WinUIControl.cpp">
+      <Filter>Windows\cnUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Code_VS_Win\cnRTL\Win32Interlocked.cpp">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <ClCompile Include="..\..\Windows_Code\cnRTL\Win32Interlocked.cpp">
+      <Filter>Windows\cnRTL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosCleanup.inc">
-      <Filter>Code\cnTK</Filter>
+    <None Include="..\..\Code\cnTK\TKMacrosCleanup.inc">
+      <Filter>cnRTL\cnTK</Filter>
     </None>
-    <None Include="..\..\..\cnLibrary\Code\cnTK\TKMacrosDeclare.inc">
-      <Filter>Code\cnTK</Filter>
+    <None Include="..\..\Code\cnTK\TKMacrosDeclare.inc">
+      <Filter>cnRTL\cnTK</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="..\..\Code_VS_Win\cnTK\cnTK.natvis">
-      <Filter>Code - Windows\cnTK</Filter>
+    <Natvis Include="..\..\Windows_Code\cnTK\cnTK.natvis">
+      <Filter>Windows\cnTK</Filter>
     </Natvis>
-    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTL.natvis">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <Natvis Include="..\..\Windows_Code\cnRTL\cnRTL.natvis">
+      <Filter>Windows\cnRTL</Filter>
     </Natvis>
-    <Natvis Include="..\..\Code_VS_Win\cnRTL\cnRTLCore.natvis">
-      <Filter>Code - Windows\cnRTL</Filter>
+    <Natvis Include="..\..\Windows_Code\cnRTL\cnRTLCore.natvis">
+      <Filter>Windows\cnRTL</Filter>
     </Natvis>
   </ItemGroup>
 </Project>
