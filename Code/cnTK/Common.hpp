@@ -65,21 +65,22 @@
 
 #if cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L
 
-#define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_arg_type_,_comp_func_)\
-	auto operator <=> (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))) \
-		-> decltype(_comp_func_(CompareValue)){	return _comp_func_(CompareValue);	}
+#define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_func_prefix_,_arg_decl_,_comp_exp_)\
+	_func_prefix_ auto operator <=> _arg_decl_ noexcept(noexcept(_comp_exp_)) \
+		-> decltype(_comp_exp_){	return _comp_exp_;	}
 
 // cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION >= 201907L
 #else
 // cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L
 
-#define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_arg_type_,_comp_func_)\
-	bool operator < (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)<0;	}\
-	bool operator > (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){		return _comp_func_(CompareValue)>0;	}\
-	bool operator <= (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)<=0;	}\
-	bool operator >= (_arg_type_ CompareValue)const noexcept(noexcept(_comp_func_(CompareValue))){	return _comp_func_(CompareValue)>=0;	}\
+#define	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(_func_prefix_,_arg_decl_,_comp_exp_)\
+	_func_prefix_ bool operator < _arg_decl_ noexcept(noexcept(_comp_exp_)){	return (_comp_exp_)<0;		}\
+	_func_prefix_ bool operator > _arg_decl_ noexcept(noexcept(_comp_exp_)){	return (_comp_exp_)>0;		}\
+	_func_prefix_ bool operator <= _arg_decl_ noexcept(noexcept(_comp_exp_)){	return (_comp_exp_)<=0;	}\
+	_func_prefix_ bool operator >= _arg_decl_ noexcept(noexcept(_comp_exp_)){	return (_comp_exp_)>=0;	}\
 
 #endif	// cnLibrary_CPPFEATURE_THREE_WAY_COMPARISION < 201907L
+
 //---------------------------------------------------------------------------
 namespace cnLib_THelper{
 	using namespace cnLibrary;
@@ -1203,7 +1204,7 @@ struct cPlainData
 	bool operator ==(const cPlainData &Dest)const noexcept(true){	return TPlainDataOrderOpeator<Size>::Equal(RAW,Dest.RAW);	}
 	bool operator !=(const cPlainData &Dest)const noexcept(true){	return !TPlainDataOrderOpeator<Size>::Equal(RAW,Dest.RAW);	}
 
-	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cPlainData &,Compare)
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const cPlainData &CompareValue)const,Compare(CompareValue))
 };
 
 template<>

@@ -269,7 +269,7 @@ protected:
 		bool operator ==(const cSetItem &Src)const noexcept(true){	return Order==Src.Order && Object==Src.Object;	}
 		bool operator !=(const cSetItem &Src)const noexcept(true){	return Order!=Src.Order || Object!=Src.Object;	}
 
-		cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cSetItem &,Compare)
+		cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const cSetItem &CompareValue)const,Compare(CompareValue))
 	};
 	cSeqSet<cSetItem> fSet;
 

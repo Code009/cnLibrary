@@ -68,7 +68,7 @@ struct cSortableUIPoint : cUIPoint
 	bool operator !=(const cUIPoint &Src)const noexcept(true);
 
 	sfInt8 Compare(const cUIPoint &Cmp)const noexcept(true);
-	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cUIPoint &,Compare)
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const cUIPoint &CompareValue)const,Compare(CompareValue))
 };
 //---------------------------------------------------------------------------
 

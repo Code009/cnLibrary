@@ -16,7 +16,7 @@ namespace cnLibrary{
 namespace cnRTL{
 //---------------------------------------------------------------------------
 using cnAsync::cSpinLock;
-typedef TKRuntime::Thread::tSingleNotification cThreadSingleNotification;
+typedef TKRuntime::SystemThread::tSingleNotification cThreadSingleNotification;
 //---------------------------------------------------------------------------
 }	// namespace cnRTL
 //---------------------------------------------------------------------------

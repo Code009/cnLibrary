@@ -15,7 +15,7 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 
-struct TKRuntime::Thread
+struct TKRuntime::SystemThread
 {
 	typedef DWORD tThreadID;
 	//typedef tThreadReference;

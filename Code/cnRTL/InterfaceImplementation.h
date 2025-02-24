@@ -127,7 +127,7 @@ public:
 	bool operator != (const cSortablePtr &Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp.fPtr)!=iOrdering::Equal;	}
 
-	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const cSortablePtr &,Compare)
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const cSortablePtr &Cmp)const,fPtr->Compare(Cmp.fPtr))
 
 
 	bool operator == (T *Cmp)const noexcept(true)
@@ -135,7 +135,7 @@ public:
 	bool operator != (T *Cmp)const noexcept(true)
 	{	return fPtr->Compare(Cmp)!=iOrdering::Equal;	}
 
-	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(T*,Compare)
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(T *Cmp)const,fPtr->Compare(Cmp))
 protected:
 	T *fPtr;
 };

@@ -12,7 +12,7 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 
-struct TKRuntime::Thread
+struct TKRuntime::SystemThread
 {
 	typedef std::thread::id tThreadID;
 	//typedef tThreadReference;

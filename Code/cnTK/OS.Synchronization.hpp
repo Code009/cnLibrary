@@ -6,10 +6,7 @@
 #define	__cnLibrary_cnTK_Synchronization_HPP__
 /*-------------------------------------------------------------------------*/
 #include <cnTK/Common.hpp>
-#include <cnTK/Numerical.hpp>
-#include <cnTK/Memory.hpp>
 #include <cnTK/Atomic.hpp>
-#include <cnTK/Interface.hpp>
 /*-------------------------------------------------------------------------*/
 #if	cnLibrary_CPPFEATURELEVEL >= 1
 //---------------------------------------------------------------------------
@@ -20,13 +17,7 @@ namespace cnLibrary{
 namespace TKRuntime{
 //---------------------------------------------------------------------------
 
-//struct AllocationOperator;
-//	: TAllocationOperator
-//{
-//	static uIntn SizeOf(void *Pointer)noexcept;
-//};
-
-struct Thread;
+struct SystemThread;
 //{
 //	typedef tThreadID;
 //	//typedef tThreadReference;
@@ -57,7 +48,7 @@ template<uIntn SpinCount>
 class cSpinLock
 {
 public:
-	typedef typename cnVar::TSelect<0&SpinCount,TKRuntime::Thread>::Type TKRuntimeThread;
+	typedef typename cnVar::TSelect<0&SpinCount,TKRuntime::SystemThread>::Type SystemThread;
 	cnLib_CONSTEXPR_FUNC cSpinLock()noexcept(true):fOwned(false){}
 #ifdef cnLib_DEBUG
 	~cSpinLock()noexcept(true){	cnLib_ASSERT(fOwned==false);	}
@@ -65,9 +56,9 @@ public:
 
 	void Acquire(void)noexcept(true){
 		while(fOwned.Barrier.CmpStore(false,true)==false){
-			TKRuntimeThread::SpinWait(SpinCount);
+			SystemThread::SpinWait(SpinCount);
 			if(fOwned.Barrier.CmpStore(false,true)==false){
-				TKRuntimeThread::Yield();
+				SystemThread::Yield();
 			}
 		}
 	}

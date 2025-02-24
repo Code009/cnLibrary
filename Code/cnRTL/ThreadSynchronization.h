@@ -147,7 +147,7 @@ public:
 	bool WaitFor(ufInt64 Duration)noexcept(true);
 	void Notify(void)noexcept(true);
 protected:
-	TKRuntime::Thread::tSingleNotification fNotification;
+	TKRuntime::SystemThread::tSingleNotification fNotification;
 };
 //---------------------------------------------------------------------------
 class cAffixedVariableSet

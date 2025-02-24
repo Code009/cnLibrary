@@ -117,7 +117,7 @@ public:
 	bool operator == (const SOCKADDR *addr)const noexcept(true);
 	bool operator != (const SOCKADDR *addr)const noexcept(true);
 
-	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(const SOCKADDR *,Compare)
+	cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const SOCKADDR *addr)const,Compare(addr))
 
 protected:
 	cnRTL::cMemoryBuffer fBuffer;
