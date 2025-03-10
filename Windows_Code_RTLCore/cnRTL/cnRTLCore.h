@@ -2,8 +2,7 @@
 
 #ifdef cnLibrary_RTL_CORE
 #pragma message(cnLib_FILE_LINE ": included other cnRTLCore" cnLibrary_RTL_CORE)
-#error	included other cnRTLCore
-#endif
+#else
 
 #define	cnLibrary_RTL_CORE	"WinCRT"
 
@@ -30,9 +29,12 @@
 
 #ifdef cnLib_WINCRT_THREAD
 #include <CRT\CRTThread.hpp>
+#include <CRT\CRTTime.hpp>
 #else
 #include <cnRTL\Win32CoreThread.h>
 #endif // !cnLib_WINCRT_WIN32THREAD
 
 #include <CRT\CRTCoreTemplateKit.hpp>
+
+#endif
 

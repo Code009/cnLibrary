@@ -13,6 +13,29 @@
 namespace cnLibrary{
 //---------------------------------------------------------------------------
 
+struct TKRuntime::SystemAllocationOperator
+{
+	static uIntn RoundUpCapacity(uIntn Length){
+		return Length;
+	}
+	static void* Allocate(uIntn Length,uIntn){
+		return malloc(Length);
+	}
+	static void Deallocate(void *Pointer,uIntn,uIntn){
+		free(Pointer);
+	}
+
+	static void* Relocate(void *Pointer,uIntn,uIntn,uIntn NewLength,uIntn,bool &ManualCopy){
+		ManualCopy=false;
+		return realloc(Pointer,NewLength);
+	}
+
+	static bool Resize(void*,uIntn,uIntn){
+		return false;
+	}
+};
+
+
 inline void TKRuntime::Debug::AssertionMessage(const char *Message){
 	cnSystem::AssertionMessage(Message);
 }

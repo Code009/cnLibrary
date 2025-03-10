@@ -208,7 +208,7 @@ protected:
 	bool fProcQueueAvailable=false;
 	c_pthread_mutex fThreadWaitMutex;
 	c_pthread_cond fThreadWaitCond;
-	TKRuntime::Thread::tSingleNotification fCloseNotification;
+	TKRuntime::SystemThread::tSingleNotification fCloseNotification;
 
     cnRTL::cAtomicVar<ufInt32> fWaitingThreads;
     cnRTL::cAtomicVar<ufInt32> fWorkingThreads;

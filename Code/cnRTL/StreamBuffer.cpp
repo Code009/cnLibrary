@@ -436,7 +436,7 @@ void cStreamBufferIOQueue::CommitWrite(uIntn Size)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noexcept(true)
-	: fBufferSize(cAllocationOperator::RoundUpCapacity(BufferSizeLimit))
+	: fBufferSize(TKRuntime::SystemAllocationOperator::RoundUpCapacity(BufferSizeLimit))
 	, fWritingItem(fBufferItem)
 	, fReadingItem(fBufferItem)
 	, fReadBufferOffset(0)
@@ -444,11 +444,11 @@ cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noe
 {
 	fBufferItem[0].Next=nullptr;
 	fBufferItem[0].WriteIndex=0;
-	fBufferItem[0].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[0].Buffer=TKRuntime::SystemAllocationOperator::Allocate(fBufferSize,0);
 
-	fBufferItem[1].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
-	fBufferItem[2].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
-	fBufferItem[3].Buffer=cAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[1].Buffer=TKRuntime::SystemAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[2].Buffer=TKRuntime::SystemAllocationOperator::Allocate(fBufferSize,0);
+	fBufferItem[3].Buffer=TKRuntime::SystemAllocationOperator::Allocate(fBufferSize,0);
 	fBufferItem[1].Next=fBufferItem+2;
 	fBufferItem[2].Next=fBufferItem+3;
 	fBufferItem[3].Next=nullptr;
@@ -457,10 +457,10 @@ cAsyncLoopbackStreamBuffer::cAsyncLoopbackStreamBuffer(uIntn BufferSizeLimit)noe
 //---------------------------------------------------------------------------
 cAsyncLoopbackStreamBuffer::~cAsyncLoopbackStreamBuffer()noexcept(true)
 {
-	cAllocationOperator::Deallocate(fBufferItem[3].Buffer,fBufferSize,0);
-	cAllocationOperator::Deallocate(fBufferItem[2].Buffer,fBufferSize,0);
-	cAllocationOperator::Deallocate(fBufferItem[1].Buffer,fBufferSize,0);
-	cAllocationOperator::Deallocate(fBufferItem[0].Buffer,fBufferSize,0);
+	TKRuntime::SystemAllocationOperator::Deallocate(fBufferItem[3].Buffer,fBufferSize,0);
+	TKRuntime::SystemAllocationOperator::Deallocate(fBufferItem[2].Buffer,fBufferSize,0);
+	TKRuntime::SystemAllocationOperator::Deallocate(fBufferItem[1].Buffer,fBufferSize,0);
+	TKRuntime::SystemAllocationOperator::Deallocate(fBufferItem[0].Buffer,fBufferSize,0);
 }
 //---------------------------------------------------------------------------
 uIntn cAsyncLoopbackStreamBuffer::GetBufferSizeLimit(void)const noexcept(true)

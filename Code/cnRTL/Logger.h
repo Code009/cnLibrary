@@ -220,7 +220,7 @@ public:
 
 
 protected:
-	cnStream::cStringStorageStreamWriteBuffer<cAllocationOperator,uChar16> fWriteBuffer;
+	cnStream::cStringStorageStreamWriteBuffer<TKRuntime::SystemAllocationOperator,uChar16> fWriteBuffer;
 };
 //---------------------------------------------------------------------------
 class cLogVoidStreamBuffer : public cnStream::cVoidStreamBuffer<uChar16>

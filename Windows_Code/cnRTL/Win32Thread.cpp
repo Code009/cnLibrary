@@ -8,6 +8,29 @@ using namespace cnWinRTL;
 using namespace Win32RTLCore;
 
 //---------------------------------------------------------------------------
+namespace cnLibrary{
+namespace cnRTL{
+namespace cnWinRTL{
+//---------------------------------------------------------------------------
+static LARGE_INTEGER gCachedPerformanceFrequency;
+//---------------------------------------------------------------------------
+}	// namespace cnLibrary
+}	// namespace cnRTL
+}	// namespace cnWinRTL
+//---------------------------------------------------------------------------
+uInt64 cnWinRTL::QueryPerformanceFrequencyCached(void)noexcept(true)
+{
+	if(gCachedPerformanceFrequency.QuadPart==0){
+		::QueryPerformanceFrequency(&gCachedPerformanceFrequency);
+	}
+	return gCachedPerformanceFrequency.QuadPart;
+//	if(Value!=0){
+//		return Value;
+//	}
+//	::QueryPerformanceFrequency(&gCachedPerformanceFrequency);
+//	return gCachedPerformanceFrequency.QuadPart;
+}
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cCriticalSection::cCriticalSection()noexcept(true)
 {

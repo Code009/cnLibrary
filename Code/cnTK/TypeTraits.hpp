@@ -16,6 +16,145 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnVar{
 //---------------------------------------------------------------------------
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class T,class TCompare,class...VT>	struct TIsSame					: TConstantValueFalse{};
+template<class T>							struct TIsSame<T,T>				: TConstantValueTrue{};
+template<class T,class...TCompare>			struct TIsSame<T,T,TCompare...>	: TIsSame<T,TCompare...>{};
+
+template<class T,class TCompare,class...VT>	struct TIsDifferent						: TConstantValueTrue{};
+template<class T>							struct TIsDifferent<T,T>				: TConstantValueFalse{};
+template<class T,class...TCompare>			struct TIsDifferent<T,T,TCompare...>	: TIsDifferent<T,TCompare...>{};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class T,class TCompare,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TIsSame
+	: TConstantValueFalse{};
+template<class T>
+struct TIsSame<T,T,cnLib_VARIADIC_TEMPLATE_ARGUMENT_SPECIALIZATION>
+	: TConstantValueTrue{};
+template<class T,cnLib_VARIADIC_TEMPLATE_PARAMETER>
+struct TIsSame<T,T,cnLib_VARIADIC_TEMPLATE_EXPAND>
+	: TIsSame<T,cnLib_VARIADIC_TEMPLATE_EXPAND>{};
+
+template<class T,class TCompare,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TIsDifferent
+	: TConstantValueTrue{};
+template<class T>
+struct TIsDifferent<T,T,cnLib_VARIADIC_TEMPLATE_ARGUMENT_SPECIALIZATION>
+	: TConstantValueFalse{};
+template<class T,cnLib_VARIADIC_TEMPLATE_PARAMETER>
+struct TIsDifferent<T,T,cnLib_VARIADIC_TEMPLATE_EXPAND>
+	: TIsDifferent<T,cnLib_VARIADIC_TEMPLATE_EXPAND>{};
+
+#endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class TFind,class...VT>	struct TIndexOf;
+
+template<class TFind>							struct TIndexOf<TFind>					: TConstantValueUIntn<0>{};
+template<class TFind,class...VT>				struct TIndexOf<TFind,TFind,VT...>		: TConstantValueUIntn<0>{};
+template<class TFind,class TNoMatch,class...VT>	struct TIndexOf<TFind,TNoMatch,VT...>	: TConstantValueUIntn<1+TIndexOf<TFind,VT...>::Value>{};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<class TFind,cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT_P2>
+struct TIndexOf;
+
+template<class TFind>
+struct TIndexOf<TFind,cnLib_VARIADIC_TEMPLATE_ARGUMENT_SPECIALIZATION_P2>
+	: TConstantValueUIntn<0>{};
+
+template<class TFind,cnLib_VARIADIC_TEMPLATE_PARAMETER_P1>
+struct TIndexOf<TFind,TFind,cnLib_VARIADIC_TEMPLATE_EXPAND_P1>
+	: TConstantValueUIntn<0>{};
+
+template<class TFind,class TNoMatch,cnLib_VARIADIC_TEMPLATE_PARAMETER_P1>
+struct TIndexOf
+	: TConstantValueUIntn<
+		1+TIndexOf<TFind,cnLib_VARIADIC_TEMPLATE_EXPAND_P1>::Value
+	>
+{};
+
+#endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L && cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+// IsSame
+//	test if all types in variadic list are the same
+template<class T1,class T2,class...VTCompare>
+static cnLib_CONSTVAR bool IsSame=TIsSame<T1,T2,VTCompare...>::Value;
+
+// IndexOf
+//	find index of given type in type list
+template<class TFind>
+struct IndexOf
+{
+	template<class...T>
+	static cnLib_CONSTVAR uIntn In=TIndexOf<TFind,T...>::Value;
+};
+
+#endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L && cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+//---------------------------------------------------------------------------
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+
+template<uIntn Index,class T,T...Values>			struct TSelectValue;
+
+template<uIntn Index,class T>						struct TSelectValue<Index,T>{};
+template<uIntn Index,class T,T Value,T...Values>	struct TSelectValue<Index,T,Value,Values...>	: TSelectValue<Index-1,T,Values...>{};
+template<class T,T Value,T...Values>				struct TSelectValue<0,T,Value,Values...>		: TConstantValue<T,Value>{};
+
+
+#if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+// Select
+//	select type from variadic list
+template<uIntn Index,class T,T...Values>
+static cnLib_CONSTVAR T SelectValue=TSelectValue<Index,T,Values...>::Value;
+
+#endif	// cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+#endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+//---------------------------------------------------------------------------
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+template<class...VT>
+struct TTypePack
+{
+	template<uIntn TypeIndex>	struct tTypeByIndex : TSelect<TypeIndex,VT...>{};
+	static cnLib_CONSTVAR uIntn Count=sizeof...(VT);
+
+	template<class TExtend>	struct tExtend : TTypeDef< TTypePack<VT...,TExtend> >{};
+	template<class TForType>	struct Declarator;
+};
+
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+#else
+// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+template<cnLib_VARIADIC_TEMPLATE_PARAMETER_OPT>
+struct TTypePack
+{
+	template<uIntn TypeIndex>	struct tTypeByIndex : TSelect<TypeIndex,cnLib_VARIADIC_TEMPLATE_EXPAND>{};
+	static cnLib_CONSTVAR uIntn Count=cnLib_VARIADIC_TEMPLATE_PARAMETER_COUNT;
+
+	template<class TForType>	struct Declarator;
+};
+
+#endif	// cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
+
+//---------------------------------------------------------------------------
 template<class T>
 struct TTypeComponent
 {
@@ -1315,6 +1454,80 @@ inline TDest TryCast(const TSrc &Src)noexcept(noexcept((cnLib_THelper::Var_TH::T
 template<class TDest,class TSrc>
 inline TDest TryCast(const TSrc &Src,typename TTypeDef<TDest>::Type const &Default)noexcept(noexcept((cnLib_THelper::Var_TH::TryCast<TIsConvertible<TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default))))
 {	return cnLib_THelper::Var_TH::TryCast<TIsConvertible<const TSrc,TDest>::Value>::template CastRetDef<TDest,TSrc>(Src,Default);	}
+
+
+
+//---------------------------------------------------------------------------
+
+#if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
+
+
+template<bool...Values>				struct TBooleanValuesAnd				: cnVar::TConstantValueFalse{};
+template<bool v>					struct TBooleanValuesAnd<v>				: cnVar::TConstantValueBool<v>{};
+template<bool v0,bool v1,bool...vv>	struct TBooleanValuesAnd<v0,v1,vv...>	: cnVar::TBooleanValuesAnd<v1,vv...>{};
+template<bool v1,bool...vv>			struct TBooleanValuesAnd<false,v1,vv...>: cnVar::TConstantValueFalse{};
+
+template<bool...Values>					struct TBooleanValuesOr					: cnVar::TConstantValueFalse{};
+template<bool v>						struct TBooleanValuesOr<v>				: cnVar::TConstantValueBool<v>{};
+template<bool v0,bool v1,bool...vv>		struct TBooleanValuesOr<v0,v1,vv...>	: cnVar::TConstantValueTrue{};
+template<bool v1,bool...vv>				struct TBooleanValuesOr<false,v1,vv...>	: cnVar::TBooleanValuesOr<v1,vv...>{};
+
+
+template<class TTypePack,uIntn Count,class TAppend>
+struct TMakeTypePackRepeat
+	: TMakeTypePackRepeat<typename TTypePack::template tExtend<TAppend>::Type,Count-1,TAppend>{};
+
+template<class TValueSequence,class TAppend>
+struct TMakeTypePackRepeat<TValueSequence,0,TAppend>
+	: TTypeDef<TValueSequence>{};
+
+
+template<class T,T...Values>
+struct TValueSequence
+{
+	typedef T tValue;
+	template<uIntn Index>	struct tAt : TSelectValue<Index,T,Values...>{};
+	template<T Value>	struct tExtend : TTypeDef< TValueSequence<T,Values...,Value> >{};
+
+	template<class TForType>	struct Declarator;
+};
+
+
+template<class TValueSequence,uIntn Count,typename TValueSequence::tValue Index=0,typename TValueSequence::tValue Increment=1>
+struct TMakeIndexSequence
+	: TMakeIndexSequence<typename TValueSequence::template tExtend<Index>::Type,Count-1,Index+Increment,Increment>{};
+
+template<class TValueSequence,typename TValueSequence::tValue Index,typename TValueSequence::tValue Increment>
+struct TMakeIndexSequence<TValueSequence,0,Index,Increment>
+	: TTypeDef<TValueSequence>{};
+
+
+template<class TValueSequence,typename TValueSequence::tValue...AddValues>
+struct TMakeAccumulateSequence;
+
+template<class TValueSequence,typename TValueSequence::tValue Value,typename TValueSequence::tValue...AddValues>
+struct TMakeAccumulateSequence<TValueSequence,Value,AddValues...>
+	: TMakeAccumulateSequence<typename TValueSequence::template tExtend<Value>::Type,AddValues...>{};
+
+template<class TValueSequence>
+struct TMakeAccumulateSequence<TValueSequence>
+	: TTypeDef<TValueSequence>{};
+
+
+template<class...TConstantArraies>
+struct TMergeConstantArrayDef;
+
+template<template<class T,T...> class TConstantClass,class T,T...Elements1,T...Elements2,class...TConstantArraies>
+struct TMergeConstantArrayDef<TConstantClass<T,Elements1...>,TConstantClass<T,Elements2...>,TConstantArraies...>
+	: TMergeConstantArrayDef<TConstantClass<T,Elements1...,Elements2...>,TConstantArraies...>
+{
+};
+
+template<template<class T,T...> class TConstantClass,class T,T...Elements>
+struct TMergeConstantArrayDef< TConstantClass<T,Elements...> >
+	: TTypeDef< TConstantClass<T,Elements...> >{};
+
+#endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 //---------------------------------------------------------------------------
 }	// namespace cnVar

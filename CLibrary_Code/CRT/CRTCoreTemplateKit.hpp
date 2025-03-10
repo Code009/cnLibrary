@@ -24,36 +24,14 @@ struct cRTLAllocator
 };
 
 //---------------------------------------------------------------------------
-struct cAllocationOperator
-{
-	static uIntn RoundUpCapacity(uIntn Length){
-		return Length;
-	}
-	static void* Allocate(uIntn Length,uIntn){
-		return malloc(Length);
-	}
-	static void Deallocate(void *Pointer,uIntn,uIntn){
-		free(Pointer);
-	}
-
-	static void* Relocate(void *Pointer,uIntn,uIntn,uIntn NewLength,uIntn,bool &ManualCopy){
-		ManualCopy=false;
-		return realloc(Pointer,NewLength);
-	}
-
-	static bool Resize(void*,uIntn,uIntn){
-		return false;
-	}
-};
-//---------------------------------------------------------------------------
 // Array
 //---------------------------------------------------------------------------
 
 template<class T>
-using cArrayBlock=cnDataStruct::cArrayBlock<cAllocationOperator,T>;
+using cArrayBlock=cnDataStruct::cArrayBlock<TKRuntime::SystemAllocationOperator,T>;
 //---------------------------------------------------------------------------
-typedef cnDataStruct::cArrayBlock<cAllocationOperator,void> cMemoryBlock;
-typedef cnDataStruct::cArrayBuffer<cAllocationOperator,void> cMemoryBuffer;
+typedef cnDataStruct::cArrayBlock<TKRuntime::SystemAllocationOperator,void> cMemoryBlock;
+typedef cnDataStruct::cArrayBuffer<TKRuntime::SystemAllocationOperator,void> cMemoryBuffer;
 
 //---------------------------------------------------------------------------
 // String
@@ -61,13 +39,13 @@ typedef cnDataStruct::cArrayBuffer<cAllocationOperator,void> cMemoryBuffer;
 
 //---------------------------------------------------------------------------
 template<class TCharacter>
-using cStringBuffer=cnString::cStringBuffer<cAllocationOperator,TCharacter>;
+using cStringBuffer=cnString::cStringBuffer<TKRuntime::SystemAllocationOperator,TCharacter>;
 //---------------------------------------------------------------------------
 template<class TCharacter>
-using cString=cnString::cString< cnString::cRefStringArrayTokenOperator<cAllocationOperator,TCharacter> >;
+using cString=cnString::cString< cnString::cRefStringArrayTokenOperator<TKRuntime::SystemAllocationOperator,TCharacter> >;
 
 template<class TFunction,uIntn StorageSize=cnVar::TFunctionStorageDefaultSize::Value>
-using cFunction=cnVar::cFunction<TFunction,cnVar::cFunctionStorageOperator<cAllocationOperator,TFunction,StorageSize> >;
+using cFunction=cnVar::cFunction<TFunction,cnVar::cFunctionStorageOperator<TKRuntime::SystemAllocationOperator,TFunction,StorageSize> >;
 
 
 //---------------------------------------------------------------------------
@@ -81,15 +59,15 @@ using cnAsync::cRingIndex;
 
 //---------------------------------------------------------------------------
 template<class TElement>
-using cSeqList=cnDataStruct::cSeqList<cAllocationOperator,TElement>;
+using cSeqList=cnDataStruct::cSeqList<TKRuntime::SystemAllocationOperator,TElement>;
 template< class TElement,class TItemOrderOperator=cnDataStruct::cDefaultItemOrderOperator<TElement> >
-using cSeqSet=cnDataStruct::cSeqSet<cAllocationOperator,TElement,TItemOrderOperator>;
+using cSeqSet=cnDataStruct::cSeqSet<TKRuntime::SystemAllocationOperator,TElement,TItemOrderOperator>;
 //---------------------------------------------------------------------------
 template<class TKey,class TValue,class TKeyOrderOperatom=cnDataStruct::cDefaultItemOrderOperator<TKey> >
-using cSeqMap=cnDataStruct::cSeqMap<cAllocationOperator,TKey,cAllocationOperator,TValue,TKeyOrderOperatom>;
+using cSeqMap=cnDataStruct::cSeqMap<TKRuntime::SystemAllocationOperator,TKey,TKRuntime::SystemAllocationOperator,TValue,TKeyOrderOperatom>;
 //---------------------------------------------------------------------------
 template<class...TElements>
-using cSeqMultiList=cnDataStruct::cSeqMultiList<cnDataStruct::cArrayAllocation<cAllocationOperator,TElements>...>;
+using cSeqMultiList=cnDataStruct::cSeqMultiList<cnDataStruct::cArrayAllocation<TKRuntime::SystemAllocationOperator,TElements>...>;
 
 //---------------------------------------------------------------------------
 // Linked Structure

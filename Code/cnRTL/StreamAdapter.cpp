@@ -653,7 +653,7 @@ cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept(true
 	Item.SourceBufferSize=0;
 
 	if(QuerySize>Item.SourceBuffer.Length){
-		QuerySize=cAllocationOperator::RoundUpCapacity(QuerySize);
+		QuerySize=TKRuntime::SystemAllocationOperator::RoundUpCapacity(QuerySize);
 		if(QuerySize>WriteBufferSizeLimit){
 			QuerySize=WriteBufferSizeLimit;
 		}

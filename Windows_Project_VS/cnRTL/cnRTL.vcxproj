@@ -159,6 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\CLibrary_Code\CRT\CRTTime.hpp" />
+    <ClInclude Include="..\..\Code\cnTK\OS.Fundamental.hpp" />
     <ClInclude Include="..\..\Windows_Code\cnRTL\WinSDKHeader.h" />
     <ClInclude Include="..\..\Windows_Code\cnRTL\WinUWPSDKHeader.h" />
     <ClInclude Include="..\..\Windows_Code\cnSystem\cnWinDatabase.h" />
