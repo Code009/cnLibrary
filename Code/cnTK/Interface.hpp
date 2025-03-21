@@ -521,19 +521,17 @@ public:
 	iPtr& operator = (TInterface *Pointer)noexcept(true)
 	{
 		if(fPointer!=Pointer){
-			if(Pointer!=nullptr){
-				iReference *SwapReference=fReference;
+			iReference *SwapReference=fReference;
+			fPointer=Pointer;
+			if(fPointer!=nullptr){
 				fReference=iCast<iReference>(Pointer);
 				fReference->IncreaseReference();
-				fPointer=Pointer;
-
-				if(SwapReference!=nullptr)
-					SwapReference->DecreaseReference();
 			}
 			else{
 				fReference=nullptr;
-				fPointer=nullptr;
 			}
+			if(SwapReference!=nullptr)
+				SwapReference->DecreaseReference();
 		}
 		return *this;
 	}
@@ -616,12 +614,19 @@ public:
 
 	iPtr& operator =(const iPtr &Src)noexcept(true){
 		if(this!=&Src){
-			ManualDecReference();
-
-			fPointer=Src.fPointer;
-			fReference=Src.fReference;
-
-			ManualIncReference();
+			if(fPointer!=Src.fPointer){
+				iReference *SwapReference=fReference;
+				fPointer=Src.fPointer;
+				if(fPointer!=nullptr){
+					fReference=Src.fReference;
+					fReference->IncreaseReference();
+				}
+				else{
+					fReference=nullptr;
+				}
+				if(SwapReference!=nullptr)
+					SwapReference->DecreaseReference();
+			}
 		}
 		return *this;
 	}
@@ -677,12 +682,21 @@ public:
 	typename cnVar::TTypeConditional<iPtr&,
 		cnVar::TIsConvertible<TSrcInterface*,TInterface*>::Value
 	>::Type operator =(const iPtr<TSrcInterface> &Src)noexcept(true){
-		ManualDecReference();
-
-		fPointer=Src.Pointer();
-		fReference=Src.Reference();
-
-		ManualIncReference();
+		TSrcInterface *SrcPointer=Src.Pointer();
+		if(fPointer!=SrcPointer){
+			iReference *SwapReference=fReference;
+			fPointer=SrcPointer;
+			if(SrcPointer!=nullptr){
+				fReference=Src.Reference();
+				fReference->IncreaseReference();
+			}
+			else{
+				fReference=nullptr;
+				fPointer=nullptr;
+			}
+			if(SwapReference!=nullptr)
+				SwapReference->DecreaseReference();
+		}
 		return *this;
 	}
 
