@@ -1004,7 +1004,7 @@ template<bool NotifyProcedure>	struct cAutoClassWeakRefTokenOperator;
 struct cAutoClassPointerReferenceOperator;
 //---------------------------------------------------------------------------
 template<class T>
-class aCls : public T, protected bcWeakReference, public cRTLAllocator
+class aCls : public T, protected bcWeakReference
 {
 	friend cAutoClassPointerReferenceOperator;
 
@@ -1071,7 +1071,7 @@ template<class T>	struct TAutoRecyclableClassVirtualLifeCycleManagerSelect;
 //---------------------------------------------------------------------------
 template<class T>
 class arCls : public T, public TSelectRecyclableBase<T>::Type
-	, protected bcWeakReference, protected cRTLAllocator
+	, protected bcWeakReference
 {
 	friend cAutoRecyclableClassPointerReferenceOperator;
 	template<bool NotifyProcedure>	friend struct cAutoClassWeakRefTokenOperator;
@@ -1085,7 +1085,6 @@ public:
 	typedef cnClass::cRecyclableLifeCycleManager< arCls,cnClass::RecyclableObjectAllocator<arCls> > tLifeCycleManager;
 
 	friend bcVirtualLifeCycle::cLifeCycleActivation;
-	friend cnClass::RecyclableObjectAllocator<arCls>;
 
 protected:
 
@@ -1198,12 +1197,6 @@ template<class T,bool NotifyProcedure=false>
 using arClsWeakRef=cnClass::cPtrWeakReference< arCls<T>,cAutoClassWeakRefTokenOperator<NotifyProcedure> >;
 //---------------------------------------------------------------------------
 template<class T>
-inline aCls<T>* aClsFromPtr(T *Src)noexcept(true)
-{
-	return static_cast<aCls<T>*>(Src);
-}
-//---------------------------------------------------------------------------
-template<class T>
 inline aClsRef<T> aClsTake(aCls<T> *Src,uInt32 Tag)noexcept(true)
 {
 	cnRTL_DEBUG_LOG_REFERENCE_DEC(Src,Tag);
@@ -1233,12 +1226,6 @@ inline aClsRef<T> aClsCreate(TArgs&&...Args)noexcept(true)
 	aCls<T>::tLifeCycleSharedManager::ManageShared(NewObject);
 	ReferenceImplementationLifeCycleActivation::Start(NewObject);
 	return cnClass::cPtrReference<aCls<T>,cAutoClassPointerReferenceOperator>::TakeFromManual(NewObject);
-}
-//---------------------------------------------------------------------------
-template<class T>
-inline arCls<T>* arClsFromPtr(T *Src)noexcept(true)
-{
-	return static_cast<arCls<T>*>(Src);
 }
 //---------------------------------------------------------------------------
 template<class T>
