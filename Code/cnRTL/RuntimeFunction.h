@@ -1097,7 +1097,7 @@ inline T* rExtract(rPtr<T> &Src,uInt32 Tag)noexcept(true)
 namespace cnRTL{
 //---------------------------------------------------------------------------
 template<class TNotifyParameter>
-class cAsyncNotifyToken
+class cAsyncNotifyToken : public iReference
 {
 private:
 	template<class> friend class cAsyncNotifySet;
@@ -1114,13 +1114,11 @@ private:
 	ufInt8 SetActive;
 	cExclusiveFlag ActionFlag;
 public:
-	virtual void NotifyInsert(void)noexcept(true)=0;
-	virtual void NotifyRemove(void)noexcept(true)=0;
 	virtual void NotifyExecute(TNotifyParameter Parameter)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 template<>
-class cAsyncNotifyToken<void>
+class cAsyncNotifyToken<void> : public iReference
 {
 private:
 	template<class> friend class cAsyncNotifySet;
@@ -1137,8 +1135,6 @@ private:
 	ufInt8 SetActive;
 	cExclusiveFlag ActionFlag;
 public:
-	virtual void NotifyInsert(void)noexcept(true)=0;
-	virtual void NotifyRemove(void)noexcept(true)=0;
 	virtual void NotifyExecute(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
@@ -1207,14 +1203,14 @@ protected:
 			if(Token->SetActive){
 				if(Token->Parent==nullptr){
 					fFunctionSet.Insert(Token);
-					Token->NotifyInsert();
+					Token->IncreaseReference();
 				}
 			}
 			else{
 				// remove
 				if(Token->Parent!=nullptr){
 					fFunctionSet.Remove(Token);
-					Token->NotifyRemove();
+					Token->DecreaseReference();
 				}
 			}
 
@@ -1234,7 +1230,9 @@ protected:
 				auto ProcessToken=AllToken;
 				AllToken=AllToken->Next;
 
+				ProcessToken->IncreaseReference();
 				ProcessQueue(ProcessToken);
+				ProcessToken->DecreaseReference();
 			}
 
 
@@ -1296,14 +1294,14 @@ protected:
 			if(Token->SetActive){
 				if(Token->Parent==nullptr){
 					fFunctionSet.Insert(Token);
-					Token->NotifyInsert();
+					Token->IncreaseReference();
 				}
 			}
 			else{
 				// remove
 				if(Token->Parent!=nullptr){
 					fFunctionSet.Remove(Token);
-					Token->NotifyRemove();
+					Token->DecreaseReference();
 				}
 			}
 
@@ -1323,7 +1321,9 @@ protected:
 				auto ProcessToken=AllToken;
 				AllToken=AllToken->Next;
 
+				ProcessToken->IncreaseReference();
 				ProcessQueue(ProcessToken);
+				ProcessToken->DecreaseReference();
 			}
 
 			auto NotifCount=fNotifyCount.Free.Xchg(0);
@@ -1371,10 +1371,10 @@ public:
 	}
 
 protected:
-	virtual void NotifyInsert(void)noexcept(true)override{
+	virtual void IncreaseReference(void)noexcept(true)override{
 		++fRefCount.Free;	// acquire notifyset
 	}
-	virtual void NotifyRemove(void)noexcept(true)override{
+	virtual void DecreaseReference(void)noexcept(true)override{
 		Release();	// release notifyset
 	}
 	virtual void NotifyExecute(void)noexcept(true)override{
