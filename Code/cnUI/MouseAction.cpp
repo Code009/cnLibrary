@@ -280,7 +280,7 @@ void aMousePan::ExclusiveMouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)n
 	if(Button==fDownButton){
 		auto MouseControl=iCast<iUIMouseControl>(fView);
 		fDownButton=MouseButton::None;
-		MouseControl->MouseReleaseExclusive(this);
+		MouseControl->MouseReleaseExclusive(&fExclusiveHandler);
 		//fStarted=false;
 
 		if(OnScrollFinish!=nullptr){
