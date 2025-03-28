@@ -120,6 +120,8 @@ void cLogMessageQueue::Cleanup(void)noexcept(true)
 
 		delete CurItem;
 	}
+	// reset state for reactiveation
+	fTerminateState=0;
 }
 //---------------------------------------------------------------------------
 void cLogMessageQueue::Async(iAsyncExecution *Execution)noexcept(true)
