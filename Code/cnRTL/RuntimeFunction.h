@@ -1371,10 +1371,10 @@ public:
 	}
 
 protected:
-	virtual void IncreaseReference(void)noexcept(true)override{
+	virtual void cnLib_FUNC IncreaseReference(void)noexcept(true)override{
 		++fRefCount.Free;	// acquire notifyset
 	}
-	virtual void DecreaseReference(void)noexcept(true)override{
+	virtual void cnLib_FUNC DecreaseReference(void)noexcept(true)override{
 		Release();	// release notifyset
 	}
 	virtual void NotifyExecute(void)noexcept(true)override{
