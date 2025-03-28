@@ -124,6 +124,7 @@ public:
 	void ExecuteNoRef(iProcedure *Procedure)noexcept(true);
 	void ExecuteSync(iProcedure *Procedure)noexcept(true);
 	bool IsCurrentThread(void)const noexcept(true);
+	DWORD GetMessageThreadID(void)const noexcept(true);
 
 	bool SetTimer(iProcedure *Procedure,UINT Interval)noexcept(true);
 	bool KillTimer(iProcedure *Procedure)noexcept(true);

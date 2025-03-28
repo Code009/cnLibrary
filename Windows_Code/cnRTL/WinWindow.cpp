@@ -278,6 +278,11 @@ HWND cWindowMessageThread::GetMessageWindow(void)const noexcept(true)
 	return fMessageWindow;
 }
 //---------------------------------------------------------------------------
+DWORD cWindowMessageThread::GetMessageThreadID(void)const noexcept(true)
+{
+	return fMessageThreadID;
+}
+//---------------------------------------------------------------------------
 bool cWindowMessageThread::MessageWindowProc(HWND hWnd,UINT uMsg,WPARAM wParam,LPARAM lParam)noexcept(true)
 {hWnd;
 	switch(uMsg){
