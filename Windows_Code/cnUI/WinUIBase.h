@@ -44,42 +44,6 @@ protected:
 	virtual void WindowClear(void)noexcept(true)override;
 };
 //---------------------------------------------------------------------------
-class WindowClient : public WindowComponent
-{
-public:
-	WindowClient()noexcept(true);
-	~WindowClient()noexcept(true);
-
-	iWindowClient* GetWindowClient(void)const noexcept(true);
-	iUIWindow* GetUIWindow(void)const noexcept(true);
-
-	iUIView* GetClientView(void)const noexcept(true);
-	void SetClientView(iUIView *View)noexcept(true);
-protected:
-	iPtr<iWindowClient> fWindowClient;
-
-	virtual void WindowSetup(void)noexcept(true);
-	virtual void WindowClear(void)noexcept(true);
-};
-//---------------------------------------------------------------------------
-class WindowFrame : public WindowComponent
-{
-public:
-	WindowFrame()noexcept(true);
-	~WindowFrame()noexcept(true);
-
-	iWindowFrame* GetWindowFrame(void)const noexcept(true);
-	iUIWindow* GetUIWindow(void)const noexcept(true);
-
-	iUIView* GetClientView(void)const noexcept(true);
-	void SetClientView(iUIView *View)noexcept(true);
-protected:
-	iPtr<iWindowFrame> fWindowFrame;
-
-	virtual void WindowSetup(void)noexcept(true)override;
-	virtual void WindowClear(void)noexcept(true)override;
-};
-//---------------------------------------------------------------------------
 template<class T>
 inline bool WindowControlSetPos(T &WindowControl,iUIArea *Relative,const cUIPoint &Pos)noexcept(true)
 {
