@@ -621,10 +621,10 @@ void cDCPaintDevice::cBitmap::cThreadDeleteProcedure::Execute(void)noexcept(true
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cDCPaintDevice::cDCPaintDevice()noexcept(true)
-	: fUIThread(cnWindows::CreateUIThreadOnCurrentThread())
+cDCPaintDevice::cDCPaintDevice(iUIThread *UIThread)noexcept(true)
+	: fUIThread(UIThread)
+	, fDCNumber(0)
 {
-	fDCNumber=0;
 	UpdateDisplaySetting();
 }
 //---------------------------------------------------------------------------

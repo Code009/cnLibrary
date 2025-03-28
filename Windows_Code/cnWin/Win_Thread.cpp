@@ -140,6 +140,7 @@ void cThread::cSystemShutdownNotifyProcedure::Execute(void)noexcept(true)
 //---------------------------------------------------------------------------
 void cThread::ShutdownNotify(void)noexcept(true)
 {
+	// cleanup tls object
 	auto CurrentThreadObject=gTLS->Get();
 	if(CurrentThreadObject!=nullptr){
 		gTLS->Clear();

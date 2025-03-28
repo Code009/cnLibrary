@@ -557,7 +557,8 @@ void cWPFUISimpleViewContent::RenderVisual(void)noexcept(true)
 //---------------------------------------------------------------------------
 cWPFGDIThreadContext::cWPFGDIThreadContext()noexcept(true)
 {
-	Device=rCreate<cnRTL::cnWinRTL::cDCPaintDevice>();
+	auto UIThread=cWPFUIThread::CurrentUIThread();
+	Device=rCreate<cnRTL::cnWinRTL::cDCPaintDevice>(UIThread);
 }
 //---------------------------------------------------------------------------
 cWPFGDIThreadContext::~cWPFGDIThreadContext()noexcept(true)

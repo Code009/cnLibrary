@@ -105,7 +105,7 @@ protected:
 class cDCPaintDevice : public iDCPaintDevice
 {
 public:
-	cDCPaintDevice()noexcept(true);
+	cDCPaintDevice(iUIThread *UIThread)noexcept(true);
 	~cDCPaintDevice()noexcept(true);
 
 	HDC GetScreenICHandle(void)noexcept(true);
@@ -142,7 +142,7 @@ private:
 	rPtr<cGDIDC> fScreenIC;
 	uIntn fDCNumber;
 
-	iPtr<iUIThread> fUIThread;
+	iUIThread *fUIThread;
 	cnRTL::cSeqMap<cFontIndex,rPtr<cGDIFontHandle> > fFontMap;
 
 	bool CheckThread(void)noexcept(true);
