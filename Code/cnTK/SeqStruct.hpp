@@ -202,10 +202,7 @@ public:
 	//	Add items to the end of list
 	// Count		number of data in array to add
 	// return iterator of item where appended
-	tIterator Append()noexcept(true){
-		return Append_temp(1);
-	}
-	tIterator Append_temp(uIntn Count=1)noexcept(true){
+	tIterator Append(uIntn Count=1)noexcept(true){
 		auto AppendedItems=AppendUninitialized(Count);
 		// default construct
 		TAMFunc::Construct(AppendedItems,0,Count);
@@ -213,7 +210,7 @@ public:
 	}
 	tIterator Append(tConstPointer Items,uIntn Count)noexcept(true){
 		if(Items==nullptr){
-			return Append_temp(Count);
+			return Append(Count);
 		}
 		auto AppendedItems=AppendUninitialized(Count);
 		// copy construct

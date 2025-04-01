@@ -110,7 +110,7 @@ void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept(true)
 	if(fCacheLineIndex==LineIndex){
 		if(CacheCount<LineCount){
 			uIntn AppendCount=LineCount-CacheCount;
-			fCacheLineList.Append_temp(AppendCount);
+			fCacheLineList.Append(AppendCount);
 			auto CacheList=fCacheLineList.GetItems();
 			// append line
 			for(uIntn i=CacheCount;i<LineCount;i++){
@@ -140,7 +140,7 @@ void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept(true)
 				// setup append tail
 				SetupIndex=CacheEndIndex;
 				SetupCount=LineEndIndex-CacheEndIndex;
-				SetupPointer=fCacheLineList.Append_temp(SetupCount);
+				SetupPointer=fCacheLineList.Append(SetupCount);
 			}
 			else{
 				// tail has cached
@@ -167,7 +167,7 @@ void vTextDocument::UpdateCache(uIntn LineIndex,uIntn LineCount)noexcept(true)
 				// setup append tail
 				SetupIndex=CacheEndIndex;
 				SetupCount=LineEndIndex-LineIndex;
-				SetupPointer=fCacheLineList.Append_temp(SetupCount);
+				SetupPointer=fCacheLineList.Append(SetupCount);
 			}
 		}
 	}
