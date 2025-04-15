@@ -229,9 +229,9 @@ inline TRet ReturnCast(T&& Var)noexcept(true)
 // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
 
 template<class TRet,class T>
-inline const TRet& ReturnCast(const T& Var)noexcept(true)
+inline TRet ReturnCast(T& Var)noexcept(true)
 {
-	return reinterpret_cast<const TRet&>(Var);
+	return reinterpret_cast<TRet&>(Var);
 }
 
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES < 200610L
@@ -362,8 +362,6 @@ struct TSelect : TSelect<Index-1,cnLib_VARIADIC_TEMPLATE_EXPAND1>{};
 
 #endif // cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES < 200704L
 
-
-
 //---------------------------------------------------------------------------
 }	// namespace cnVar
 //---------------------------------------------------------------------------
@@ -406,50 +404,6 @@ template<class T>	struct TStoreSizeOf<T&>						: TConstantValueUIntn<sizeof(void
 #if cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
 template<class T>	struct TStoreSizeOf<T&&>					: TConstantValueUIntn<sizeof(void*)>{};
 #endif // cnLibrary_CPPFEATURE_RVALUE_REFERENCES >= 200610L
-
-
-//---------------------------------------------------------------------------
-
-template<class T>	struct TIsCPPType : cnVar::TConstantValueFalse{};
-
-template<>	struct TIsCPPType<long double>			: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<double>				: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<float>				: cnVar::TConstantValueTrue{};
-
-template<>	struct TIsCPPType<unsigned long long>	: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<signed long long>		: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<unsigned long>		: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<signed long>			: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<unsigned int>			: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<signed int>			: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<unsigned short>		: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<signed short>			: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<unsigned char>		: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<signed char>			: cnVar::TConstantValueTrue{};
-
-template<>	struct TIsCPPType<wchar_t>	: cnVar::TConstantValueTrue{};
-
-#if cnLibrary_CPPFEATURE_UCHARS >= 200704L
-
-template<>	struct TIsCPPType<char16_t>	: cnVar::TConstantValueTrue{};
-template<>	struct TIsCPPType<char32_t>	: cnVar::TConstantValueTrue{};
-
-#endif // cnLibrary_CPPFEATURE_UCHARS >= 200704L
-
-#if cnLibrary_CPPFEATURE_UCHAR8 >= 201811L
-
-template<>	struct TIsCPPType<char8_t>	: cnVar::TConstantValueTrue{};
-
-#endif // cnLibrary_CPPFEATURE_UCHAR8 >= 201811L
-
-
-template<class T>
-struct TIsSigned
-	: TConstantValueBool< (static_cast<T>(-1)<0) >{};
-template<>
-struct TIsSigned<bool>
-	: TConstantValueBool< false >{};
-
 
 //---------------------------------------------------------------------------
 #if cnLibrary_CPPFEATURE_STATIC_ASSERT >= 200410L
@@ -581,13 +535,6 @@ struct TUCharExists
 {};
 
 #if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
-
-
-template<class T>
-static cnLib_CONSTVAR bool IsSigned=TIsSigned<T>::Value;
-
-template<uIntn Size,bool Signed>
-static cnLib_CONSTVAR bool IntegerTypeExists=TIntegerTypeExists<Size,Signed>::Value;
 
 template<uIntn Size>
 static cnLib_CONSTVAR bool FloatTypeExists=TFloatTypeExists<Size>::Value;

@@ -17,6 +17,58 @@ namespace cnLibrary{
 namespace cnVar{
 //---------------------------------------------------------------------------
 
+template<class T>	struct TIsCPPType : cnVar::TConstantValueFalse{};
+
+template<>	struct TIsCPPType<long double>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<double>				: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<float>				: cnVar::TConstantValueTrue{};
+
+template<>	struct TIsCPPType<unsigned long long>	: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<signed long long>		: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<unsigned long>		: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<signed long>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<unsigned int>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<signed int>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<unsigned short>		: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<signed short>			: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<unsigned char>		: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<signed char>			: cnVar::TConstantValueTrue{};
+
+template<>	struct TIsCPPType<wchar_t>	: cnVar::TConstantValueTrue{};
+
+#if cnLibrary_CPPFEATURE_UCHARS >= 200704L
+
+template<>	struct TIsCPPType<char16_t>	: cnVar::TConstantValueTrue{};
+template<>	struct TIsCPPType<char32_t>	: cnVar::TConstantValueTrue{};
+
+#endif // cnLibrary_CPPFEATURE_UCHARS >= 200704L
+
+#if cnLibrary_CPPFEATURE_UCHAR8 >= 201811L
+
+template<>	struct TIsCPPType<char8_t>	: cnVar::TConstantValueTrue{};
+
+#endif // cnLibrary_CPPFEATURE_UCHAR8 >= 201811L
+
+
+template<class T>
+struct TIsSigned
+	: TConstantValueBool< (static_cast<T>(-1)<0) >{};
+template<>
+struct TIsSigned<bool>
+	: TConstantValueBool< false >{};
+
+
+#if cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+template<class T>
+static cnLib_CONSTVAR bool IsSigned=TIsSigned<T>::Value;
+
+template<uIntn Size,bool Signed>
+static cnLib_CONSTVAR bool IntegerTypeExists=TIntegerTypeExists<Size,Signed>::Value;
+
+#endif // cnLibrary_CPPFEATURE_VARIABLE_TEMPLATES >= 201304L
+
+
 #if cnLibrary_CPPFEATURE_VARIADIC_TEMPLATES >= 200704L
 
 template<class T,class TCompare,class...VT>	struct TIsSame					: TConstantValueFalse{};
@@ -1015,8 +1067,8 @@ struct TIsFloat
 template<class T>
 struct TIsTrivial
 	: cnVar::TSelect<TIsAbstract<T>::Value
-	, cnLib_THelper::Var_TH::IsTrivial<typename TTypeRequireDefined<void,T>::Type,T>
-	, cnVar::TConstantValueFalse
+		, cnLib_THelper::Var_TH::IsTrivial<typename TTypeRequireDefined<void,T>::Type,T>
+		, cnVar::TConstantValueFalse
 	>::Type{};
 
 template<>	struct TIsTrivial<void>					: cnVar::TConstantValueTrue{};
