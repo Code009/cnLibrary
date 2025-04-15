@@ -66,6 +66,17 @@ struct TAddressOf<typename cnVar::TTypeConditional<void,sizeof(&T::operator &)>:
 namespace Class_TH{
 //---------------------------------------------------------------------------
 
+template<class TEnable,class T,class TPointerOwnerOperator,class TSrc>
+struct PtrOwnerEnableAcquire
+	: cnVar::TConstantValueFalse{};
+
+template<class T,class TPointerOwnerOperator,class TSrc>
+struct PtrOwnerEnableAcquire<
+		typename cnVar::TTypeConditional<void,sizeof(cnVar::DeclVal<T*&>()=TPointerOwnerOperator::Acquire(cnVar::DeclVal<TSrc>()))>::Type
+		, T,TPointerOwnerOperator,TSrc
+	>
+	: cnVar::TConstantValueTrue{};
+
 template<class TEnable,class TPointerWeakRegistration>
 struct PtrWeakRegistrationEnableMove
 	: cnVar::TConstantValueFalse{};
@@ -176,7 +187,8 @@ namespace cnClass{
 //---------------------------------------------------------------------------
 //TPointerOwnerOperator
 //{
-//	static void Release(T* &Pointer)noexcept;
+//	static T* Acquire(TSrc Src)noexcept;	// optional
+//	static void Release(T *Pointer)noexcept;
 //};
 //---------------------------------------------------------------------------
 template<class T,class TPointerOwnerOperator>
@@ -196,6 +208,18 @@ public:
 		if(fPointer!=nullptr)
 			TPointerOwnerOperator::Release(fPointer);
 	}
+
+	template<class TSrc
+#ifndef cnLibrary_CPPEXCLUDE_FUNCTION_TEMPLATE_DEFALT_ARGUMENT
+		, class=typename cnVar::TTypeConditional<void,
+			cnLib_THelper::Class_TH::PtrOwnerEnableAcquire<void,T,TPointerOwnerOperator,TSrc>::Value
+		>::Type
+#endif
+	>
+	cPtrOwner(TSrc Src)noexcept(true)
+		: fPointer(TPointerOwnerOperator::Acquire(Src))
+	{}
+
 
 #ifndef cnLibrary_CPPEXCLUDE_NULLPTR
 	// construct with null
@@ -346,8 +370,8 @@ public:
 //---------------------------------------------------------------------------
 //TPointerReferenceOperator
 //{
-//	static void Acquire(T* &Pointer)noexcept;
-//	static void Release(T* &Pointer)noexcept;
+//	static void Acquire(T *Pointer)noexcept;
+//	static void Release(T *Pointer)noexcept;
 //};
 //---------------------------------------------------------------------------
 template<class T,class TPointerReferenceOperator>
