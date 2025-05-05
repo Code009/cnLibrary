@@ -124,18 +124,6 @@ struct TArray
 namespace cnMemory{
 //---------------------------------------------------------------------------
 
-// Fill
-//	Fill Dest with Data
-// [in]Dest		array to fill
-// [in]Length	length to fill
-// [in]Data		data
-template<class T>
-inline void Fill(void *Dest,uIntn Length,const T Data)noexcept(true)
-{
-	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
-	return TKRuntime::TArray<sizeof(T)>::Fill(Dest,Length,reinterpret_cast<const tUInt&>(Data));
-}
-
 // Search
 //	Search data in Src
 // Src	[in]	array to search

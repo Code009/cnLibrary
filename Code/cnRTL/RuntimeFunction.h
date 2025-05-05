@@ -62,6 +62,22 @@ inline void ZeroFill(T (&Data)[DataLength])noexcept(true){	return ZeroFill(&Data
 inline void Copy(void *Dest,const void *Src,uIntn Size)noexcept(true){	return TKRuntime::TMemory<1>::Copy(Dest,Src,Size);	}
 inline void CopyO(void *Dest,const void *Src,uIntn Size)noexcept(true){	return TKRuntime::TMemory<1>::CopyOverlapped(Dest,Src,Size);	}
 
+// Fill
+//	Fill Dest with Data
+// [in]Dest		array to fill
+// [in]Size		size to fill
+// [in]Data		data
+template<class T>
+inline void Fill(void *Dest,uIntn Size,const T Data)noexcept(true)
+{
+	typedef typename cnVar::TIntegerOfSize<sizeof(T),false>::Type tUInt;
+	uIntn FillLength=Size/sizeof(T);
+	uIntn FillRemain=Size%sizeof(T);
+	TKRuntime::TArray<sizeof(T)>::Fill(Dest,FillLength,reinterpret_cast<const tUInt&>(Data));
+	if(FillRemain){
+		TKRuntime::TMemory<1>::Copy(cnMemory::PointerAddByteOffset(Dest,Size-FillRemain),&Data,FillRemain);
+	}
+}
 
 inline bool IsEqual(const void *Mem1,const void *Mem2,uIntn Size)noexcept(true)
 {
