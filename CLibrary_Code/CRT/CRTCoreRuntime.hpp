@@ -196,8 +196,15 @@ struct TKRuntime::TString : CPPRuntime::TString<ElementSize>
 //#else
 		auto DestIterator=static_cast<tUInt*>(Dest);
 //#endif // defined(_ITERATOR_DEBUG_LEVEL)
-		auto r=std::copy_if(static_cast<const tUInt*>(Src),static_cast<const tUInt*>(Src)+DestLength,DestIterator,[](const tUInt &c){	return c!=0;	});
-		uIntn CopyedLength=std::distance(DestIterator,r);
+		const tUInt *SrcEnd=std::char_traits<tUInt>::find(static_cast<const tUInt*>(Src),DestLength,0);
+		uIntn CopyLength;
+		if(SrcEnd==nullptr)
+			CopyLength=DestLength;
+		else
+			CopyLength=SrcEnd-static_cast<const tUInt*>(Src);
+		if(CopyLength!=0)
+			::memcpy(Dest,Src,CopyLength*ElementSize);
+		
 		static_cast<tUInt*>(Dest)[CopyedLength]=0;
 		return CopyedLength;
 	}
