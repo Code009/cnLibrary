@@ -205,8 +205,8 @@ struct TKRuntime::TString : CPPRuntime::TString<ElementSize>
 		if(CopyLength!=0)
 			::memcpy(Dest,Src,CopyLength*ElementSize);
 		
-		static_cast<tUInt*>(Dest)[CopyedLength]=0;
-		return CopyedLength;
+		static_cast<tUInt*>(Dest)[CopyLength]=0;
+		return CopyLength;
 	}
 
 	//static bool Equal(const void *Str1,uIntn Str1Length,const void *Str2)noexcept(true){
