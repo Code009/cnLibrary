@@ -2623,29 +2623,29 @@ void cWinTabPainter_Normal::PaintItemText(HDC DC,const RECT &TextRect,const wcha
 }
 //---------------------------------------------------------------------------
 //--------------------------------------------------------------------------
-vWinTab::vWinTab(viTabData *Data)noexcept(true)
+vWinTextTab::vWinTextTab(iVisualData<cTextTabData> *Data)noexcept(true)
 	: fData(Data)
 {
 	fUpdateTab=true;
 	DataInsertCallback();
 }
 //---------------------------------------------------------------------------
-vWinTab::~vWinTab()noexcept(true)
+vWinTextTab::~vWinTextTab()noexcept(true)
 {
 	DataRemoveCallback();
 }
 //---------------------------------------------------------------------------
-rPtr<viControl> vWinTab::Create(viTabData *Data)noexcept(true)
+rPtr<viControl> vWinTextTab::Create(iVisualData<cTextTabData> *Data)noexcept(true)
 {
-	return rCreate< bwvControl<vWinTab> >(Data);
+	return rCreate< bwvControl<vWinTextTab> >(Data);
 }
 //---------------------------------------------------------------------------
-viTabData* vWinTab::GetData(void)const noexcept(true)
+iVisualData<cTextTabData>* vWinTextTab::GetData(void)const noexcept(true)
 {
 	return fData;
 }
 //---------------------------------------------------------------------------
-void vWinTab::SetData(viTabData *Data)noexcept(true)
+void vWinTextTab::SetData(iVisualData<cTextTabData> *Data)noexcept(true)
 {
 	if(fData==Data)
 		return;
@@ -2654,38 +2654,39 @@ void vWinTab::SetData(viTabData *Data)noexcept(true)
 	fData=Data;
 	DataInsertCallback();
 
-	Update();
+	DataUpdate();
 }
 //---------------------------------------------------------------------------
-void vWinTab::DataInsertCallback(void)noexcept(true)
+void vWinTextTab::DataInsertCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
-		fTabNotifyToken=fData->TabNotifySet.Insert([this]{
-			Update();
-		});
+		fData->InsertUpdateNotify(&fDataNotification);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::DataRemoveCallback(void)noexcept(true)
+void vWinTextTab::DataRemoveCallback(void)noexcept(true)
 {
 	if(fData!=nullptr){
-		fData->TabNotifySet.Remove(fTabNotifyToken);
+		fData->RemoveUpdateNotify(&fDataNotification);
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::Update(void)noexcept(true)
+void vWinTextTab::cDataNotification::Execute(void)noexcept(true)
 {
-	fTabCacheList.Clear();
-	fUpdateTab=true;
-	fDCViewContent->InvalidateRect(&fPaintRC);
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&vWinTextTab::fDataNotification);
+	Host->DataUpdate();
 }
 //---------------------------------------------------------------------------
-void vWinTab::UpdateState(void)noexcept(true)
+void vWinTextTab::DataUpdate(void)noexcept(true)
 {
-	fDCViewContent->InvalidateRect(&fPaintRC);
+	if(fUpdateTab==false){
+		fTabCacheList.Clear();
+		fUpdateTab=true;
+		fDCViewContent->InvalidateRect(&fPaintRC);
+	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::ThemeSetup(HWND WindowHandle)noexcept(true)
+void vWinTextTab::ThemeSetup(HWND WindowHandle)noexcept(true)
 {
 	HTHEME Theme=nullptr;
 	if(::IsAppThemed()){
@@ -2699,25 +2700,28 @@ void vWinTab::ThemeSetup(HWND WindowHandle)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::ThemeClear(void)noexcept(true)
+void vWinTextTab::ThemeClear(void)noexcept(true)
 {
 	delete fPainter;
 	fPainter=nullptr;
 }
 //---------------------------------------------------------------------------
-void vWinTab::SetupTabCache(HDC DC)noexcept(true)
+void vWinTextTab::SetupTabCache(HDC DC)noexcept(true)
 {
-	if(fData==nullptr){
+	rPtr<iReference> DataReference;
+	auto Data=fData->QueryData(DataReference);
+	if(Data==nullptr){
 		fTabCacheList.Clear();
 		return;
 	}
-	auto TabCount=fData->TabCount();
+
+	auto TabCount=Data->TabItems.Length;
 	fTabCacheList.SetCount(TabCount);
 	if(TabCount){
 		auto BorderSize=fPainter->TabBorderSize();
 		Float32 CurPos=4;
 		for(uIntn i=0;i<TabCount;i++){
-			auto Item=fData->TabGet(i);
+			auto &Item=Data->TabItems.Pointer[i];
 			auto CacheItem=&fTabCacheList[i];
 			CacheItem->Font=QueryGDIFont(Item.TextStyle);
 			CacheItem->Text=cnRTL::cString<wchar_t>(cnRTL::utow(Item.Text),Item.TextLength);
@@ -2740,7 +2744,7 @@ void vWinTab::SetupTabCache(HDC DC)noexcept(true)
 				CacheItem->TextPos=Item.TextMargin;
 			}
 
-			
+
 			CacheItem->TabSize+=BorderSize;
 			CacheItem->TabPos=CurPos;
 
@@ -2761,7 +2765,7 @@ void vWinTab::SetupTabCache(HDC DC)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::Paint(HDC DC,HRGN)noexcept(true)
+void vWinTextTab::Paint(HDC DC,HRGN)noexcept(true)
 {
 	if(fPainter==nullptr)
 		return;
@@ -2774,9 +2778,11 @@ void vWinTab::Paint(HDC DC,HRGN)noexcept(true)
 		SetupTabCache(DC);
 	}
 
+	rPtr<iReference> DataReference;
+	auto Data=fData->QueryData(DataReference);
 
-	sfInt16 ActiveIndex=fData->TabActiveIndex();
-	sfInt16 HotIndex=fData->TabHotIndex();
+	sfInt16 ActiveIndex=Data->ActiveIndex;
+	sfInt16 HotIndex=Data->HotIndex;
 
 	{
 		RECT PanelRect;
@@ -2804,7 +2810,7 @@ void vWinTab::Paint(HDC DC,HRGN)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexcept(true)
+void vWinTextTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexcept(true)
 {
 	RECT TabRect;
 	TabRect.left=fPaintRC.left+static_cast<sfInt32>(Item.TabPos);
@@ -2812,7 +2818,7 @@ void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexce
 
 	TabRect.top=fPaintRC.top;
 	TabRect.bottom=fPaintRC.bottom;
-	
+
 	RECT TextRect;
 	switch(Item.Part){
 	case TabPart::Left:
@@ -2840,7 +2846,7 @@ void vWinTab::DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexce
 	fPainter->PaintItemText(DC,TextRect,Item.Text,Item.Text->Length,TextFont,State);
 }
 //---------------------------------------------------------------------------
-sfInt16 vWinTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
+sfInt16 vWinTextTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
 {
 	if(fUpdateTab){
 		fUpdateTab=false;
@@ -2869,9 +2875,9 @@ sfInt16 vWinTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWinTab::ControlContentSetDefault(void)noexcept(true)
+void cWinTextTab::ControlContentSetDefault(void)noexcept(true)
 {
-	SetContent(vWinTab::Create(this));
+	SetContent(vWinTextTab::Create(*this));
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

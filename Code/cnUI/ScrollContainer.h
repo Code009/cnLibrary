@@ -108,16 +108,16 @@ private:
 	void HorizontalScrollInfoChanged(void)noexcept(true);
 	void VerticalScrollInfoChanged(void)noexcept(true);
 };
-
 //---------------------------------------------------------------------------
-class cScrollContent : public VisualControl
+class cScrollControl : public VisualControl
 {
 public:
-	cScrollContent()noexcept(true);
-	~cScrollContent()noexcept(true);
+	cScrollControl()noexcept(true);
+	~cScrollControl()noexcept(true);
 
 	cCallbackSet ScrollOffsetChangeNotify;
 	cCallbackSet ScrollRangeChangeNotify;
+
 
 	Float32 GetScrollOffset(bool Vertical)const noexcept(true);
 	bool SetScrollOffset(bool Vertical,Float32 Offset)noexcept(true);
@@ -142,22 +142,20 @@ protected:
 
 	virtual void cnLib_FUNC RectangleChanged(bool Moved,bool Sized)noexcept(true)override;
 	virtual void cnLib_FUNC ContentScaleChanged(void)noexcept(true)override;
-	virtual void cnLib_FUNC UILayout(void)noexcept(true)override;
 
 	Float32 fScrollOffset[2];
 	Float32 fScrollViewportSize[2];
-	
-	Float32 fScrollLowwerLimit[2];
-	Float32 fScrollUpperLimit[2];
 	Float32 fScrollStepSize[2];
 	Float32 fScrollPageSize[2];
+
+	Float32 fScrollLowwerLimit[2];
+	Float32 fScrollUpperLimit[2];
 	bool fScrollNoLowwerLimit[2];
 	bool fScrollNoUpperLimit[2];
 
 	void UpdateScrollOffset(void)noexcept(true);
-	void UpdateScrollLimits(void)noexcept(true);
+	bool CheckScrollOffset(bool Vertical,Float32 &Offset)noexcept(true);
 
-	virtual void ScrollContentProcessOffset(bool Vertical,Float32 &Offset)noexcept(true);
 	virtual void ScrollContentUpdateContentLayout(void)noexcept(true);
 	virtual void ScrollContentUpdateStepSizes(void)noexcept(true);
 
@@ -168,6 +166,18 @@ protected:
 private:
 	bool fNeedUpdateContentLayout;
 	bool ChangeOffset(bool Vertical,Float32 Offset)noexcept(true);
+
+	class cNotifyUpdateProcedure : public iReference, public iProcedure
+	{
+	public:
+		cScrollControl *Owner;
+
+		rPtr<iAsyncProcedure> WorkProc;
+
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	};
+	rPtr<cNotifyUpdateProcedure> fUpdateProcedure;
+	void NotifyUpdateContent(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
 class lScrollFrame : public LayoutControl
@@ -176,8 +186,8 @@ public:
 	lScrollFrame()noexcept(true);
 	~lScrollFrame()noexcept(true);
 
-	cScrollContent* GetScrollContent(void)const noexcept(true);
-	void SetScrollContent(cScrollContent *Content)noexcept(true);
+	cScrollControl* GetScrollControl(void)const noexcept(true);
+	void SetScrollControl(cScrollControl *Control)noexcept(true);
 
 	class cScrollInfoHorizontal : public iControlScrollInfo
 	{
@@ -233,7 +243,7 @@ protected:
 	virtual void ViewClear(void)noexcept(true)override;
 
 
-	cScrollContent *fScrollContent;
+	cScrollControl *fScrollControl;
 	
 	rPtr<kiScrollBar> fScrollBarKit;
 	virtual void ControlSetupDefaultScrollBarKit(void)noexcept(true);
@@ -246,7 +256,64 @@ protected:
 
 };
 //---------------------------------------------------------------------------
-class cScrollViewContainer : public cScrollContent
+class cnLib_INTERFACE iScrollContent
+{
+public:
+	virtual void ScrollContentShow(void)noexcept(true)=0;
+	virtual void ScrollContentHide(void)noexcept(true)=0;
+	virtual void ScrollContentUpdate(void)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+class cnLib_INTERFACE iScrollContentContainer
+{
+public:
+	virtual iUIView* GetScrollView(void)noexcept(true)=0;
+	virtual iScrollContent* GetContent(void)noexcept(true)=0;
+	virtual void SetContent(iScrollContent *ScrollContent)noexcept(true)=0;
+
+	virtual cUIPoint GetOffset(void)noexcept(true)=0;
+	virtual bool SetOffset(cUIPoint Offset)noexcept(true)=0;
+	virtual cUIRange GetScrollLimitX(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)=0;
+	virtual void SetScrollLimitX(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)=0;
+	virtual cUIRange GetScrollLimitY(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)=0;
+	virtual void SetScrollLimitY(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)=0;
+	virtual cUIPoint GetViewportSize(void)noexcept(true)=0;
+	virtual void NotifyUpdateScroll(void)noexcept(true)=0;
+	virtual bool IsRectangleInViewport(const cUIRectangle &Rect)noexcept(true)=0;
+
+};
+//---------------------------------------------------------------------------
+class cScrollContainer : public cScrollControl, public iScrollContentContainer
+{
+public:
+	cScrollContainer()noexcept(true);
+	~cScrollContainer()noexcept(true);
+
+	virtual iUIView* GetScrollView(void)noexcept(true)override final;
+	virtual iScrollContent* GetContent(void)noexcept(true)override final;
+	virtual void SetContent(iScrollContent *ScrollItem)noexcept(true)override final;
+
+	virtual cUIPoint GetOffset(void)noexcept(true)override final;
+	virtual bool SetOffset(cUIPoint Offset)noexcept(true)override final;
+	virtual cUIRange GetScrollLimitX(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)override final;
+	virtual void SetScrollLimitX(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)override final;
+	virtual cUIRange GetScrollLimitY(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)override final;
+	virtual void SetScrollLimitY(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)override final;
+	virtual cUIPoint GetViewportSize(void)noexcept(true)override final;
+	virtual void NotifyUpdateScroll(void)noexcept(true)override final;
+	virtual bool IsRectangleInViewport(const cUIRectangle &Rect)noexcept(true)override final;
+
+protected:
+	virtual void ViewSetup(void)noexcept(true)override;
+	virtual void ViewClear(void)noexcept(true)override;
+
+	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
+
+	iScrollContent *fScrollContent;
+
+};
+//---------------------------------------------------------------------------
+class cScrollViewContainer : public cScrollControl
 {
 public:
 	cScrollViewContainer()noexcept(true);

@@ -516,42 +516,13 @@ private:
 	iFunctionToken *fScrollOffsetNotifyToken;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE viTabData : public viData
-{
-public:
-	cFunctionSet<void (void)noexcept(true)> TabNotifySet;
-	virtual sfInt16 TabActiveIndex(void)noexcept(true)=0;
-	virtual sfInt16 TabHotIndex(void)noexcept(true)=0;
-	
-	virtual uIntn TabCount(void)noexcept(true)=0;
-	struct cTabItem{
-		const uChar16 *Text;
-		uIntn TextLength;
-		cUITextStyle TextStyle;
-		sfInt16 TabSize;
-		sfInt16 TextMargin;
-	};
-	virtual cTabItem TabGet(uIntn Index)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-extern rPtr<viControl> (*gCreateDefaultTabVisual)(viTabData *Data)noexcept(true);
-//---------------------------------------------------------------------------
-class bcTab : public cContent, public viTabData
+class bcTab : public cContent
 {
 public:
 	bcTab()noexcept(true);
 	~bcTab()noexcept(true);
 
-	virtual sfInt16 TabActiveIndex(void)noexcept(true)override;
-	virtual sfInt16 TabHotIndex(void)noexcept(true)override;
-
-	virtual uIntn TabCount(void)noexcept(true)override;
-	virtual cTabItem TabGet(uIntn Index)noexcept(true)override;
-
 protected:
-	void TabNotify(void)noexcept(true);
-
-	virtual void ControlContentSetDefault(void)noexcept(true)override;
 
 
 	virtual void cnLib_FUNC MouseLeave(iUIMouseEvent *MouseEvent)noexcept(true)override;
@@ -562,33 +533,49 @@ protected:
 
 	sfInt16 TabHitTest(Float32 x,Float32 y)noexcept(true);
 
+	virtual sfInt16 TabGetCount(void)noexcept(true);
+	virtual sfInt32 TabGetSize(sfInt16 Index)noexcept(true);
+	virtual void TabUpdateHotIndex(sfInt16 Index)noexcept(true);
 	virtual void TabClick(sfInt16 Index)noexcept(true);
 
 private:
-	sfInt16 fHotIndex;
 	bool fMouseBtnLeftDown=false;
+	sfInt16 fMouseDownIndex;
 };
 //---------------------------------------------------------------------------
-class cTab : public bcTab
+struct cTextTabItem
+{
+	const uChar16 *Text;
+	uIntn TextLength;
+	cUITextStyle TextStyle;
+	sfInt16 TabSize;
+	sfInt16 TextMargin;
+};
+struct cTextTabData
+{
+	sfInt16 ActiveIndex;
+	sfInt16 HotIndex;
+	cArray<const cTextTabItem> TabItems;
+};
+//---------------------------------------------------------------------------
+class cTextTab : public bcTab, private cUIVisualDataCache<cTextTabData>::iDataProvider
 {
 public:
-	cTab()noexcept(true);
-	~cTab()noexcept(true);
+	cTextTab()noexcept(true);
+	~cTextTab()noexcept(true);
 
-	virtual sfInt16 TabActiveIndex(void)noexcept(true)override;
-	virtual uIntn TabCount(void)noexcept(true)override;
-	virtual cTabItem TabGet(uIntn Index)noexcept(true)override;
-
-	struct cItem{
-		cnRTL::cString<uChar16> Text;
-		sfInt16 ItemWidth;
-	};
-	cnRTL::cSeqList<cItem> TabList;
-
+	//class iDataManager
+	//{
+	//public:
+	//	virtual void WindowChanged(void)noexcept(true)=0;
+	//};
+	//iDataManager *DataManager=nullptr;
 
 	sfInt16 GetActiveIndex(void)const noexcept(true);
 	void SetActiveIndex(sfInt16 Index)noexcept(true);
-	
+
+	void ClearTab(void)noexcept(true);
+	void SetTab(uIntn Index,const cTextTabItem &Item)noexcept(true);
 
 	sfInt16 TabTextMargin=0;
 	cUITextStyle TextStyle;
@@ -597,10 +584,33 @@ public:
 	cFunction<void (void)noexcept(true)> OnTabChanged;
 	cFunction<void (sfInt16 TabIndex)noexcept(true)> OnClickTab;
 
+	static rPtr<viControl> (*CreateDefaultVisual)(iVisualData<cTextTabData> *Data)noexcept(true);
+	operator iVisualData<cTextTabData> *()const noexcept(true);
+
 protected:
+	virtual void ControlContentSetDefault(void)noexcept(true)override;
+
+	virtual sfInt16 TabGetCount(void)noexcept(true)override;
+	virtual sfInt32 TabGetSize(sfInt16 Index)noexcept(true)override;
+	virtual void TabUpdateHotIndex(sfInt16 Index)noexcept(true)override;
 	virtual void TabClick(sfInt16 Index)noexcept(true)override;
 
+	sfInt16 fHotIndex=-1;
 	sfInt16 fActiveIndex=-1;
+	cnRTL::cSeqList<cTextTabItem> fTabList;
+
+
+
+	rPtr< cUIVisualDataCache<cTextTabData> > fDataCache;
+
+	class cDataReference : public iReference
+	{
+	public:
+		cTextTabData Data;
+		cnRTL::cSeqList<cTextTabItem> ItemList;
+	};
+	virtual const cTextTabData* QueryData(rPtr<iReference> &DataReference)noexcept(true)override;
+
 };
 //---------------------------------------------------------------------------
 extern rPtr<viControl> (*gCreateDefaultSplitterBarVisual)(void)noexcept(true);

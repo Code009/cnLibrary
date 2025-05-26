@@ -725,35 +725,38 @@ private:
 	cnRTL::arSharedObjectRecycler< cSolidPenObject<1,0xCCCCCC> > fPanelHeaderPenRecycler;
 };
 //---------------------------------------------------------------------------
-class vWinTab : public vWinDCThemePainter
+//---------------------------------------------------------------------------
+class vWinTextTab : public vWinDCThemePainter
 {
 public:
-	vWinTab(viTabData *Data=nullptr)noexcept(true);
-	~vWinTab()noexcept(true);
+	vWinTextTab(iVisualData<cTextTabData> *Data=nullptr)noexcept(true);
+	~vWinTextTab()noexcept(true);
 
-	static rPtr<viControl> Create(viTabData *Data)noexcept(true);
+	static rPtr<viControl> Create(iVisualData<cTextTabData> *Data)noexcept(true);
 
-	viTabData* GetData(void)const noexcept(true);
-	void SetData(viTabData *Data)noexcept(true);
+	iVisualData<cTextTabData>* GetData(void)const noexcept(true);
+	void SetData(iVisualData<cTextTabData> *Data)noexcept(true);
 
 	sfInt16 TabHitTest(Float32 x,Float32 y)noexcept(true);
 
 protected:
-	dPtr<viTabData> fData;
+	rPtr< iVisualData<cTextTabData> > fData;
 	cWinTabPainter *fPainter=nullptr;
 
 	virtual void ThemeSetup(HWND WindowHandle)noexcept(true)override;
 	virtual void ThemeClear(void)noexcept(true)override;
 
 	virtual void cnLib_FUNC Paint(HDC DC,HRGN ClipRegion)noexcept(true)override;
-	void Update(void)noexcept(true);
-	void UpdateState(void)noexcept(true);
 
 private:
 	void DataInsertCallback(void)noexcept(true);
 	void DataRemoveCallback(void)noexcept(true);
-
-	iFunctionToken *fTabNotifyToken;
+	
+	class cDataNotification : public iProcedure
+	{
+		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+	}fDataNotification;
+	void DataUpdate(void)noexcept(true);
 
 	enum class TabPart : uInt8{
 		Middle,
@@ -778,7 +781,7 @@ private:
 	void DrawTabItem(HDC DC,const cTabCacheItem &Item,TabState State)noexcept(true);
 };
 //---------------------------------------------------------------------------
-class cWinTab : public cTab
+class cWinTextTab : public cTextTab
 {
 protected:
 	virtual void ControlContentSetDefault(void)noexcept(true)override;

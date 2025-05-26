@@ -14,6 +14,518 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnUI{
 //---------------------------------------------------------------------------
+struct cGridItemLine
+{
+	cUIRange Range;
+	cArray<cUIRange> Parts;
+};
+//---------------------------------------------------------------------------
+struct cGridData
+{
+	cArray<const cGridItemLine> VerticalLines;
+	cArray<const cGridItemLine> HorizontalLines;
+};
+//---------------------------------------------------------------------------
+class scItemGrid : private iScrollContent, private cUIVisualDataCache<cGridData>::iDataProvider
+{
+public:
+	scItemGrid()noexcept(true);
+	~scItemGrid()noexcept(true);
+
+	cCallbackSet ScrollContentUpdated;
+
+	iScrollContentContainer* GetContainer(void)noexcept(true);
+	void SetContainer(iScrollContentContainer *Container)noexcept(true);
+
+	iUIView* GetView(void)const noexcept(true);
+	void UpdateColumnCount(uIntn ColumnCount,bool IsEstimated)noexcept(true);
+	void SetDefaultColumnSize(ufInt16 Size)noexcept(true);
+	void SetDefaultColumnPadding(ufInt16 Size)noexcept(true);
+	void UpdateRowCount(uIntn RowCount,bool IsEstimated)noexcept(true);
+	void SetDefaultRowSize(ufInt16 Size)noexcept(true);
+	void SetDefaultRowPadding(ufInt16 Size)noexcept(true);
+
+	sfInt16 GetRowSize(uIntn RowIndex)noexcept(true);
+	void SetRowSize(uIntn RowIndex,sfInt16 Size)noexcept(true);
+	void ResetRowSize(uIntn RowIndex)noexcept(true);
+
+	sfInt16 GetRowHeadPadding(uIntn RowIndex)noexcept(true);
+	void SetRowHeadPadding(uIntn RowIndex,sfInt16 Size)noexcept(true);
+	void ResetRowHeadPadding(uIntn RowIndex)noexcept(true);
+	sfInt16 GetRowTailPadding(uIntn RowIndex)noexcept(true);
+	void SetRowTailPadding(uIntn RowIndex,sfInt16 Size)noexcept(true);
+	void ResetRowTailPadding(uIntn RowIndex)noexcept(true);
+
+	sfInt16 GetColumnSize(uIntn ColumnIndex)noexcept(true);
+	void SetColumnSize(uIntn ColumnIndex,sfInt16 Size)noexcept(true);
+	void ResetColumnSize(uIntn ColumnIndex)noexcept(true);
+
+	sfInt16 GetColumnHeadPadding(uIntn ColumnIndex)noexcept(true);
+	void SetColumnHeadPadding(uIntn ColumnIndex,sfInt16 Size)noexcept(true);
+	void ResetColumnHeadPadding(uIntn ColumnIndex)noexcept(true);
+	sfInt16 GetColumnTailPadding(uIntn ColumnIndex)noexcept(true);
+	void SetColumnTailPadding(uIntn ColumnIndex,sfInt16 Size)noexcept(true);
+	void ResetColumnTailPadding(uIntn ColumnIndex)noexcept(true);
+
+	Float32 GetRowOffset(void)const noexcept(true);
+	Float32 GetColumnOffset(void)const noexcept(true);
+	bool SetGridOffset(Float32 RowOffset,Float32 ColumnOffset)noexcept(true);
+
+	enum class ItemLayer
+	{
+		Normal,
+		Leave,
+		Stay,
+	};
+protected:
+
+	class bcItem : public iScrollContentContainer
+	{
+	public:
+		virtual iUIView* GetScrollView(void)noexcept(true)override;
+		virtual iScrollContent* GetContent(void)noexcept(true)override;
+		virtual void SetContent(iScrollContent *ScrollItem)noexcept(true)override;
+		virtual cUIPoint GetOffset(void)noexcept(true)override;
+		virtual bool SetOffset(cUIPoint Offset)noexcept(true)override;
+		virtual cUIRange GetScrollLimitX(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)override;
+		virtual void SetScrollLimitX(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)override;
+		virtual cUIRange GetScrollLimitY(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)override;
+		virtual void SetScrollLimitY(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)override;
+		virtual cUIPoint GetViewportSize(void)noexcept(true)override;
+		virtual void NotifyUpdateScroll(void)noexcept(true)override;
+		virtual bool IsRectangleInViewport(const cUIRectangle &Rect)noexcept(true)override;
+
+		ItemLayer GetLayer(void)const noexcept(true);
+	protected:
+		friend scItemGrid;
+		scItemGrid *fOwner;
+		iScrollContent *fContent=nullptr;
+		//cUIRectangle fContentRect;
+		bool fVisible;
+		bool fNotifiedVisible;
+
+		bool fStay;
+		bool fStayLeaving;
+
+		void UpdateVisible(void)noexcept(true);
+		void NotifyContentUpdate(void)noexcept(true);
+	};
+
+
+public:
+
+	class cRow : public bcItem, private cnRTL::cRTLAllocator
+	{
+	public:
+		cRow()noexcept(true);
+		~cRow()noexcept(true);
+
+		bool Close(void)noexcept(true);
+		uIntn GetRowIndex(void)const noexcept(true);
+		bool SetRowIndex(uIntn NewRowIndex)noexcept(true);
+
+		void SetStayRange(uIntn Begin,uIntn End)noexcept(true);
+		void ResetStayRange(void)noexcept(true);
+
+		cUIRect CalculateLayoutRect(void)const noexcept(true);
+
+	private:
+		friend scItemGrid;
+		uIntn fRowIndex;
+		uIntn fStayBeginIndex;
+		uIntn fStayEndIndex;
+		cUIRange fStayPos;
+	};
+	class cColumn : public bcItem, private cnRTL::cRTLAllocator
+	{
+	public:
+		cColumn()noexcept(true);
+		~cColumn()noexcept(true);
+
+		bool Close(void)noexcept(true);
+		uIntn GetColumnIndex(void)const noexcept(true);
+		bool SetColumnIndex(uIntn NewColumnIndex)noexcept(true);
+	
+		cUIRect CalculateLayoutRect(void)const noexcept(true);
+	private:
+		friend scItemGrid;
+		uIntn fColumnIndex;
+		uIntn fStayBeginIndex;
+		uIntn fStayEndIndex;
+		cUIRange fStayPos;
+	};
+	class cCell : public bcItem, private cnRTL::cRTLAllocator
+	{
+	public:
+		cCell()noexcept(true);
+		~cCell()noexcept(true);
+
+		bool Close(void)noexcept(true);
+		uIntn GetRowIndex(void)const noexcept(true);
+		uIntn GetColumnIndex(void)const noexcept(true);
+		bool Move(uIntn NewRowIndex,uIntn NewColumnIndex)noexcept(true);
+
+		cUIRect CalculateLayoutRect(void)const noexcept(true);
+	private:
+		friend scItemGrid;
+		uIntn fRowIndex;
+		uIntn fColumnIndex;
+		cUIRectangle fStayRect;
+	};
+	cRow* FindRow(uIntn RowIndex)noexcept(true);
+	cRow* QueryRow(uIntn RowIndex)noexcept(true);
+	bool CloseRow(uIntn RowIndex)noexcept(true);
+	cRow* MoveRow(uIntn RowIndex,uIntn NewRowIndex)noexcept(true);
+
+
+	cColumn* FindColumn(uIntn ColumnIndex)noexcept(true);
+	cColumn* QueryColumn(uIntn ColumnIndex)noexcept(true);
+	bool CloseColumn(uIntn ColumnIndex)noexcept(true);
+	cColumn* MoveColumn(uIntn ColumnIndex,uIntn NewColumnIndex)noexcept(true);
+
+	cCell* FindCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true);
+	cCell* QueryCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true);
+	bool CloseCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true);
+	cCell* MoveCell(uIntn RowIndex,uIntn ColumnIndex,uIntn NewRowIndex,uIntn NewColumnIndex)noexcept(true);
+
+	operator iVisualData<cGridData> *()const noexcept(true);
+
+	uIntn GetVisibleRowBegin(void)noexcept(true);
+	uIntn GetVisibleRowEnd(void)noexcept(true);
+	uIntn GetVisibleColBegin(void)noexcept(true);
+	uIntn GetVisibleColEnd(void)noexcept(true);
+
+	uIntn FindRowIndexAt(Float32 RowPosition)noexcept(true);
+	uIntn FindColumnIndexAt(Float32 ColumnPosition)noexcept(true);
+
+	bool FindRowIndexAt(Float32 RowPosition,uIntn &RowIndex)noexcept(true);
+	bool FindColumnIndexAt(Float32 ColumnPosition,uIntn &ColumnIndex)noexcept(true);
+
+	bool IsRowVisible(uIntn RowIndex)const noexcept(true);
+	bool IsColumnVisible(uIntn ColumnIndex)const noexcept(true);
+protected:
+
+	iScrollContentContainer *fContainer=0;
+
+	virtual void ScrollContentShow(void)noexcept(true)override;
+	virtual void ScrollContentHide(void)noexcept(true)override;
+	virtual void ScrollContentUpdate(void)noexcept(true)override;
+
+	cUIRange CalculateRowRange(uIntn RowIndex)noexcept(true);
+	cUIRange CalculateColumnRange(uIntn ColumnIndex)noexcept(true);
+
+private:
+
+	uIntn fVisibleRowIndex;
+	uIntn fVisibleColumnIndex;
+
+
+	cnRTL::cSeqMap<uIntn,cRow*> fRowMap;
+	cnRTL::cSeqMap<uIntn,cColumn*> fColMap;
+
+	struct cGridIndex
+	{
+		uIntn Row;
+		uIntn Column;
+
+		sfInt8 Compare(const cGridIndex &Src)const noexcept(true);
+
+		bool operator ==(const cGridIndex &Src)const noexcept(true){	return Row==Src.Row && Column==Src.Column;	}
+		bool operator !=(const cGridIndex &Src)const noexcept(true){	return Row!=Src.Row || Column!=Src.Column;	}
+		cnLib_DEFINE_CLASS_THREE_WAY_COMPARISON(,(const cGridIndex &Src)const,(Compare(Src)))
+	};
+	cnRTL::cSeqMap<cGridIndex,cCell*> fCellMap;
+
+	struct cPositionRecord
+	{
+		sfInt16 Size;
+		sfInt16 HeadPadding;
+		sfInt16 TailPadding;
+		bool Update;
+		Float32 LastRecordEnd;
+		Float32 Begin;
+		Float32 End;
+	};
+	cnRTL::cSeqMap<uIntn,cPositionRecord> fRowRangeMap;
+	cnRTL::cSeqMap<uIntn,cPositionRecord> fColRangeMap;
+
+
+	cnRTL::cSeqList<cUIRange> fVisibleRowRanges;
+	cnRTL::cSeqList<cUIRange> fVisibleColRanges;
+	cnRTL::cSeqList<bcItem*> fVisibleItemList;
+	cnRTL::cSeqList<bcItem*> fVisibleItemTempList;
+
+	template<class TItem>
+	struct cStayCalculateState
+	{
+		TItem *Item;
+		cRow *Row;
+		Float32 Limit;
+		Float32 Size;
+	};
+	cnRTL::cSeqList<cRow*> fRowStayList;
+	cnRTL::cSeqList<cColumn*> fColStayList;
+	cnRTL::cSeqList<cCell*> fCellStayList;
+
+
+	struct cCompareRange
+	{
+		Float32 Position;
+		sfInt8 operator ()(const cPositionRecord &Src)noexcept(true);
+	};
+
+	static cnDataStruct::cSeqMapIterator<uIntn,cPositionRecord> FindRangeLowwer(Float32 RowPosition,bool &Match,cnRTL::cSeqMap<uIntn,cPositionRecord> &RangeMap)noexcept(true);
+	static uIntn ScanVisibleRange(cUIRange VisibleRange,sfInt16 DefaultSize,sfInt16 DefaultPadding,cnRTL::cSeqMap<uIntn,cPositionRecord> &RangeMap,cnRTL::cSeqList<cUIRange> &VisibleRangeList)noexcept(true);
+	template<class TItem>
+	static void ScanStayItems(cUIRange VisibleRange,sfInt16 DefaultSize,sfInt16 DefaultPadding,uIntn VisibleIndex,uIntn VisibleEndIndex,const cnRTL::cSeqList<cUIRange> &VisibleRanges,const cnRTL::cSeqMap<uIntn,TItem*> &ItemMap,const cnRTL::cSeqMap<uIntn,cPositionRecord> &ItemRangeMap,cnRTL::cSeqList<TItem*> &StayList)noexcept(true);
+
+
+	uIntn fRowCount;
+	uIntn fColumnCount;
+	ufInt16 fDefaultRowSize=0;
+	ufInt16 fDefaultRowPadding=0;
+	ufInt16 fDefaultColumnSize=0;
+	ufInt16 fDefaultColumnPadding=0;
+
+
+	class cDataReference : public iReference
+	{
+	public:
+		cGridData Data;
+		cnRTL::cSeqList<cTextTabItem> ItemList;
+	};
+	rPtr< cUIVisualDataCache<cGridData> > fDataCache;
+	virtual const cGridData* QueryData(rPtr<iReference> &DataReference)noexcept(true)override;
+};
+//---------------------------------------------------------------------------
+class blItemGridManager : public LayoutControl
+{
+public:
+	blItemGridManager()noexcept(true);
+	~blItemGridManager()noexcept(true);
+
+
+	scItemGrid* GetGrid(scItemGrid *Grid)noexcept(true);
+	void SetGrid(scItemGrid *Grid)noexcept(true);
+
+protected:
+	scItemGrid *fGrid;
+	virtual void GridSetup(void)noexcept(true);
+	virtual void GridClear(void)noexcept(true);
+	virtual void GridUpdate(uIntn RowIndex,uIntn RowEndIndex,uIntn ColIndex,uIntn ColEndIndex)noexcept(true)=0;
+
+private:
+	iFunctionToken *fScrollContentUpdateToken;
+
+	void GridUpdateData(void)noexcept(true);
+};
+//---------------------------------------------------------------------------
+class bcItemGridRow : public Form, public iScrollContent
+{
+public:
+	scItemGrid::cRow *Row=nullptr;
+
+	virtual void ScrollContentShow(void)noexcept(true)override;
+	virtual void ScrollContentHide(void)noexcept(true)override;
+	virtual void ScrollContentUpdate(void)noexcept(true)override;
+
+};
+//---------------------------------------------------------------------------
+class bcItemGridColumn : public Form, public iScrollContent
+{
+public:
+	scItemGrid::cColumn *Column=nullptr;
+
+	virtual void ScrollContentShow(void)noexcept(true)override;
+	virtual void ScrollContentHide(void)noexcept(true)override;
+	virtual void ScrollContentUpdate(void)noexcept(true)override;
+
+};
+//---------------------------------------------------------------------------
+class bcItemGridCell : public Form, public iScrollContent
+{
+public:
+	scItemGrid::cCell *Cell=nullptr;
+
+	virtual void ScrollContentShow(void)noexcept(true)override;
+	virtual void ScrollContentHide(void)noexcept(true)override;
+	virtual void ScrollContentUpdate(void)noexcept(true)override;
+};
+//---------------------------------------------------------------------------
+template<class TGridRow>
+class cItemGridRowSet
+{
+public:
+	~cItemGridRowSet()noexcept(true){
+		for(auto RowControl : fRowControlSet){
+			if(RowControl->Row!=nullptr){
+				RowControl->Row->Close();
+			}
+			delete RowControl;
+		}
+	}
+
+	void ViewSetup(iUIView *ParentView)noexcept(true){
+		for(auto *RowControl : fRowControlSet){
+			ParentView->InsertView(*RowControl);
+		}
+	}
+	void ViewClear(iUIView *ParentView)noexcept(true){
+		for(auto *RowControl : fRowControlSet){
+			ParentView->RemoveView(*RowControl);
+		}
+	}
+
+	void Layout(iUIView *ParentView)noexcept(true){
+		for(auto *RowControl : fRowControlSet){
+			auto LayoutRect=RowControl->Row->CalculateLayoutRect();
+			ControlSetRect(*RowControl,ParentView,LayoutRect);
+		}
+	}
+
+	TGridRow* Query(iUIView *ParentView,scItemGrid *Grid,uIntn RowIndex)noexcept(true){
+		auto Row=Grid->QueryRow(RowIndex);
+
+		TGridRow *RowControl;
+		auto RowContent=Row->GetContent();
+		if(RowContent!=nullptr){
+			RowControl=static_cast<TGridRow*>(RowContent);
+		}
+		else{
+			// recycle invisible control
+
+			RowControl=new TGridRow;
+			RowControl->Row=Row;
+			fRowControlSet.Insert(RowControl);
+			Row->SetContent(RowControl);
+			if(ParentView!=nullptr){
+				ParentView->InsertView(*RowControl);
+			}
+		}
+
+		return RowControl;
+	}
+protected:
+private:
+	cnRTL::cSeqSet<TGridRow*> fRowControlSet;
+};
+//---------------------------------------------------------------------------
+template<class TGridColumn>
+class cItemGridColumnSet
+{
+public:
+	~cItemGridColumnSet()noexcept(true){
+		for(auto ColControl : fColumnControlSet){
+			if(ColControl->Col!=nullptr){
+				ColControl->Col->Close();
+			}
+			delete ColControl;
+		}
+	}
+
+	void ViewSetup(iUIView *ParentView)noexcept(true){
+		for(auto *ColControl : fColumnControlSet){
+			ParentView->InsertView(*ColControl);
+		}
+	}
+	void ViewClear(iUIView *ParentView)noexcept(true){
+		for(auto *ColControl : fColumnControlSet){
+			ParentView->RemoveView(*ColControl);
+		}
+	}
+
+	void Layout(iUIView *ParentView)noexcept(true){
+		for(auto *ColControl : fColumnControlSet){
+			auto LayoutRect=ColControl->Cell->CalculateLayoutRect();
+			ControlSetRect(*ColControl,ParentView,LayoutRect);
+		}
+	}
+
+	TGridColumn* Query(iUIView *ParentView,scItemGrid *Grid,uIntn ColIndex)noexcept(true){
+		auto Column=Grid->QueryColumn(ColIndex);
+
+		TGridColumn *ColControl;
+		auto ColContent=Column->GetContent();
+		if(ColContent!=nullptr){
+			ColControl=static_cast<TGridColumn*>(ColContent);
+		}
+		else{
+			// recycle invisible control
+
+			ColControl=new TGridColumn;
+			ColControl->Column=Column;
+			fColumnControlSet.Insert(ColControl);
+			Column->SetContent(ColControl);
+			if(ParentView!=nullptr){
+				ParentView->InsertView(*ColControl);
+			}
+		}
+
+		return ColControl;
+	}
+protected:
+private:
+	cnRTL::cSeqSet<TGridColumn*> fColumnControlSet;
+};
+//---------------------------------------------------------------------------
+template<class TGridCell>
+class cItemGridCellSet
+{
+public:
+	~cItemGridCellSet()noexcept(true){
+		for(auto CellControl : fCellControlSet){
+			if(CellControl->Cell!=nullptr){
+				CellControl->Cell->Close();
+			}
+			delete CellControl;
+		}
+	}
+
+	void ViewSetup(iUIView *ParentView)noexcept(true){
+		for(auto *CellControl : fCellControlSet){
+			ParentView->InsertView(*CellControl);
+		}
+	}
+	void ViewClear(iUIView *ParentView)noexcept(true){
+		for(auto *CellControl : fCellControlSet){
+			ParentView->RemoveView(*CellControl);
+		}
+	}
+
+	void Layout(iUIView *ParentView)noexcept(true){
+		for(auto *CellControl : fCellControlSet){
+			auto LayoutRect=CellControl->Cell->CalculateLayoutRect();
+			ControlSetRect(*CellControl,ParentView,LayoutRect);
+		}
+	}
+
+	TGridCell* Query(iUIView *ParentView,scItemGrid *Grid,uIntn RowIndex,uIntn ColIndex)noexcept(true){
+		auto Cell=Grid->QueryCell(RowIndex,ColIndex);
+
+		TGridCell *CellControl;
+		auto CellContent=Cell->GetContent();
+		if(CellContent!=nullptr){
+			CellControl=static_cast<TGridCell*>(CellContent);
+		}
+		else{
+			// recycle invisible control
+
+			CellControl=new TGridCell;
+			CellControl->Cell=Cell;
+			fCellControlSet.Insert(CellControl);
+			Cell->SetContent(CellControl);
+			if(ParentView!=nullptr){
+				ParentView->InsertView(*CellControl);
+			}
+		}
+
+		return CellControl;
+	}
+protected:
+private:
+	cnRTL::cSeqSet<TGridCell*> fCellControlSet;
+};
+//---------------------------------------------------------------------------
 class cnLib_INTERFACE viGridLineData : public viData
 {
 public:

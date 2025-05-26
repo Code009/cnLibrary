@@ -122,7 +122,7 @@ struct cIndexPoint
 	sIntn y;
 };
 //---------------------------------------------------------------------------
-class bcTextDocument : public cScrollContent, public viTextDocumentData
+class bcTextDocument : public cScrollControl, public viTextDocumentData
 {
 public:
 	bcTextDocument()noexcept(true);
@@ -190,7 +190,7 @@ protected:
 	virtual void ControlContentSetDefault(void)noexcept(true);
 
 
-	// cScrollContent
+	// cScrollControl
 	
 	virtual void ScrollContentUpdateContentLayout(void)noexcept(true)override;
 

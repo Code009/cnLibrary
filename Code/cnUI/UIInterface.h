@@ -208,6 +208,139 @@ protected:
 	}
 };
 //---------------------------------------------------------------------------
+template<class TVisualData>
+class iVisualData : public iReference
+{
+public:
+	virtual iUIThread *GetUIThread(void)noexcept(true)=0;
+
+	virtual void InsertUpdateNotify(iProcedure *Procedure)noexcept(true)=0;
+	virtual void RemoveUpdateNotify(iProcedure *Procedure)noexcept(true)=0;
+	virtual const TVisualData* QueryData(rPtr<iReference> &DataReference)noexcept(true)=0;
+};
+//---------------------------------------------------------------------------
+template<class TVisualData>
+class cUIVisualStaticData : public iVisualData<TVisualData>
+{
+public:
+	cUIVisualStaticData(iUIThread *UIThread)noexcept(true)
+		: fUIThread(UIThread)
+	{
+	}
+
+	virtual iUIThread *GetUIThread(void)noexcept(true)override{
+		return fUIThread;
+	}
+
+	virtual void InsertUpdateNotify(iProcedure *Procedure)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false)
+			return;
+		fNotifySet.Insert(Procedure);
+	}
+	virtual void RemoveUpdateNotify(iProcedure *Procedure)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false)
+			return;
+		fNotifySet.Remove(Procedure);
+	}
+	virtual const TVisualData* QueryData(rPtr<iReference> &DataReference)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false){
+			return nullptr;
+		}
+		DataReference=fDataReference;
+		return fVisualData;
+	}
+
+	void UpdateData(iReference *DataReference,const TVisualData *VisualData)noexcept(true){
+		if(fUIThread->IsCurrentThread()==false)
+			return;
+		fVisualData=VisualData;
+		fDataReference=DataReference;
+		auto Dispatch=fUIThread->GetDispatch(false);
+		
+		for(auto Procedure : fNotifySet){
+			Procedure->Execute();
+		}
+	}
+private:
+	cnRTL::cSeqSet<iProcedure*> fNotifySet;
+	rPtr<iReference> fDataReference;
+	const TVisualData *fVisualData;
+	iPtr<iUIThread> fUIThread;
+};
+//---------------------------------------------------------------------------
+template<class TVisualData>
+class cUIVisualDataCache : public iVisualData<TVisualData>
+{
+public:
+	class iDataProvider
+	{
+	public:
+		virtual const TVisualData* QueryData(rPtr<iReference> &DataReference)noexcept(true)=0;
+
+	};
+
+	cUIVisualDataCache(iUIThread *UIThread,iDataProvider *DataProvider)noexcept(true)
+		: fDataProvider(DataProvider)
+		, fUIThread(UIThread)
+	{
+	}
+
+	virtual iUIThread *GetUIThread(void)noexcept(true)override{
+		return fUIThread;
+	}
+
+	virtual void InsertUpdateNotify(iProcedure *Procedure)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false)
+			return;
+		fNotifySet.Insert(Procedure);
+	}
+	virtual void RemoveUpdateNotify(iProcedure *Procedure)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false)
+			return;
+		fNotifySet.Remove(Procedure);
+	}
+	virtual const TVisualData* QueryData(rPtr<iReference> &DataReference)noexcept(true)override{
+		if(fUIThread->IsCurrentThread()==false)
+			return nullptr;
+		if(fDataReference==nullptr){
+			if(fDataProvider==nullptr){
+				return nullptr;
+			}
+			fVisualData=fDataProvider->QueryData(fDataReference);
+			if(fVisualData==nullptr){
+				return nullptr;
+			}
+		}
+		DataReference=fDataReference;
+		return fVisualData;
+	}
+
+
+	void ProviderClosed(void)noexcept(true){
+		fDataProvider=nullptr;
+	}
+
+	void NotifyUpdate(void)noexcept(true){
+		if(fDataReference!=nullptr){
+			fDataReference=nullptr;
+			NotifyCallbacks();
+		}
+	}
+
+private:
+	iDataProvider *fDataProvider;
+	iPtr<iUIThread> fUIThread;
+	cnRTL::cSeqSet<iProcedure*> fNotifySet;
+	const TVisualData *fVisualData;
+	rPtr<iReference> fDataReference;
+
+	void NotifyCallbacks(void){
+		for(auto *Procedure : fNotifySet){
+			Procedure->Execute();
+		}
+	}
+};
+//---------------------------------------------------------------------------
 }//	namespace cnUI
 //---------------------------------------------------------------------------
 }	// namespace cnLibrary

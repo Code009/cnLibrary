@@ -6,7 +6,6 @@ using namespace cnUI;
 
 rPtr<viControl>				(*cnUI::gCreateDefaultButtonVisual)(viButtonData *Data)noexcept(true)		=vButton::Create;
 rPtr<viScrollBar>			(*cnUI::gCreateDefaultScrollBarVisual)(viScrollBarData *Data)noexcept(true)	=nullptr;
-rPtr<viControl>				(*cnUI::gCreateDefaultTabVisual)(viTabData *Data)noexcept(true)				=nullptr;
 
 static rPtr<viControl> CreateDefaultSplitterBarVisual(void)noexcept(true){
 	return vSolidStaticColor::Create(UIColorFromUInt32(0xFF0000FF));
@@ -1274,50 +1273,10 @@ void cControlScrollBar::ScrollBarMoveAction(bool Negative,eScrollBarMoveDistance
 //---------------------------------------------------------------------------
 bcTab::bcTab()noexcept(true)
 {
-	fHotIndex=-1;
 }
 //---------------------------------------------------------------------------
 bcTab::~bcTab()noexcept(true)
 {
-	InvalidateData();
-}
-//---------------------------------------------------------------------------
-sfInt16 bcTab::TabActiveIndex(void)noexcept(true)
-{
-	return -1;
-}
-//---------------------------------------------------------------------------
-sfInt16 bcTab::TabHotIndex(void)noexcept(true)
-{
-	return fHotIndex;
-}
-//---------------------------------------------------------------------------
-uIntn bcTab::TabCount(void)noexcept(true)
-{
-	return 0;
-}
-//---------------------------------------------------------------------------
-bcTab::cTabItem bcTab::TabGet(uIntn)noexcept(true)
-{
-	cTabItem EmptyItem;
-	EmptyItem.TabSize=0;
-	EmptyItem.Text=nullptr;
-	EmptyItem.TextLength=0;
-	EmptyItem.TextMargin=0;
-	gApplyDefaultTextStyle(EmptyItem.TextStyle);
-	return EmptyItem;
-}
-//---------------------------------------------------------------------------
-void bcTab::TabNotify(void)noexcept(true)
-{
-	TabNotifySet();
-}
-//---------------------------------------------------------------------------
-void bcTab::ControlContentSetDefault(void)noexcept(true)
-{
-	if(gCreateDefaultTabVisual!=nullptr){
-		SetContent(gCreateDefaultTabVisual(this));
-	}
 }
 //---------------------------------------------------------------------------
 sfInt16 bcTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
@@ -1332,24 +1291,23 @@ sfInt16 bcTab::TabHitTest(Float32 x,Float32 y)noexcept(true)
 		return -1;
 	if(x<0)
 		return -1;
-	auto Count=TabCount();
 	Float32 TabLeft=0;
-	for(uIntn i=0;i<Count;i++){
-		auto TabItem=TabGet(i);
-		if(x<TabLeft+TabItem.TabSize){
+	uIntn TabCount=TabGetCount();
+	for(uIntn i=0;i<TabCount;i++){
+		sfInt32 TabSize=TabGetSize(i);
+		if(x<TabLeft+TabSize){
 			return static_cast<sfInt16>(i);
 		}
-		TabLeft+=TabItem.TabSize;
+		TabLeft+=TabSize;
 	}
 	return -1;
 }
 //---------------------------------------------------------------------------
 void bcTab::MouseLeave(iUIMouseEvent*)noexcept(true)
 {
-	fHotIndex=-1;
 	fMouseBtnLeftDown=false;
 
-	TabNotify();
+	TabUpdateHotIndex(-1);
 }
 //---------------------------------------------------------------------------
 void bcTab::MouseMove(iUIMouseEvent *Mouse)noexcept(true)
@@ -1358,8 +1316,8 @@ void bcTab::MouseMove(iUIMouseEvent *Mouse)noexcept(true)
 		cUIPoint Pos;
 		Mouse->GetPosition(fView,Pos);
 
-		fHotIndex=TabHitTest(Pos.x,Pos.y);
-		TabNotify();
+		sfInt16 HotIndex=TabHitTest(Pos.x,Pos.y);
+		TabUpdateHotIndex(HotIndex);
 	}
 }
 //---------------------------------------------------------------------------
@@ -1371,8 +1329,8 @@ void bcTab::MouseDown(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(tru
 			MouseEvent->GetPosition(fView,Pos);
 
 			fMouseBtnLeftDown=true;
-			fHotIndex=TabHitTest(Pos.x,Pos.y);
-			TabNotify();
+			fMouseDownIndex=TabHitTest(Pos.x,Pos.y);
+			TabUpdateHotIndex(fMouseDownIndex);
 		}
 	}
 }
@@ -1384,72 +1342,120 @@ void bcTab::MouseUp(iUIMouseEvent *MouseEvent,eMouseButton Button)noexcept(true)
 
 	if(fMouseBtnLeftDown && Button==MouseButton::Left){
 		// test if is valid click
-		auto DownIndex=fHotIndex;
-		fHotIndex=TabHitTest(Pos.x,Pos.y);
-		if(DownIndex==fHotIndex){
+		sfInt16 MouseUpIndex=TabHitTest(Pos.x,Pos.y);
+		TabUpdateHotIndex(MouseUpIndex);
+		if(MouseUpIndex==fMouseDownIndex){
 			// click event
-			TabClick(DownIndex);
+			TabClick(fMouseDownIndex);
 		}
-		TabNotify();
 		fMouseBtnLeftDown=false;
 	}
 }
 //---------------------------------------------------------------------------
+sfInt16 bcTab::TabGetCount(void)noexcept(true){	return 0;	}
+sfInt32 bcTab::TabGetSize(sfInt16 Index)noexcept(true){	return 1;}
+void bcTab::TabUpdateHotIndex(sfInt16 Index)noexcept(true){}
 void bcTab::TabClick(sfInt16)noexcept(true){}
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-cTab::cTab()noexcept(true)
+rPtr<viControl> (*cTextTab::CreateDefaultVisual)(iVisualData<cTextTabData> *Data)noexcept(true)=nullptr;
+//---------------------------------------------------------------------------
+cTextTab::cTextTab()noexcept(true)
+	: fDataCache(rCreate< cUIVisualDataCache<cTextTabData> >(cnSystem::CurrentUIThread::GetUIThread(),static_cast<cUIVisualDataCache<cTextTabData>::iDataProvider*>(this)))
 {
 	gApplyDefaultTextStyle(TextStyle);
 }
 //---------------------------------------------------------------------------
-cTab::~cTab()noexcept(true)
+cTextTab::~cTextTab()noexcept(true)
 {
+	fDataCache->ProviderClosed();
 }
 //---------------------------------------------------------------------------
-sfInt16 cTab::TabActiveIndex(void)noexcept(true)
+cTextTab::operator iVisualData<cTextTabData> *()const noexcept(true)
+{
+	return fDataCache;
+}
+//---------------------------------------------------------------------------
+void cTextTab::ControlContentSetDefault(void)noexcept(true)
+{
+	if(CreateDefaultVisual!=nullptr){
+		SetContent(CreateDefaultVisual(*this));
+	}
+}
+//---------------------------------------------------------------------------
+sfInt16 cTextTab::TabGetCount(void)noexcept(true)
+{
+	return static_cast<sfInt16>(fTabList.GetCount());
+}
+//---------------------------------------------------------------------------
+sfInt32 cTextTab::TabGetSize(sfInt16 Index)noexcept(true)
+{
+	auto &TabItem=fTabList[Index];
+	return TabItem.TabSize;
+}
+//---------------------------------------------------------------------------
+void cTextTab::Update(void)noexcept(true)
+{
+	fDataCache->NotifyUpdate();
+}
+//---------------------------------------------------------------------------
+const cTextTabData* cTextTab::QueryData(rPtr<iReference> &DataReference)noexcept(true)
+{
+	auto DataRef=rCreate<cDataReference>();
+	auto &Data=DataRef->Data;
+
+	DataRef->ItemList=fTabList;
+
+	DataRef->Data.ActiveIndex=fActiveIndex;
+	DataRef->Data.HotIndex=fHotIndex;
+	DataRef->Data.TabItems=DataRef->ItemList.Storage();
+
+	DataReference=DataRef;
+	return &Data;
+}
+//---------------------------------------------------------------------------
+sfInt16 cTextTab::GetActiveIndex(void)const noexcept(true)
 {
 	return fActiveIndex;
 }
 //---------------------------------------------------------------------------
-uIntn cTab::TabCount(void)noexcept(true)
-{
-	return TabList.GetCount();
-}
-//---------------------------------------------------------------------------
-cTab::cTabItem cTab::TabGet(uIntn Index)noexcept(true)
-{
-	cTabItem Item;
-	auto &TabItem=TabList[Index];
-	Item.Text=TabItem.Text;
-	Item.TextLength=TabItem.Text->Length;
-	Item.TextStyle=TextStyle;
-	Item.TabSize=TabItem.ItemWidth;
-	Item.TextMargin=TabTextMargin;
-	return Item;
-}
-//---------------------------------------------------------------------------
-void cTab::Update(void)noexcept(true)
-{
-	TabNotify();
-}
-//---------------------------------------------------------------------------
-sfInt16 cTab::GetActiveIndex(void)const noexcept(true)
-{
-	return fActiveIndex;
-}
-//---------------------------------------------------------------------------
-void cTab::SetActiveIndex(sfInt16 Index)noexcept(true)
+void cTextTab::SetActiveIndex(sfInt16 Index)noexcept(true)
 {
 	if(fActiveIndex!=Index){
 		fActiveIndex=Index;
+		fDataCache->NotifyUpdate();
 		if(OnTabChanged!=nullptr){
 			OnTabChanged();
 		}
 	}
 }
 //---------------------------------------------------------------------------
-void cTab::TabClick(sfInt16 Index)noexcept(true)
+void cTextTab::ClearTab(void)noexcept(true)
+{
+	fTabList.Clear();
+}
+//---------------------------------------------------------------------------
+void cTextTab::SetTab(uIntn Index,const cTextTabItem &Item)noexcept(true)
+{
+	if(fTabList.GetCount()<=Index){
+		fTabList.SetCount(Index+1);
+	}
+
+	auto &TabItem=fTabList[Index];
+	TabItem=Item;
+	fDataCache->NotifyUpdate();
+}
+//---------------------------------------------------------------------------
+void cTextTab::TabUpdateHotIndex(sfInt16 Index)noexcept(true)
+{
+	if(fHotIndex==Index)
+		return;
+
+	fHotIndex=Index;
+	fDataCache->NotifyUpdate();
+}
+//---------------------------------------------------------------------------
+void cTextTab::TabClick(sfInt16 Index)noexcept(true)
 {
 	if(OnClickTab!=nullptr){
 		OnClickTab(Index);
@@ -1461,6 +1467,7 @@ void cTab::TabClick(sfInt16 Index)noexcept(true)
 		}
 	}
 }
+//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 cSplitterBar::cSplitterBar()noexcept(true)

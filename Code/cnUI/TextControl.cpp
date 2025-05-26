@@ -256,7 +256,7 @@ void bcTextDocument::SetContent(rPtr<viTextDocument> Content)noexcept(true)
 //---------------------------------------------------------------------------
 void bcTextDocument::ViewSetup(void)noexcept(true)
 {
-	cScrollContent::ViewSetup();
+	cScrollControl::ViewSetup();
 
 	if(fContent!=nullptr){
 		fContent->SetView(fView);
@@ -272,7 +272,7 @@ void bcTextDocument::ViewClear(void)noexcept(true)
 		fContent->SetView(nullptr);
 	}
 
-	cScrollContent::ViewClear();
+	cScrollControl::ViewClear();
 }
 //---------------------------------------------------------------------------
 void bcTextDocument::ClearCache(void)noexcept(true)
@@ -758,7 +758,7 @@ void bcTextDocument::SetNeedUpdateTextContent(void)noexcept(true)
 //---------------------------------------------------------------------------
 void bcTextDocument::ScrollContentUpdateContentLayout(void)noexcept(true)
 {
-	cScrollContent::ScrollContentUpdateContentLayout();
+	cScrollControl::ScrollContentUpdateContentLayout();
 	// layout texts
 
 	

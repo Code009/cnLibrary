@@ -6,6 +6,1541 @@ using namespace cnUI;
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+scItemGrid::scItemGrid()noexcept(true)
+	: fVisibleRowIndex(0)
+	, fVisibleColumnIndex(0)
+	, fDataCache(rCreate< cUIVisualDataCache<cGridData> >(cnSystem::CurrentUIThread::GetUIThread(),static_cast<cUIVisualDataCache<cGridData>::iDataProvider*>(this)))
+{
+}
+//---------------------------------------------------------------------------
+scItemGrid::~scItemGrid()noexcept(true)
+{
+	for(auto RowPair : fRowMap){
+		if(RowPair.Value!=nullptr){
+			delete RowPair.Value;
+		}
+	}
+	for(auto ColPair : fColMap){
+		if(ColPair.Value!=nullptr){
+			delete ColPair.Value;
+		}
+	}
+	for(auto CellPair : fCellMap){
+		if(CellPair.Value!=nullptr){
+			delete CellPair.Value;
+		}
+	}
+}
+//---------------------------------------------------------------------------
+scItemGrid::operator iVisualData<cGridData> *()const noexcept(true)
+{
+	return fDataCache;
+}
+//---------------------------------------------------------------------------
+iScrollContentContainer* scItemGrid::GetContainer(void)noexcept(true)
+{
+	return fContainer;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetContainer(iScrollContentContainer *Container)noexcept(true)
+{
+	if(fContainer!=nullptr){
+		fContainer->SetContent(nullptr);
+	}
+	fContainer=Container;
+	if(fContainer!=nullptr){
+		fContainer->SetContent(this);
+	}
+}
+//---------------------------------------------------------------------------
+Float32 scItemGrid::GetRowOffset(void)const noexcept(true)
+{
+	if(fContainer==nullptr)
+		return 0;
+	return fContainer->GetOffset().y;
+}
+//---------------------------------------------------------------------------
+Float32 scItemGrid::GetColumnOffset(void)const noexcept(true)
+{
+	if(fContainer==nullptr)
+		return 0;
+	return fContainer->GetOffset().x;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::SetGridOffset(Float32 RowOffset,Float32 ColumnOffset)noexcept(true)
+{
+	if(fContainer==nullptr)
+		return false;
+
+	return fContainer->SetOffset({ColumnOffset,RowOffset});
+}
+//---------------------------------------------------------------------------
+iUIView* scItemGrid::GetView(void)const noexcept(true)
+{
+	if(fContainer==nullptr)
+		return nullptr;
+	return fContainer->GetScrollView();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::UpdateColumnCount(uIntn ColumnCount,bool IsEstimated)noexcept(true)
+{
+	if(fColumnCount==ColumnCount)
+		return;
+	if(IsEstimated && fColumnCount>ColumnCount){
+		// do not shrink row count
+		return;
+	}
+	fColumnCount=ColumnCount;
+
+	if(fContainer==nullptr)
+		return;
+
+	if(fDefaultRowSize==0){
+		fContainer->SetScrollLimitX({0,0},false,false);
+	}
+	else{
+		fContainer->SetScrollLimitX({0,static_cast<Float32>(fDefaultColumnSize*fColumnCount+fDefaultColumnPadding*(fColumnCount+1))},false,IsEstimated);
+	}
+
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetDefaultColumnSize(ufInt16 Size)noexcept(true)
+{
+	fDefaultColumnSize=Size;
+
+	if(fContainer==nullptr)
+		return;
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetDefaultColumnPadding(ufInt16 Size)noexcept(true)
+{
+	fDefaultColumnPadding=Size;
+
+	if(fContainer==nullptr)
+		return;
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::UpdateRowCount(uIntn RowCount,bool IsEstimated)noexcept(true)
+{
+	if(fRowCount==RowCount)
+		return;
+	if(IsEstimated && fRowCount>RowCount){
+		// do not shrink row count
+		return;
+	}
+	fRowCount=RowCount;
+
+	if(fContainer==nullptr)
+		return;
+
+	if(fDefaultRowSize==0){
+		fContainer->SetScrollLimitY({0,0},false,false);
+	}
+	else{
+		fContainer->SetScrollLimitY({0,static_cast<Float32>(fDefaultRowSize*fRowCount+fDefaultRowPadding*(fRowCount+1))},false,IsEstimated);
+	}
+
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetDefaultRowSize(ufInt16 Size)noexcept(true)
+{
+	fDefaultRowSize=Size;
+
+	if(fContainer==nullptr)
+		return;
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetDefaultRowPadding(ufInt16 Size)noexcept(true)
+{
+	fDefaultRowPadding=Size;
+
+	if(fContainer==nullptr)
+		return;
+	fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+sfInt16 scItemGrid::GetRowSize(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return -1;
+
+	return RowRangePair->Value.Size;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetRowSize(uIntn RowIndex,sfInt16 Size)noexcept(true)
+{
+	auto &RowRange=fRowRangeMap[RowIndex];
+	if(Size<=0)
+		RowRange.Size=0;
+	else
+		RowRange.Size=Size;
+
+	RowRange.Update=true;
+
+	if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+		fContainer->NotifyUpdateScroll();
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ResetRowSize(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return;
+
+	if(RowRangePair->Value.Size>=0){
+		RowRangePair->Value.Size=-1;
+		RowRangePair->Value.Update=true;
+
+		if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+}
+//---------------------------------------------------------------------------
+sfInt16 scItemGrid::GetRowHeadPadding(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return -1;
+	return RowRangePair->Value.HeadPadding;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetRowHeadPadding(uIntn RowIndex,sfInt16 Size)noexcept(true)
+{
+	auto &RowRange=fRowRangeMap[RowIndex];
+	if(Size<=0)
+		RowRange.HeadPadding=0;
+	else
+		RowRange.HeadPadding=Size;
+	RowRange.Update=true;
+
+	if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+		fContainer->NotifyUpdateScroll();
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ResetRowHeadPadding(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return;
+
+	if(RowRangePair->Value.HeadPadding>=0){
+		RowRangePair->Value.HeadPadding=-1;
+		RowRangePair->Value.Update=true;
+
+		if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+}
+//---------------------------------------------------------------------------
+sfInt16 scItemGrid::GetRowTailPadding(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return -1;
+	return RowRangePair->Value.TailPadding;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::SetRowTailPadding(uIntn RowIndex,sfInt16 Size)noexcept(true)
+{
+	auto &RowRange=fRowRangeMap[RowIndex];
+	if(Size<=0)
+		RowRange.TailPadding=0;
+	else
+		RowRange.TailPadding=Size;
+	RowRange.Update=true;
+
+	if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+		fContainer->NotifyUpdateScroll();
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ResetRowTailPadding(uIntn RowIndex)noexcept(true)
+{
+	auto RowRangePair=fRowRangeMap.GetPair(RowIndex);
+	if(RowRangePair==nullptr)
+		return;
+
+	if(RowRangePair->Value.TailPadding>=0){
+		RowRangePair->Value.TailPadding=-1;
+		RowRangePair->Value.Update=true;
+
+		if(fContainer!=nullptr && IsRowVisible(RowIndex)){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::GetVisibleRowBegin(void)noexcept(true)
+{
+	return fVisibleRowIndex;
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::GetVisibleRowEnd(void)noexcept(true)
+{
+	return fVisibleRowIndex+fVisibleRowRanges.GetCount();
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::GetVisibleColBegin(void)noexcept(true)
+{
+	return fVisibleColumnIndex;
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::GetVisibleColEnd(void)noexcept(true)
+{
+	return fVisibleColumnIndex+fVisibleColRanges.GetCount();
+}
+//---------------------------------------------------------------------------
+cUIRange scItemGrid::CalculateRowRange(uIntn RowIndex)noexcept(true)
+{
+	// check if in stay
+	auto RowPair=fRowMap.GetPair(RowIndex);
+	if(RowPair!=nullptr){
+		if(RowPair->Value->fStayPos.Begin!=RowPair->Value->fStayPos.End){
+			// stay row
+			return RowPair->Value->fStayPos;
+		}
+	}
+
+	cUIRange Range;
+	bool Exists;
+	auto RowRangePair=fRowRangeMap.FindPairLowwer(RowIndex,Exists);
+	if(RowRangePair==nullptr){
+		Range.Begin=static_cast<Float32>(RowIndex*(fDefaultRowSize+fDefaultRowPadding)+fDefaultRowPadding);
+		Range.End=Range.Begin+fDefaultRowSize;
+		return Range;
+	}
+	if(Exists){
+		Range.Begin=RowRangePair->Value.Begin;
+		Range.End=RowRangePair->Value.End;
+		return Range;
+	}
+	uIntn IndexOffset=RowIndex-RowRangePair->Key;
+	Range.Begin=static_cast<Float32>(IndexOffset*(fDefaultRowSize+fDefaultRowPadding)+fDefaultRowPadding);
+	Range.End=Range.Begin+fDefaultRowSize;
+	Range.Begin+=RowRangePair->Value.End;
+	return Range;
+}
+//---------------------------------------------------------------------------
+cUIRange scItemGrid::CalculateColumnRange(uIntn ColumnIndex)noexcept(true)
+{
+	cUIRange Range;
+	bool Exists;
+	auto ColRangePair=fColRangeMap.FindPairLowwer(ColumnIndex,Exists);
+	if(ColRangePair==nullptr){
+		Range.Begin=static_cast<Float32>(ColumnIndex*(fDefaultColumnSize+fDefaultColumnPadding)+fDefaultColumnPadding);
+		Range.End=Range.Begin+fDefaultColumnSize;
+		return Range;
+	}
+	if(Exists){
+		Range.Begin=ColRangePair->Value.Begin;
+		Range.End=ColRangePair->Value.End;
+		return Range;
+	}
+	uIntn IndexOffset=ColumnIndex-ColRangePair->Key;
+	Range.Begin=static_cast<Float32>(IndexOffset*(fDefaultColumnSize+fDefaultColumnPadding)+fDefaultColumnPadding);
+	Range.End=Range.Begin+fDefaultColumnSize;
+	Range.Begin+=ColRangePair->Value.End;
+	return Range;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ScrollContentShow(void)noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ScrollContentHide(void)noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+void scItemGrid::ScrollContentUpdate(void)noexcept(true)
+{
+	cnLib_ASSERT(fContainer!=nullptr);
+
+	auto ScrollOffset=fContainer->GetOffset();
+	auto ViewportSize=fContainer->GetViewportSize();
+
+	// row visible range
+	cUIRange RowVisibleRange;
+	RowVisibleRange.Begin=ScrollOffset.y;
+	RowVisibleRange.End=ScrollOffset.y+ViewportSize.y;
+
+	// column visible range
+	cUIRange ColVisibleRange;
+	ColVisibleRange.Begin=ScrollOffset.x;
+	ColVisibleRange.End=ScrollOffset.x+ViewportSize.x;
+
+	{
+		auto PrevVisibleList=cnVar::MoveCast(fVisibleItemList);
+		fVisibleItemList=cnVar::MoveCast(fVisibleItemTempList);
+		fVisibleItemTempList=cnVar::MoveCast(PrevVisibleList);
+	}
+	// mark invisible
+	for(auto *VisibleItem : fVisibleItemTempList){
+		VisibleItem->fVisible=false;
+	}
+	// mark stay rows invisible
+	for(auto &StayRow : fRowStayList){
+		StayRow->fStay=false;
+		StayRow->fVisible=false;
+
+		fVisibleItemTempList.AppendMake(StayRow);
+	}
+	// mark stay columnss invisible
+	// mark stay cells invisible
+	for(auto &StayCell : fCellStayList){
+		StayCell->fStay=false;
+		StayCell->fVisible=false;
+
+		fVisibleItemTempList.AppendMake(StayCell);
+	}
+
+	fRowStayList.Clear();
+	fCellStayList.Clear();
+
+	// scan visible
+	fVisibleRowIndex=ScanVisibleRange(RowVisibleRange,fDefaultRowSize,fDefaultRowPadding,fRowRangeMap,fVisibleRowRanges);
+	fVisibleColumnIndex=ScanVisibleRange(ColVisibleRange,fDefaultColumnSize,fDefaultColumnPadding,fColRangeMap,fVisibleColRanges);
+
+	uIntn VisibleRowEndIndex=fVisibleRowIndex+fVisibleRowRanges.GetCount();
+	uIntn VisibleColEndIndex=fVisibleColumnIndex+fVisibleColRanges.GetCount();
+	
+	// scan stay item
+	ScanStayItems<cRow>(RowVisibleRange,fDefaultRowSize,fDefaultRowPadding,fVisibleRowIndex,VisibleRowEndIndex,fVisibleRowRanges,fRowMap,fRowRangeMap,fRowStayList);
+	ScanStayItems<cColumn>(ColVisibleRange,fDefaultColumnSize,fDefaultColumnPadding,fVisibleColumnIndex,VisibleColEndIndex,fVisibleColRanges,fColMap,fColRangeMap,fColStayList);
+
+	for(auto *StayCol : fColStayList){
+		StayCol->UpdateVisible();
+	}
+	// scan stay cells
+	for(auto *StayRow : fRowStayList){
+		StayRow->UpdateVisible();
+
+		cGridIndex CellIndex;
+		CellIndex.Row=StayRow->fRowIndex;
+		CellIndex.Column=fVisibleColumnIndex;
+		bool Exists;
+		auto StayCellPair=fCellMap.FindPairUpper(CellIndex,Exists);
+		if(StayCellPair!=nullptr){
+			while(StayCellPair!=fCellMap.end()){
+				if(StayCellPair->Key.Row!=CellIndex.Row)
+					break;
+				if(StayCellPair->Key.Column>=VisibleColEndIndex)
+					break;
+				auto StayCell=StayCellPair->Value;
+				StayCell->fVisible=true;
+				StayCell->UpdateVisible();
+
+				StayCell->fStay=true;
+				StayCell->fStayLeaving=StayRow->fStayLeaving;
+				fCellStayList.AppendMake(StayCell);
+				++StayCellPair;
+			}
+
+		}
+
+		for(auto *StayCol : fColStayList){
+			CellIndex.Column=StayCol->fColumnIndex;
+			StayCellPair=fCellMap.GetPair(CellIndex);
+			if(StayCellPair!=nullptr){
+				auto StayCell=StayCellPair->Value;
+				StayCell->fVisible=true;
+				StayCell->UpdateVisible();
+
+				StayCell->fStay=true;
+				StayCell->fStayLeaving=StayRow->fStayLeaving || StayCol->fStayLeaving;
+				fCellStayList.AppendMake(StayCell);
+			}
+		}
+
+	}
+
+	{	// mark visible
+
+		bool Exists;
+		auto VisibleRowPair=fRowMap.FindPairUpper(fVisibleRowIndex,Exists);
+		if(VisibleRowPair!=nullptr){
+			while(VisibleRowPair!=fRowMap.end()){
+				if(VisibleRowPair->Key>=VisibleRowEndIndex){
+					break;
+				}
+				auto VisibleItem=VisibleRowPair->Value;
+				VisibleItem->fVisible=true;
+				VisibleItem->UpdateVisible();
+
+				fVisibleItemList.AppendMake(VisibleItem);
+				++VisibleRowPair;
+			}
+		}
+
+		auto VisibleColPair=fColMap.FindPairUpper(fVisibleColumnIndex,Exists);
+		if(VisibleColPair!=nullptr){
+			while(VisibleColPair!=fColMap.end()){
+				if(VisibleColPair->Key>=VisibleColEndIndex){
+					break;
+				}
+				auto VisibleItem=VisibleColPair->Value;
+				VisibleItem->fVisible=true;
+				VisibleItem->UpdateVisible();
+
+				fVisibleItemList.AppendMake(VisibleItem);
+				++VisibleColPair;
+			}
+		}
+
+		cGridIndex CellIndex;
+		CellIndex.Row=fVisibleRowIndex;
+		while(CellIndex.Row<VisibleRowEndIndex){
+			CellIndex.Column=fVisibleColumnIndex;
+			auto VisibleCellPair=fCellMap.FindPairUpper(CellIndex,Exists);
+			if(VisibleCellPair!=nullptr){
+				while(VisibleCellPair!=fCellMap.end()){
+					if(VisibleCellPair->Key.Row!=CellIndex.Row)
+						break;
+					if(VisibleCellPair->Key.Column>=VisibleColEndIndex)
+						break;
+					auto VisibleItem=VisibleCellPair->Value;
+					VisibleItem->fVisible=true;
+					VisibleItem->UpdateVisible();
+
+					fVisibleItemList.AppendMake(VisibleItem);
+					++VisibleCellPair;
+				}
+
+			}
+			for(auto *StayCol : fColStayList){
+				CellIndex.Column=StayCol->fColumnIndex;
+				auto StayCellPair=fCellMap.GetPair(CellIndex);
+				if(StayCellPair!=nullptr){
+					auto StayCell=StayCellPair->Value;
+					StayCell->fVisible=true;
+					StayCell->UpdateVisible();
+
+					StayCell->fStay=StayCol->fStay;
+					StayCell->fStayLeaving=StayCol->fStayLeaving;
+					fCellStayList.AppendMake(StayCell);
+				}
+			}
+			CellIndex.Row++;
+		}
+
+	}
+	// notify last visible item. may duplicate notify newly visible item
+	for(auto *VisibleItem : fVisibleItemTempList){
+		VisibleItem->UpdateVisible();
+	}
+	fVisibleItemTempList.Clear();
+
+	// notify content update for visible items
+
+	for(auto *StayRow : fRowStayList){
+		StayRow->NotifyContentUpdate();
+	}
+
+	for(auto *StayCell : fCellStayList){
+		StayCell->NotifyContentUpdate();
+	}
+	for(auto *VisibleItem : fVisibleItemList){
+		VisibleItem->NotifyContentUpdate();
+	}
+
+
+#if 0
+
+	// update visual data
+	{
+		uIntn RowCount=fViewportDisplayRowEndIndex-fVisibleRowIndex;
+		uIntn ColCount=fViewportDisplayColumnEndIndex-fVisibleColumnIndex;
+		cUIRange RowRange=RowVisibleRange;
+		cUIRange ColRange=ColVisibleRange;
+
+		RowRange.Begin-=fScrollOffset[1];
+		RowRange.End-=fScrollOffset[1];
+
+		ColRange.Begin-=fScrollOffset[0];
+		ColRange.End-=fScrollOffset[0];
+
+		GridLineSetupStart(ColCount,RowCount,ColRange,RowRange);
+
+		for(uIntn r=0;r<RowCount;r++){
+			RowRange=ViewGridDisplayRowQueryRange(r+fVisibleRowIndex);
+			RowRange.Begin-=fScrollOffset[1];
+			RowRange.End-=fScrollOffset[1];
+			GridLineSetupRange(1,r,RowRange);
+		}
+		for(uIntn c=0;c<ColCount;c++){
+			ColRange=ViewGridDisplayColumnQueryRange(c+fVisibleColumnIndex);
+			ColRange.Begin-=fScrollOffset[0];
+			ColRange.End-=fScrollOffset[0];
+			GridLineSetupRange(0,c,ColRange);
+}
+		GridLineSetupFinish();
+	}
+#endif
+
+	ScrollContentUpdated();
+}
+//---------------------------------------------------------------------------
+cnDataStruct::cSeqMapIterator<uIntn,scItemGrid::cPositionRecord> scItemGrid::FindRangeLowwer(Float32 RowPosition,bool &Match,cnRTL::cSeqMap<uIntn,cPositionRecord> &RangeMap)noexcept(true)
+{
+	uIntn RowRangeCount=RangeMap.GetCount();
+	auto Ranges=RangeMap.GetValues();
+	cCompareRange Compareor={RowPosition};
+	uIntn SearchResult;
+	Match=cnMemory::ViewBinarySearch(SearchResult,Ranges,RowRangeCount,Compareor);
+	if(Match==false && SearchResult!=0){
+		SearchResult--;
+	}
+	return RangeMap.GetPairAt(SearchResult);
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::ScanVisibleRange(cUIRange VisibleRange,sfInt16 DefaultSize,sfInt16 DefaultPadding,cnRTL::cSeqMap<uIntn,cPositionRecord> &RangeMap,cnRTL::cSeqList<cUIRange> &VisibleRangeList)noexcept(true)
+{
+	VisibleRangeList.Clear();
+	cUIRange CurRange;
+	bool RowMatch;
+	auto RangePair=FindRangeLowwer(VisibleRange.Begin,RowMatch,RangeMap);
+	if(RangePair==nullptr){
+		// no range item
+		sfInt32 Pos=static_cast<sfInt32>(VisibleRange.Begin);
+		sfInt32 EndPos=static_cast<sfInt32>(VisibleRange.End);
+		uIntn VisibleIndex=VisibleRange.Begin/static_cast<ufInt32>(DefaultSize+DefaultPadding);
+		Float32 LastRangeEnd=static_cast<Float32>(VisibleIndex*static_cast<ufInt32>(DefaultSize+DefaultPadding));
+		uIntn CurIndex=VisibleIndex;
+
+		do{
+			CurRange.Begin=LastRangeEnd+DefaultPadding;
+			CurRange.End=CurRange.Begin+DefaultSize;
+			VisibleRangeList.AppendMake(CurRange);
+			CurIndex++;
+			LastRangeEnd=CurRange.End;
+		}while(LastRangeEnd<VisibleRange.End);
+
+		return VisibleIndex;
+	}
+	uIntn VisibleIndex=RangePair->Key;
+	uIntn ScanIndex;
+	if(RowMatch==false){
+		ufInt32 Pos=static_cast<ufInt32>(VisibleRange.Begin-RangePair->Value.End);
+		uIntn IndexOffset=Pos/static_cast<ufInt32>(DefaultSize+DefaultPadding);
+		VisibleIndex+=IndexOffset;
+		CurRange.Begin=RangePair->Value.End+static_cast<Float32>(IndexOffset*static_cast<ufInt32>(DefaultSize+DefaultPadding));
+		ScanIndex=VisibleIndex;
+	}
+	else{
+		CurRange.Begin=RangePair->Value.Begin;
+		CurRange.End=RangePair->Value.End;
+		VisibleRangeList.AppendMake(CurRange);
+		if(CurRange.End>=VisibleRange.End){
+			// end of visible range
+			return VisibleIndex;
+		}
+		ScanIndex=VisibleIndex+1;
+		CurRange.Begin=CurRange.End;
+	}
+	Float32 LastRangeEnd=RangePair->Value.End;
+	++RangePair;
+	// scan down the row
+	do{
+
+		while(ScanIndex<RangePair->Key){
+			CurRange.End=CurRange.Begin+DefaultSize;
+			LastRangeEnd=CurRange.End;
+			VisibleRangeList.AppendMake(CurRange);
+			CurRange.Begin+=DefaultPadding;
+			if(CurRange.Begin>=VisibleRange.End){
+				// end of visible range
+				return VisibleIndex;
+			}
+			ScanIndex++;
+		}
+		// update row range
+		if(RangePair->Value.Update){
+			RangePair->Value.Update=false;
+			RangePair->Value.LastRecordEnd=LastRangeEnd;
+			RangePair->Value.Begin=LastRangeEnd+DefaultPadding;
+			RangePair->Value.End=RangePair->Value.Begin+1;
+		}
+		CurRange.Begin=RangePair->Value.Begin;
+		CurRange.End=RangePair->Value.End;
+		VisibleRangeList.AppendMake(CurRange);
+		ScanIndex++;
+		++RangePair;
+
+		if(CurRange.End>=VisibleRange.End){
+			// end of visible range
+			return VisibleIndex;
+		}
+		CurRange.Begin=CurRange.End;
+	}while(RangePair!=RangeMap.end());
+	return VisibleIndex;
+}
+//---------------------------------------------------------------------------
+template<class TItem>
+void scItemGrid::ScanStayItems(cUIRange VisibleRange,sfInt16 DefaultSize,sfInt16 DefaultPadding,uIntn VisibleIndex,uIntn VisibleEndIndex,const cnRTL::cSeqList<cUIRange> &VisibleRanges,const cnRTL::cSeqMap<uIntn,TItem*> &ItemMap,const cnRTL::cSeqMap<uIntn,cPositionRecord> &ItemRangeMap,cnRTL::cSeqList<TItem*> &StayList)noexcept(true)
+{
+	cnRTL::cSeqList< cStayCalculateState<TItem> > StayCalcList;
+
+	StayList.Clear();
+
+	bool Exists;
+	auto ItemPair=ItemMap.FindPairLowwer(VisibleIndex,Exists);
+	if(ItemPair!=nullptr){
+		// top stay
+		for(;;){
+			cStayCalculateState<TItem> State;
+			auto Item=ItemPair->Value;
+			if(Item->fStayBeginIndex!=IndexNotFound && Item->fStayEndIndex>=VisibleIndex){
+				Item->fVisible=true;
+				if(Item->fStayEndIndex>=VisibleEndIndex){
+					State.Limit=VisibleRange.End;
+				}
+				else{
+					State.Limit=VisibleRanges[Item->fStayEndIndex-VisibleIndex].End;
+				}
+				auto ItemRangePair=ItemRangeMap.GetPair(ItemPair->Key);
+				State.Size=DefaultSize;
+				if(ItemRangePair!=nullptr){
+					if(ItemRangePair->Value.Size>=0){
+						State.Size=ItemRangePair->Value.Size;
+					}
+				}
+				State.Limit-=State.Size;
+
+				State.Item=ItemPair->Value;
+				StayCalcList.AppendMake(State);
+			}
+
+			if(ItemPair==ItemMap.begin())
+				break;
+			--ItemPair;
+		}
+		Float32 StayPos=VisibleRange.Begin;
+		for(uIntn i=StayCalcList.GetCount();i!=0;){
+			i--;
+
+			auto &StayItem=StayCalcList[i];
+			StayItem.Item->fStay=true;
+			StayList.AppendMake(StayItem.Item);
+
+			if(StayPos<StayItem.Limit){
+				// normal stay
+				StayItem.Item->fStayLeaving=false;
+				StayItem.Item->fStayPos.Begin=StayPos;
+				StayPos+=StayItem.Size;
+				StayItem.Item->fStayPos.End=StayPos;
+				StayPos+=DefaultPadding;
+			}
+			else{
+				// leaving stay
+				StayItem.Item->fStayLeaving=true;
+				Float32 StayEnd=StayItem.Limit+StayItem.Size;
+				StayItem.Item->fStayPos.Begin=StayItem.Limit;
+				StayItem.Item->fStayPos.End=StayEnd;
+				StayPos+=DefaultPadding;
+				if(StayPos<StayEnd){
+					StayPos=StayEnd;
+				}
+			}
+		}
+		StayCalcList.Clear();
+	}
+	ItemPair=ItemMap.FindPairUpper(VisibleEndIndex-1,Exists);
+	if(ItemPair!=nullptr){
+		// bottom stay
+		while(ItemPair!=ItemMap.end()){
+			cStayCalculateState<TItem> State;
+			auto Item=ItemPair->Value;
+			if(Item->fStayBeginIndex!=IndexNotFound && Item->fStayBeginIndex<VisibleEndIndex){
+				Item->fVisible=true;
+				if(Item->fStayBeginIndex<VisibleIndex){
+					State.Limit=VisibleRange.Begin;
+				}
+				else{
+					State.Limit=VisibleRanges[Item->fStayBeginIndex-VisibleIndex].Begin;
+				}
+				auto ItemRangePair=ItemRangeMap.GetPair(ItemPair->Key);
+				State.Size=DefaultSize;
+				if(ItemRangePair!=nullptr){
+					if(ItemRangePair->Value.Size>=0){
+						State.Size=ItemRangePair->Value.Size;
+					}
+				}
+				State.Limit+=State.Size;
+
+				State.Item=ItemPair->Value;
+				StayCalcList.AppendMake(State);
+			}
+			++ItemPair;
+		}
+
+		Float32 StayPos=VisibleRange.End;
+		for(uIntn i=StayCalcList.GetCount();i!=0;){
+			i--;
+			auto &StayItem=StayCalcList[i];
+			StayItem.Item->fStay=true;
+			if(StayPos>StayItem.Limit){
+				// normal stay
+				StayItem.Item->fStayLeaving=false;
+				StayItem.Item->fStayPos.End=StayPos;
+				StayPos-=StayItem.Size;
+				StayItem.Item->fStayPos.Begin=StayPos;
+			}
+			else{
+				// leaving stay
+				StayItem.Item->fStayLeaving=true;
+				StayItem.Item->fStayPos.Begin=StayItem.Limit-StayItem.Size;
+				StayItem.Item->fStayPos.End=StayItem.Limit;
+				if(StayPos>StayItem.Limit)
+					StayPos=StayItem.Limit;
+			}
+			StayPos-=DefaultPadding;
+			StayList.AppendMake(StayItem.Item);
+		}
+		StayCalcList.Clear();
+	}
+}
+//---------------------------------------------------------------------------
+scItemGrid::cRow* scItemGrid::FindRow(uIntn RowIndex)noexcept(true)
+{
+	auto pItem=fRowMap.GetPair(RowIndex);
+	if(pItem==nullptr)
+		return nullptr;
+	return pItem->Value;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cRow* scItemGrid::QueryRow(uIntn RowIndex)noexcept(true)
+{
+	cRow *Row;
+	auto &RowItem=fRowMap[RowIndex];
+	if(RowItem!=nullptr){
+		Row=RowItem;
+	}
+	else{
+		Row=new cRow;
+		Row->fOwner=this;
+		RowItem=Row;
+		Row->fRowIndex=RowIndex;
+		Row->fNotifiedVisible=false;
+		Row->fStayBeginIndex=IndexNotFound;
+		Row->fStayEndIndex=IndexNotFound;
+		Row->fVisible=false;
+		Row->fStay=false;
+		if(fContainer!=nullptr){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+	return Row;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::CloseRow(uIntn RowIndex)noexcept(true)
+{
+	auto pItem=fRowMap.GetPair(RowIndex);
+	if(pItem==nullptr)
+		return false;
+
+	auto *Row=pItem->Value;
+	if(Row!=nullptr){
+		delete Row;
+	}
+
+	fRowMap.RemovePair(pItem);
+	return true;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cRow* scItemGrid::MoveRow(uIntn RowIndex,uIntn NewRowIndex)noexcept(true)
+{
+	auto pItem=fRowMap.GetPair(RowIndex);
+	if(pItem==nullptr)
+		return nullptr;	// no item to move
+
+	auto Row=pItem->Value;
+
+	bool NewRowItemExists;
+	auto pNewItem=fRowMap.InsertPair(NewRowIndex,NewRowItemExists);
+	if(NewRowItemExists)
+		return nullptr;	// have item already
+
+	Row->fRowIndex=NewRowIndex;
+	pNewItem->Value=Row;
+
+	fRowMap.Remove(RowIndex);
+
+	if(fContainer!=nullptr){
+		fContainer->NotifyUpdateScroll();
+	}
+	return Row;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cColumn* scItemGrid::FindColumn(uIntn ColumnIndex)noexcept(true)
+{
+	auto pItem=fColMap.GetPair(ColumnIndex);
+	if(pItem==nullptr)
+		return nullptr;
+	return pItem->Value;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cColumn* scItemGrid::QueryColumn(uIntn ColumnIndex)noexcept(true)
+{
+	cColumn *Col;
+	auto &ColItem=fColMap[ColumnIndex];
+	if(ColItem!=nullptr){
+		Col=ColItem;
+	}
+	else{
+		Col=new cColumn;
+		Col->fOwner=this;
+		ColItem=Col;
+		Col->fNotifiedVisible=false;
+		Col->fStayBeginIndex=IndexNotFound;
+		Col->fStayEndIndex=IndexNotFound;
+		Col->fVisible=false;
+		Col->fStay=false;
+		Col->fColumnIndex=ColumnIndex;
+		if(fContainer!=nullptr){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+	return Col;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::CloseColumn(uIntn ColumnIndex)noexcept(true)
+{
+	auto pItem=fColMap.GetPair(ColumnIndex);
+	if(pItem==nullptr)
+		return false;
+
+	auto *Col=pItem->Value;
+	if(Col!=nullptr){
+		delete Col;
+	}
+
+	fColMap.RemovePair(pItem);
+	return true;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cColumn* scItemGrid::MoveColumn(uIntn ColumnIndex,uIntn NewColumnIndex)noexcept(true)
+{
+	auto pItem=fColMap.GetPair(ColumnIndex);
+	if(pItem==nullptr)
+		return nullptr;	// no item to move
+
+	auto Col=pItem->Value;
+
+	bool NewColumnItemExists;
+	auto pNewItem=fColMap.InsertPair(ColumnIndex,NewColumnItemExists);
+	if(NewColumnItemExists)
+		return nullptr;	// have item already
+
+	Col->fColumnIndex=NewColumnIndex;
+	pNewItem->Value=Col;
+
+	fColMap.Remove(ColumnIndex);
+
+	if(fContainer!=nullptr){
+		fContainer->NotifyUpdateScroll();
+	}
+	return Col;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cCell* scItemGrid::FindCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true)
+{
+	cGridIndex CellIndex={RowIndex,ColumnIndex};
+	auto pCellItem=fCellMap.GetPair(CellIndex);
+	if(pCellItem==nullptr)
+		return nullptr;
+	return pCellItem->Value;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cCell* scItemGrid::QueryCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true)
+{
+	cGridIndex CellIndex={RowIndex,ColumnIndex};
+	auto &CellItem=fCellMap[CellIndex];
+	cCell *Cell;
+	if(CellItem!=nullptr){
+		Cell=CellItem;
+	}
+	else{
+		Cell=new cCell;
+		Cell->fOwner=this;
+		CellItem=Cell;
+		Cell->fNotifiedVisible=false;
+		Cell->fVisible=false;
+		Cell->fRowIndex=RowIndex;
+		Cell->fStay=false;
+		Cell->fColumnIndex=ColumnIndex;
+		if(fContainer!=nullptr){
+			fContainer->NotifyUpdateScroll();
+		}
+	}
+	return Cell;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::CloseCell(uIntn RowIndex,uIntn ColumnIndex)noexcept(true)
+{
+	cGridIndex CellIndex={RowIndex,ColumnIndex};
+	auto pCellItem=fCellMap.GetPair(CellIndex);
+	if(pCellItem==nullptr){
+		return false;
+	}
+
+	auto *Cell=pCellItem->Value;
+	if(Cell!=nullptr){
+		delete Cell;
+	}
+
+	fCellMap.RemovePair(pCellItem);
+	return true;
+}
+//---------------------------------------------------------------------------
+scItemGrid::cCell* scItemGrid::MoveCell(uIntn RowIndex,uIntn ColumnIndex,uIntn NewRowIndex,uIntn NewColumnIndex)noexcept(true)
+{
+	cGridIndex CellIndex={RowIndex,ColumnIndex};
+	auto pCellItem=fCellMap.GetPair(CellIndex);
+	if(pCellItem!=nullptr){
+		return nullptr;	// no item to move
+	}
+	auto *Cell=pCellItem->Value;
+
+	cGridIndex NewCellIndex={NewRowIndex,NewColumnIndex};
+	bool NewCellItemExists;
+	auto pNewCellItem=fCellMap.InsertPair(CellIndex,NewCellItemExists);
+	if(pNewCellItem!=nullptr){
+		return nullptr;	// already have item
+	}
+
+	Cell->fRowIndex=NewRowIndex;
+	Cell->fColumnIndex=NewColumnIndex;
+	pNewCellItem->Value=Cell;
+
+	fCellMap.Remove(CellIndex);
+
+	if(fContainer!=nullptr){
+		fContainer->NotifyUpdateScroll();
+	}
+	return Cell;
+
+}
+//---------------------------------------------------------------------------
+sfInt8 scItemGrid::cCompareRange::operator ()(const cPositionRecord &Src)noexcept(true)
+{
+	if(Src.End<Position){
+		return -1;
+	}
+	if(Src.Begin>Position){
+		return 1;
+	}
+	return 0;
+}
+//---------------------------------------------------------------------------
+const cGridData* scItemGrid::QueryData(rPtr<iReference> &DataReference)noexcept(true)
+{
+	auto DataRef=rCreate<cDataReference>();
+	auto &Data=DataRef->Data;
+
+	DataReference=DataRef;
+	return &Data;
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::FindRowIndexAt(Float32 RowPosition)noexcept(true)
+{
+	uIntn RowIndex=0;
+	FindRowIndexAt(RowPosition,RowIndex);
+	return RowIndex;
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::FindColumnIndexAt(Float32 ColumnPosition)noexcept(true)
+{
+	uIntn ColIndex=0;
+	FindColumnIndexAt(ColumnPosition,ColIndex);
+	return ColIndex;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::FindRowIndexAt(Float32 RowPosition,uIntn &RowIndex)noexcept(true)
+{
+	if(fDefaultRowSize==0 || RowPosition<=1){
+		RowIndex=0;
+		return false;
+	}
+
+	ufInt32 Pos=static_cast<ufInt32>(RowPosition);
+	RowIndex=Pos/static_cast<ufInt32>(fDefaultRowSize+fDefaultRowPadding);
+	return Pos%static_cast<ufInt32>(fDefaultRowSize+fDefaultRowPadding)!=0;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::FindColumnIndexAt(Float32 ColumnPosition,uIntn &ColumnIndex)noexcept(true)
+{
+	if(fDefaultRowSize==0 || ColumnPosition<=1){
+		ColumnIndex=0;
+		return false;
+	}
+
+	ufInt32 Pos=static_cast<ufInt32>(ColumnPosition);
+	ColumnIndex=Pos/static_cast<ufInt32>(fDefaultColumnSize+fDefaultColumnPadding);
+	return Pos%static_cast<ufInt32>(fDefaultColumnSize+fDefaultColumnPadding)!=0;
+
+	//if(ColumnPosition<=1){
+	//	ColumnIndex=0;
+	//	return false;
+	//}
+	//uIntn Index;
+	//bool Found=cnMemory::ViewBinarySearch(Index,fGridColumns.GetItems(),fGridColumns.GetCount(),[ColumnPosition](const cColumnItem &Item){
+	//	if(ColumnPosition<Item.Range.Begin)
+	//		return 1;
+	//	if(ColumnPosition<Item.Range.End)
+	//		return 0;
+	//	return -1;
+	//	});
+	//ColumnIndex=static_cast<ufInt32>(Index);
+	//return Found;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::IsRowVisible(uIntn RowIndex)const noexcept(true)
+{
+	if(RowIndex<fVisibleRowIndex)
+		return false;
+
+	if(RowIndex-fVisibleRowIndex>=fVisibleRowRanges.GetCount()){
+		return false;
+	}
+	return true;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::IsColumnVisible(uIntn ColumnIndex)const noexcept(true)
+{
+	if(ColumnIndex<fVisibleColumnIndex)
+		return false;
+
+	if(ColumnIndex-fVisibleColumnIndex>=fVisibleColRanges.GetCount()){
+		return false;
+	}
+	return true;
+}
+//---------------------------------------------------------------------------
+sfInt8 scItemGrid::cGridIndex::Compare(const cGridIndex &Src)const noexcept(true)
+{
+	if(Row==Src.Row){
+		return cnVar::DefaultCompare(Column,Src.Column);
+	}
+	else{
+		sfInt8 lt=-static_cast<sfInt8>(Row<Src.Row);
+		return 1|lt;
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+iUIView* scItemGrid::bcItem::GetScrollView(void)noexcept(true)
+{
+	return fOwner->fContainer->GetScrollView();
+}
+//---------------------------------------------------------------------------
+cUIPoint scItemGrid::bcItem::GetOffset(void)noexcept(true)
+{
+	return fOwner->fContainer->GetOffset();
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::bcItem::SetOffset(cUIPoint Offset)noexcept(true)
+{
+	return fOwner->fContainer->SetOffset(Offset);
+}
+//---------------------------------------------------------------------------
+cUIRange scItemGrid::bcItem::GetScrollLimitX(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)
+{
+	return {0,0};
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::SetScrollLimitX(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+cUIRange scItemGrid::bcItem::GetScrollLimitY(bool &NoLowwerLimit,bool &NoUpperLimit)noexcept(true)
+{
+	return {0,0};
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::SetScrollLimitY(cUIRange OffsetRange,bool NoLowwerLimit,bool NoUpperLimit)noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+cUIPoint scItemGrid::bcItem::GetViewportSize(void)noexcept(true)
+{
+	return fOwner->fContainer->GetViewportSize();
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::NotifyUpdateScroll(void)noexcept(true)
+{
+	return fOwner->fContainer->NotifyUpdateScroll();
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::bcItem::IsRectangleInViewport(const cUIRectangle &Rect)noexcept(true)
+{
+	return fOwner->fContainer->IsRectangleInViewport(Rect);
+}
+//---------------------------------------------------------------------------
+iScrollContent* scItemGrid::bcItem::GetContent(void)noexcept(true)
+{
+	return fContent;
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::SetContent(iScrollContent *Content)noexcept(true)
+{
+	if(fContent!=nullptr){
+		if(fNotifiedVisible){
+			fContent->ScrollContentHide();
+			fNotifiedVisible=false;
+		}
+	}
+	fContent=Content;
+	if(fContent!=nullptr){
+		if(fVisible){
+			fNotifiedVisible=true;
+			fContent->ScrollContentShow();
+		}
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::UpdateVisible(void)noexcept(true)
+{
+	if(fContent==nullptr)
+		return;
+
+	if(fNotifiedVisible==fVisible)
+		return;
+
+	fNotifiedVisible=fVisible;
+	if(fNotifiedVisible){
+		fContent->ScrollContentShow();
+	}
+	else{
+		fContent->ScrollContentHide();
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::bcItem::NotifyContentUpdate(void)noexcept(true)
+{
+	if(fContent==nullptr)
+		return;
+
+	if(fNotifiedVisible){
+		fContent->ScrollContentUpdate();
+	}
+}
+//---------------------------------------------------------------------------
+scItemGrid::ItemLayer scItemGrid::bcItem::GetLayer(void)const noexcept(true)
+{
+	if(fStay){
+		return fStayLeaving?ItemLayer::Leave:ItemLayer::Stay;
+	}
+	return ItemLayer::Normal;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+scItemGrid::cRow::cRow()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+scItemGrid::cRow::~cRow()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cRow::Close(void)noexcept(true)
+{
+	return fOwner->CloseRow(fRowIndex);
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::cRow::GetRowIndex(void)const noexcept(true)
+{
+	return fRowIndex;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cRow::SetRowIndex(uIntn NewRowIndex)noexcept(true)
+{
+	return nullptr!=fOwner->MoveRow(fRowIndex,NewRowIndex);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void scItemGrid::cRow::SetStayRange(uIntn Begin,uIntn End)noexcept(true)
+{
+	if(Begin>fRowIndex)
+		Begin=fRowIndex;
+	if(End<fRowIndex)
+		End=fRowIndex;
+	fStayBeginIndex=Begin;
+	fStayEndIndex=End;
+	if(fOwner->fContainer!=nullptr){
+		fOwner->fContainer->NotifyUpdateScroll();
+	}
+}
+//---------------------------------------------------------------------------
+void scItemGrid::cRow::ResetStayRange(void)noexcept(true)
+{
+	fStayBeginIndex=IndexNotFound;
+	fStayEndIndex=IndexNotFound;
+	if(fOwner->fContainer!=nullptr){
+		fOwner->fContainer->NotifyUpdateScroll();
+	}
+}
+//---------------------------------------------------------------------------
+cUIRect scItemGrid::cRow::CalculateLayoutRect(void)const noexcept(true)
+{
+	if(fOwner->fContainer==nullptr){
+		return UIRectZero;
+	}
+
+	auto ScrollOffset=fOwner->fContainer->GetOffset();
+	auto ViewportSize=fOwner->fContainer->GetViewportSize();
+
+	auto RowRange=fOwner->CalculateRowRange(fRowIndex);
+
+	cUIRect ItemRect;
+
+	ItemRect.Pos.x=0;
+	ItemRect.Pos.y=RowRange.Begin-ScrollOffset.y;
+	ItemRect.Size.x=ViewportSize.x;
+	ItemRect.Size.y=RowRange.End-RowRange.Begin;
+
+	return ItemRect;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+scItemGrid::cColumn::cColumn()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+scItemGrid::cColumn::~cColumn()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cColumn::Close(void)noexcept(true)
+{
+	return fOwner->CloseColumn(fColumnIndex);
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::cColumn::GetColumnIndex(void)const noexcept(true)
+{
+	return fColumnIndex;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cColumn::SetColumnIndex(uIntn NewColumnIndex)noexcept(true)
+{
+	return nullptr!=fOwner->MoveColumn(fColumnIndex,NewColumnIndex);
+}
+//---------------------------------------------------------------------------
+cUIRect scItemGrid::cColumn::CalculateLayoutRect(void)const noexcept(true)
+{
+	if(fOwner->fContainer==nullptr){
+		return UIRectZero;
+	}
+
+	auto ScrollOffset=fOwner->fContainer->GetOffset();
+	auto ViewportSize=fOwner->fContainer->GetViewportSize();
+
+	auto ColRange=fOwner->CalculateColumnRange(fColumnIndex);
+
+	cUIRect ItemRect;
+
+	ItemRect.Pos.x=ColRange.Begin-ScrollOffset.x;
+	ItemRect.Pos.y=0;
+	ItemRect.Size.x=ColRange.End-ColRange.Begin;
+	ItemRect.Size.y=ViewportSize.y;
+
+	return ItemRect;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+scItemGrid::cCell::cCell()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+scItemGrid::cCell::~cCell()noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cCell::Close(void)noexcept(true)
+{
+	return fOwner->CloseCell(fRowIndex,fColumnIndex);
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::cCell::GetRowIndex(void)const noexcept(true)
+{
+	return fRowIndex;
+}
+//---------------------------------------------------------------------------
+uIntn scItemGrid::cCell::GetColumnIndex(void)const noexcept(true)
+{
+	return fColumnIndex;
+}
+//---------------------------------------------------------------------------
+bool scItemGrid::cCell::Move(uIntn NewRowIndex,uIntn NewColumnIndex)noexcept(true)
+{
+	return nullptr!=fOwner->MoveCell(fRowIndex,fColumnIndex,NewRowIndex,NewColumnIndex);
+}
+//---------------------------------------------------------------------------
+cUIRect scItemGrid::cCell::CalculateLayoutRect(void)const noexcept(true)
+{
+	if(fOwner->fContainer==nullptr){
+		return UIRectZero;
+	}
+
+	auto ScrollOffset=fOwner->fContainer->GetOffset();
+	auto ViewportSize=fOwner->fContainer->GetViewportSize();
+
+	auto RowRange=fOwner->CalculateRowRange(fRowIndex);
+	auto ColRange=fOwner->CalculateColumnRange(fColumnIndex);
+
+	cUIRect ItemRect;
+
+	ItemRect.Pos.x=ColRange.Begin-ScrollOffset.x;
+	ItemRect.Pos.y=RowRange.Begin-ScrollOffset.y;
+	ItemRect.Size.x=ColRange.End-ColRange.Begin;
+	ItemRect.Size.y=RowRange.End-RowRange.Begin;
+
+	return ItemRect;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+blItemGridManager::blItemGridManager()noexcept(true)
+	: fGrid(nullptr)
+{
+}
+//---------------------------------------------------------------------------
+blItemGridManager::~blItemGridManager()noexcept(true)
+{
+	SetGrid(nullptr);
+}
+//---------------------------------------------------------------------------
+scItemGrid* blItemGridManager::GetGrid(scItemGrid *Grid)noexcept(true)
+{
+	return fGrid;
+}
+//---------------------------------------------------------------------------
+void blItemGridManager::SetGrid(scItemGrid *Grid)noexcept(true)
+{
+	if(fGrid!=nullptr){
+		fGrid->ScrollContentUpdated.Remove(fScrollContentUpdateToken);
+		GridClear();
+	}
+	fGrid=Grid;
+	if(fGrid!=nullptr){
+		fScrollContentUpdateToken=fGrid->ScrollContentUpdated.Insert([this]()noexcept(true){
+			GridUpdateData();
+			});
+
+		GridSetup();
+	}
+}
+//---------------------------------------------------------------------------
+void blItemGridManager::GridSetup(void)noexcept(true)
+{
+	GridUpdateData();
+}
+//---------------------------------------------------------------------------
+void blItemGridManager::GridClear(void)noexcept(true)
+{
+}
+//---------------------------------------------------------------------------
+void blItemGridManager::GridUpdateData(void)noexcept(true)
+{
+	fView->SetArrangement();
+
+	auto RowBegin=fGrid->GetVisibleRowBegin();
+	auto RowEnd=fGrid->GetVisibleRowEnd();
+	auto ColBegin=fGrid->GetVisibleColBegin();
+	auto ColEnd=fGrid->GetVisibleColEnd();
+
+	GridUpdate(RowBegin,RowEnd,ColBegin,ColEnd);
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void bcItemGridRow::ScrollContentShow(void)noexcept(true)
+{
+	fView->SetVisible(true);
+}
+//---------------------------------------------------------------------------
+void bcItemGridRow::ScrollContentHide(void)noexcept(true)
+{
+	fView->SetVisible(false);
+}
+//---------------------------------------------------------------------------
+void bcItemGridRow::ScrollContentUpdate(void)noexcept(true)
+{
+	auto Layer=Row->GetLayer();
+	switch(Layer){
+	case scItemGrid::ItemLayer::Normal:
+		fView->SetZPosition(0);
+		break;
+	case scItemGrid::ItemLayer::Leave:
+		fView->SetZPosition(1);
+		break;
+	case scItemGrid::ItemLayer::Stay:
+		fView->SetZPosition(2);
+		break;
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void bcItemGridColumn::ScrollContentShow(void)noexcept(true)
+{
+	fView->SetVisible(true);
+}
+//---------------------------------------------------------------------------
+void bcItemGridColumn::ScrollContentHide(void)noexcept(true)
+{
+	fView->SetVisible(false);
+}
+//---------------------------------------------------------------------------
+void bcItemGridColumn::ScrollContentUpdate(void)noexcept(true)
+{
+	auto Layer=Column->GetLayer();
+	switch(Layer){
+	case scItemGrid::ItemLayer::Normal:
+		fView->SetZPosition(0);
+		break;
+	case scItemGrid::ItemLayer::Leave:
+		fView->SetZPosition(1);
+		break;
+	case scItemGrid::ItemLayer::Stay:
+		fView->SetZPosition(2);
+		break;
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void bcItemGridCell::ScrollContentShow(void)noexcept(true)
+{
+	fView->SetVisible(true);
+}
+//---------------------------------------------------------------------------
+void bcItemGridCell::ScrollContentHide(void)noexcept(true)
+{
+	fView->SetVisible(false);
+}
+//---------------------------------------------------------------------------
+void bcItemGridCell::ScrollContentUpdate(void)noexcept(true)
+{
+	auto Layer=Cell->GetLayer();
+	switch(Layer){
+	case scItemGrid::ItemLayer::Normal:
+		fView->SetZPosition(0);
+		break;
+	case scItemGrid::ItemLayer::Leave:
+		fView->SetZPosition(100);
+		break;
+	case scItemGrid::ItemLayer::Stay:
+		fView->SetZPosition(200);
+		break;
+	}
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 cGridLineData::cGridLineInfo cGridLineData::GridLineInfo(void)noexcept(true)
 {
 	cGridLineInfo Info;
