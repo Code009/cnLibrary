@@ -946,6 +946,43 @@ public:
 			return NullPair();
 		return GetPairAt(Index);
 	}
+	// FindPairLowwer
+	// [in]Key				key
+	// return iterator to the item paire
+	template<class T>
+	tIterator FindPairLowwer(const T &Key,bool &Exists)const noexcept(true){
+		if(fArray.Length==0){
+			Exists=false;
+			return NullPair();
+		}
+		uIntn Index;
+		if(SearchKey(Index,Key)){
+			// already exists
+			Exists=true;
+			return GetPairAt(Index);
+		}
+		Exists=false;
+		if(Index==0)
+			return NullPair();
+		return GetPairAt(Index-1);
+	}
+	// FindPairUpper
+	// [in]Key				key
+	// return iterator to the item paire
+	template<class T>
+	tIterator FindPairUpper(const T &Key,bool &Exists)const noexcept(true){
+		if(fArray.Length==0){
+			Exists=false;
+			return NullPair();
+		}
+		uIntn Index;
+		if((Exists=SearchKey(Index,Key))==false){
+			if(Index>=fArray.Length){
+				return NullPair();
+			}
+		}
+		return GetPairAt(Index);
+	}
 	// IndexOfPair
 	//	Get index of the specified Key.
 	// [in]Key				key
