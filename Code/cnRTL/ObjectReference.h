@@ -65,64 +65,86 @@ private:
 	bool WeakToStrong(void)noexcept(true);
 };
 //---------------------------------------------------------------------------
-class bcRegisteredReference
+class bcModuleReference
 {
 public:
-	bcRegisteredReference(bool InitialReference)noexcept(true);
+	bcModuleReference()noexcept(true);
 
-	void ResetRef(bool InitialReference)noexcept(true);
-	void IncRef(void)noexcept(true);
-	void DecRef(void)noexcept(true);
-	bool MakeStrongReference(void)noexcept(true);
+	void ModuleResetReference(void)noexcept(true);
+	void ModuleIncreaseReference(void)noexcept(true);
+	void ModuleDecreaseReference(void)noexcept(true);
 
-	rPtr<iLibraryReference> CreateReference(iLibraryReferrer *Referrer)noexcept(true);
+	iModuleHandle* CreateModuleHandle(iModuleReferrer *Referrer)noexcept(true);
+	iReferenceObserver* CreateReferenceObserver(iModuleReferrer *Referrer,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true);
+
 	void Update(void)noexcept(true);
 	bool CheckShutdown(void)noexcept(true);
+	cSeqList<iProcedure*>&& FetchShutdownCompletionNotifyList(void)noexcept(true);
 	void ReportReferenceSet(cStringBuffer<uChar16> &Buffer)noexcept(true);
 protected:
 
 	virtual void ReferenceUpdate(void)noexcept(true)=0;
 
+	bool MakeStrongReference(void)noexcept(true);
+
+	class bcReferrerItem
+	{
+	public:
+		bcReferrerItem(bcModuleReference *Owner,iModuleReferrer *Referrer)noexcept(true);
+		~bcReferrerItem()noexcept(true);
+
+		bcModuleReference *GetOwner(void)const noexcept(true);
+		iModuleReferrer *GetReferrer(void)const noexcept(true);
+		void Close(iProcedure *ShutdownCompletionNotify)noexcept(true);
+
+		void UpdateDescription(void)noexcept(true);
+
+	private:
+		friend class bcModuleReference;
+		friend struct cnDataStruct::cSingleLinkItemOperator<bcReferrerItem>;
+		friend struct cnDataStruct::cDualLinkItemOperator<bcReferrerItem>;
+		bcReferrerItem *Next;
+		bcReferrerItem *Prev;
+		bcModuleReference *fOwner;
+		iModuleReferrer *fReferrer;
+		iProcedure *fShutdownCompletionNotify;
+		bool fReleased;
+		bool fDescriptionUpdated;
+
+		virtual void ReferrerClosed(void)noexcept(true)=0;
+	};
 private:
 	cAtomicVar<uIntn> fRefCount;
 
-	class cReference : public iLibraryReference, public cRTLAllocator
+	cLinkItemList<bcReferrerItem> fReferrerList;
+	cSeqList<iProcedure*> fShutdownCompletionNotifyList;
+
+	class cModuleHandle : public iModuleHandle, public bcReferrerItem, public cRTLAllocator
 	{
 	public:
-		cReference *Next;
-		cReference *Prev;
-		bool Released;
-		bool DescriptionUpdated;
+		cModuleHandle(bcModuleReference *Owner,iModuleReferrer *Referrer)noexcept(true);
+		~cModuleHandle()noexcept(true);
 
-		cReference(bcRegisteredReference *Owner,iLibraryReferrer *Referrer)noexcept(true);
-		~cReference()noexcept(true);
-
-		void WeakIncRef(void)noexcept(true);
-		void WeakDecRef(void)noexcept(true);
-		bool MakeStrongReference(void)noexcept(true);
-		bcRegisteredReference *GetOwner(void)const noexcept(true);
-		iLibraryReferrer *GetReferrer(void)const noexcept(true);
-
-		virtual	void cnLib_FUNC IncreaseReference(void)noexcept(true)override;
-		virtual	void cnLib_FUNC DecreaseReference(void)noexcept(true)override;
-
-		virtual	iReferenceObserver* cnLib_FUNC CreateReferenceObserver(iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)override;
-
+		virtual void cnLib_FUNC Close(void)noexcept(true)override;
+		virtual bool cnLib_FUNC CloseAndWaitUnload(iProcedure *NotifyProcedure)noexcept(true)override;
+		//virtual void cnLib_FUNC CloseAndWaitUnload(void)noexcept(true)=0;
+		//virtual bool cnLib_FUNC CloseAndAwaitUnload(iProcedure *NotifyProcedure)noexcept(true)=0;
 		virtual void cnLib_FUNC UpdateDescription(void)noexcept(true)override;
-
 	private:
-		bcRegisteredReference *fOwner;
-		iLibraryReferrer *fReferrer;
-		cAtomicVar<uIntn> fWeakRefCount;
+		virtual void ReferrerClosed(void)noexcept(true)override;
 
+
+		class cCloseWaitProcedure : public iProcedure
+		{
+		public:
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+			TKRuntime::SystemThread::tSingleNotification Notification;
+		};
 	};
-	cLinkItemList<cReference> fReferenceList;
-
-
-	class cObserver : public bcReferenceObserver<cObserver>, public cRTLAllocator
+	class cObserver : public bcReferenceObserver<cObserver>, public bcReferrerItem, public cRTLAllocator
 	{
 	public:
-		cObserver(cReference *Reference,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true);
+		cObserver(bcModuleReference *Owner,iModuleReferrer *Referrer,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true);
 		~cObserver()noexcept(true);
 
 		bool ObserverMakeStrongReference(void)noexcept(true);
@@ -130,153 +152,112 @@ private:
 		void ObserverDelete(void)noexcept(true);
 
 	private:
-		cReference *fReference;
 		rPtr<iReference> fNotifyReference;
 		iProcedure *fNotifyProcedure;
+		virtual void ReferrerClosed(void)noexcept(true)override;
 	};
 
 	cAsyncNotifySet<void> fShutdownNotifySet;
 };
 //---------------------------------------------------------------------------
-// TLibraryInitialization
+// TModuleInitialization
 //{
 //	static void Initialize(void)noexcept;
 //	static void Finalize(void)noexcept;
 //}
-// TLibraryThreadExecution
+// TModuleThreadExecution
 //{
 //	static rPtr<iMutex> QueryMutex(void)noexcept;
 //	static bool Run(iProcedure *Procedure)noexcept;
 //}
 //---------------------------------------------------------------------------
-template<class TLibraryInitialization,class TLibraryThreadExecution>
-class cLibraryReference
+template<class TModuleInitialization,class TModuleThreadExecution>
+class cModuleManager
 {
 public:
-	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer)noexcept(true){
+	iModuleHandle* QueryHandle(iModuleReferrer *Referrer)noexcept(true){
 		if(fContext->MakeStrongReference()){
 			auto AutoLock=TakeLock(fContext->LibMutex);
-			return fContext->CreateReference(Referrer);
+			return fContext->CreateModuleHandle(Referrer);
 		}
 		else{
-			rPtr<iMutex> LibMutex=TLibraryThreadExecution::QueryMutex();
+			rPtr<iMutex> LibMutex=TModuleThreadExecution::QueryMutex();
 			auto AutoLock=TakeLock(LibMutex);
 			switch(fState){
 			case sIdle:
 				fState=sStartup;
-				fContext.Construct(true,cnVar::MoveCast(LibMutex));
-				StartupAndNotify();
+				fContext.Construct(cnVar::MoveCast(LibMutex));
+				fContext->ModuleIncreaseReference();
+				Startup();
 				break;
 			case sShutdown:
 				fState=sActive;
 				cnLib_SWITCH_FALLTHROUGH;
 			default:
-				fContext->IncRef();
+				fContext->ModuleIncreaseReference();
 				break;
 			}
-			return fContext->CreateReference(Referrer);
+			return fContext->CreateModuleHandle(Referrer);
 
 		}
 	}
 
-	rPtr<iLibraryReference> QueryReferenceAsync(iFunction<void (iLibraryReference*)noexcept(true)> *Procedure,iLibraryReferrer *Referrer)noexcept(true)
+	iReferenceObserver* CreateReferenceObserver(iModuleReferrer *Referrer,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
 	{
-		if(Procedure==nullptr)
-			return QueryReference(Referrer);
 		if(fContext->MakeStrongReference()){
 			auto AutoLock=TakeLock(fContext->LibMutex);
-			if(fState==sStartup){
-				// is starting up, notify completion after initialized
-				auto *NewParam=fContext->StartupQueryList.Append();
-				NewParam->Referrer=Referrer;
-				NewParam->CompletionProcedure=Procedure;
-				return nullptr;
-			}
-			return fContext->CreateReference(Referrer);
+			auto Observer=fContext->CreateReferenceObserver(Referrer,NotifyReference,NotifyProcedure);
+			fContext->ModuleDecreaseReference();
+			return Observer;
 		}
 		else{
-			rPtr<iMutex> LibMutex=TLibraryThreadExecution::QueryMutex();
+			rPtr<iMutex> LibMutex=TModuleThreadExecution::QueryMutex();
 			auto AutoLock=TakeLock(LibMutex);
 			switch(fState){
 			case sIdle:
-				fState=sStartup;
-				fContext.Construct(false,cnVar::MoveCast(LibMutex));
-				// use distinct thread to startup
-				if(TLibraryThreadExecution::Run(&fContext->StartupThreadProc)==false){
-					// cannot start new thread, initialize now
-					fContext->IncRef();
-					StartupAndNotify();
-					break;
-				}
-				cnLib_SWITCH_FALLTHROUGH;
-			case sStartup:
-				// is starting up, notify completion after initialized
-				fContext->IncRef();
-				{
-					auto *NewParam=fContext->StartupQueryList.Append();
-					NewParam->Referrer=Referrer;
-					NewParam->CompletionProcedure=Procedure;
-				}
-				return nullptr;
 			case sShutdown:
-				fState=sActive;
-				cnLib_SWITCH_FALLTHROUGH;
-			default:
-				fContext->IncRef();
+				return nullptr;
+			default:	// sStartup,sActive
 				break;
 			}
-			return fContext->CreateReference(Referrer);
+			return fContext->CreateReferenceObserver(Referrer,NotifyReference,NotifyProcedure);
 
 		}
 	}
 
 private:
 
-	struct cQueryParameter
-	{
-		iLibraryReferrer *Referrer;
-		iFunction<void (iLibraryReference*)noexcept(true)> *CompletionProcedure;
-	};
-
-	void StartupAndNotify(void)noexcept(true){
-		TLibraryInitialization::Initialize();
-
-		for(auto Param : fContext->StartupQueryList){
-			auto NewReference=fContext->CreateReference(Param.Referrer);
-			Param.CompletionProcedure->Execute(NewReference);
-		}
-		fContext->StartupQueryList.Clear();
+	void Startup(void)noexcept(true){
+		TModuleInitialization::Initialize();
 		fState=sActive;
 	}
 
 protected:
-	class cContext : public bcRegisteredReference
+	class cContext : public bcModuleReference
 	{
 	public:
-		cContext(bool InitialReference,rPtr<iMutex> &&Mutex)noexcept(true)
-			: bcRegisteredReference(InitialReference)
-			, LibMutex(cnVar::MoveCast(Mutex))
+		cContext(rPtr<iMutex> &&Mutex)noexcept(true)
+			: LibMutex(cnVar::MoveCast(Mutex))
 		{}
 		rPtr<iMutex> LibMutex;
 
 		iProcedure *ShutdownCompletionProcedure=nullptr;
 
 		virtual void ReferenceUpdate(void)noexcept(true)override final{
-			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cLibraryReference::fContext);
+			auto Host=cnMemory::GetObjectFromMemberPointer(this,&cModuleManager::fContext);
 			return Host->ReferenceProcess();
 		}
 	private:
-		friend cLibraryReference;
-		cSeqList<cQueryParameter> StartupQueryList;
+		friend cModuleManager;
 
 		class cStartupThreadProc : public iProcedure
 		{
 			virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 				auto HostContext=cnMemory::GetObjectFromMemberPointer(this,&cContext::StartupThreadProc);
-				auto Host=cnMemory::GetObjectFromMemberPointer(HostContext,&cLibraryReference::fContext);
+				auto Host=cnMemory::GetObjectFromMemberPointer(HostContext,&cModuleManager::fContext);
 
 				auto AutoLock=TakeLock(HostContext->LibMutex);
-				Host->StartupAndNotify();
+				Host->Startup();
 			}
 		}StartupThreadProc;
 
@@ -284,7 +265,7 @@ protected:
 		{
 			virtual void cnLib_FUNC Execute(void)noexcept(true)override{
 				auto HostContext=cnMemory::GetObjectFromMemberPointer(this,&cContext::ShutdownNotifyProc);
-				auto Host=cnMemory::GetObjectFromMemberPointer(HostContext,&cLibraryReference::fContext);
+				auto Host=cnMemory::GetObjectFromMemberPointer(HostContext,&cModuleManager::fContext);
 				return Host->ShutdownProcess();
 			}
 		}ShutdownNotifyProc;
@@ -316,7 +297,7 @@ private:
 				if(fState==sActive){
 					fState=sShutdown;
 					// use distinct thread to shutdown
-					if(TLibraryThreadExecution::Run(&fContext->ShutdownNotifyProc)){
+					if(TModuleThreadExecution::Run(&fContext->ShutdownNotifyProc)){
 						return;
 					}
 					// failed to create thread
@@ -329,7 +310,7 @@ private:
 	}
 	void ShutdownProcess(void)noexcept(true)
 	{
-		iProcedure *ShutdownNotifyProc=nullptr;
+		cSeqList<iProcedure*> ShutdownNotifyProcList;
 		iMutex *LibMutex=fContext->LibMutex;
 		do{
 			fReferenceProcessFlag.Continue();
@@ -338,8 +319,8 @@ private:
 
 			if(fState==sShutdown){
 				// shutdown
-				ShutdownNotifyProc=fContext->ShutdownCompletionProcedure;
-				TLibraryInitialization::Finalize();
+				ShutdownNotifyProcList=fContext->FetchShutdownCompletionNotifyList();
+				TModuleInitialization::Finalize();
 				fContext.Destruct();
 				// notify shutdown
 				fState=sIdle;
@@ -348,8 +329,8 @@ private:
 				fContext->Update();
 				if(fContext->CheckShutdown()){
 					// shutdown
-					ShutdownNotifyProc=fContext->ShutdownCompletionProcedure;
-					TLibraryInitialization::Finalize();
+					ShutdownNotifyProcList=fContext->FetchShutdownCompletionNotifyList();
+					TModuleInitialization::Finalize();
 					fContext.Destruct();
 					// notify shutdown
 					fState=sIdle;
@@ -357,8 +338,8 @@ private:
 			}
 		}while(fReferenceProcessFlag.Release()==false);
 		rDecReference(LibMutex,'proc');
-		if(ShutdownNotifyProc!=nullptr){
-			ShutdownNotifyProc->Execute();
+		for(auto Proc : ShutdownNotifyProcList){
+			Proc->Execute();
 		}
 	}
 };

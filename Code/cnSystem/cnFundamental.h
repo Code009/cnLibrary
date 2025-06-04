@@ -11,22 +11,23 @@
 //---------------------------------------------------------------------------
 namespace cnLibrary{
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iLibraryReferrer
+class cnLib_INTERFACE iModuleReferrer
 {
 public:
 	virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iLibraryReference : public iObservedReference
+class cnLib_INTERFACE iModuleHandle
 {
 public:
+	virtual void cnLib_FUNC Close(void)noexcept(true)=0;
+	virtual bool cnLib_FUNC CloseAndWaitUnload(iProcedure *NotifyProcedure)noexcept(true)=0;
 	virtual void cnLib_FUNC UpdateDescription(void)noexcept(true)=0;
 };
 //---------------------------------------------------------------------------
 namespace cnSystem{
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> cnLib_FUNC SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true);
-rPtr<iLibraryReference> cnLib_FUNC SystemQueryReferenceAsync(iFunction<void (iLibraryReference*)noexcept(true)> *Procedure,iLibraryReferrer *Referrer)noexcept(true);
+iModuleHandle* cnLib_FUNC SystemQueryModule(iModuleReferrer *Referrer)noexcept(true);
 //---------------------------------------------------------------------------
 }   // namespace cnSystem
 //---------------------------------------------------------------------------

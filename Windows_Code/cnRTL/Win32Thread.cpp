@@ -76,7 +76,7 @@ void cSingleNotification::Setup(void)noexcept(true)
 {
 	HANDLE ProcessHandle=::GetCurrentProcess();
 	::DuplicateHandle(ProcessHandle,::GetCurrentThread(),ProcessHandle,&fNotifyThreadHandle,0,FALSE,DUPLICATE_SAME_ACCESS);
-	fNotifyFlag=2;
+	fNotifyFlag=0;
 	fAPCFlag=0;
 }
 //---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ bool cSingleNotification::WaitFor(ufInt64 Duration)noexcept(true)
 //---------------------------------------------------------------------------
 void cSingleNotification::Notify(void)noexcept(true)
 {
-	if(Interlocked::CmpXchg(fNotifyFlag,1,2)==2){
+	if(Interlocked::CmpXchg(fNotifyFlag,1,0)==0){
 		::QueueUserAPC(WaitNotifyAPC,fNotifyThreadHandle,reinterpret_cast<ULONG_PTR>(this));
 	}
 }
@@ -110,7 +110,6 @@ VOID CALLBACK cSingleNotification::WaitNotifyAPC(ULONG_PTR Param)noexcept(true)
 {
 	auto This=reinterpret_cast<cSingleNotification*>(Param);
 	This->fAPCFlag=1;
-	This->fNotifyFlag=0;
 }
 //---------------------------------------------------------------------------
 bool cSingleNotification::WaitMS(DWORD Milliseconds)noexcept(true)
@@ -122,6 +121,9 @@ bool cSingleNotification::WaitMS(DWORD Milliseconds)noexcept(true)
 			return false;
 		}
 	}
+	// reenable notification
+	fNotifyFlag=0;
+	fAPCFlag=0;
 	return true;
 }
 //---------------------------------------------------------------------------

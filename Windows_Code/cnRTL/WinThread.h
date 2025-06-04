@@ -28,32 +28,6 @@ private:
 	DWORD fTLSIndex;
 };
 //---------------------------------------------------------------------------
-class bcModuleReference : public bcRegisteredReference
-{
-public:
-	bcModuleReference()noexcept(true);
-	~bcModuleReference()noexcept(true);
-
-	rPtr<iLibraryReference> QueryReference(iLibraryReferrer *Referrer)noexcept(true);
-
-protected:
-	virtual void ReferenceUpdate(void)noexcept(true)override final;
-
-	virtual void ModuleInitialize(void)noexcept(true)=0;
-	virtual void ModuleFinialize(void)noexcept(true)=0;
-private:
-
-	cnWinRTL::cCriticalSection fCS;
-	cExclusiveFlag fReferenceProcessFlag;
-	static constexpr ufInt8 sIdle=0;
-	static constexpr ufInt8 sActive=1;
-	static constexpr ufInt8 sShutdown=2;
-	ufInt8 fState;
-
-	void ShutdownProcess(void)noexcept(true);
-	static DWORD WINAPI ShutdownThreadProc(LPVOID Parameter)noexcept(true);
-};
-//---------------------------------------------------------------------------
 class LibraryMutex
 {
 public:
@@ -73,17 +47,19 @@ private:
 	static cStaticVariableOnReference<cMutex> gInstance;
 };
 //---------------------------------------------------------------------------
-struct cWinLibraryReferenceThreadExecution
+struct cWinModuleThreadExecution
 {
 	static rPtr<iMutex> QueryMutex(void)noexcept(true);
 	static bool Run(iProcedure *Procedure)noexcept(true);
 	static DWORD WINAPI ReferenceThreadProc(LPVOID Parameter)noexcept(true);
 };
 //---------------------------------------------------------------------------
-template<class TLibraryInitialization>
-class cWinLibraryReference : public cLibraryReference<TLibraryInitialization,cWinLibraryReferenceThreadExecution>
+template<class TModuleInitialization>
+class cWinModuleManager : public cModuleManager<TModuleInitialization,cWinModuleThreadExecution>
 {
 public:
+#if 0
+
 	void WaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true)
 	{
 		cShutdownNotifyProcedure ShutdownProc;
@@ -147,6 +123,7 @@ private:
 			}
 		}
 	};
+#endif // 0
 };
 //---------------------------------------------------------------------------
 #if _WIN32_WINNT >= _WIN32_WINNT_WIN7

@@ -30,95 +30,6 @@ bool cWinTLS::Set(void *Value)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcModuleReference::bcModuleReference()noexcept(true)
-	: bcRegisteredReference(false)
-	, fState(sIdle)
-{
-}
-//---------------------------------------------------------------------------
-bcModuleReference::~bcModuleReference()noexcept(true)
-{
-}
-//---------------------------------------------------------------------------
-rPtr<iLibraryReference> bcModuleReference::QueryReference(iLibraryReferrer *Referrer)noexcept(true)
-{
-	bool Referenced=MakeStrongReference();
-
-	auto AutoLock=TakeLock(&fCS);
-
-	if(Referenced==false){
-		// RefCount==0
-		switch(fState){
-		case sIdle:
-			ModuleInitialize();
-			cnLib_SWITCH_FALLTHROUGH;
-		case sShutdown:
-			fState=sActive;
-			break;
-		}
-		ModuleInitialize();
-		IncRef();
-	}
-
-	return CreateReference(Referrer);
-}
-//---------------------------------------------------------------------------
-void bcModuleReference::ReferenceUpdate(void)noexcept(true)
-{
-	if(fReferenceProcessFlag.Acquire()==false)
-		return;
-
-
-	do{
-		fReferenceProcessFlag.Continue();
-
-		auto AutoLock=TakeLock(&fCS);
-
-		Update();
-		if(CheckShutdown()){
-			fState=sShutdown;
-
-			HANDLE ThreadHandle=::CreateThread(nullptr,0,ShutdownThreadProc,this,0,nullptr);
-			if(ThreadHandle!=nullptr){
-				return;
-			}
-			// failed to create shutdown thread
-			fState=sActive;
-		}
-
-	}while(fReferenceProcessFlag.Release()==false);
-}
-//---------------------------------------------------------------------------
-DWORD bcModuleReference::ShutdownThreadProc(LPVOID Parameter)noexcept(true)
-{
-	static_cast<bcModuleReference*>(Parameter)->ShutdownProcess();	
-	return 0;
-}
-//---------------------------------------------------------------------------
-void bcModuleReference::ShutdownProcess(void)noexcept(true)
-{
-	do{
-		fReferenceProcessFlag.Continue();
-
-		auto AutoLock=TakeLock(&fCS);
-
-		if(fState==sShutdown){
-			// all reference deleted
-			ModuleFinialize();
-			fState=sIdle;
-		}
-		else{
-			Update();
-			if(CheckShutdown()){
-				// all reference deleted
-				ModuleFinialize();
-				fState=sIdle;
-			}
-		}
-	}while(fReferenceProcessFlag.Release()==false);
-}
-//---------------------------------------------------------------------------
-//---------------------------------------------------------------------------
 rPtr<iMutex> LibraryMutex::Query(void)noexcept(true)
 {
 	gInstance.IncreaseReference();
@@ -151,12 +62,12 @@ void LibraryMutex::cMutex::Release(void)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-rPtr<iMutex> cWinLibraryReferenceThreadExecution::QueryMutex(void)noexcept(true)
+rPtr<iMutex> cWinModuleThreadExecution::QueryMutex(void)noexcept(true)
 {
 	return LibraryMutex::Query();
 }
 //---------------------------------------------------------------------------
-bool cWinLibraryReferenceThreadExecution::Run(iProcedure *Procedure)noexcept(true)
+bool cWinModuleThreadExecution::Run(iProcedure *Procedure)noexcept(true)
 {
 	HANDLE ThreadHandle=::CreateThread(nullptr,0,ReferenceThreadProc,Procedure,0,nullptr);
 	if(ThreadHandle!=nullptr){
@@ -166,7 +77,7 @@ bool cWinLibraryReferenceThreadExecution::Run(iProcedure *Procedure)noexcept(tru
 	return false;
 }
 //---------------------------------------------------------------------------
-DWORD WINAPI cWinLibraryReferenceThreadExecution::ReferenceThreadProc(LPVOID Parameter)noexcept(true)
+DWORD WINAPI cWinModuleThreadExecution::ReferenceThreadProc(LPVOID Parameter)noexcept(true)
 {
 	static_cast<iProcedure*>(Parameter)->Execute();
 	return 0;

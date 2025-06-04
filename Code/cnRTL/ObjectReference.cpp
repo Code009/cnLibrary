@@ -88,22 +88,22 @@ void bcWeakReference::cWeakObserver::ObserverInvalidate(bool Notify)noexcept(tru
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcRegisteredReference::bcRegisteredReference(bool InitialReference)noexcept(true)
-	: fRefCount(InitialReference)
+bcModuleReference::bcModuleReference()noexcept(true)
+	: fRefCount(0)
 {
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::ResetRef(bool InitialReference)noexcept(true)
+void bcModuleReference::ModuleResetReference(void)noexcept(true)
 {
-	fRefCount=InitialReference;
+	fRefCount=0;
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::IncRef(void)noexcept(true)
+void bcModuleReference::ModuleIncreaseReference(void)noexcept(true)
 {
 	++fRefCount.Barrier;
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::DecRef(void)noexcept(true)
+void bcModuleReference::ModuleDecreaseReference(void)noexcept(true)
 {
 	if(--fRefCount.Barrier==0){
 		fShutdownNotifySet.Notify();
@@ -111,7 +111,7 @@ void bcRegisteredReference::DecRef(void)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-bool bcRegisteredReference::MakeStrongReference(void)noexcept(true)
+bool bcModuleReference::MakeStrongReference(void)noexcept(true)
 {
 	uIntn RefCount=fRefCount;
 	while(RefCount){
@@ -122,38 +122,54 @@ bool bcRegisteredReference::MakeStrongReference(void)noexcept(true)
 	return false;
 }
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> bcRegisteredReference::CreateReference(iLibraryReferrer *Referrer)noexcept(true)
+iModuleHandle* bcModuleReference::CreateModuleHandle(iModuleReferrer *Referrer)noexcept(true)
 {
-	auto Reference=new cReference(this,Referrer);
-	fReferenceList.InsertTail(Reference);
-	return rPtr<iLibraryReference>::TakeFromManual(Reference);
+	auto Handle=new cModuleHandle(this,Referrer);
+	fReferrerList.InsertTail(Handle);
+	return Handle;
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::Update(void)noexcept(true)
+iReferenceObserver* bcModuleReference::CreateReferenceObserver(iModuleReferrer *Referrer,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
 {
-	for(auto p=fReferenceList.begin();p!=fReferenceList.end();){
+	auto Observer=new cObserver(this,Referrer,NotifyReference,NotifyProcedure);
+	fReferrerList.InsertTail(Observer);
+	fShutdownNotifySet.Insert(Observer);
+	return Observer;
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::Update(void)noexcept(true)
+{
+	for(auto p=fReferrerList.begin();p!=fReferrerList.end();){
 		auto RemoveItem=*p;
 		p++;
-		if(RemoveItem->Released){
-			fReferenceList.Remove(RemoveItem);
-			delete RemoveItem;
+		if(RemoveItem->fReleased){
+			if(RemoveItem->fShutdownCompletionNotify!=nullptr){
+				fShutdownCompletionNotifyList.AppendMake(RemoveItem->fShutdownCompletionNotify);
+			}
+			fReferrerList.Remove(RemoveItem);
+			RemoveItem->ReferrerClosed();
 		}
-		else if(RemoveItem->DescriptionUpdated){
+		else if(RemoveItem->fDescriptionUpdated){
 			// update description
 		}
 	}
 }
 //---------------------------------------------------------------------------
-bool bcRegisteredReference::CheckShutdown(void)noexcept(true)
+bool bcModuleReference::CheckShutdown(void)noexcept(true)
 {
-	return fReferenceList.IsEmpty() && fRefCount.Acquire.Load()==0;
+	return fReferrerList.IsEmpty() && fRefCount.Acquire.Load()==0;
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportText)noexcept(true)
+cSeqList<iProcedure*>&& bcModuleReference::FetchShutdownCompletionNotifyList(void)noexcept(true)
 {
-	if(fReferenceList.GetCount()!=0){
-		ReportText.Append(u"Remaining reference :\n");
-		for(auto Reference : fReferenceList){
+	return cnVar::MoveCast(fShutdownCompletionNotifyList);
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportText)noexcept(true)
+{
+	if(fReferrerList.GetCount()!=0){
+		ReportText.Append(u"Remaining referrer :\n");
+		for(auto Reference : fReferrerList){
 			auto Referrer=Reference->GetReferrer();
 			cArray<const uChar16> DescArray;
 			rPtr<iStringReference> Description=(Referrer!=nullptr ? Referrer->CreateDescription() : nullptr);
@@ -174,98 +190,106 @@ void bcRegisteredReference::ReportReferenceSet(cStringBuffer<uChar16> &ReportTex
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcRegisteredReference::cReference::cReference(bcRegisteredReference *Owner,iLibraryReferrer *Referrer)noexcept(true)
+bcModuleReference::bcReferrerItem::bcReferrerItem(bcModuleReference *Owner,iModuleReferrer *Referrer)noexcept(true)
 	: fOwner(Owner)
 	, fReferrer(Referrer)
-	, Released(false)
-	, fWeakRefCount(1)
-	, DescriptionUpdated(false)
+	, fReleased(false)
+	, fDescriptionUpdated(false)
 {
 }
 //---------------------------------------------------------------------------
-bcRegisteredReference::cReference::~cReference()noexcept(true)
+bcModuleReference::bcReferrerItem::~bcReferrerItem()noexcept(true)
 {
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::cReference::WeakIncRef(void)noexcept(true)
-{
-	++fWeakRefCount.Free;
-}
-//---------------------------------------------------------------------------
-void bcRegisteredReference::cReference::WeakDecRef(void)noexcept(true)
-{
-	if(--fWeakRefCount.Free==0){
-		Released=true;
-		fOwner->ReferenceUpdate();
-	}
-}
-//---------------------------------------------------------------------------
-bool bcRegisteredReference::cReference::MakeStrongReference(void)noexcept(true)
-{
-	if(fOwner->MakeStrongReference()==false)
-		return false;
-
-	WeakIncRef();
-	return true;
-}
-//---------------------------------------------------------------------------
-bcRegisteredReference *bcRegisteredReference::cReference::GetOwner(void)const noexcept(true)
+bcModuleReference *bcModuleReference::bcReferrerItem::GetOwner(void)const noexcept(true)
 {
 	return fOwner;
 }
 //---------------------------------------------------------------------------
-iLibraryReferrer *bcRegisteredReference::cReference::GetReferrer(void)const noexcept(true)
+iModuleReferrer *bcModuleReference::bcReferrerItem::GetReferrer(void)const noexcept(true)
 {
 	return fReferrer;
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::cReference::IncreaseReference(void)noexcept(true)
+void bcModuleReference::bcReferrerItem::Close(iProcedure *ShutdownCompletionNotify)noexcept(true)
 {
-	WeakIncRef();
-
-	fOwner->IncRef();
+	if(fReleased)
+		return;
+	fReleased=true;
+	fShutdownCompletionNotify=ShutdownCompletionNotify;
+	fOwner->ReferenceUpdate();
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::cReference::DecreaseReference(void)noexcept(true)
+void bcModuleReference::bcReferrerItem::UpdateDescription(void)noexcept(true)
 {
-	fOwner->DecRef();
-
-	WeakDecRef();
-}
-//---------------------------------------------------------------------------
-iReferenceObserver* bcRegisteredReference::cReference::CreateReferenceObserver(iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
-{
-	auto Observer=new cObserver(this,NotifyReference,NotifyProcedure);
-	fOwner->fShutdownNotifySet.Insert(Observer);
-	return Observer;
-}
-//---------------------------------------------------------------------------
-void bcRegisteredReference::cReference::UpdateDescription(void)noexcept(true)
-{
-	DescriptionUpdated=true;
+	fDescriptionUpdated=true;
 	fOwner->ReferenceUpdate();
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-bcRegisteredReference::cObserver::cObserver(cReference *Reference,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
-	: fReference(Reference)
+bcModuleReference::cModuleHandle::cModuleHandle(bcModuleReference *Owner,iModuleReferrer *Referrer)noexcept(true)
+	: bcReferrerItem(Owner,Referrer)
+{
+	fOwner->ModuleIncreaseReference();
+}
+//---------------------------------------------------------------------------
+bcModuleReference::cModuleHandle::~cModuleHandle()noexcept(true)
+{
+	fOwner->ModuleDecreaseReference();
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::cModuleHandle::Close(void)noexcept(true)
+{
+	bcReferrerItem::Close(nullptr);
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::cModuleHandle::cCloseWaitProcedure::Execute(void)noexcept(true)
+{
+	Notification.Notify();
+}
+//---------------------------------------------------------------------------
+bool bcModuleReference::cModuleHandle::CloseAndWaitUnload(iProcedure *NotifyProcedure)noexcept(true)
+{
+	if(NotifyProcedure!=nullptr){
+		bcReferrerItem::Close(NotifyProcedure);
+		return true;
+	}
+
+	cCloseWaitProcedure WaitProcedure;
+	bcReferrerItem::Close(&WaitProcedure);
+	WaitProcedure.Notification.Wait();
+	return false;
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::cModuleHandle::UpdateDescription(void)noexcept(true)
+{
+	return bcReferrerItem::UpdateDescription();
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::cModuleHandle::ReferrerClosed(void)noexcept(true)
+{
+	delete this;
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+bcModuleReference::cObserver::cObserver(bcModuleReference *Owner,iModuleReferrer *Referrer,iReference *NotifyReference,iProcedure *NotifyProcedure)noexcept(true)
+	: bcReferrerItem(Owner,Referrer)
 	, fNotifyReference(NotifyReference)
 	, fNotifyProcedure(NotifyProcedure)
 {
-	fReference->WeakIncRef();
 }
 //---------------------------------------------------------------------------
-bcRegisteredReference::cObserver::~cObserver()noexcept(true)
+bcModuleReference::cObserver::~cObserver()noexcept(true)
 {
-	fReference->WeakDecRef();
 }
 //---------------------------------------------------------------------------
-bool bcRegisteredReference::cObserver::ObserverMakeStrongReference(void)noexcept(true)
+bool bcModuleReference::cObserver::ObserverMakeStrongReference(void)noexcept(true)
 {
-	return fReference->MakeStrongReference();
+	return fOwner->MakeStrongReference();
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::cObserver::ObserverInvalidate(bool Notify)noexcept(true)
+void bcModuleReference::cObserver::ObserverInvalidate(bool Notify)noexcept(true)
 {
 	if(Notify){
 		if(fNotifyProcedure!=nullptr){
@@ -273,11 +297,15 @@ void bcRegisteredReference::cObserver::ObserverInvalidate(bool Notify)noexcept(t
 		}
 	}
 	fNotifyReference=nullptr;
-	auto Owner=fReference->GetOwner();
-	Owner->fShutdownNotifySet.Remove(this);
+	fOwner->fShutdownNotifySet.Remove(this);
 }
 //---------------------------------------------------------------------------
-void bcRegisteredReference::cObserver::ObserverDelete(void)noexcept(true)
+void bcModuleReference::cObserver::ObserverDelete(void)noexcept(true)
+{
+	bcReferrerItem::Close(nullptr);
+}
+//---------------------------------------------------------------------------
+void bcModuleReference::cObserver::ReferrerClosed(void)noexcept(true)
 {
 	delete this;
 }

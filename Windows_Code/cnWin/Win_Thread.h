@@ -54,7 +54,7 @@ typedef cnRTL::cnWinRTL::cSRWLock cSRWLock;
 //---------------------------------------------------------------------------
 #endif	// >= _WIN32_WINNT_WIN7
 //---------------------------------------------------------------------------
-class cThread : public cnRTL::cnWinRTL::cThreadHandle, protected iLibraryReferrer
+class cThread : public cnRTL::cnWinRTL::cThreadHandle, protected iModuleReferrer
 {
 public:
 	cThread()noexcept(true);
@@ -78,7 +78,7 @@ protected:
 
 	virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)override;
 private:
-	rPtr<iLibraryReference> RegisterSystemObserver(void)noexcept(true);
+	void RegisterSystemObserver(void)noexcept(true);
 
 	class cSystemShutdownNotifyProcedure : public iProcedure
 	{

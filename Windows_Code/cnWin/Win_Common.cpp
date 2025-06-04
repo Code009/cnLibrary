@@ -5,7 +5,7 @@ using namespace cnRTL;
 using namespace cnWin;
 
 // surpress constructor and destructor
-cnVar::cStaticVariable< cnWinRTL::cWinLibraryReference<cWindowsLibraryInitialization> > cnWin::gWindowsSystemReference;
+cnVar::cStaticVariable< cnWinRTL::cWinModuleManager<cWindowsSystemInitialization> > cnWin::gWindowsSystemManager;
 
 //- System Info -------------------------------------------------------------
 cSysInfo::cSysInfo()noexcept(true)
@@ -42,12 +42,12 @@ BOOL cnWin::DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL Inheri
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
-void cWindowsLibraryInitialization::Initialize(void)noexcept(true)
+void cWindowsSystemInitialization::Initialize(void)noexcept(true)
 {
 	WindowsInterface::SystemInitialize();
 }
 //---------------------------------------------------------------------------
-void cWindowsLibraryInitialization::Finalize(void)noexcept(true)
+void cWindowsSystemInitialization::Finalize(void)noexcept(true)
 {
 	WindowsInterface::SystemFinalize();
 }

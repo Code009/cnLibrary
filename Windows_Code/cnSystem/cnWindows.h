@@ -75,8 +75,6 @@ struct LibLoadResult
 	static const ufInt8	FileVersionNotMatch		=4;
 };
 //---------------------------------------------------------------------------
-void cnLib_FUNC SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true);
-//---------------------------------------------------------------------------
 extern iTextStreamOutput*const DebugLogStream;
 //---------------------------------------------------------------------------
 rPtr<iMemoryHeap>		cnLib_FUNC CreateMemoryHeap(void)noexcept(true);

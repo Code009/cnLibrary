@@ -43,12 +43,12 @@ BOOL DuplicateCurrentThreadHandle(HANDLE &OutHandle,DWORD Access,BOOL InheritHan
 BOOL DuplicateCurrentThreadHandleSameAccess(HANDLE &OutHandle,BOOL InheritHandle=FALSE)noexcept(true);
 
 //---------------------------------------------------------------------------
-struct cWindowsLibraryInitialization
+struct cWindowsSystemInitialization
 {
 	static void Initialize(void)noexcept(true);
 	static void Finalize(void)noexcept(true);
 };
-extern cnVar::cStaticVariable< cnRTL::cnWinRTL::cWinLibraryReference<cWindowsLibraryInitialization> > gWindowsSystemReference;
+extern cnVar::cStaticVariable< cnRTL::cnWinRTL::cWinModuleManager<cWindowsSystemInitialization> > gWindowsSystemManager;
 //---------------------------------------------------------------------------
 
 #if 0

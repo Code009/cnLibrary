@@ -116,14 +116,10 @@ bool cThread::IsRunning(void)noexcept(true)
 	return fThreadRunning;
 }
 //---------------------------------------------------------------------------
-rPtr<iLibraryReference> cThread::RegisterSystemObserver(void)noexcept(true)
+void cThread::RegisterSystemObserver(void)noexcept(true)
 {
-	auto Reference=cnSystem::SystemQueryReference(this);
-	if(Reference!=nullptr){
-		auto ThisReference=iCast<iReference>(this);
-		fSystemObserver=Reference->CreateReferenceObserver(ThisReference,&fSystemShutdownNotifyProcedure);
-	}
-	return Reference;
+	auto ThisReference=iCast<iReference>(this);
+	fSystemObserver=gWindowsSystemManager->CreateReferenceObserver(this,ThisReference,&fSystemShutdownNotifyProcedure);
 }
 //---------------------------------------------------------------------------
 rPtr<iStringReference> cThread::CreateDescription(void)noexcept(true)

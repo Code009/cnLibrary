@@ -944,6 +944,41 @@ private:
 };
 //---------------------------------------------------------------------------
 
+// Debugger Context
+
+class cRTLDebuggerContext
+{
+public:
+	void DebugStartThread(void)noexcept(true);
+	void DebugRunThread(void)noexcept(true);
+	void DebugShutdownThread(void)noexcept(true);
+
+	void DebuggerExecute(iProcedure *Procedure)noexcept(true);
+
+private:
+	struct cDebugProcItem
+	{
+		cDebugProcItem *Next;
+		iProcedure *Procedure;
+	};
+	cAtomicQueueSO<cDebugProcItem> fDebugProcQueue;
+	TKRuntime::SystemThread::tSingleNotification *fDebugThreadNotification;
+	cAtomicVar<uIntn> fDebugThreadRefCount;
+	cAtomicVar<bool> fDebugThreadShutdownAvailable;
+
+	bool QueryDebugThread(void)noexcept(true);
+	void FinishDebugThread(void)noexcept(true);
+
+	class cDebugThreadProcedure : public iProcedure
+	{
+	public:
+		virtual void cnLib_FUNC Execute(void)noexcept(true);
+	}fDebugThreadProcedure;
+};
+extern cnVar::cStaticVariable<cRTLDebuggerContext> gRTLDebuggerContext;
+
+//---------------------------------------------------------------------------
+
 // Reference Logger
 
 //---------------------------------------------------------------------------
@@ -962,48 +997,28 @@ public:
 	void Log(void *Object,uInt32 Tag,bool Inc)noexcept(true);
 
 private:
-	class cContext : public iLibraryReferrer
+	class cContext
 	{
 	public:
-		virtual rPtr<iStringReference> cnLib_FUNC CreateDescription(void)noexcept(true)override;
-
-		class cStartupCompleteProc : public iFunction<void (iLibraryReference*)noexcept(true)>
-		{
-			virtual void cnLib_FUNC Execute(iLibraryReference *Reference)noexcept(true)override;
-		}StartupCompleteProc;
-		class cShutdownNotifyProc : public iProcedure
-		{
-			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
-		}ShutdownNotifyProc;
-		iReferenceObserver *Observer=nullptr;
-		static const uChar16 DependentName[];
-
 		cSeqMap<void*, cSeqMap<uInt32,uIntn> > ObjectMap;
 
 		void Inc(void *Object,uInt32 Tag)noexcept(true);
 		void Dec(void *Object,uInt32 Tag)noexcept(true);
-	};
-	class cAsyncContext : public iProcedure
-	{
-	public:
-		cAsyncContext()noexcept(true);
-		~cAsyncContext()noexcept(true);
-		virtual void cnLib_FUNC Execute(void)noexcept(true)override;
 
-		rPtr<iAsyncProcedure> ProcessWork;
+		class cDebugThreadProc : public iProcedure
+		{
+		public:
+			virtual void cnLib_FUNC Execute(void)noexcept(true)override;
+		}DebugThreadProc;
 	};
 	cnVar::cStaticVariable<cContext> fContext;
-	cnVar::cStaticVariable<cAsyncContext> fAsyncContext;
 	cAtomicQueueSO<cItem> fItemQueue;
 	cAtomicStack<cItem> fRecycleStack;
 
 	cExclusiveFlag fExclusiveFlag;
 	bool fContextInitialized;
-	ufInt8 fAsyncContextState;
 	ufInt8 fSystemShutdown;
 
-	void StartupCompleted(iLibraryReference *Reference)noexcept(true);
-	void Shutdown(void)noexcept(true);
 	void Process(void)noexcept(true);
 
 	void ThreadProcess(void)noexcept(true);

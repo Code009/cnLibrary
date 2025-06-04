@@ -9,13 +9,9 @@ using namespace cnWin;
 //	cnSystem
 //---------------------------------------------------------------------------
 
-rPtr<iLibraryReference> cnSystem::SystemQueryReference(iLibraryReferrer *Referrer)noexcept(true)
+iModuleHandle *cnSystem::SystemQueryModule(iModuleReferrer *Referrer)noexcept(true)
 {
-	return gWindowsSystemReference->QueryReference(Referrer);
-}
-rPtr<iLibraryReference> cnSystem::SystemQueryReferenceAsync(iFunction<void (iLibraryReference*)noexcept(true)> *Procedure,iLibraryReferrer *Referrer)noexcept(true)
-{
-	return gWindowsSystemReference->QueryReferenceAsync(Procedure,Referrer);
+	return gWindowsSystemManager->QueryHandle(Referrer);
 }
 
 void cnSystem::AssertionMessage(const char *Message)noexcept(true)
@@ -293,9 +289,9 @@ iPtr<iAudioDevice>			cnSystem::QueryAudioMainDevice(void)noexcept(true)
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-void cnWindows::SystemWaitShutdown(rPtr<iLibraryReference> &&Reference)noexcept(true)
+rPtr<iMutex> cnWindows::QueryLibraryMutex(void)noexcept(true)
 {
-	return gWindowsSystemReference->WaitShutdown(cnVar::MoveCast(Reference));
+	return LibraryMutex::Query();
 }
 //---------------------------------------------------------------------------
 rPtr<iTextEncodingConverter> cnWindows::CodePageToUTF16(UINT SrcCodePage)noexcept(true)

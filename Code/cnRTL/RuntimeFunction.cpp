@@ -38,6 +38,7 @@ uInt8 cnRTL::BitReverse(uInt8 Src)noexcept(true)
 
 //---------------------------------------------------------------------------
 const cVectorZeroValue cnRTL::VectorZeroValue;
+cnVar::cStaticVariable<cRTLDebuggerContext> cnRTL::gRTLDebuggerContext;
 cnVar::cStaticVariable<cReferenceCountLogger> cnRTL::gStaticReferenceCountLogger;
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -343,6 +344,100 @@ bool cResourceAvailableFlag::MarkAvailable(void)noexcept(true)
 }
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void cRTLDebuggerContext::DebugStartThread(void)noexcept(true)
+{
+	cnClass::ManualConstruct(fDebugThreadProcedure);
+	cnSystem::StartThread(&fDebugThreadProcedure);
+}
+//---------------------------------------------------------------------------
+void cRTLDebuggerContext::cDebugThreadProcedure::Execute(void)noexcept(true)
+{
+	auto Host=cnMemory::GetObjectFromMemberPointer(this,&cRTLDebuggerContext::fDebugThreadProcedure);
+	Host->DebugRunThread();
+}
+//---------------------------------------------------------------------------
+void cRTLDebuggerContext::DebugRunThread(void)noexcept(true)
+{
+	if(fDebugThreadRefCount!=0){
+		// already running
+		return;
+	}
+
+	TKRuntime::SystemThread::tSingleNotification Notification;
+
+	Notification.Setup();
+	fDebugThreadShutdownAvailable=true;
+	fDebugThreadNotification=&Notification;
+
+	if(fDebugThreadRefCount.Barrier.CmpStore(0,1)){
+		do{
+			if(fDebugThreadNotification!=&Notification)
+				break;
+			auto DebugItem=fDebugProcQueue.DequeueAll();
+			while(DebugItem!=nullptr){
+				auto CurDebugItem=DebugItem;
+				DebugItem=DebugItem->Next;
+
+				CurDebugItem->Procedure->Execute();
+
+				delete CurDebugItem;
+			}
+
+			Notification.Wait();
+		}while(fDebugThreadRefCount.Acquire.Load()!=0);
+	}
+
+	Notification.Clear();
+}
+//---------------------------------------------------------------------------
+void cRTLDebuggerContext::DebugShutdownThread(void)noexcept(true)
+{
+	if(fDebugThreadShutdownAvailable.Barrier.Xchg(false)==false){
+		// already shutdown
+		return;
+	}
+	FinishDebugThread();
+}
+//---------------------------------------------------------------------------
+bool cRTLDebuggerContext::QueryDebugThread(void)noexcept(true)
+{
+	uIntn CurRefCount=fDebugThreadRefCount;
+	while(CurRefCount!=0){
+		if(fDebugThreadRefCount.Barrier.CmpXchg(CurRefCount,CurRefCount+1)){
+			return true;
+		}
+	}
+	return false;
+}
+//---------------------------------------------------------------------------
+void cRTLDebuggerContext::FinishDebugThread(void)noexcept(true)
+{
+	if(--fDebugThreadRefCount.Barrier==0){
+		
+		auto Notification=fDebugThreadNotification;
+		fDebugThreadNotification=nullptr;
+
+		Notification->Notify();
+	}
+}
+//---------------------------------------------------------------------------
+void cRTLDebuggerContext::DebuggerExecute(iProcedure *Procedure)noexcept(true)
+{
+	if(QueryDebugThread()){
+		auto DebugItem=new cDebugProcItem;
+		DebugItem->Procedure=Procedure;
+		fDebugProcQueue.Enqueue(DebugItem);
+
+		fDebugThreadNotification->Notify();
+		FinishDebugThread();
+	}
+	else{
+		Procedure->Execute();
+	}
+
+}
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 void cReferenceCountLogger::Log(void *Object,uInt32 Tag,bool Inc)noexcept(true)
 {
 	auto Item=fRecycleStack.Pop();
@@ -386,46 +481,6 @@ void cReferenceCountLogger::cContext::Dec(void *Object,uInt32 Tag)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-const uChar16 cReferenceCountLogger::cContext::DependentName[]=u"cReferenceCountLogger";
-rPtr<iStringReference> cReferenceCountLogger::cContext::CreateDescription(void)noexcept(true)
-{
-	cArrayConstant<uChar16> Array;
-	Array.Pointer=DependentName;
-	Array.Length=ArrayLength(DependentName)-1;
-	cString<uChar16> Desc=Array;
-	return Desc.Token();
-}
-//---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::cStartupCompleteProc::Execute(iLibraryReference *Reference)noexcept(true)
-{
-	auto HostReferrer=cnMemory::GetObjectFromMemberPointer(this,&cContext::StartupCompleteProc);
-	auto HostLogger=cnMemory::GetObjectFromMemberPointer(HostReferrer,&cReferenceCountLogger::fContext);
-	HostLogger->StartupCompleted(Reference);
-}
-//---------------------------------------------------------------------------
-void cReferenceCountLogger::cContext::cShutdownNotifyProc::Execute(void)noexcept(true)
-{
-	auto HostReferrer=cnMemory::GetObjectFromMemberPointer(this,&cContext::ShutdownNotifyProc);
-	auto HostLogger=cnMemory::GetObjectFromMemberPointer(HostReferrer,&cReferenceCountLogger::fContext);
-	HostLogger->Shutdown();
-}
-//---------------------------------------------------------------------------
-void cReferenceCountLogger::StartupCompleted(iLibraryReference *Reference)noexcept(true)
-{
-	cnLib_ASSERT(fAsyncContextState==1);
-	fContext->Observer=Reference->CreateReferenceObserver(nullptr,&fContext->ShutdownNotifyProc);
-	fAsyncContextState=2;
-	NotifyProcess();
-}
-//---------------------------------------------------------------------------
-void cReferenceCountLogger::Shutdown(void)noexcept(true)
-{
-	fSystemShutdown=1;
-	if(fExclusiveFlag.Acquire()){
-		fAsyncContext->ProcessWork->Start();
-	}
-}
-//---------------------------------------------------------------------------
 void cReferenceCountLogger::Process(void)noexcept(true)
 {
 	auto Items=fItemQueue.DequeueAll();
@@ -464,12 +519,6 @@ void cReferenceCountLogger::Process(void)noexcept(true)
 				delete CurItem;
 			}
 
-			fAsyncContext.Destruct();
-			auto Observer=fContext->Observer;
-			if(Observer!=nullptr){
-				Observer->Close();
-			}
-			fAsyncContextState=0;
 		}
 	}
 }
@@ -484,64 +533,23 @@ void cReferenceCountLogger::ThreadProcess(void)noexcept(true)
 	}while(fExclusiveFlag.Release()==false);
 }
 //---------------------------------------------------------------------------
+void cReferenceCountLogger::cContext::cDebugThreadProc::Execute(void)noexcept(true)
+{
+	auto Context=cnMemory::GetObjectFromMemberPointer(this,&cContext::DebugThreadProc);
+	auto Host=cnMemory::GetObjectFromMemberPointer(Context,&cReferenceCountLogger::fContext);
+	Host->ThreadProcess();
+}
+//---------------------------------------------------------------------------
 void cReferenceCountLogger::NotifyProcess(void)noexcept(true)
 {
 	if(fExclusiveFlag.Acquire()==false)
 		return;
-	do{
-		switch(fAsyncContextState){
-		case 0:
-			fExclusiveFlag.Continue();
-			if(fContextInitialized==false){
-				fContext.Construct();
-				fContextInitialized=true;
-			}
-			if(fSystemShutdown!=0){
-				do{
-					fExclusiveFlag.Continue();
-					Process();
-				}while(fExclusiveFlag.Release()==false);
-				return;
-			}
-			{
-				auto SysReference=cnSystem::SystemQueryReferenceAsync(&fContext->StartupCompleteProc,&fContext);
-				if(SysReference==nullptr){
-					// wait for system startup
-					fAsyncContextState=1;
-					break;
-				}
-				fContext->Observer=SysReference->CreateReferenceObserver(nullptr,&fContext->ShutdownNotifyProc);
-			}
-			cnLib_SWITCH_FALLTHROUGH;
-		case 2:
-			fAsyncContextState=3;
-			fAsyncContext.Construct();
-			cnLib_SWITCH_FALLTHROUGH;
-		case 3:
-			do{
-				fExclusiveFlag.Continue();
-				Process();
-			}while(fExclusiveFlag.Release()==false);
-			return;
-		default:
-		case 1:
-			break;
-		}
-	}while(fExclusiveFlag.Release()==false);
-}
-//---------------------------------------------------------------------------
-cReferenceCountLogger::cAsyncContext::cAsyncContext()noexcept(true)
-	: ProcessWork(cnSystem::DefaultThreadPool->CreateWork(nullptr,this))
-{
-}
-//---------------------------------------------------------------------------
-cReferenceCountLogger::cAsyncContext::~cAsyncContext()noexcept(true)
-{
-}
-//---------------------------------------------------------------------------
-void cReferenceCountLogger::cAsyncContext::Execute(void)noexcept(true)
-{
-	auto Host=cnMemory::GetObjectFromMemberPointer(reinterpret_cast<cnVar::cStaticVariable<cAsyncContext>*>(this),&cReferenceCountLogger::fAsyncContext);
-	Host->ThreadProcess();
+
+	if(fContextInitialized==false){
+		fContext.Construct();
+		fContextInitialized=true;
+	}
+
+	gRTLDebuggerContext->DebuggerExecute(&fContext->DebugThreadProc);
 }
 //---------------------------------------------------------------------------
