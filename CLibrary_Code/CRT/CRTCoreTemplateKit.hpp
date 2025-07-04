@@ -254,10 +254,10 @@ struct TStdCoroutineHandleOperator
 	static bool IsAvailable(const tHandle &Handle)noexcept(true){
 		return static_cast<bool>(Handle);
 	}
-	static void Resume(const tHandle &Handle)noexcept(true){
+	static void Resume(tHandle &Handle)noexcept(true){
 		return Handle.resume();
 	}
-	static void Finish(const tHandle &Handle)noexcept(true){
+	static void Finish(tHandle &Handle)noexcept(true){
 		return Handle.destroy();
 	}
 };

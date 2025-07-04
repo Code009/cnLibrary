@@ -605,10 +605,10 @@ struct cVariantCoroutineHandleOperator
 	static bool IsAvailable(const tHandle &Handle)noexcept(true){
 		return Handle->IsAvailable();
 	}
-	static void Resume(const tHandle &Handle)noexcept(true){
+	static void Resume(tHandle &Handle)noexcept(true){
 		return Handle->Resume();
 	}
-	static void Finish(const tHandle &Handle)noexcept(true){
+	static void Finish(tHandle &Handle)noexcept(true){
 		return Handle->Finish();
 	}
 };
