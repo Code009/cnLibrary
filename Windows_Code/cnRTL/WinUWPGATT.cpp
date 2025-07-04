@@ -1,4 +1,3 @@
-#include <coroutine>
 #include "WinUWPGATT.h"
 
 #pragma comment(lib,"WindowsApp.lib")
