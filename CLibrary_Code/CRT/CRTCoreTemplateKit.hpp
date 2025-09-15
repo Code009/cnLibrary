@@ -44,8 +44,8 @@ using cStringBuffer=cnString::cStringBuffer<TKRuntime::SystemAllocationOperator,
 template<class TCharacter>
 using cString=cnString::cString< cnString::cRefStringArrayTokenOperator<TKRuntime::SystemAllocationOperator,TCharacter> >;
 
-template<class TFunction,uIntn StorageSize=cnVar::TFunctionStorageDefaultSize::Value>
-using cFunction=cnVar::cFunction<TFunction,cnVar::cFunctionStorageOperator<TKRuntime::SystemAllocationOperator,TFunction,StorageSize> >;
+template<class TFunction>
+using cFunction=cnVar::cFunction<TFunction,TKRuntime::SystemAllocationOperator>;
 
 
 //---------------------------------------------------------------------------

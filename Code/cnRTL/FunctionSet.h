@@ -72,7 +72,7 @@ public:
 	}
 
 private:
-	cFunction<void (void)noexcept(true),sizeof(void*)*3> OnDelete;
+	cFunction<void (void)noexcept(true)> OnDelete;
 };
 //---------------------------------------------------------------------------
 template<class TFunction>	struct cFunctionInterfaceFunctor;
