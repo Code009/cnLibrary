@@ -248,6 +248,8 @@ bcRWQueue::bcRWQueue()noexcept(true)
 	, fReadQueueEnded(false)
 	, fReadQueueTerminated(false)
 	, fWriteQueueTerminated(false)
+	, fReadQueueCloseWhenIdle(false)
+	, fWriteQueueCloseWhenIdle(false)
 {
 }
 //---------------------------------------------------------------------------
@@ -749,11 +751,14 @@ bool bcStream::cWriteTask::IsAccessBufferCompleted(void)const noexcept(true)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 bcStream::bcStream()noexcept(true)
+	: fStreamClosed(false)
+	, fStreamReadEnded(false)
+	, fStreamWriteEnded(false)
+	, fTargetReadEnded(false)
+	, fTargetWriteEnded(false)
+	, fStreamReadEndState(0)
+	, fStreamWriteEndState(0)
 {
-	fStreamClosed=false;
-	fStreamReadEnded=false;
-	fStreamWriteSetEnd=false;
-	fStreamWriteEnded=false;
 }
 //---------------------------------------------------------------------------
 bcStream::~bcStream()noexcept(true)
@@ -787,8 +792,10 @@ bool bcStream::SetEndOfStream(void)noexcept(true)
 	if(fStreamClosed)
 		return fStreamWriteEnded;
 
-	fStreamWriteSetEnd=true;
-	UpdateWriteTaskQueue();
+	if(fStreamWriteEndState==0){
+		fStreamWriteEndState=1;
+		UpdateWriteTaskQueue();
+	}
 	return true;
 }
 //---------------------------------------------------------------------------
@@ -803,8 +810,8 @@ bool bcStream::Read(void *Buffer,uIntn Size,uIntn &SizeCompleted)noexcept(true)
 		fLastErrorCode=StreamError::Closed;
 		return false;
 	}
-	if(fStreamReadEnded){
-		// stream read ended, directly return
+	if(fTargetReadEnded){
+		// target read ended, directly return
 		fLastErrorCode=StreamError::Success;
 		SizeCompleted=0;
 		return true;
@@ -853,8 +860,8 @@ iPtr<iStreamTask> bcStream::ReadAsync(void *Buffer,uIntn Size)noexcept(true)
 	}
 	auto Task=iCreate<cReadTask>();
 	Task->Owner=this;
-	if(fStreamReadEnded){
-		// stream read ended, directly return
+	if(fTargetReadEnded){
+		// target read ended, directly return
 		Task->AccessErrorCode=StreamError::Success;
 		Task->TotalSizeCompleted=0;
 		return Task;
@@ -900,9 +907,12 @@ rPtr<bcStream::cWriteTask> bcStream::QueryWriteTask(void)noexcept(true)
 {
 	auto Task=fWriteTaskQueue.DequeueTask();
 	if(Task==nullptr){
-		if(fStreamWriteSetEnd){
+		if(fStreamWriteEndState==1){
+			fStreamWriteEndState=2;
 			StreamProcessWriteSetEnd();
 			fStreamWriteEnded=true;
+
+			UpdateWriteTaskQueue();
 		}
 		return nullptr;
 	}
@@ -916,10 +926,20 @@ void bcStream::CompleteWriteTask(rPtr<cWriteTask> Task)noexcept(true)
 	fWriteTaskQueue.CompleteTask(cnVar::MoveCast(Task));
 }
 //---------------------------------------------------------------------------
-void bcStream::SetReadEnd(bool GracefulClose)noexcept(true)
+bool bcStream::IsReadEnded(void)noexcept(true)
+{
+	return fStreamReadEnded;
+}
+//---------------------------------------------------------------------------
+bool bcStream::IsWriteEnded(void)noexcept(true)
+{
+	return fStreamWriteEnded;
+}
+//---------------------------------------------------------------------------
+void bcStream::ReportReadFinish(bool GracefulClose)noexcept(true)
 {
 	if(GracefulClose){
-		fStreamReadEnded=true;
+		fTargetReadEnded=true;
 		UpdateReadTaskQueue();
 	}
 	else{
@@ -927,19 +947,15 @@ void bcStream::SetReadEnd(bool GracefulClose)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void bcStream::SetWriteEnd(bool GracefulClose)noexcept(true)
+void bcStream::ReportWriteFinish(bool Graceful)noexcept(true)
 {
-	if(GracefulClose){
-		if(fStreamWriteSetEnd){
-			if(fWriteTaskQueue.IsEmpty()){
-				// stream gracefully shut down
-				fStreamWriteEnded=true;
-				UpdateWriteTaskQueue();
-				return;
-			}
-		}
+	if(Graceful){
+		fTargetWriteEnded=true;
+		UpdateWriteTaskQueue();
 	}
-	Close();
+	else{
+		Close();
+	}
 }
 //---------------------------------------------------------------------------
 void bcStream::UpdateReadTaskQueue(void)noexcept(true)
@@ -968,24 +984,36 @@ bool bcStream::ProcessReadTaskQueueProc(void)noexcept(true)
 		}
 
 		// process when read end
-		StreamProcessReadEnd();
-		return false;
-	}
-	if(fStreamReadEnded){
-		// complete all read task
-		auto Task=fReadTaskQueue.DequeueTask();
-		while(Task!=nullptr){
-
-			auto *ReadTask=static_cast<cReadTask*>(Task.Pointer());
-			ReadTask->AccessErrorCode=StreamError::Success;
-			fReadTaskQueue.CompleteTask(Task);
-
-			Task=fReadTaskQueue.DequeueTask();
+		if(fStreamReadEndState==0){
+			fStreamReadEndState=1;
+			StreamProcessReadEnd(false);
 		}
 		return false;
 	}
+	if(fStreamReadEnded==false){
+		if(fTargetReadEnded==false){
+			// process read task normally
+			StreamProcessReadTask();
+			return false;
+		}
+		// mark stream ended and continue
+		fStreamReadEnded=true;
+		if(fStreamReadEndState==0){
+			fStreamReadEndState=1;
+			StreamProcessReadEnd(true);
+		}
+	}
 
-	StreamProcessReadTask();
+	// stream read ended, complete all read task
+	auto Task=fReadTaskQueue.DequeueTask();
+	while(Task!=nullptr){
+
+		auto *ReadTask=static_cast<cReadTask*>(Task.Pointer());
+		ReadTask->AccessErrorCode=StreamError::Success;
+		fReadTaskQueue.CompleteTask(Task);
+
+		Task=fReadTaskQueue.DequeueTask();
+	}
 	return false;
 }
 //---------------------------------------------------------------------------
@@ -1014,8 +1042,18 @@ bool bcStream::ProcessWriteTaskQueueProc(void)noexcept(true)
 			Task=fWriteTaskQueue.DequeueTask();
 		}
 
-		StreamProcessWriteEnd();
+		if(fStreamWriteEndState<3){
+			fStreamWriteEndState=3;
+			StreamProcessWriteEnd(false);
+		}
 		return false;
+	}
+	if(fTargetWriteEnded){
+		if(fWriteTaskQueue.IsEmpty()==false){
+			// cannot write more, to error state
+			Close();
+			return true;
+		}
 	}
 	if(fStreamWriteEnded){
 		// cancel all write task
@@ -1027,6 +1065,11 @@ bool bcStream::ProcessWriteTaskQueueProc(void)noexcept(true)
 			fWriteTaskQueue.CompleteTask(Task);
 
 			Task=fWriteTaskQueue.DequeueTask();
+		}
+		if(fStreamWriteEndState==2){
+			fStreamWriteEndState=3;
+			StreamProcessWriteEnd(true);
+			return false;
 		}
 	}
 

@@ -210,16 +210,19 @@ protected:
 	void StreamClose(void)noexcept(true);
 
 	virtual void StreamProcessReadTask(void)noexcept(true)=0;
-	virtual void StreamProcessReadEnd(void)noexcept(true)=0;
+	virtual void StreamProcessReadEnd(bool GracefulClosed)noexcept(true)=0;
 	virtual void StreamProcessWriteTask(void)noexcept(true)=0;
+	virtual void StreamProcessWriteEnd(bool GracefulClosed)noexcept(true)=0;
 	virtual void StreamProcessWriteSetEnd(void)noexcept(true)=0;
-	virtual void StreamProcessWriteEnd(void)noexcept(true)=0;
 
 	void UpdateReadTaskQueue(void)noexcept(true);
 	void UpdateWriteTaskQueue(void)noexcept(true);
 
-	void SetReadEnd(bool GracefulClose)noexcept(true);
-	void SetWriteEnd(bool GracefulClose)noexcept(true);
+	bool IsReadEnded(void)noexcept(true);
+	bool IsWriteEnded(void)noexcept(true);
+
+	void ReportReadFinish(bool GracefulClose)noexcept(true);
+	void ReportWriteFinish(bool Graceful)noexcept(true);
 
 	// Stream Task
 
@@ -309,7 +312,10 @@ private:
 	bool fStreamClosed;
 	bool fStreamReadEnded;
 	bool fStreamWriteEnded;
-	bool fStreamWriteSetEnd;
+	bool fTargetReadEnded;
+	bool fTargetWriteEnded;
+	ufInt8 fStreamReadEndState;
+	ufInt8 fStreamWriteEndState;
 
 	StreamError fLastErrorCode;
 

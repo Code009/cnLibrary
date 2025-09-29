@@ -64,6 +64,12 @@ bool cStreamFromEndpoint::Connect(iEndpoint *Endpoint)noexcept(true)
 void cStreamFromEndpoint::StreamProcessReadTask(void)noexcept(true)
 {
 	if(!fReadActive){
+		if(fReadQueue!=nullptr){
+			bool ReadQueueGracefulClose;
+			if(fReadQueue->IsReadClosed(ReadQueueGracefulClose)){
+				ReportReadFinish(ReadQueueGracefulClose);
+			}
+		}
 		return;
 	}
 
@@ -85,23 +91,24 @@ void cStreamFromEndpoint::StreamProcessReadTask(void)noexcept(true)
 		fReadQueue->DismissReadBuffer(SizeWritten);
 	}
 
-
+	// no more to read
 	bool ReadQueueGracefulClose;
 	if(fReadQueue->IsReadClosed(ReadQueueGracefulClose)){
 		fReadQueue->StopRead();
 		fReadQueue=nullptr;
 
-		SetReadEnd(ReadQueueGracefulClose);
+		ReportReadFinish(ReadQueueGracefulClose);
 	}
 	else{
 		fReadQueue->NotifyRead(1);
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessReadEnd(void)noexcept(true)
+void cStreamFromEndpoint::StreamProcessReadEnd(bool GracefulClosed)noexcept(true)
 {
 	if(fReadQueue!=nullptr){
 		fReadQueue->StopRead();
+		fReadQueue->CloseRead(!GracefulClosed);
 		fReadQueue=nullptr;
 	}
 }
@@ -115,6 +122,7 @@ void cStreamFromEndpoint::ReadStarted(void)noexcept(true)
 void cStreamFromEndpoint::ReadStopped(void)noexcept(true)
 {
 	fReadActive=false;
+	UpdateReadTaskQueue();
 }
 //---------------------------------------------------------------------------
 void cStreamFromEndpoint::ReadNotify(void)noexcept(true)
@@ -125,6 +133,12 @@ void cStreamFromEndpoint::ReadNotify(void)noexcept(true)
 void cStreamFromEndpoint::StreamProcessWriteTask(void)noexcept(true)
 {
 	if(!fWriteActive){
+		if(fWriteQueue!=nullptr){
+			bool WriteQueueGracefulClose;
+			if(fWriteQueue->IsWriteClosed(WriteQueueGracefulClose)){
+				ReportWriteFinish(WriteQueueGracefulClose);
+			}
+		}
 		return;
 	}
 
@@ -134,8 +148,8 @@ void cStreamFromEndpoint::StreamProcessWriteTask(void)noexcept(true)
 		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 
-		SetWriteEnd(WriteQueueGracefulClose);
-		// stream terminated
+		// report to base
+		ReportWriteFinish(WriteQueueGracefulClose);
 		return;
 	}
 
@@ -170,11 +184,11 @@ void cStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept(true)
 	}
 }
 //---------------------------------------------------------------------------
-void cStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept(true)
+void cStreamFromEndpoint::StreamProcessWriteEnd(bool GracefulClosed)noexcept(true)
 {
 	if(fWriteQueue!=nullptr){
 		fWriteQueue->StopWrite();
-		fWriteQueue->CloseWrite(true);
+		fWriteQueue->CloseWrite(!GracefulClosed);
 		fWriteQueue=nullptr;
 	}
 }
@@ -188,6 +202,7 @@ void cStreamFromEndpoint::WriteStarted(void)noexcept(true)
 void cStreamFromEndpoint::WriteStopped(void)noexcept(true)
 {
 	fWriteActive=false;
+	UpdateWriteTaskQueue();
 }
 //---------------------------------------------------------------------------
 void cStreamFromEndpoint::WriteNotify(void)noexcept(true)
@@ -277,17 +292,18 @@ void cPacketStreamFromEndpoint::StreamProcessReadTask(void)noexcept(true)
 		fReadQueue->StopRead();
 		fReadQueue=nullptr;
 
-		SetReadEnd(ReadQueueGracefulClose);
+		ReportReadFinish(ReadQueueGracefulClose);
 	}
 	else{
 		fReadQueue->NotifyRead(1);
 	}
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessReadEnd(void)noexcept(true)
+void cPacketStreamFromEndpoint::StreamProcessReadEnd(bool GracefulClosed)noexcept(true)
 {
 	if(fReadActive){
 		fReadQueue->StopRead();
+		fReadQueue->CloseRead(!GracefulClosed);
 		fReadQueue=nullptr;
 	}
 }
@@ -301,6 +317,7 @@ void cPacketStreamFromEndpoint::ReadStarted(void)noexcept(true)
 void cPacketStreamFromEndpoint::ReadStopped(void)noexcept(true)
 {
 	fReadActive=false;
+	UpdateReadTaskQueue();
 }
 //---------------------------------------------------------------------------
 void cPacketStreamFromEndpoint::ReadNotify(void)noexcept(true)
@@ -320,7 +337,7 @@ void cPacketStreamFromEndpoint::StreamProcessWriteTask(void)noexcept(true)
 		fWriteQueue->StopWrite();
 		fWriteQueue=nullptr;
 
-		SetWriteEnd(WriteQueueGracefulClose); 
+		ReportWriteFinish(WriteQueueGracefulClose); 
 		// stream terminated
 		return;
 	}
@@ -349,14 +366,14 @@ void cPacketStreamFromEndpoint::StreamProcessWriteSetEnd(void)noexcept(true)
 {
 	if(fWriteActive){
 		fWriteQueue->StopWrite();
-		fWriteQueue=nullptr;
 	} 
 }
 //---------------------------------------------------------------------------
-void cPacketStreamFromEndpoint::StreamProcessWriteEnd(void)noexcept(true)
+void cPacketStreamFromEndpoint::StreamProcessWriteEnd(bool GracefulClosed)noexcept(true)
 {
 	if(fWriteActive){
 		fWriteQueue->StopWrite();
+		fWriteQueue->CloseWrite(!GracefulClosed);
 		fWriteQueue=nullptr;
 	}
 }
@@ -370,6 +387,7 @@ void cPacketStreamFromEndpoint::WriteStarted(void)noexcept(true)
 void cPacketStreamFromEndpoint::WriteStopped(void)noexcept(true)
 {
 	fWriteActive=false;
+	UpdateWriteTaskQueue();
 }
 //---------------------------------------------------------------------------
 void cPacketStreamFromEndpoint::WriteNotify(void)noexcept(true)

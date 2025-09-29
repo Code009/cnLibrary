@@ -288,7 +288,7 @@ void cTaskQueue::CancelTask(cTask *Task)noexcept(true)
 //---------------------------------------------------------------------------
 bcNotificationCycle::bcNotificationCycle()noexcept(true)
 	: fNotificationCloseState(0)
-	, fNotificationAction(0)
+	, fNotificationState(nsIdle)
 	, fNotificationStarted(false)
 	, fNotificationIsEnded(false)
 {
@@ -310,7 +310,7 @@ bool bcNotificationCycle::RunNotifyCycle(void)noexcept(true)
 //---------------------------------------------------------------------------
 bool bcNotificationCycle::RunNotifyCycle_Running(void)noexcept(true)
 {
-	if(fNotificationAction.Acquire.CmpStore(3,4)){
+	if(fNotificationState.Acquire.CmpStore(nsStop,nsStopping)){
 		iReference *Reference=NotificationInnerReference();
 		rDecReference(Reference,'stop');
 
@@ -318,7 +318,7 @@ bool bcNotificationCycle::RunNotifyCycle_Running(void)noexcept(true)
 		fNotificationStarted=false;
 		NotificationStopped();
 
-		fNotificationAction.Release.Store(0);
+		fNotificationState.Release.Store(nsIdle);
 		return true;	// continue with idle state
 	}
 
@@ -348,7 +348,7 @@ bool bcNotificationCycle::RunNotifyCycle_Running(void)noexcept(true)
 //---------------------------------------------------------------------------
 bool bcNotificationCycle::RunNotifyCycle_Idle(void)noexcept(true)
 {
-	if(fNotificationAction.Acquire.CmpStore(1,4)){
+	if(fNotificationState.Acquire.CmpStore(nsWaitStart,nsStarting)){
 		iReference *Reference=NotificationInnerReference();
 		rDecReference(Reference,'star');
 
@@ -357,7 +357,7 @@ bool bcNotificationCycle::RunNotifyCycle_Idle(void)noexcept(true)
 			fNotificationStarted=true;
 			NotificationStarted();
 
-			fNotificationAction.Release.Store(2);
+			fNotificationState.Release.Store(nsActive);
 
 			return true;	// to running state
 		}
@@ -409,26 +409,25 @@ bool bcNotificationCycle::IsNotificationEnded(void)const noexcept(true)
 //---------------------------------------------------------------------------
 bool bcNotificationCycle::PrepareStartNotify(void)noexcept(true)
 {
-	return fNotificationAction.Free.CmpStore(0,1);
+	return fNotificationState.Free.CmpStore(nsIdle,nsSetup);
 }
 //---------------------------------------------------------------------------
 void bcNotificationCycle::CancelStartNotify(void)noexcept(true)
 {
-	cnLib_ASSERT(fNotificationAction==1);
-	fNotificationAction.Release.Store(0);
+	fNotificationState.Free.CmpStore(nsSetup,nsIdle);
 }
 //---------------------------------------------------------------------------
 void bcNotificationCycle::ConfirmStartNotify(void)noexcept(true)
 {
-	cnLib_ASSERT(fNotificationAction==1);
-
-	iReference *Reference=NotificationInnerReference();
-	rIncReference(Reference,'star');
+	if(fNotificationState.Free.CmpStore(nsSetup,nsWaitStart)){
+		iReference *Reference=NotificationInnerReference();
+		rIncReference(Reference,'star');
+	}
 }
 //---------------------------------------------------------------------------
 bool bcNotificationCycle::StopNotify(void)noexcept(true)
 {
-	if(fNotificationAction.Free.CmpStore(2,3)){
+	if(fNotificationState.Free.CmpStore(nsActive,nsStop)){
 		iReference *Reference=NotificationInnerReference();
 		rIncReference(Reference,'stop');
 		return true;

@@ -334,7 +334,11 @@ protected:
 private:
 
 	cAtomicVar<ufInt8> fNotificationCloseState;
-	cAtomicVar<ufInt8> fNotificationAction;	// 0==wait start, 1=start, 2=wait stop, 3=stop, 4=disabled
+	cAtomicVar<ufInt8> fNotificationState;	// 0==wait start, 1=start, 2=wait stop, 3=stop, 4=disabled
+	enum{	// fNotificationState
+		nsIdle,nsSetup,nsWaitStart,nsStarting,nsActive,nsStop,nsStopping
+	};
+
 	bool fNotificationStarted		:1;
 	bool fNotificationIsEnded		:1;
 

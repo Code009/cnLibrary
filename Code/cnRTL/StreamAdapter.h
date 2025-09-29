@@ -44,14 +44,14 @@ protected:
 	// read task process
 
 	virtual void StreamProcessReadTask(void)noexcept(true)override;
-	virtual void StreamProcessReadEnd(void)noexcept(true)override;
+	virtual void StreamProcessReadEnd(bool GracefulClosed)noexcept(true)override;
 	iPtr<cReadTask> fReadTask;
 
 	// write task process
 
 	virtual void StreamProcessWriteTask(void)noexcept(true)override;
 	virtual void StreamProcessWriteSetEnd(void)noexcept(true)override;
-	virtual void StreamProcessWriteEnd(void)noexcept(true)override;
+	virtual void StreamProcessWriteEnd(bool GracefulClosed)noexcept(true)override;
 	rPtr<cWriteTask> fWriteTask;
 
 
@@ -92,13 +92,13 @@ protected:
 	// read task process
 
 	virtual void StreamProcessReadTask(void)noexcept(true)override;
-	virtual void StreamProcessReadEnd(void)noexcept(true)override;
+	virtual void StreamProcessReadEnd(bool GracefulClosed)noexcept(true)override;
 
 	// write task process
 
 	virtual void StreamProcessWriteTask(void)noexcept(true)override;
 	virtual void StreamProcessWriteSetEnd(void)noexcept(true)override;
-	virtual void StreamProcessWriteEnd(void)noexcept(true)override;
+	virtual void StreamProcessWriteEnd(bool GracefulClosed)noexcept(true)override;
 
 	// Write Queue
 

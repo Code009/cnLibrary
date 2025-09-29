@@ -17,28 +17,6 @@ namespace cnLibrary{
 //---------------------------------------------------------------------------
 namespace cnRTL{
 //---------------------------------------------------------------------------
-class cnLib_INTERFACE iProtocolSessionProcessor
-{
-public:
-	virtual void ProtocolStarted(void)noexcept(true)=0;
-	virtual void ProtocolStopped(void)noexcept(true)=0;
-	virtual uIntn ProtocolInputPush(const void *Buffer,uIntn BufferSize)noexcept(true)=0;
-	virtual uIntn ProtocolOutputPull(void *Buffer,uIntn BufferSize)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
-class cnLib_INTERFACE iProtocolSession : public iReference
-{
-public:
-	virtual iConnection* GetConnecton(void)noexcept(true)=0;
-	virtual bool StartProcessor(iReference *Reference,iProtocolSessionProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)=0;
-	virtual void StopProcessor(bool Terminate)noexcept(true)=0;
-	virtual void NotifyInput(void)noexcept(true)=0;
-	virtual void NotifyOutput(void)noexcept(true)=0;
-	virtual void SetEndOfOutput(void)noexcept(true)=0;
-	virtual bool IsInputEnded(void)noexcept(true)=0;
-	virtual bool IsOutputEnded(void)noexcept(true)=0;
-};
-//---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolProcessor
 {
 public:
@@ -53,7 +31,6 @@ public:
 class cnLib_INTERFACE iProtocolProvider : public iReference
 {
 public:
-	virtual iConnection* GetConnecton(void)noexcept(true)=0;
 	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)=0;
 	virtual void StopProcessor(bool Terminate)noexcept(true)=0;
 	virtual void NotifyInput(uIntn LeastSizeNeeded=0)noexcept(true)=0;
@@ -66,14 +43,12 @@ public:
 class bcProtocolProcessor : protected iProtocolProcessor
 {
 public:
-	bcProtocolProcessor()noexcept(true);
+	bcProtocolProcessor(iProtocolProvider *ProtocolProvider)noexcept(true);
 	~bcProtocolProcessor()noexcept(true);
 
 	iProtocolProvider* GetProvider(void)const noexcept(true);
-	bool SetProvider(iProtocolProvider *ProtocolProvider,bool SingleThreaded)noexcept(true);
-
 	bool IsActive(void)const noexcept(true);
-	bool Start(iReference *Reference)noexcept(true);
+	bool Start(iReference *Reference,bool SingleThreaded)noexcept(true);
 	void Stop(void)noexcept(true);
 	void Terminate(void)noexcept(true);
 
@@ -81,7 +56,6 @@ protected:
 	rPtr<iProtocolProvider> fProtocolProvider;
 	cAtomicVar<bool> fActiveMutex;
 	bool fProtocolActive;
-	bool fSingleThreaded;
 
 	virtual void ProtocolStarted(void)noexcept(true)override;
 	virtual void ProtocolStopped(void)noexcept(true)override;
@@ -170,12 +144,11 @@ private:
 class cProtocolProviderFromRWQueue : public iProtocolProvider, public cDualReference, protected iWriteQueueCallback, protected iReadQueueCallback
 {
 public:
-	cProtocolProviderFromRWQueue(iPtr<iConnection> Connection,rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept(true);
+	cProtocolProviderFromRWQueue(rPtr<iReadQueue> ReadQueue,rPtr<iWriteQueue> WriteQueue)noexcept(true);
 	~cProtocolProviderFromRWQueue()noexcept(true);
 
 	void CloseProvider(void)noexcept(true);
 
-	virtual iConnection* GetConnecton(void)noexcept(true)override;
 	virtual bool StartProcessor(iReference *Reference,iProtocolProcessor *ProtocolProcessor,bool SingleThreaded)noexcept(true)override;
 	virtual void StopProcessor(bool Terminate)noexcept(true)override;
 	virtual void NotifyInput(uIntn LeastSizeNeeded)noexcept(true)override;
@@ -191,7 +164,6 @@ protected:
 	void VirtualStarted(void)noexcept(true);
 	void VirtualStopped(void)noexcept(true);
 	
-	iPtr<iConnection> fConnection;
 	rPtr<iReadQueue> fReadQueue;
 	rPtr<iWriteQueue> fWriteQueue;
 
@@ -260,7 +232,7 @@ private:
 
 };
 //---------------------------------------------------------------------------
-rPtr<cProtocolProviderFromRWQueue> CreateProtocolProviderFromEndpoint(iConnection *Connection,iEndpoint *Endpoint)noexcept(true);
+rPtr<cProtocolProviderFromRWQueue> CreateProtocolProviderFromEndpoint(iEndpoint *Endpoint)noexcept(true);
 //---------------------------------------------------------------------------
 class cnLib_INTERFACE iProtocolQueueProcessor
 {
