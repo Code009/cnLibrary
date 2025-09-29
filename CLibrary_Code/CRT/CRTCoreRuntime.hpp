@@ -113,7 +113,7 @@ struct TKRuntime::NativeByteOrder
 
 
 template<uIntn IntegerSize>
-struct TKRuntime::TInteger
+struct TKRuntime::TInteger : CPPRuntime::TInteger<IntegerSize>
 {
 	typedef typename cnVar::TIntegerOfSize<IntegerSize,false>::Type tUInt;
 

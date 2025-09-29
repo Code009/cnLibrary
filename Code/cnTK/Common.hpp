@@ -646,6 +646,8 @@ namespace TKRuntime{
 template<uIntn IntegerSize>
 struct TInteger;
 //{
+//	static T UnalignRead(const T *Variable){
+//	static void UnalignWrite(T *Variable,T Value){
 //	static T ReverseBytes(T Value)noexcept;
 //	static sfInt8 Compare(T Src1,T Src2)noexcept;
 //	static tUInt ShiftLeftInto(tUInt ValueHigh,tUInt ValueLow,ufInt8 Count)noexcept;

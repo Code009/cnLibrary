@@ -47,7 +47,6 @@ using cString=cnString::cString< cnString::cRefStringArrayTokenOperator<TKRuntim
 template<class TFunction>
 using cFunction=cnVar::cFunction<TFunction,TKRuntime::SystemAllocationOperator>;
 
-
 //---------------------------------------------------------------------------
 
 using cnAsync::cRingIndex;
