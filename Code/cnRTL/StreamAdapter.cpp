@@ -448,10 +448,10 @@ cConstMemory bcReadQueueFromStream::GatherReadBuffer(uIntn QuerySize)noexcept(tr
 	ufInt8 ItemCount=fReadItemRing.Reserve<2>(ItemIndex,2);
 	if(ItemCount==0){
 		// no buffer available
+		ReadQueueReportBufferEmpty();
 		return NullArray;
 	}
 	auto &Item=fReadItem[ItemIndex];
-
 	cnLib_ASSERT(Item.Task==nullptr);
 		
 	cConstMemory Buffer;
@@ -575,6 +575,8 @@ void bcReadQueueFromStream::ProcessTask(void)noexcept(true)
 		uInt8 ItemIndex;
 		while(fReadItemRing.ReserveItem<1>(ItemIndex)){
 			auto &Item=fReadItem[ItemIndex];
+			if(Item.Task==nullptr)
+				break;	// reached the end
 			if(Item.Task->IsDone()==false)
 				break;	// not completed
 
@@ -599,8 +601,8 @@ void bcReadQueueFromStream::ProcessTask(void)noexcept(true)
 				StreamEnded=true;
 			}
 			else{
-				fReadItemRing.CommitItem<1>();
 				MoreAvailable=true;
+				fReadItemRing.CommitItem<1>();
 			}
 		}
 	
@@ -659,7 +661,7 @@ uIntn bcWriteQueueFromStream::GetMaxWriteBufferSize(void)noexcept(true)
 }
 //---------------------------------------------------------------------------
 cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept(true)
-{	UnusedParameter(QuerySize);	// ignore query size, just return whatever
+{
 
 	uInt8 ItemIndex;
 	if(fWriteItemRing.ReserveItem<0>(ItemIndex)==false){
@@ -670,6 +672,8 @@ cMemory bcWriteQueueFromStream::ReserveWriteBuffer(uIntn QuerySize)noexcept(true
 	cnLib_ASSERT(Item.SourceBufferSize==0);
 	Item.SourceBufferSize=0;
 
+	if(QuerySize<256)
+		QuerySize=256;
 	if(QuerySize>Item.SourceBuffer.Length){
 		QuerySize=TKRuntime::SystemAllocationOperator::RoundUpCapacity(QuerySize);
 		if(QuerySize>WriteBufferSizeLimit){
@@ -906,6 +910,7 @@ iPtr<iEndpoint> cnRTL::CreateEndpointFromSteam(iPtr<iStream> Stream,uIntn ReadBu
 //---------------------------------------------------------------------------
 cConnectionListenerFromAsyncListener::cConnectionListenerFromAsyncListener(iAsyncListener *Listener)noexcept(true)
 	: fListener(Listener)
+	, fQueueTerminated(false)
 {
 	for(uIntn i=0;i<cnMemory::ArrayLength(fAcceptTasks);i++){
 		fAcceptTasks[i].TaskIndex=i;

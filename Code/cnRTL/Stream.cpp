@@ -451,6 +451,7 @@ void bcRWQueue::ReadQueueReportEnded(void)noexcept(true)
 {
 	if(fReadQueueEnded==false){
 		fReadQueueEnded=true;
+		fReadQueueCloseWhenIdle=true;
 		fReadAsyncQueue.AsyncQueueSetAvailable(false);
 	}
 }
