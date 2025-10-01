@@ -562,22 +562,22 @@ public:
 		return *this;
 	}
 
-	cFunction(const cFunction &Src)noexcept(true){	CopyConstruct(Src.Storage());	}
+	cFunction(const cFunction &Src)noexcept(true){	CopyConstruct(&Src.fStorage);	}
 
 	cFunction& operator =(const cFunction &Src)noexcept(true){
-		if(this==&Src)
+		if(&fStorage==&Src.fStorage)
 			return *this;
 		Destruct();
-		CopyConstruct(Src.Storage());
+		CopyConstruct(&Src.fStorage);
 		return *this;
 	}
 
-	cFunction(cFunction &&Src)noexcept(true){		MoveConstruct(Src.Storage());	}
+	cFunction(cFunction &&Src)noexcept(true){		MoveConstruct(&Src.fStorage);	}
 
 	// move assign
 	cFunction& operator =(cFunction &&Src)noexcept(true){
 		Destruct();
-		MoveConstruct(Src.Storage());
+		MoveConstruct(&Src.fStorage);
 		return *this;
 	}
 
@@ -597,33 +597,33 @@ public:
 
 	template<class TFunctor,typename TTypeConditional<int,(cnLib_THelper::Var_TH::Function_FunctorIsCallable<typename cnVar::TTypeComponent<TFunction>::tReturn,TFunction,TFunctor>::Value && cnVar::TIsConstructibleBy<typename TRemoveCVRef<TFunctor>::Type,TFunctor&&>::Value)>::Type=0>
 	cFunction(TFunctor&& Functor)noexcept(true){
-		typedef TSelect< (sizeof(TFunctor)<=sizeof(cFunction))
+		typedef TSelect< (sizeof( cFunctorInplaceStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type>)<=sizeof(cFunction))
 			, cFunctorAllocationStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type,TAllocationOperator>
 			, cFunctorInplaceStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type>
 		>::Type tStorage;
 
-		cnClass::ManualConstruct(*reinterpret_cast<tStorage*>(this),static_cast<TFunctor&&>(Functor));
+		fStorage.ConstructAs<tStorage>(static_cast<TFunctor&&>(Functor));
 	}
 
 	template<class TFunctor,typename TTypeConditional<int,(cnLib_THelper::Var_TH::Function_FunctorIsCallable<typename cnVar::TTypeComponent<TFunction>::tReturn,TFunction,TFunctor>::Value && cnVar::TIsConstructibleBy<typename TRemoveCVRef<TFunctor>::Type,TFunctor&&>::Value)>::Type=0>
 	cFunction& operator = (TFunctor&& Functor)noexcept(true){
 		Destruct();
-		typedef TSelect< (sizeof(TFunctor)<=sizeof(cFunction))
+		typedef TSelect< (sizeof( cFunctorInplaceStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type>)<=sizeof(cFunction))
 			, cFunctorAllocationStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type,TAllocationOperator>
 			, cFunctorInplaceStorage<TFunction,typename TRemoveCVRef<TFunctor>::Type>
 		>::Type tStorage;
 
-		cnClass::ManualConstruct(*reinterpret_cast<tStorage*>(this),static_cast<TFunctor&&>(Functor));
+		fStorage.ConstructAs<tStorage>(static_cast<TFunctor&&>(Functor));
 		return *this;
 	}
 
 protected:
 
 	void Construct(iFunction<TFunction> *Function)noexcept(true){
-		cnClass::ManualConstruct(*reinterpret_cast<cFunctionInterfaceStorage<TFunction>*>(this),Function);
+		fStorage.ConstructAs< cFunctionInterfaceStorage<TFunction> >(Function);
 	}
 	void Destruct(void)noexcept(true){
-		this->Storage()->Destruct();
+		fStorage->Destruct();
 	}
 
 
@@ -634,13 +634,13 @@ protected:
 
 		uIntn SrcSize=Src->InplaceSizeOf();
 		if(SrcSize<=sizeof(cFunction)){
-			return Src->CopyToInplace(this->Storage());
+			return Src->CopyToInplace(&fStorage);
 		}
-		cnClass::ManualConstruct(*reinterpret_cast<cFunctorStorageDuplication<TFunction,TAllocationOperator>*>(this),Src,SrcSize);
+		fStorage.ConstructAs< cFunctorStorageDuplication<TFunction,TAllocationOperator> >(Src,SrcSize);
 	}
 	void ConstructPtr(iFunction<TFunction> *Func)noexcept(true){		return Construct(Func);		}
 	void ConstructPtr(TFunction *Ptr)noexcept(true){
-		cnClass::ManualConstruct(*reinterpret_cast<cFunctionPtrStorage<TFunction>*>(this),Ptr);
+		fStorage.ConstructAs< cFunctionPtrStorage<TFunction> >(Ptr);
 	}
 
 	void CopyConstruct(const iFunctorStorage<TFunction> *Src)noexcept(true){
@@ -650,9 +650,9 @@ protected:
 
 		uIntn SrcSize=Src->SizeOf();
 		if(SrcSize<=sizeof(cFunction)){
-			return Src->CopyTo(this->Storage());
+			return Src->CopyTo(&fStorage);
 		}
-		cnClass::ManualConstruct(*reinterpret_cast<cFunctorStorageDuplication<TFunction,TAllocationOperator>*>(this),Src,SrcSize);
+		fStorage.ConstructAs< cFunctorStorageDuplication<TFunction,TAllocationOperator> >(Src,SrcSize);
 	}
 
 	void MoveConstruct(iFunctorStorage<TFunction> *Src)noexcept(true){
@@ -661,12 +661,12 @@ protected:
 		}
 		uIntn SrcSize=Src->SizeOf();
 		if(SrcSize<=sizeof(cFunction)){
-			return Src->MoveTo(this->Storage());
+			return Src->MoveTo(&fStorage);
 		}
-		cnClass::ManualConstruct(*reinterpret_cast<cFunctorStorageDuplication<TFunction,TAllocationOperator>*>(this),Src,SrcSize);
+		fStorage.ConstructAs< cFunctorStorageDuplication<TFunction,TAllocationOperator> >(Src,SrcSize);
 	}
 private:
-	void *fFunctionStorage;
+	cnVar::cPolymorphicObject< cnVar::iFunctorStorage<TFunction>,cFunctionInterfaceStorage<TFunction> > fStorage;
 };
 
 //---------------------------------------------------------------------------
