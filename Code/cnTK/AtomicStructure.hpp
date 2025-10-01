@@ -334,11 +334,11 @@ public:
 		tIndex Index=LoadIndex<RingIndex>();
 		tIndex Commited=CurEnd-Index;
 		if(Commited>Size){
-			Index=CurEnd;
-		}
-		else{
 			Commited=Size;
 			Index+=Size;
+		}
+		else{
+			Index=CurEnd;
 		}
 		StoreIndex<RingIndex>(Index);
 		return Commited;
